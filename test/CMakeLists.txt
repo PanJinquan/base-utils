@@ -33,7 +33,7 @@ endif ()
 
 # base_utils
 set(BASE_ROOT ../) # 设置base-utils所在的根目录
-add_subdirectory(${BASE_ROOT}/base_utils/ base_build) # 添加外部项目文件夹
+add_subdirectory(${BASE_ROOT}/base_utils/ base_build) # 添加子目录到build中
 include_directories(${BASE_ROOT}/base_utils/include)
 include_directories(${BASE_ROOT}/base_utils/src)
 MESSAGE(STATUS "BASE_ROOT = ${BASE_ROOT}")
