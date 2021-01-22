@@ -26,7 +26,7 @@ include_directories(include)
 # add_library(base_utils myhello.cpp)
 # 更加便捷的方法是使用aux_source_directory(<dir> <variable>)
 # 查找当前目录下的所有源文件，并将名称保存到DIR_SRCS变量中
-# DIR_SRCS可以多次使用，相同的变量或自动拼接
+# DIR_SRCS可以多次使用，相同的变量会自动拼接
 aux_source_directory(src DIR_SRCS)
 aux_source_directory(src/filter DIR_SRCS)
 
