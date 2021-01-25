@@ -125,7 +125,7 @@ void draw_rects_texts(cv::Mat &image, std::vector<cv::Rect> rects, std::vector<s
  * 或者连接线
  * @param image
  * @param points
- * @param skeleton
+ * @param skeleton 需要连接的ID序号
  */
 void draw_lines(cv::Mat &image, std::vector<cv::Point> points, const std::vector<std::vector<float>> skeleton);
 

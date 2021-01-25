@@ -8,7 +8,7 @@ cv::Mat image_resize(cv::Mat &src, int resize_width, int resize_height) {
     cv::Mat dst;
     auto width = src.cols;
     auto height = src.rows;
-    if (resize_height <= 0 || resize_width <= 0) {
+    if (resize_height <= 0 && resize_width <= 0) {
         resize_width = width;
         resize_height = height;
     } else if (resize_height <= 0) {
@@ -43,6 +43,9 @@ cv::Mat image_crop(cv::Mat &src, int x1, int x2, int y1, int y2) {
 
 
 cv::Mat image_crop_padding(cv::Mat src, cv::Rect rect, cv::Scalar color) {
+    int borderType = cv::BORDER_CONSTANT;//固定像素填充
+    //int borderType = cv::BORDER_REPLICATE;//复制最边缘像素
+    //int borderType = cv::BORDER_REFLECT_101;//边缘对称法填充
     int crop_x1 = cv::max(0, rect.x);
     int crop_y1 = cv::max(0, rect.y);
     int crop_x2 = cv::min(src.cols, rect.x + rect.width); // 图像范围 0到cols-1, 0到rows-1
@@ -60,11 +63,7 @@ cv::Mat image_crop_padding(cv::Mat src, cv::Rect rect, cv::Scalar color) {
         right_x = (right_x > 0 ? right_x : 0);
         top_y = (top_y > 0 ? top_y : 0);
         down_y = (down_y > 0 ? down_y : 0);
-        //cv::Scalar(0,0,255)指定颜色填充
-        cv::copyMakeBorder(roiImage, roiImage, top_y, down_y, left_x, right_x,
-                           cv::BORDER_CONSTANT, color);
-        //cv::copyMakeBorder(roiImage, roiImage, top_y, down_y, left_x, right_x, cv::BORDER_REPLICATE);//复制最边缘像素
-        //cv::copyMakeBorder(roiImage, roiImage, top_y, down_y, left_x, right_x, BORDER_REFLECT_101);  //边缘对称法填充
+        cv::copyMakeBorder(roiImage, roiImage, top_y, down_y, left_x, right_x, borderType, color);
     }
     return roiImage;
 }
