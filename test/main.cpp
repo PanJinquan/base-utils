@@ -13,9 +13,8 @@ int main() {
     LOGW("image:%s", path.c_str());
     LOGE("image:%s", path.c_str());
     LOGF("image:%s", path.c_str());
-
     DEBUG_TIME(t2);
-    LOGI("image:%3.3fms", RUN_TIME(t2 - t1));
+    LOGI("rum time:%3.3fms", RUN_TIME(t2 - t1));
     cv::waitKey(0);
     DEBUG_IMSHOW("image", image);
     return 0;
