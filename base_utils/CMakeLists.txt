@@ -4,6 +4,14 @@ set(CMAKE_CXX_FLAGS "-Wall -std=c++11 -pthread")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 
+if (CMAKE_SYSTEM_NAME MATCHES "Android")
+    add_definitions(-DPLATFORM_ANDROID)
+elseif (CMAKE_SYSTEM_NAME MATCHES "Linux")
+    add_definitions(-DPLATFORM_LINUX)
+elseif (CMAKE_SYSTEM_NAME MATCHES "Windows")
+    add_definitions(-DPLATFORM_WINDOWS)
+endif ()
+
 # 常用的变量：
 # . 表示当前目录
 # ${PROJECT_SOURCE_DIR}：为包含 project()的最近一个CMakeLists.txt文件所在的文件夹

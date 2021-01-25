@@ -18,17 +18,17 @@ include_directories(${OpenCV_INCLUDE_DIRS} ./src/)
 #MESSAGE(STATUS "OpenCV_INCLUDE_DIRS = ${OpenCV_INCLUDE_DIRS}")
 
 if (CMAKE_SYSTEM_NAME MATCHES "Android")
-    add_definitions(-DPLATFORM_LINUX)
+    add_definitions(-DPLATFORM_ANDROID)
 elseif (CMAKE_SYSTEM_NAME MATCHES "Linux")
-    add_definitions(-DPLATFORM_WINDOWS)
+    add_definitions(-DPLATFORM_LINUX)
     add_definitions(-DDEBUG_ON)            # for WIN/Linux Log
-    add_definitions(-DDEBUG_WIN_ON)        # for WIN/Linux Log
+    add_definitions(-DDEBUG_LOG_ON)        # for WIN/Linux Log
     add_definitions(-DDEBUG_IMSHOW_ON)    # for OpenCV show
 elseif (CMAKE_SYSTEM_NAME MATCHES "Windows")
     add_definitions(-DPLATFORM_WINDOWS)
     add_definitions(-DDEBUG_ON)            # for WIN/Linux Log
-    add_definitions(-DDEBUG_WIN_ON)        # for WIN/Linux Log
-    add_definitions(-DDEBUG_IMSHOW_OFF)    # for OpenCV show
+    add_definitions(-DDEBUG_LOG_ON)        # for WIN/Linux Log
+    add_definitions(-DDEBUG_IMSHOW_ON)    # for OpenCV show
 endif ()
 
 # base_utils

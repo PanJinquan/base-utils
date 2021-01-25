@@ -12,11 +12,13 @@
 
 using namespace std;
 
-#ifdef linux
+#ifdef PLATFORM_ANDROID//_ANDROID
+#define _ANDROID
+#define separator "/"
+#elif defined PLATFORM_LINUX//_LINUX
 #define _LINUX
 #define separator "/"
-#endif
-#ifdef __WINDOWS_//_WIN32
+#elif defined PLATFORM_WINDOWS//_WIN32
 #define _WINDOWS
 #define separator  "\\"
 #endif

@@ -48,7 +48,8 @@ bool file_exists(string path) {
 }
 
 
-#ifdef _LINUX
+//#ifdef _LINUX
+#ifdef PLATFORM_LINUX
 #include <memory.h>
 #include <dirent.h>
 vector<string> get_files_list(string dirpath) {
@@ -66,7 +67,7 @@ vector<string> get_files_list(string dirpath) {
             if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
                 continue;
             string dirNew = dirpath + separator + entry->d_name;
-            vector<string> tempPath = getFilesList(dirNew);
+            vector<string> tempPath = get_files_list(dirNew);
             allPath.insert(allPath.end(), tempPath.begin(), tempPath.end());
 
         }
@@ -86,7 +87,8 @@ vector<string> get_files_list(string dirpath) {
 #endif
 
 
-#ifdef _WIN32//__WINDOWS_
+//#ifdef _WIN32//__WINDOWS_
+#ifdef PLATFORM_WINDOWS//__WINDOWS_
 #include <io.h>
 vector<string> get_files_list(string dir)
 {
@@ -111,7 +113,7 @@ vector<string> get_files_list(string dir)
                 continue;
             // 在目录后面加上"\\"和搜索到的目录名进行下一次搜索
             string dirNew = dir + separator + findData.name;
-            vector<string> tempPath = getFilesList(dirNew);
+            vector<string> tempPath = get_files_list(dirNew);
             allPath.insert(allPath.end(), tempPath.begin(), tempPath.end());
         }
         else //不是子目录，即是文件，则输出文件名和文件的大小
