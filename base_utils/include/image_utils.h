@@ -7,6 +7,7 @@
 
 #include <string>
 #include "opencv2/opencv.hpp"
+
 using namespace std;
 
 
@@ -67,7 +68,7 @@ cv::Mat image_center_crop(cv::Mat &src, int crop_w, int crop_h);
  * @param image
  * @param waitKey
  */
-void image_show(std::string name, cv::Mat image, int waitKey = 0);
+void image_show(string name, cv::Mat image, int waitKey = 0);
 
 
 /***
@@ -75,7 +76,7 @@ void image_show(std::string name, cv::Mat image, int waitKey = 0);
  * @param name
  * @param image
  */
-void image_save(std::string name, cv::Mat image);
+void image_save(string name, cv::Mat image);
 
 
 /***
@@ -91,7 +92,7 @@ void image_save(std::string name, cv::Mat image);
  * @param point
  * @param text
  */
-void draw_point_text(cv::Mat &image, cv::Point2d points, std::string text = "");
+void draw_point_text(cv::Mat &image, cv::Point2d points, string text = "");
 
 
 /***
@@ -100,7 +101,7 @@ void draw_point_text(cv::Mat &image, cv::Point2d points, std::string text = "");
  * @param points
  * @param texts
  */
-void draw_points_texts(cv::Mat &image, std::vector<cv::Point> points, std::vector<std::string> texts = {});
+void draw_points_texts(cv::Mat &image, vector<cv::Point> points, vector<string> texts = {});
 
 
 /***
@@ -109,7 +110,7 @@ void draw_points_texts(cv::Mat &image, std::vector<cv::Point> points, std::vecto
  * @param rect
  * @param text
  */
-void draw_rect_text(cv::Mat &image, cv::Rect rect, std::string text = "");
+void draw_rect_text(cv::Mat &image, cv::Rect rect, string text = "");
 
 
 /***
@@ -118,15 +119,23 @@ void draw_rect_text(cv::Mat &image, cv::Rect rect, std::string text = "");
  * @param rects
  * @param texts
  */
-void draw_rects_texts(cv::Mat &image, std::vector<cv::Rect> rects, std::vector<std::string> texts);
+void draw_rects_texts(cv::Mat &image, vector<cv::Rect> rects, vector<string> texts);
 
 
 /***
- * 或者连接线
+ * 绘制连接线
  * @param image
  * @param points
  * @param skeleton 需要连接的ID序号
  */
-void draw_lines(cv::Mat &image, std::vector<cv::Point> points, const std::vector<std::vector<float>> skeleton);
+void draw_lines(cv::Mat &image, vector<cv::Point> points, const vector<vector<float>> skeleton);
+
+/***
+ * 绘制带箭头的连接线
+ * @param image
+ * @param points
+ * @param skeleton 需要连接的ID序号
+ */
+void draw_arrowed_line(cv::Mat &image, vector<cv::Point> points, const vector<vector<float>> skeleton);
 
 #endif //DETECTOR_IMAGE_UTILS_H

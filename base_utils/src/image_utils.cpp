@@ -79,7 +79,7 @@ cv::Mat image_center_crop(cv::Mat &src, int crop_w, int crop_h) {
 };
 
 
-void image_show(std::string name, cv::Mat image, int waitKey) {
+void image_show(string name, cv::Mat image, int waitKey) {
     cv::namedWindow(name, cv::WINDOW_AUTOSIZE);
     cv::Mat img_show = image.clone();
     if (img_show.channels() == 1)
@@ -91,13 +91,13 @@ void image_show(std::string name, cv::Mat image, int waitKey) {
     cv::waitKey(waitKey);
 }
 
-void image_save(std::string name, cv::Mat image) {
+void image_save(string name, cv::Mat image) {
     cv::namedWindow(name, cv::WINDOW_AUTOSIZE);
     cv::imwrite(name, image);
 }
 
 
-void draw_point_text(cv::Mat &image, cv::Point2d points, std::string text) {
+void draw_point_text(cv::Mat &image, cv::Point2d points, string text) {
     int radius = 4;
     int thickness = -1;//实心点
     const cv::Scalar color(0, 0, 255);
@@ -112,7 +112,7 @@ void draw_point_text(cv::Mat &image, cv::Point2d points, std::string text) {
     }
 }
 
-void draw_points_texts(cv::Mat &image, std::vector<cv::Point> points, std::vector<std::string> texts) {
+void draw_points_texts(cv::Mat &image, vector<cv::Point> points, vector<string> texts) {
     int num = points.size();
     if (texts.size() != num && texts.size() == 0) {
         for (int i = 0; i < num; ++i) {
@@ -125,8 +125,8 @@ void draw_points_texts(cv::Mat &image, std::vector<cv::Point> points, std::vecto
 }
 
 
-void draw_rect_text(cv::Mat &image, cv::Rect rect, std::string text) {
-    const cv::Scalar color(0, 0, 255);
+void draw_rect_text(cv::Mat &image, cv::Rect rect, string text) {
+    const cv::Scalar color(255, 0, 0);
     cv::rectangle(image, rect, color, 2);
     if (text != "") {
         cv::putText(image,
@@ -139,8 +139,8 @@ void draw_rect_text(cv::Mat &image, cv::Rect rect, std::string text) {
 }
 
 void draw_rects_texts(cv::Mat &image,
-                      std::vector<cv::Rect> rects,
-                      std::vector<std::string> texts) {
+                      vector<cv::Rect> rects,
+                      vector<string> texts) {
     int num = rects.size();
     if (texts.size() != num && texts.size() == 0) {
         for (int i = 0; i < num; ++i) {
@@ -153,19 +153,34 @@ void draw_rects_texts(cv::Mat &image,
 }
 
 void draw_lines(cv::Mat &image,
-                std::vector<cv::Point> points,
-                const std::vector<std::vector<float>> skeleton) {
-    const cv::Scalar color(0, 0, 255);
+                vector<cv::Point> points,
+                const vector<vector<float>> skeleton) {
+    const cv::Scalar color(0, 255, 0);
     int thickness = 1;
     for (auto &pair:skeleton) {
         if (points[pair[0]].x > 0. && points[pair[0]].y > 0. &&
             points[pair[1]].x > 0. && points[pair[1]].y > 0.) {
             cv::Point2d p0 = points[pair[0]];
             cv::Point2d p1 = points[pair[1]];
-            // cv::line(image, p0, p1, color, thickness);
+            cv::line(image, p0, p1, color, thickness);
+        }
+    }
+}
+
+void draw_arrowed_line(cv::Mat &image,
+                       vector<cv::Point> points,
+                       const vector<vector<float>> skeleton) {
+    const cv::Scalar color(0, 255, 0);
+    int thickness = 1;
+    for (auto &pair:skeleton) {
+        if (points[pair[0]].x > 0. && points[pair[0]].y > 0. &&
+            points[pair[1]].x > 0. && points[pair[1]].y > 0.) {
+            cv::Point2d p0 = points[pair[0]];
+            cv::Point2d p1 = points[pair[1]];
             cv::arrowedLine(image, p1, p0, color, thickness = thickness);
         }
     }
 }
+
 
 

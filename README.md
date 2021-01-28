@@ -71,4 +71,4 @@ int main() {
 
 ```
 
-<img src="docs/demo.jpg" width="0" height="0">
+<img src="docs/demo.jpg" width="0" height="" />
