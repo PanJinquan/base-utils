@@ -76,10 +76,11 @@ cv::Mat image_center_crop(cv::Mat &src, int crop_w, int crop_h) {
     int x2 = x1 + crop_w;
     int y2 = y1 + crop_h;
     cv::Mat dst = image_crop(src, x1, x2, y1, y2);
-};
+}
 
 
 void image_show(string name, cv::Mat image, int waitKey) {
+#ifndef PLATFORM_ANDROID
     cv::namedWindow(name, cv::WINDOW_AUTOSIZE);
     cv::Mat img_show = image.clone();
     if (img_show.channels() == 1)
@@ -89,11 +90,15 @@ void image_show(string name, cv::Mat image, int waitKey) {
     //RESIZE(img_show, 400);
     cv::imshow(name, img_show);
     cv::waitKey(waitKey);
+#endif
 }
 
 void image_save(string name, cv::Mat image) {
+#ifndef PLATFORM_ANDROID
     cv::namedWindow(name, cv::WINDOW_AUTOSIZE);
     cv::imwrite(name, image);
+#endif
+
 }
 
 
@@ -177,7 +182,7 @@ void draw_arrowed_line(cv::Mat &image,
             points[pair[1]].x > 0. && points[pair[1]].y > 0.) {
             cv::Point2d p0 = points[pair[0]];
             cv::Point2d p1 = points[pair[1]];
-            cv::arrowedLine(image, p1, p0, color, thickness = thickness);
+            cv::arrowedLine(image, p1, p0, color, thickness);
         }
     }
 }

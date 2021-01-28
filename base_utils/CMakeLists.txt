@@ -41,5 +41,6 @@ aux_source_directory(src/filter DIR_SRCS)
 #将指定的源文件生成链接文件
 MESSAGE(STATUS "DIR_SRCS = ${DIR_SRCS}")
 #add_library(base_utils STATIC ${DIR_SRCS}) # 静态库（.a、.lib）
-add_library(base_utils SHARED ${DIR_SRCS})  # 动态库（.so、.dll
+#add_library(base_utils SHARED ${DIR_SRCS})  # 动态库（.so、.dll)
+add_library(base_utils  ${DIR_SRCS})  #
 #set_target_properties(my_lib PROPERTIES OUTPUT_NAME "my_lib")

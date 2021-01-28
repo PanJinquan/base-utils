@@ -4,7 +4,12 @@
 
 #ifndef DETECTOR_BASE_H
 #define DETECTOR_BASE_H
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
 
+using namespace std;
 /***
  * 释放vector空间
  * @tparam T

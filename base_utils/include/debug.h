@@ -15,12 +15,12 @@ using namespace std;
  */
 //debug info ON-OFF
 //CMake setting add_definitions(-DDEBUG_WIN_ON)
-#define DEBUG_OFF
+#define DEBUG_ON
 #ifdef  DEBUG_ON
 #define DEBUG_LOG_OFF         //Window debug:print debug info
 #define DEBUG_IMSHOW_OFF      //show debug images
 #define DEBUG_IMWRITE_OFF     //write debug images
-#define DEBUG_ANDROID_OFF      //android debug on/off
+#define DEBUG_ANDROID_ON      //android debug on/off
 
 #else
 #define DEBUG_OFF(format, ...)
