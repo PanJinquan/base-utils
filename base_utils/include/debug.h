@@ -14,13 +14,13 @@ using namespace std;
  * 设置LOG的信息开关
  */
 //debug info ON-OFF
-//CMake setting add_definitions(-DDEBUG_WIN_ON)
-#define DEBUG_ON
+//CMake setting add_definitions(-DDEBUG_ON)
+#define DEBUG_OFF
 #ifdef  DEBUG_ON
 #define DEBUG_LOG_OFF         //Window debug:print debug info
 #define DEBUG_IMSHOW_OFF      //show debug images
 #define DEBUG_IMWRITE_OFF     //write debug images
-#define DEBUG_ANDROID_ON      //android debug on/off
+#define DEBUG_ANDROID_OFF      //android debug on/off
 
 #else
 #define DEBUG_OFF(format, ...)
@@ -41,7 +41,7 @@ using namespace std;
  * 打印信息定义
  */
 //print debug info
-#ifdef  DEBUG_ANDROID_ON
+#ifdef DEBUG_ANDROID_ON
 #include <android/log.h>
 // Define the LOGI and others for print debug infomation like the log.i in java
 #define LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG, __VA_ARGS__)
