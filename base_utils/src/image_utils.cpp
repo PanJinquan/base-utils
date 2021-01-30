@@ -172,9 +172,9 @@ void draw_lines(cv::Mat &image,
     }
 }
 
-void draw_arrowed_line(cv::Mat &image,
-                       vector<cv::Point> points,
-                       const vector<vector<float>> skeleton) {
+void draw_arrowed_lines(cv::Mat &image,
+                        vector<cv::Point> points,
+                        const vector<vector<float>> skeleton) {
     const cv::Scalar color(0, 255, 0);
     int thickness = 1;
     for (auto &pair:skeleton) {

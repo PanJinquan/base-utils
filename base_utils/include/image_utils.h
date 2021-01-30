@@ -136,6 +136,6 @@ void draw_lines(cv::Mat &image, vector<cv::Point> points, const vector<vector<fl
  * @param points
  * @param skeleton 需要连接的ID序号
  */
-void draw_arrowed_line(cv::Mat &image, vector<cv::Point> points, const vector<vector<float>> skeleton);
+void draw_arrowed_lines(cv::Mat &image, vector<cv::Point> points, const vector<vector<float>> skeleton);
 
 #endif //DETECTOR_IMAGE_UTILS_H
