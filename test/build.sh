@@ -9,5 +9,6 @@ cmake ..
 make -j4
 sleep 1
 #./main
-./kalman
+#./kalman_test
+./openmp_test
 
