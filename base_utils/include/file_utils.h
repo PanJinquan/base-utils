@@ -32,6 +32,14 @@ using namespace std;
 std::string load_file(string path);
 
 /***
+ * 加载文件的内容
+ * @param path
+ * @param file_string: 以string形式，返回文件内容
+ * @return 0:表示读取成功，1表示读取失败
+ */
+int load_file(const char *path, std::string &file_string);
+
+/***
  * 将string类型的内容保存为txt文件
  * @param path
  * @param data

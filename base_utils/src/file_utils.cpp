@@ -20,8 +20,37 @@ std::string load_file(string path) {
         file.close();
         return fileContent;
     } else {
+        printf("Failed to open file:%s", path.c_str());
         return "";
     }
+}
+
+
+int load_file(const char *path, std::string &file_string) {
+    size_t uiSize = 0;
+    size_t uiFileSize = 0;
+    char *pStr = NULL;
+    std::fstream fFile(path, (std::fstream::in | std::fstream::binary));
+    if (fFile.is_open()) {
+        fFile.seekg(0, std::fstream::end);
+        uiSize = uiFileSize = (size_t) fFile.tellg();  // 获得文件大小
+        fFile.seekg(0, std::fstream::beg);
+        pStr = new char[uiSize + 1];
+
+        if (NULL == pStr) {
+            fFile.close();
+            return 0;
+        }
+
+        fFile.read(pStr, uiFileSize);                // 读取uiFileSize字节
+        fFile.close();
+        pStr[uiSize] = '\0';
+        file_string = pStr;
+        delete[] pStr;
+        return 0;
+    }
+    printf("Failed to open file:%s", path);
+    return -1;
 }
 
 void write_datatxt(string path, string data, bool bCover) {
@@ -50,19 +79,19 @@ bool file_exists(string path) {
 
 //#ifdef _LINUX
 #ifdef PLATFORM_LINUX
+
 #include <memory.h>
 #include <dirent.h>
+
 vector<string> get_files_list(string dirpath) {
     vector<string> allPath;
     DIR *dir = opendir(dirpath.c_str());
-    if (dir == NULL)
-    {
+    if (dir == NULL) {
         cout << "opendir error" << endl;
         return allPath;
     }
     struct dirent *entry;
-    while ((entry = readdir(dir)) != NULL)
-    {
+    while ((entry = readdir(dir)) != NULL) {
         if (entry->d_type == DT_DIR) {//It's dir
             if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
                 continue;
@@ -70,8 +99,7 @@ vector<string> get_files_list(string dirpath) {
             vector<string> tempPath = get_files_list(dirNew);
             allPath.insert(allPath.end(), tempPath.begin(), tempPath.end());
 
-        }
-        else {
+        } else {
             //cout << "name = " << entry->d_name << ", len = " << entry->d_reclen << ", entry->d_type = " << (int)entry->d_type << endl;
             string name = entry->d_name;
             string imgdir = dirpath + separator + name;
@@ -84,6 +112,7 @@ vector<string> get_files_list(string dirpath) {
     //system("pause");
     return allPath;
 }
+
 #endif
 
 

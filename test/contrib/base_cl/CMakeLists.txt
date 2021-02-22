@@ -4,11 +4,7 @@ set(CMAKE_CXX_FLAGS "-Wall -std=c++11 -pthread")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 
-option(BASE_FILTER_ENABLE "Enable filter" ON)
-option(BASE_OPENMP_ENABLE "Enable filter" ON)
 
-message(STATUS "BASE_FILTER_ENABLE:${BASE_FILTER_ENABLE}")
-message(STATUS "BASE_OPENMP_ENABLE:${BASE_OPENMP_ENABLE}")
 
 if (CMAKE_SYSTEM_NAME MATCHES "Android")
     add_definitions(-DPLATFORM_ANDROID)
@@ -42,14 +38,11 @@ include_directories(include)
 # 查找当前目录下的所有源文件，并将名称保存到DIR_SRCS变量中
 # DIR_SRCS可以多次使用，相同的变量会自动拼接
 aux_source_directory(src DIR_SRCS)
-if (BASE_FILTER_ENABLE)
-    #add_subdirectory(src/filter)
-    aux_source_directory(src/filter DIR_SRCS)
-endif ()
+
 
 #将指定的源文件生成链接文件
 MESSAGE(STATUS "DIR_SRCS = ${DIR_SRCS}")
 #add_library(base_utils STATIC ${DIR_SRCS}) # 静态库（.a、.lib）
 #add_library(base_utils SHARED ${DIR_SRCS})  # 动态库（.so、.dll)
-add_library(base_utils  ${DIR_SRCS})  #
+add_library(base_cl  ${DIR_SRCS})  #
 #set_target_properties(my_lib PROPERTIES OUTPUT_NAME "my_lib")

@@ -58,12 +58,23 @@ include_directories(${BASE_ROOT}/base_utils/src)
 MESSAGE(STATUS "BASE_ROOT = ${BASE_ROOT}")
 
 
+# base_cl
+set(BASE_CL contrib/base_cl) # 设置base_cl所在的根目录
+add_subdirectory(${BASE_CL}/ base_cl_build) # 添加子目录到build中
+include_directories(${BASE_CL}/include)
+include_directories(${BASE_CL}/src)
+MESSAGE(STATUS "BASE_CL = ${BASE_CL}")
+
+
 # Test
 add_executable(main main.cpp)
 add_executable(kalman_test kalman_test.cpp)
 add_executable(openmp_test openmp_test.cpp)
+add_executable(opencl_test opencl_test.cpp)
+
 
 #target_link_libraries(main base_utils ${OpenCV_LIBS} -lpthread)
 target_link_libraries(main base_utils ${OpenCV_LIBS})
 target_link_libraries(kalman_test base_utils ${OpenCV_LIBS})
 target_link_libraries(openmp_test base_utils ${OpenCV_LIBS} -lpthread)
+target_link_libraries(opencl_test base_utils ${OpenCV_LIBS} OpenCL  -lpthread)
