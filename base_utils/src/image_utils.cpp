@@ -159,7 +159,7 @@ void draw_rects_texts(cv::Mat &image,
 
 void draw_lines(cv::Mat &image,
                 vector<cv::Point> points,
-                const vector<vector<int>> skeleton) {
+                vector<vector<int>> skeleton) {
     const cv::Scalar color(0, 255, 0);
     int thickness = 1;
     for (auto &pair:skeleton) {
@@ -174,7 +174,7 @@ void draw_lines(cv::Mat &image,
 
 void draw_arrowed_lines(cv::Mat &image,
                         vector<cv::Point> points,
-                        const vector<vector<int>> skeleton) {
+                        vector<vector<int>> skeleton) {
     const cv::Scalar color(0, 255, 0);
     int thickness = 1;
     for (auto &pair:skeleton) {
