@@ -102,10 +102,9 @@ void image_save(string name, cv::Mat image) {
 }
 
 
-void draw_point_text(cv::Mat &image, cv::Point2d points, string text) {
+void draw_point_text(cv::Mat &image, cv::Point2d points, string text, cv::Scalar color) {
     int radius = 4;
     int thickness = -1;//实心点
-    const cv::Scalar color(0, 0, 255);
     cv::circle(image, points, radius, color, thickness);
     if (text != "") {
         cv::putText(image,
@@ -117,7 +116,7 @@ void draw_point_text(cv::Mat &image, cv::Point2d points, string text) {
     }
 }
 
-void draw_points_texts(cv::Mat &image, vector<cv::Point> points, vector<string> texts) {
+void draw_points_texts(cv::Mat &image, vector<cv::Point> points, vector<string> texts, cv::Scalar color) {
     int num = points.size();
     if (texts.size() != num && texts.size() == 0) {
         for (int i = 0; i < num; ++i) {
@@ -125,13 +124,12 @@ void draw_points_texts(cv::Mat &image, vector<cv::Point> points, vector<string> 
         }
     }
     for (int i = 0; i < num; ++i) {
-        draw_point_text(image, points[i], texts[i]);
+        draw_point_text(image, points[i], texts[i], color);
     }
 }
 
 
-void draw_rect_text(cv::Mat &image, cv::Rect rect, string text) {
-    const cv::Scalar color(255, 0, 0);
+void draw_rect_text(cv::Mat &image, cv::Rect rect, string text, cv::Scalar color) {
     cv::rectangle(image, rect, color, 2);
     if (text != "") {
         cv::putText(image,
@@ -145,7 +143,8 @@ void draw_rect_text(cv::Mat &image, cv::Rect rect, string text) {
 
 void draw_rects_texts(cv::Mat &image,
                       vector<cv::Rect> rects,
-                      vector<string> texts) {
+                      vector<string> texts,
+                      cv::Scalar color) {
     int num = rects.size();
     if (texts.size() != num && texts.size() == 0) {
         for (int i = 0; i < num; ++i) {
@@ -153,14 +152,14 @@ void draw_rects_texts(cv::Mat &image,
         }
     }
     for (int i = 0; i < num; ++i) {
-        draw_rect_text(image, rects[i], texts[i]);
+        draw_rect_text(image, rects[i], texts[i], color);
     }
 }
 
 void draw_lines(cv::Mat &image,
                 vector<cv::Point> points,
-                vector<vector<int>> skeleton) {
-    const cv::Scalar color(0, 255, 0);
+                vector<vector<int>> skeleton,
+                cv::Scalar color) {
     int thickness = 1;
     for (auto &pair:skeleton) {
         if (points[pair[0]].x > 0. && points[pair[0]].y > 0. &&
@@ -174,8 +173,8 @@ void draw_lines(cv::Mat &image,
 
 void draw_arrowed_lines(cv::Mat &image,
                         vector<cv::Point> points,
-                        vector<vector<int>> skeleton) {
-    const cv::Scalar color(0, 255, 0);
+                        vector<vector<int>> skeleton,
+                        cv::Scalar color) {
     int thickness = 1;
     for (auto &pair:skeleton) {
         if (points[pair[0]].x > 0. && points[pair[0]].y > 0. &&

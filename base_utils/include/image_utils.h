@@ -92,7 +92,7 @@ void image_save(string name, cv::Mat image);
  * @param point
  * @param text
  */
-void draw_point_text(cv::Mat &image, cv::Point2d points, string text = "");
+void draw_point_text(cv::Mat &image, cv::Point2d points, string text = "", cv::Scalar color = (0, 0, 255));
 
 
 /***
@@ -101,7 +101,8 @@ void draw_point_text(cv::Mat &image, cv::Point2d points, string text = "");
  * @param points
  * @param texts
  */
-void draw_points_texts(cv::Mat &image, vector<cv::Point> points, vector<string> texts = {});
+void
+draw_points_texts(cv::Mat &image, vector<cv::Point> points, vector<string> texts = {}, cv::Scalar color = (0, 0, 255));
 
 
 /***
@@ -110,7 +111,7 @@ void draw_points_texts(cv::Mat &image, vector<cv::Point> points, vector<string> 
  * @param rect
  * @param text
  */
-void draw_rect_text(cv::Mat &image, cv::Rect rect, string text = "");
+void draw_rect_text(cv::Mat &image, cv::Rect rect, string text = "", cv::Scalar color = (255, 0, 0));
 
 
 /***
@@ -119,7 +120,7 @@ void draw_rect_text(cv::Mat &image, cv::Rect rect, string text = "");
  * @param rects
  * @param texts
  */
-void draw_rects_texts(cv::Mat &image, vector<cv::Rect> rects, vector<string> texts);
+void draw_rects_texts(cv::Mat &image, vector<cv::Rect> rects, vector<string> texts, cv::Scalar color = (255, 0, 0));
 
 
 /***
@@ -128,7 +129,7 @@ void draw_rects_texts(cv::Mat &image, vector<cv::Rect> rects, vector<string> tex
  * @param points
  * @param skeleton 需要连接的ID序号
  */
-void draw_lines(cv::Mat &image, vector<cv::Point> points, vector<vector<int>> skeleton);
+void draw_lines(cv::Mat &image, vector<cv::Point> points, vector<vector<int>> skeleton, cv::Scalar color = (0, 255, 0));
 
 /***
  * 绘制带箭头的连接线
@@ -136,6 +137,7 @@ void draw_lines(cv::Mat &image, vector<cv::Point> points, vector<vector<int>> sk
  * @param points
  * @param skeleton 需要连接的ID序号
  */
-void draw_arrowed_lines(cv::Mat &image, vector<cv::Point> points, vector<vector<int>> skeleton);
+void draw_arrowed_lines(cv::Mat &image, vector<cv::Point> points, vector<vector<int>> skeleton,
+                        cv::Scalar color = (0, 255, 0));
 
 #endif //DETECTOR_IMAGE_UTILS_H
