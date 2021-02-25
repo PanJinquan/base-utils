@@ -102,6 +102,12 @@ string get_subname(string path) {
     return subname;
 }
 
+
+string get_postfix(string path) {
+    std::string postfix = path.substr(path.find_last_of('.') + 1);
+    return postfix;
+}
+
 //#ifdef _LINUX
 #ifdef PLATFORM_LINUX
 

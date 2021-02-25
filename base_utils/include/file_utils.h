@@ -77,6 +77,14 @@ string get_parent(string path);
  */
 string get_subname(string path);
 
+
+/***
+ * 获得后缀名称
+ * @param path
+ * @return
+ */
+string get_postfix(string path);
+
 /***
  * 获得directory目录下的所有文件
  * @param dir
