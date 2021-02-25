@@ -9,6 +9,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 using namespace std;
 
@@ -81,9 +82,10 @@ string get_subname(string path);
 /***
  * 获得后缀名称
  * @param path
+ * @param tolower 是否转为小写
  * @return
  */
-string get_postfix(string path);
+string get_postfix(string path, bool tolower);
 
 /***
  * 获得directory目录下的所有文件

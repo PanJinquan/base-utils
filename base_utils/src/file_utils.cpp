@@ -103,8 +103,12 @@ string get_subname(string path) {
 }
 
 
-string get_postfix(string path) {
+string get_postfix(string path,bool tolower) {
     std::string postfix = path.substr(path.find_last_of('.') + 1);
+    if (tolower){
+        transform(postfix.begin(), postfix.end(), postfix.begin(), ::tolower);
+        //transform(postfix.begin(), postfix.end(), postfix.begin(), ::toupper);
+    }
     return postfix;
 }
 
