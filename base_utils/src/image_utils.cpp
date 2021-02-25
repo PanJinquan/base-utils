@@ -76,6 +76,7 @@ cv::Mat image_center_crop(cv::Mat &src, int crop_w, int crop_h) {
     int x2 = x1 + crop_w;
     int y2 = y1 + crop_h;
     cv::Mat dst = image_crop(src, x1, x2, y1, y2);
+    return dst;
 }
 
 
