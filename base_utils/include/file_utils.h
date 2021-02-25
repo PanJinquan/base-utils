@@ -54,6 +54,29 @@ void write_datatxt(string path, string data, bool bCover = false);
  */
 bool file_exists(string path);
 
+
+/***
+ * 获得文件路径的文件名称
+ * @param path
+ * @return
+ */
+string get_basename(string path);
+
+/***
+ * 获得文件路径的父目录路径
+ * @param path
+ * @return
+ */
+string get_parent(string path);
+
+
+/***
+ * 获得文件路径的父目录文件名称
+ * @param path
+ * @return
+ */
+string get_subname(string path);
+
 /***
  * 获得directory目录下的所有文件
  * @param dir

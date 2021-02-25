@@ -77,6 +77,31 @@ bool file_exists(string path) {
 }
 
 
+
+string get_basename(string path) {
+    int index = path.find_last_of(separator);
+    string name{""};
+    if (index > -1) {
+        name = path.substr(index + 1, path.length());
+    }
+    return name;
+}
+
+string get_parent(string path) {
+    int index = path.find_last_of(separator);
+    string parent{""};
+    if (index > -1) {
+        parent = path.substr(0, index);
+    }
+    return parent;
+}
+
+string get_subname(string path) {
+    string parent = get_parent(path);
+    string subname = get_basename(parent);
+    return subname;
+}
+
 //#ifdef _LINUX
 #ifdef PLATFORM_LINUX
 
