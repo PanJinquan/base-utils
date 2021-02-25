@@ -66,6 +66,41 @@ void write_datatxt(string path, string data, bool bCover) {
     fout.close();
 }
 
+
+void write_contents(string path, vector<string> contents, bool bCover) {
+    //fstream fout(path, ios::app);
+    fstream fout;
+    if (bCover) {
+        fout.open(path, ios_base::out);//默认是：ios_base::in | ios_base::out
+    } else {
+        fout.open(path, ios::app);//所有写入附加在文件末尾
+    }
+    int num = contents.size();
+    for (int i = 0; i < num; ++i) {
+        fout << contents.at(i) << endl;
+    }
+    fout.flush();
+    fout.close();
+}
+
+
+vector<string> read_contents(string path) {
+    ifstream infile;
+    infile.open(path.data());   //将文件流对象与文件连接起来
+    vector<string> contents;
+    if (infile.is_open()) {
+        string line;
+        while (getline(infile, line)) {
+            contents.push_back(line);
+        }
+    } else {
+        printf("Failed to open file:%s", path.c_str());
+    }
+    infile.close();  //关闭文件输入流
+    return contents;
+}
+
+
 bool file_exists(string path) {
     fstream _file;
     _file.open(path, ios::in);
@@ -75,7 +110,6 @@ bool file_exists(string path) {
         return true;
     }
 }
-
 
 
 string get_basename(string path) {
@@ -103,9 +137,9 @@ string get_subname(string path) {
 }
 
 
-string get_postfix(string path,bool tolower) {
+string get_postfix(string path, bool tolower) {
     std::string postfix = path.substr(path.find_last_of('.') + 1);
-    if (tolower){
+    if (tolower) {
         transform(postfix.begin(), postfix.end(), postfix.begin(), ::tolower);
         //transform(postfix.begin(), postfix.end(), postfix.begin(), ::toupper);
     }

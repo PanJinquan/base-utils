@@ -24,10 +24,9 @@ void test_opencv() {
 }
 
 
-
 void test_read_dir() {
     //string image_dir = "../../data/test_image/test1.jpg";
-    string image_dir = "/home/dm/project/SDK/face-embedding-ncnn-sdk/data/honghe/facebank";
+    string image_dir = "../../base_utils";
     vector<string> image_list = get_files_list(image_dir);
     for (int i = 0; i < image_list.size(); ++i) {
         string path = image_list.at(i);
@@ -38,8 +37,18 @@ void test_read_dir() {
     //PRINT_VECTOR("image_list:\n", image_list);
 }
 
+void test_read_write_file() {
+    string path = "../../data/write_contents.txt";
+    string image_dir = "../../base_utils";
+    vector<string> image_list = get_files_list(image_dir);
+    write_contents(path, image_list, true);
+    image_list = read_contents(path);
+    PRINT_VECTOR("image_list:", image_list);
+}
+
 int main() {
     //test_opencv();
-    test_read_dir();
+    //test_read_dir();
+    test_read_write_file();
     return 0;
 }

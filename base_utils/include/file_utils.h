@@ -49,6 +49,22 @@ int load_file(const char *path, std::string &file_string);
 void write_datatxt(string path, string data, bool bCover = false);
 
 /***
+ * 保存vector<string>，每项保存一行
+ * @param path
+ * @param contents
+ * @param bCover
+ */
+void write_contents(string path, vector<string> contents, bool bCover = true);
+
+/***
+ * 读取文本，每行一项
+ * @param path
+ * @return
+ */
+vector<string> read_contents(string path);
+
+
+/***
  * 判断文件是否存在
  * @param path
  * @return
@@ -85,7 +101,7 @@ string get_subname(string path);
  * @param tolower 是否转为小写
  * @return
  */
-string get_postfix(string path, bool tolower= true);
+string get_postfix(string path, bool tolower = true);
 
 /***
  * 获得directory目录下的所有文件
