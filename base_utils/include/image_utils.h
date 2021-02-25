@@ -92,7 +92,7 @@ void image_save(string name, cv::Mat image);
  * @param point
  * @param text
  */
-void draw_point_text(cv::Mat &image, cv::Point2d points, string text = "", cv::Scalar color = (0, 0, 255));
+void draw_point_text(cv::Mat &image, cv::Point2f points, string text = "", cv::Scalar color = (0, 0, 255));
 
 
 /***
@@ -102,7 +102,7 @@ void draw_point_text(cv::Mat &image, cv::Point2d points, string text = "", cv::S
  * @param texts
  */
 void
-draw_points_texts(cv::Mat &image, vector<cv::Point> points, vector<string> texts = {}, cv::Scalar color = (0, 0, 255));
+draw_points_texts(cv::Mat &image, vector<cv::Point2f> points, vector<string> texts = {}, cv::Scalar color = (0, 0, 255));
 
 
 /***

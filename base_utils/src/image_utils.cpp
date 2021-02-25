@@ -102,7 +102,7 @@ void image_save(string name, cv::Mat image) {
 }
 
 
-void draw_point_text(cv::Mat &image, cv::Point2d points, string text, cv::Scalar color) {
+void draw_point_text(cv::Mat &image, cv::Point2f points, string text, cv::Scalar color) {
     int radius = 4;
     int thickness = -1;//实心点
     cv::circle(image, points, radius, color, thickness);
@@ -116,7 +116,7 @@ void draw_point_text(cv::Mat &image, cv::Point2d points, string text, cv::Scalar
     }
 }
 
-void draw_points_texts(cv::Mat &image, vector<cv::Point> points, vector<string> texts, cv::Scalar color) {
+void draw_points_texts(cv::Mat &image, vector<cv::Point2f> points, vector<string> texts, cv::Scalar color) {
     int num = points.size();
     if (texts.size() != num && texts.size() == 0) {
         for (int i = 0; i < num; ++i) {
