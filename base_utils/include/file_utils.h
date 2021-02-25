@@ -85,7 +85,7 @@ string get_subname(string path);
  * @param tolower 是否转为小写
  * @return
  */
-string get_postfix(string path, bool tolower);
+string get_postfix(string path, bool tolower= true);
 
 /***
  * 获得directory目录下的所有文件
