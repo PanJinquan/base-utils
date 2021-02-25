@@ -109,5 +109,11 @@ void PRINT_1D(string name, TYPE *p1, int len) {
     cout << endl;
 }
 
+template<typename TYPE>
+void PRINT_VECTOR(string tag, vector<TYPE> v) {
+    printf("%s", tag.c_str());
+    for (const auto &c : v) cout << c << " ";
+    cout << endl;
+};
 
 #endif
