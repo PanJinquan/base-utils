@@ -129,7 +129,7 @@ void draw_rects_texts(cv::Mat &image, vector<cv::Rect> rects, vector<string> tex
  * @param points
  * @param skeleton 需要连接的ID序号
  */
-void draw_lines(cv::Mat &image, vector<cv::Point> points, vector<vector<int>> skeleton, cv::Scalar color = (0, 255, 0));
+void draw_lines(cv::Mat &image, vector<cv::Point2f> points, vector<vector<int>> skeleton, cv::Scalar color = (0, 255, 0));
 
 /***
  * 绘制带箭头的连接线
@@ -137,7 +137,7 @@ void draw_lines(cv::Mat &image, vector<cv::Point> points, vector<vector<int>> sk
  * @param points
  * @param skeleton 需要连接的ID序号
  */
-void draw_arrowed_lines(cv::Mat &image, vector<cv::Point> points, vector<vector<int>> skeleton,
+void draw_arrowed_lines(cv::Mat &image, vector<cv::Point2f> points, vector<vector<int>> skeleton,
                         cv::Scalar color = (0, 255, 0));
 
 #endif //DETECTOR_IMAGE_UTILS_H
