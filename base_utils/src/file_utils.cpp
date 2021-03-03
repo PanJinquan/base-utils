@@ -188,11 +188,9 @@ vector<string> get_files_list(string dirpath) {
     return allPath;
 }
 
-#endif
-
 
 //#ifdef _WIN32//__WINDOWS_
-#ifdef PLATFORM_WINDOWS//__WINDOWS_
+#elif PLATFORM_WINDOWS//__WINDOWS_
 #include <io.h>
 vector<string> get_files_list(string dir)
 {
@@ -229,4 +227,14 @@ vector<string> get_files_list(string dir)
     _findclose(handle);    // 关闭搜索句柄
     return allPath;
 }
+
+//#ifdef _LINUX
+#elif PLATFORM_ANDROID
+#include <memory.h>
+#include <dirent.h>
+vector<string> get_files_list(string dirpath) {
+    vector<string> allPath;
+    return allPath;
+}
+
 #endif
