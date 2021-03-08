@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <algorithm>
+#include "opencv2/opencv.hpp"
 
 using namespace std;
 
@@ -19,5 +20,21 @@ using namespace std;
  */
 void softmax(vector<float> &src, vector<float> &dst, int &max_index, float &max_value);
 
+
+/***
+ * 计算两个Rect的IOU
+ * @param r1
+ * @param r2
+ * @return
+ */
+float cv_iou(const cv::Rect &r1, const cv::Rect &r2);
+
+/***
+ * 计算两个Rect的IOU
+ * @param r1
+ * @param r2
+ * @return
+ */
+float cv_iou2(const cv::Rect &r1, const cv::Rect &r2);
 
 #endif //BASE_UTILS_MATH_UTILS_H
