@@ -3,6 +3,7 @@
 #include "debug.h"
 #include "image_utils.h"
 #include "file_utils.h"
+#include "math_utils.h"
 
 using namespace std;
 
@@ -46,9 +47,23 @@ void test_read_write_file() {
     PRINT_VECTOR("image_list:", image_list);
 }
 
+void test_math_utils() {
+    vector<float> src = {0.1, 0.2, 0.1};
+    vector<float> dst;
+    int max_index = 0;
+    float max_value = 0;
+    softmax(src, dst, max_index, max_value);
+    PRINT_VECTOR("src", src);
+    PRINT_VECTOR("dst", dst);
+    LOGD("max_index:%d", max_index);
+    LOGD("max_value:%f", max_value);
+
+}
+
 int main() {
     //test_opencv();
     //test_read_dir();
-    test_read_write_file();
+    //test_read_write_file();
+    test_math_utils();
     return 0;
 }
