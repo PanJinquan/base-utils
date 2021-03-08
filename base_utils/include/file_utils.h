@@ -26,19 +26,50 @@ using namespace std;
 
 
 /***
- * 加载文件的内容
+ * 保存vector<TYPE>的数据
+ *     int num=128;
+ *     string file="path/to/data.bin";
+ *     vector<float> data(num, 0.0f);
+ *     save_bin(file, data);
+ * @tparam TYPE
  * @param path
- * @return 以string形式，返回文件内容
+ * @param data
  */
-std::string load_file(string path);
+template<typename TYPE>
+void save_bin(string path, vector<TYPE> &data) {
+    ofstream file(path, ios::out | ios::binary);
+    if (!file) {
+        printf("Can't save file:%s\n", path.c_str());
+        return;
+    }
+    file.write((char *) data.data(), sizeof(TYPE) * data.size());
+    file.close();
+    printf("finish save file:%s\n", path.c_str());
+
+};
 
 /***
- * 加载文件的内容
+ * 读取vector<TYPE>的数据
+ *     int num=128;
+ *     string file="path/to/data.bin";
+ *     vector<float> out(num, 0.0f);
+ *     load_bin(file, out);
+ * @tparam TYPE
  * @param path
- * @param file_string: 以string形式，返回文件内容
- * @return 0:表示读取成功，1表示读取失败
+ * @param out
  */
-int load_file(const char *path, std::string &file_string);
+template<typename TYPE>
+void load_bin(string path, vector<TYPE> &out) {
+    std::ifstream file(path, std::ios::in | std::ios::binary);
+    if (!file) {
+        printf("Can't open file:%s\n", path.c_str());
+        return;
+    }
+    //vector<TYPE> data(size, 0.0f);
+    file.read((char *) out.data(), sizeof(TYPE) * out.size());
+    file.close();
+    printf("finish load file:%s\n", path.c_str());
+}
 
 /***
  * 将string类型的内容保存为txt文件
@@ -62,6 +93,22 @@ void write_contents(string path, vector<string> contents, bool bCover = true);
  * @return
  */
 vector<string> read_contents(string path);
+
+
+/***
+ * 加载文件的内容
+ * @param path
+ * @return 以string形式，返回文件内容
+ */
+std::string load_file(string path);
+
+/***
+ * 加载文件的内容
+ * @param path
+ * @param file_string: 以string形式，返回文件内容
+ * @return 0:表示读取成功，1表示读取失败
+ */
+int load_file(const char *path, std::string &file_string);
 
 
 /***
@@ -102,6 +149,15 @@ string get_subname(string path);
  * @return
  */
 string get_postfix(string path, bool tolower = true);
+
+
+/***
+ * 实现路径拼接
+ * @param path1
+ * @param path2
+ * @return
+ */
+string path_joint(string path1, string path2);
 
 /***
  * 获得directory目录下的所有文件

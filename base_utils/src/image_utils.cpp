@@ -158,7 +158,7 @@ void draw_rects_texts(cv::Mat &image,
 }
 
 void draw_lines(cv::Mat &image,
-                vector<cv::Point> points,
+                vector<cv::Point2f> points,
                 vector<vector<int>> skeleton,
                 cv::Scalar color) {
     int thickness = 1;
@@ -173,7 +173,7 @@ void draw_lines(cv::Mat &image,
 }
 
 void draw_arrowed_lines(cv::Mat &image,
-                        vector<cv::Point> points,
+                        vector<cv::Point2f> points,
                         vector<vector<int>> skeleton,
                         cv::Scalar color) {
     int thickness = 1;

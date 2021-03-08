@@ -5,54 +5,6 @@
 #include "file_utils.h"
 
 
-std::string load_file(string path) {
-    std::ifstream file(path, std::ios::in);
-    if (file.is_open()) {
-        file.seekg(0, file.end);
-        int size = file.tellg();
-        char *content = new char[size];
-
-        file.seekg(0, file.beg);
-        file.read(content, size);
-        std::string fileContent;
-        fileContent.assign(content, size);
-        delete[] content;
-        file.close();
-        return fileContent;
-    } else {
-        printf("Failed to open file:%s", path.c_str());
-        return "";
-    }
-}
-
-
-int load_file(const char *path, std::string &file_string) {
-    size_t uiSize = 0;
-    size_t uiFileSize = 0;
-    char *pStr = NULL;
-    std::fstream fFile(path, (std::fstream::in | std::fstream::binary));
-    if (fFile.is_open()) {
-        fFile.seekg(0, std::fstream::end);
-        uiSize = uiFileSize = (size_t) fFile.tellg();  // 获得文件大小
-        fFile.seekg(0, std::fstream::beg);
-        pStr = new char[uiSize + 1];
-
-        if (NULL == pStr) {
-            fFile.close();
-            return 0;
-        }
-
-        fFile.read(pStr, uiFileSize);                // 读取uiFileSize字节
-        fFile.close();
-        pStr[uiSize] = '\0';
-        file_string = pStr;
-        delete[] pStr;
-        return 0;
-    }
-    printf("Failed to open file:%s", path);
-    return -1;
-}
-
 void write_datatxt(string path, string data, bool bCover) {
     //fstream fout(path, ios::app);
     fstream fout;
@@ -112,6 +64,55 @@ bool file_exists(string path) {
 }
 
 
+std::string load_file(string path) {
+    std::ifstream file(path, std::ios::in);
+    if (file.is_open()) {
+        file.seekg(0, file.end);
+        int size = file.tellg();
+        char *content = new char[size];
+
+        file.seekg(0, file.beg);
+        file.read(content, size);
+        std::string fileContent;
+        fileContent.assign(content, size);
+        delete[] content;
+        file.close();
+        return fileContent;
+    } else {
+        printf("Failed to open file:%s", path.c_str());
+        return "";
+    }
+}
+
+
+int load_file(const char *path, std::string &file_string) {
+    size_t uiSize = 0;
+    size_t uiFileSize = 0;
+    char *pStr = NULL;
+    std::fstream fFile(path, (std::fstream::in | std::fstream::binary));
+    if (fFile.is_open()) {
+        fFile.seekg(0, std::fstream::end);
+        uiSize = uiFileSize = (size_t) fFile.tellg();  // 获得文件大小
+        fFile.seekg(0, std::fstream::beg);
+        pStr = new char[uiSize + 1];
+
+        if (NULL == pStr) {
+            fFile.close();
+            return 0;
+        }
+
+        fFile.read(pStr, uiFileSize);                // 读取uiFileSize字节
+        fFile.close();
+        pStr[uiSize] = '\0';
+        file_string = pStr;
+        delete[] pStr;
+        return 0;
+    }
+    printf("Failed to open file:%s", path);
+    return -1;
+}
+
+
 string get_basename(string path) {
     int index = path.find_last_of(separator);
     string name{""};
@@ -145,6 +146,11 @@ string get_postfix(string path, bool tolower) {
     }
     return postfix;
 }
+
+string path_joint(string path1, string path2) {
+    return path1 + separator + path2;
+}
+
 
 //#ifdef _LINUX
 #ifdef PLATFORM_LINUX
@@ -182,11 +188,9 @@ vector<string> get_files_list(string dirpath) {
     return allPath;
 }
 
-#endif
-
 
 //#ifdef _WIN32//__WINDOWS_
-#ifdef PLATFORM_WINDOWS//__WINDOWS_
+#elif PLATFORM_WINDOWS//__WINDOWS_
 #include <io.h>
 vector<string> get_files_list(string dir)
 {
@@ -223,4 +227,14 @@ vector<string> get_files_list(string dir)
     _findclose(handle);    // 关闭搜索句柄
     return allPath;
 }
+
+//#ifdef _LINUX
+#elif PLATFORM_ANDROID
+#include <memory.h>
+#include <dirent.h>
+vector<string> get_files_list(string dirpath) {
+    vector<string> allPath;
+    return allPath;
+}
+
 #endif
