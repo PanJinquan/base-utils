@@ -43,3 +43,26 @@ float cv_iou2(const cv::Rect &r1, const cv::Rect &r2) {
     float area = w * h;
     return area / (s1 + s2 - area);
 }
+
+cv::Point2f create_vector(cv::Point2f point1, cv::Point2f point2) {
+    // P12 = point2-point1
+    return point2 - point1;
+}
+
+float compute_vector_angle(cv::Point2f v1, cv::Point2f v2, bool minangle) {
+    // cosφ = u·v/|u||v|
+    float lx = sqrt(v1.dot(v1));
+    float ly = sqrt(v2.dot(v2));
+    float value = v1.dot(v2) / ((lx * ly) + 1e-6);  //cosφ = u·v/|u||v|
+    float radian = acos(value);
+    float angle = radian2angle(radian);
+    if (minangle) {
+        angle = angle < 90 ? angle : 180 - angle;
+    }
+    return angle;
+}
+
+float radian2angle(float radian) {
+    float angle = radian * (180 / PI);
+    return angle;
+}

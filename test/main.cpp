@@ -48,7 +48,7 @@ void test_read_write_file() {
 }
 
 void test_math_utils() {
-    vector<float> src = {0.01, 0.2, 0.1};
+    vector<float> src = {0.01, 0.2, 10.};
     vector<float> dst;
     int max_index = 0;
     float max_value = 0;
@@ -60,10 +60,23 @@ void test_math_utils() {
 
 }
 
+void test_math_utils_vector() {
+    cv::Point2f point1(0, 0);
+    cv::Point2f point2(1, 1);
+    cv::Point2f point3(0, 0);
+    cv::Point2f point4(1, 1);
+    cv::Point2f v1 = create_vector(point1, point2);
+    cv::Point2f v2 = create_vector(point3, point4);
+    float angle = compute_vector_angle(v1, v2, true);
+    LOGD("angle:%f", angle);
+}
+
+
 int main() {
     //test_opencv();
     //test_read_dir();
     //test_read_write_file();
-    test_math_utils();
+    //test_math_utils();
+    test_math_utils_vector();
     return 0;
 }
