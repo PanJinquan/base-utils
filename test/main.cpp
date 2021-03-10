@@ -25,6 +25,26 @@ void test_opencv() {
 }
 
 
+void test_rotate_points() {
+    string path = "../../data/test_image/test1.jpg";
+    DEBUG_TIME(t1);
+    cv::Mat image = cv::imread(path);
+    float angle = 45;
+    //cv::Point2f center(image.cols / 2., image.rows / 2.);
+    cv::Point2f center(image.cols / 2., image.rows / 2.);
+    cv::Point2f point1(238., 305);
+    cv::Point2f point2(265., 280);
+    cv::Mat dst = image.clone();
+    vector<cv::Point2f> points;
+    points.push_back(point1);
+    points.push_back(point2);
+    vector<cv::Point2f> dst_point = rotate_image_points(dst, points, center, angle);
+    draw_points_texts(image, points);
+    draw_points_texts(dst, dst_point);
+    DEBUG_IMSHOW("image", image, 10);
+    DEBUG_IMSHOW("dst", dst);
+}
+
 void test_read_dir() {
     //string image_dir = "../../data/test_image/test1.jpg";
     string image_dir = "../../base_utils";
@@ -77,6 +97,7 @@ int main() {
     //test_read_dir();
     //test_read_write_file();
     //test_math_utils();
-    test_math_utils_vector();
+    test_rotate_points();
+//    test_math_utils_vector();
     return 0;
 }

@@ -53,7 +53,7 @@ float compute_vector_angle(cv::Point2f v1, cv::Point2f v2, bool minangle) {
     // cosφ = u·v/|u||v|
     float lx = sqrt(v1.dot(v1));
     float ly = sqrt(v2.dot(v2));
-    float value = v1.dot(v2) / ((lx * ly) + 1e-6);  //cosφ = u·v/|u||v|
+    float value = v1.dot(v2) / ((lx * ly) + 1e-6);
     float radian = acos(value);
     float angle = radian2angle(radian);
     if (minangle) {

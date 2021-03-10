@@ -13,53 +13,97 @@ using namespace std;
 
 /***
  * 缩放图片，若resize_width或者resize_height，有一个是小于等于0，则进行等比例缩放图片
- * @param src
+ * @param image
  * @param resize_width 默认-1
  * @param resize_height 默认-1
  * @return
  */
-cv::Mat image_resize(cv::Mat &src, int resize_width = -1, int resize_height = -1);
+cv::Mat image_resize(cv::Mat &image, int resize_width = -1, int resize_height = -1);
+
+
+/***
+ * 逆时针旋转图像
+ * @param image 图像
+ * @param center 旋转中心点
+ * @param angle  旋转角度
+ * @param color  设置背景边界颜色：(0, 0, 0)
+ * @return
+ */
+cv::Mat rotate_image(cv::Mat &image, cv::Point2f center, float angle, cv::Scalar color = (0, 0, 0));
+
+
+/***
+ * 逆时针旋转图像和关键点
+ * @param image 输入图像/输出旋转后的图像
+ * @param points 输入需要旋转的关键点
+ * @param center 旋转中心点
+ * @param angle  旋转角度
+ * @return
+ */
+vector<cv::Point2f> rotate_image_points(cv::Mat &image, vector<cv::Point2f> &points, cv::Point2f center, float angle);
+
+/***
+ * 逆时针旋转图像中点
+ * @param point 图像中需要旋转的点
+ * @param center 旋转中心点
+ * @param image_width   原始图像的width
+ * @param image_height  原始图像的height
+ * @param angle 旋转角度
+ * @return
+ */
+cv::Point2f rotate_point(cv::Point2f point, cv::Point2f center, int image_width, int image_height, float angle);
+
+/***
+ * 逆时针旋转图像中点
+ * @param points 图像中需要旋转的点
+ * @param center 旋转中心点
+ * @param image_width   原始图像的width
+ * @param image_height  原始图像的height
+ * @param angle 旋转角度
+ * @return
+ */
+vector<cv::Point2f> rotate_points(vector<cv::Point2f> &points, cv::Point2f center,
+                                  int image_width, int image_height, float angle);
+
+/***
+ * 图像裁剪,超出的区域会被丢弃
+ * @param image
+ * @param rect
+ * @return
+ */
+cv::Mat image_crop(cv::Mat &image, cv::Rect rect);
 
 
 /***
  * 图像裁剪,超出的区域会被丢弃
- * @param src
- * @param rect
- * @return
- */
-cv::Mat image_crop(cv::Mat &src, cv::Rect rect);
-
-
-/***
- *  图像裁剪,超出的区域会被丢弃
- * @param src
+ * @param image
  * @param x1
  * @param x2
  * @param y1
  * @param y2
  * @return
  */
-cv::Mat image_crop(cv::Mat &src, int x1, int x2, int y1, int y2);
+cv::Mat image_crop(cv::Mat &image, int x1, int x2, int y1, int y2);
 
 
 /***
  * 图像裁剪,超出的区域会被填充
- * @param src
+ * @param image
  * @param rect
  * @param color 填充的颜色，默认黑色 color = (0, 0, 0)
  * @return
  */
-cv::Mat image_crop_padding(cv::Mat src, cv::Rect rect, cv::Scalar color = (0, 0, 0));
+cv::Mat image_crop_padding(cv::Mat &image, cv::Rect rect, cv::Scalar color = (0, 0, 0));
 
 
 /***
  * 中心裁剪
- * @param src
- * @param crop_w
- * @param crop_h
+ * @param image
+ * @param crop_width
+ * @param crop_height
  * @return
  */
-cv::Mat image_center_crop(cv::Mat &src, int crop_w, int crop_h);
+cv::Mat image_center_crop(cv::Mat &image, int crop_width, int crop_height);
 
 
 /***
@@ -68,7 +112,7 @@ cv::Mat image_center_crop(cv::Mat &src, int crop_w, int crop_h);
  * @param image
  * @param waitKey
  */
-void image_show(string name, cv::Mat image, int waitKey = 0);
+void image_show(string name, cv::Mat &image, int waitKey = 0);
 
 
 /***
@@ -76,7 +120,7 @@ void image_show(string name, cv::Mat image, int waitKey = 0);
  * @param name
  * @param image
  */
-void image_save(string name, cv::Mat image);
+void image_save(string name, cv::Mat &image);
 
 
 /***
@@ -101,8 +145,8 @@ void draw_point_text(cv::Mat &image, cv::Point2f points, string text = "", cv::S
  * @param points
  * @param texts
  */
-void
-draw_points_texts(cv::Mat &image, vector<cv::Point2f> points, vector<string> texts = {}, cv::Scalar color = (0, 0, 255));
+void draw_points_texts(cv::Mat &image, vector<cv::Point2f> points, vector<string> texts = {},
+                       cv::Scalar color = (0, 0, 255));
 
 
 /***
@@ -129,7 +173,8 @@ void draw_rects_texts(cv::Mat &image, vector<cv::Rect> rects, vector<string> tex
  * @param points
  * @param skeleton 需要连接的ID序号
  */
-void draw_lines(cv::Mat &image, vector<cv::Point2f> points, vector<vector<int>> skeleton, cv::Scalar color = (0, 255, 0));
+void
+draw_lines(cv::Mat &image, vector<cv::Point2f> points, vector<vector<int>> skeleton, cv::Scalar color = (0, 255, 0));
 
 /***
  * 绘制带箭头的连接线
