@@ -1,8 +1,13 @@
 cmake_minimum_required(VERSION 3.5)
 project(base_utils)
 set(CMAKE_CXX_FLAGS "-Wall -std=c++11 -pthread")
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
+if (NOT CMAKE_BUILD_TYPE OR NOT CMAKE_CONFIGURATION_TYPES)
+    # -DCMAKE_BUILD_TYPE=Debug
+    # -DCMAKE_BUILD_TYPE=Release
+    message(STATUS "No build type selected, default to Release")
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "set build type to release" FORCE)
+endif ()
+
 
 option(BASE_FILTER_ENABLE "Enable filter" ON)
 option(BASE_OPENMP_ENABLE "Enable filter" ON)
