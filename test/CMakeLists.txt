@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 3.5)
 project(base_utils)
+add_compile_options(-fPIC) # fix Bug: can not be used when making a shared object
 set(CMAKE_CXX_FLAGS "-Wall -std=c++11 -pthread")
 set(BASE_FILTER_ENABLE ON CACHE BOOL "" FORCE)
 set(BASE_OPENMP_ENABLE ON CACHE BOOL "" FORCE)  # Multi-Thread
-
-if (NOT CMAKE_BUILD_TYPE OR NOT CMAKE_CONFIGURATION_TYPES)
+if (NOT CMAKE_BUILD_TYPE)
     # -DCMAKE_BUILD_TYPE=Debug
     # -DCMAKE_BUILD_TYPE=Release
     message(STATUS "No build type selected, default to Release")
-    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "set build type to release" FORCE)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type (default Debug)" FORCE)
 endif ()
 
 
