@@ -62,6 +62,18 @@ vector<cv::Point2f> rotate_points(vector<cv::Point2f> &points, cv::Point2f cente
 }
 
 
+cv::Rect extend_rect(cv::Rect rect, float sx, float sy) {
+    float cx = (rect.x + rect.x + rect.width) / 2.0f;
+    float cy = (rect.y + rect.y + rect.height) / 2.0f;
+    float ew = rect.width * sx;
+    float eh = rect.height * sy;
+    float ex = cx - 0.5 * ew;
+    float ey = cy - 0.5 * eh;
+    cv::Rect r(ex, ey, ew, eh);
+    return r;
+}
+
+
 cv::Mat image_crop(cv::Mat &image, cv::Rect rect) {
     cv::Mat dst;
     //求交集,避免越界
@@ -226,6 +238,46 @@ void draw_arrowed_lines(cv::Mat &image,
             cv::Point2d p1 = points[pair[1]];
             cv::arrowedLine(image, p1, p0, color, thickness);
         }
+    }
+}
+
+
+void draw_yaw_pitch_roll_in_left_axis(cv::Mat &imgBRG, float pitch, float yaw, float roll,
+                                      cv::Point center, bool vis, int size) {
+
+    float cx = center.x;
+    float cy = center.y;
+    char text[200];
+    sprintf(text, "(pitch,yaw,roll)=(%3.1f,%3.1f,%3.1f)", pitch, yaw, roll);
+    pitch = pitch * PI / 180;
+    yaw = -yaw * PI / 180;
+    roll = roll * PI / 180;
+    // X-Axis pointing to right. drawn in red
+    float x1 = size * (cos(yaw) * cos(roll)) + cx;
+    float y1 = size * (cos(pitch) * sin(roll) + cos(roll) * sin(pitch) * sin(yaw)) + cy;
+    cv::Scalar color_yaw_x(0, 0, 255); //BGR;
+    // Y-Axis | drawn in green
+    float x2 = size * (-cos(yaw) * sin(roll)) + cx;
+    float y2 = size * (cos(pitch) * cos(roll) - sin(pitch) * sin(yaw) * sin(roll)) + cy;
+    cv::Scalar color_pitch_y(0, 255, 0);
+    // Z-Axis (out of the screen) drawn in blue
+    float x3 = size * (sin(yaw)) + cx;
+    float y3 = size * (-cos(yaw) * sin(pitch)) + cy;
+    cv::Scalar color_roll_z(255, 0, 0);
+    float tipLength = 0.2;
+    cv::arrowedLine(imgBRG, cv::Point(int(cx), int(cy)), cv::Point(int(x1), int(y1)), color_yaw_x, 2,
+                    tipLength);
+    cv::arrowedLine(imgBRG, cv::Point(int(cx), int(cy)), cv::Point(int(x2), int(y2)), color_pitch_y, 2,
+                    tipLength);
+    cv::arrowedLine(imgBRG, cv::Point(int(cx), int(cy)), cv::Point(int(x3), int(y3)), color_roll_z, 2,
+                    tipLength);
+    if (vis) {
+        cv::putText(imgBRG,
+                    text,
+                    cv::Point(cx, cy),
+                    cv::FONT_HERSHEY_COMPLEX,
+                    0.5,
+                    (0, 0, 255));
     }
 }
 

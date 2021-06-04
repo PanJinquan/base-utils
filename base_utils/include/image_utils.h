@@ -65,6 +65,16 @@ cv::Point2f rotate_point(cv::Point2f point, cv::Point2f center, int image_width,
 vector<cv::Point2f> rotate_points(vector<cv::Point2f> &points, cv::Point2f center,
                                   int image_width, int image_height, float angle);
 
+
+/***
+ * 扩展rect的大小
+ * @param rect
+ * @param sx X方向扩展倍数
+ * @param sy Y方向扩展倍数
+ * @return
+ */
+cv::Rect extend_rect(cv::Rect rect, float sx = 1.0f, float sy = 1.0f);
+
 /***
  * 图像裁剪,超出的区域会被丢弃
  * @param image
@@ -184,5 +194,19 @@ draw_lines(cv::Mat &image, vector<cv::Point2f> points, vector<vector<int>> skele
  */
 void draw_arrowed_lines(cv::Mat &image, vector<cv::Point2f> points, vector<vector<int>> skeleton,
                         cv::Scalar color = (0, 255, 0));
+
+
+/***
+ * 绘制yaw,pitch,roll坐标轴(左手坐标系)
+ * @param imgBRG 输入必须是BGR格式的图像
+ * @param pitch红色X
+ * @param yaw 绿色Y
+ * @param roll 蓝色Z
+ * @param center 坐标原始点
+ * @param vis
+ * @param size
+ */
+void draw_yaw_pitch_roll_in_left_axis(cv::Mat &imgBRG, float pitch, float yaw, float roll,
+                                      cv::Point center, bool vis = true, int size = 50);
 
 #endif //DETECTOR_IMAGE_UTILS_H
