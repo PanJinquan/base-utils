@@ -54,7 +54,16 @@ cv::Point2f create_vector(cv::Point2f point1, cv::Point2f point2);
  * @param minangle：false,true：转为最小角度(0,90)
  * @return
  */
-float compute_vector_angle(cv::Point2f v1, cv::Point2f v2, bool minangle = false);
+float vector_angle(cv::Point2f v1, cv::Point2f v2, bool minangle = false);
+
+
+/***
+ * 计算两个向量的乘积
+ * @param v1
+ * @param v2
+ * @return
+ */
+float vector_multiply(vector<float> v1, vector<float> v2);
 
 /***
  * 将弧度转换为角度

@@ -49,7 +49,7 @@ cv::Point2f create_vector(cv::Point2f point1, cv::Point2f point2) {
     return point2 - point1;
 }
 
-float compute_vector_angle(cv::Point2f v1, cv::Point2f v2, bool minangle) {
+float vector_angle(cv::Point2f v1, cv::Point2f v2, bool minangle) {
     // cosφ = u·v/|u||v|
     float lx = sqrt(v1.dot(v1));
     float ly = sqrt(v2.dot(v2));
@@ -58,6 +58,15 @@ float compute_vector_angle(cv::Point2f v1, cv::Point2f v2, bool minangle) {
     float angle = radian2angle(radian);
     if (minangle) {
         angle = angle < 90 ? angle : 180 - angle;
+    }
+    return angle;
+}
+
+float vector_multiply(vector<float> v1, vector<float> v2) {
+    int size = v1.size();
+    float angle = 0.f;
+    for (int i = 0; i < size; ++i) {
+        angle += v1[i] * v2[i];
     }
     return angle;
 }
