@@ -64,13 +64,13 @@ MESSAGE(STATUS "BASE_CL = ${BASE_CL}")
 
 # Test
 add_executable(main main.cpp)
-add_executable(kalman_test kalman_test.cpp)
+add_executable(filter_test filter_test.cpp)
 add_executable(openmp_test openmp_test.cpp)
 add_executable(opencl_test opencl_test.cpp)
 
 
 #target_link_libraries(main base_utils ${OpenCV_LIBS} -lpthread)
 target_link_libraries(main base_utils ${OpenCV_LIBS})
-target_link_libraries(kalman_test base_utils ${OpenCV_LIBS})
+target_link_libraries(filter_test base_utils ${OpenCV_LIBS})
 target_link_libraries(openmp_test base_utils ${OpenCV_LIBS} -lpthread)
 target_link_libraries(opencl_test base_utils ${OpenCV_LIBS} OpenCL  -lpthread)

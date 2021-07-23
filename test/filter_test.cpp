@@ -25,9 +25,9 @@ void test() {
     cv::namedWindow("kalman");
     cv::setMouseCallback("kalman", mouseEvent);
     //卡尔曼滤波
-    //KalmanFilter filter = KalmanFilter(4, 2);
+    KalmanFilter filter = KalmanFilter(4, 2);
     // 加权平均滤波
-    MovingMeanFilter filter = MovingMeanFilter(5, 0.6);
+    //MovingMeanFilter filter = MovingMeanFilter(5, 0.6);
     cv::Mat image(800, 800, CV_8UC3, cv::Scalar(0));
     cv::Point cm = cv::Point(-1, -1);
     cv::Point cp = cv::Point(-1, -1);
