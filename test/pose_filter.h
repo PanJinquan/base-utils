@@ -12,12 +12,12 @@
 #include "filter/mean_filter.h"
 #include "filter/kalman_filter.h"
 
-#define FILTER_TYPR MovingMeanFilter
+#define FILTER MovingMeanFilter
 //#define FILTER_TYPR KalmanFilter
 
 class PoseFilter {
 private:
-    vector<FILTER_TYPR *> mFilters;
+    vector<FILTER *> mFilters;
     vector<int> filter_id;
 public:
     /***

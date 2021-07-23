@@ -8,8 +8,8 @@
 PoseFilter::PoseFilter(vector<int> filter_id, int win_size, float decay) {
     this->filter_id = filter_id;
     for (int i = 0; i < filter_id.size(); ++i) {
-        FILTER_TYPR *mFilter = new FILTER_TYPR(win_size, decay);
-        //FILTER_TYPR *mFilter = new FILTER_TYPR();
+        FILTER *mFilter = new FILTER(win_size, decay);
+        //FILTER *mFilter = new FILTER();
         mFilters.push_back(mFilter);
     }
 
