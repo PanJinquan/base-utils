@@ -17,7 +17,7 @@ KalmanFilter::KalmanFilter(int stateNum, int measureNum) {
     //测量噪声方差矩阵R，取值越小收敛越快
     cv::setIdentity(mKF->measurementNoiseCov, cv::Scalar::all(1e-4));
     //过程(系统)噪声噪声方差矩阵Q
-    cv::setIdentity(mKF->processNoiseCov, cv::Scalar::all(1e-5));
+    cv::setIdentity(mKF->processNoiseCov, cv::Scalar::all(1e-6));
     //后验错误估计协方差矩阵P
     cv::setIdentity(mKF->errorCovPost, cv::Scalar::all(1));
     //系统初始状态 x(0)
