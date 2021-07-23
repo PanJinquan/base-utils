@@ -150,7 +150,6 @@ void image_show(string name, cv::Mat &image, int waitKey) {
 
 void image_save(string name, cv::Mat &image) {
 #ifndef PLATFORM_ANDROID
-    cv::namedWindow(name, cv::WINDOW_AUTOSIZE);
     cv::imwrite(name, image);
 #endif
 
