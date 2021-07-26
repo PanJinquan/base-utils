@@ -12,7 +12,7 @@
 using namespace std;
 
 /***
- * 加权滑动平均滤波法(Weighted Moving Average Filter)，
+ * 加权平均滑动滤波法(Weighted Moving Average Filter)，
  * 可以有效解决关键点的抖动问题
  */
 class MovingMeanFilter {
