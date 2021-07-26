@@ -7,14 +7,17 @@
 
 MovingMeanFilter::MovingMeanFilter(int win_size, float decay) {
     this->mWinSize = win_size;
-    this->mWeightDecay = get_weight_decay(win_size, decay);
+    vector<float> WeightDecay = get_weight_decay(win_size, decay);
+    // fix a bug: 必须clone()，否则会被释放掉
+    this->mWeightDecay = cv::Mat(WeightDecay).reshape(1, 1).clone();
 }
 
 MovingMeanFilter::~MovingMeanFilter() {
     mQueue.clear();
     vector<cv::Point>().swap(mQueue);
-    mWeightDecay.clear();
-    vector<float>().swap(mWeightDecay);
+    mWeightDecay.release();
+    //mWeightDecay.clear();
+    //vector<float>().swap(mWeightDecay);
 }
 
 
@@ -49,10 +52,8 @@ cv::Point MovingMeanFilter::predict() {
 
 cv::Point MovingMeanFilter::filter() {
     cv::Mat data = cv::Mat(mQueue).reshape(1, mQueue.size());
-    vector<float> t(this->mWeightDecay.end() - mQueue.size(), this->mWeightDecay.end());
-    cv::Mat w = cv::Mat(t).reshape(1, 1);
     data.convertTo(data, CV_32FC1, 1.0);
-    cv::Mat out = w * data; //矩阵乘法:w(1,num)*data(num,2)
+    cv::Mat out = this->mWeightDecay * data; //矩阵乘法:w(1,num)*data(num,2)
     cv::Point dst = cv::Point(out.at<float>(0), out.at<float>(1));
     return dst;
 }

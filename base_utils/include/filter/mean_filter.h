@@ -20,7 +20,7 @@ public:
     vector<cv::Point> mQueue;
 private:
     int mWinSize;
-    vector<float> mWeightDecay;
+    cv::Mat mWeightDecay;
 public:
 
     /***
