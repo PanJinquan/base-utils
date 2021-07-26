@@ -25,6 +25,14 @@ void MovingMeanFilter::update(cv::Point pos) {
     if (pos.x > 0 && pos.y > 0) {
         mQueue.push_back(pos);
     }
+    // 进行填充
+    int size = this->mWinSize - mQueue.size();
+    //for (int i = 0; i < (this->mWinSize - mQueue.size()); ++i) {// fix  a Bug
+    if (size > 0 && pos.x > 0 && pos.y > 0) {
+        for (int i = 0; i < size; ++i) {
+            mQueue.push_back(pos);
+        }
+    }
 }
 
 
