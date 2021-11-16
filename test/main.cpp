@@ -87,7 +87,7 @@ void test_math_utils_vector() {
     cv::Point2f point4(1, 1);
     cv::Point2f v1 = create_vector(point1, point2);
     cv::Point2f v2 = create_vector(point3, point4);
-    float angle = compute_vector_angle(v1, v2, true);
+    float angle = vector_angle(v1, v2, true);
     LOGD("angle:%f", angle);
 }
 
