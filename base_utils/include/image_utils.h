@@ -212,6 +212,7 @@ void draw_yaw_pitch_roll_in_left_axis(cv::Mat &imgBRG, float pitch, float yaw, f
 
 /***
  * 实现图像融合：out = imgBGR * matte + bg * (1 - matte)
+ * Fix a Bug: 1-alpha实质上只仅有B通道参与计算，多通道时(B,G,R)，需改Scalar(1.0, 1.0, 1.0)-alpha
  * @param imgBGR 输入原始图像
  * @param matte  输入原始图像的Mask,或者alpha,matte
  * @param out    输出融合图像
