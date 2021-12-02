@@ -281,32 +281,62 @@ void draw_yaw_pitch_roll_in_left_axis(cv::Mat &imgBRG, float pitch, float yaw, f
 }
 
 
-void image_fusion(cv::Mat &imgBGR, cv::Mat &matte, cv::Mat &out, cv::Scalar bg) {
+void image_fusion(cv::Mat &imgBGR, cv::Mat matte, cv::Mat &out, cv::Scalar bg) {
     // cv::Mat bgi = cv::Mat::zeros(imgBGR.size(), CV_8UC3)+bg;
     cv::Mat bgi(imgBGR.size(), CV_8UC3, bg);
     image_fusion(imgBGR, matte, out, bgi);
 }
 
-void image_fusion(cv::Mat &imgBGR, cv::Mat &matte, cv::Mat &out, cv::Mat bg) {
-    if (matte.channels() == 1) {
-        cv::cvtColor(matte, matte, cv::COLOR_GRAY2BGR);
-    }
-    out = imgBGR.clone();
-    cv::Mat alpha;
+
+void image_fusion(cv::Mat &imgBGR, cv::Mat matte, cv::Mat &out, cv::Mat bg) {
+    assert(matte.channels() == 1);
+    out.create(imgBGR.size(), CV_8UC3);
     vector<float> ratio{(float) imgBGR.cols / bg.cols, (float) imgBGR.rows / bg.rows};
     float max_ratio = *max_element(ratio.begin(), ratio.end());
     if (max_ratio > 1.0) {
         cv::resize(bg, bg, cv::Size(int(bg.cols * max_ratio), int(bg.rows * max_ratio)));
     }
     bg = image_center_crop(bg, imgBGR.cols, imgBGR.rows);
-    matte.convertTo(alpha, CV_32FC3, 1.0 / 255, 0);
-    bg.convertTo(bg, CV_32FC3, 1, 0);
-    out.convertTo(out, CV_32FC3, 1, 0);
-    // Fix a Bug: 1 - alpha实质上只仅有B通道参与计算，多通道时(B,G,R)，需改Scalar(1.0, 1.0, 1.0)-alpha
-    // out = out.mul(alpha) + bgi.mul(1 - alpha);
-    out = out.mul(alpha) + bg.mul(cv::Scalar(1.0, 1.0, 1.0) - alpha);
-    out.convertTo(out, CV_8UC3, 1, 0);
+    int n = imgBGR.channels();
+    int h = imgBGR.rows;
+    int w = imgBGR.cols * n;
+    // 循环体外进行乘法和除法运算
+    matte.convertTo(matte, CV_32FC1, 1.0 / 255, 0);
+    for (int i = 0; i < h; ++i) {
+        uchar *sptr = imgBGR.ptr<uchar>(i);
+        uchar *dptr = out.ptr<uchar>(i);
+        float *mptr = matte.ptr<float>(i);
+        uchar *bptr = bg.ptr<uchar>(i);
+        for (int j = 0; j < w; j += n) {
+            //float alpha = mptr[j] / 255; //循环体尽量减少乘法和除法运算
+            float alpha = mptr[j / 3];
+            float _alpha = 1.f - alpha;
+            dptr[j] = uchar(sptr[j] * alpha + bptr[j] * _alpha);
+            dptr[j + 1] = uchar(sptr[j + 1] * alpha + bptr[j + 1] * _alpha);
+            dptr[j + 2] = uchar(sptr[j + 2] * alpha + bptr[j + 2] * _alpha);
+        }
+    }
 }
 
 
-
+void image_fusion_cv(cv::Mat &imgBGR, cv::Mat matte, cv::Mat &out, cv::Mat bg) {
+    if (matte.channels() == 1) {
+        matte.convertTo(matte, CV_32FC1, 1.0 / 255, 0);
+        cv::cvtColor(matte, matte, cv::COLOR_GRAY2BGR);
+    } else {
+        matte.convertTo(matte, CV_32FC3, 1.0 / 255, 0);
+    }
+    //out = imgBGR.clone();
+    vector<float> ratio{(float) imgBGR.cols / bg.cols, (float) imgBGR.rows / bg.rows};
+    float max_ratio = *max_element(ratio.begin(), ratio.end());
+    if (max_ratio > 1.0) {
+        cv::resize(bg, bg, cv::Size(int(bg.cols * max_ratio), int(bg.rows * max_ratio)));
+    }
+    bg = image_center_crop(bg, imgBGR.cols, imgBGR.rows);
+    bg.convertTo(bg, CV_32FC3, 1, 0);
+    imgBGR.convertTo(out, CV_32FC3, 1, 0);
+    // Fix a Bug: 1 - alpha实质上仅有B通道参与计算，多通道时(B,G,R)，需改Scalar(1.0, 1.0, 1.0)-alpha
+    // out = out.mul(alpha) + bgi.mul(1 - alpha);
+    out = out.mul(matte) + bg.mul(cv::Scalar(1.0, 1.0, 1.0) - matte);
+    out.convertTo(out, CV_8UC3, 1, 0);
+}
