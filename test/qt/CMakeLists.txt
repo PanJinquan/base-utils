@@ -10,7 +10,6 @@ include_directories(${OpenCV_INCLUDE_DIRS} ./src/)
 # QT配置
 set(REQUIRED_LIBS Core Gui Widgets)
 set(REQUIRED_LIBS_QUALIFIED Qt5::Core Qt5::Gui Qt5::Widgets)
-SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(Qt5 COMPONENTS ${REQUIRED_LIBS} REQUIRED)
 
 # 配置QT的资源文件
@@ -30,6 +29,10 @@ else ()
     # .qrc文件需要由rcc程序处理。
     #使用rcc处理.qrc文件，相当于*.pri配置中的RESOURCES
     #QT5_ADD_RESOURCES(RESOURCES img.qrc)
+
+    # uic生成的头文件默认在build目录下(*.ui-->ui_*.h),
+    # 需要添加CMAKE_INCLUDE_CURRENT_DIR，否则找不头文件
+    SET(CMAKE_INCLUDE_CURRENT_DIR ON)
     message(STATUS "USE QT5_WRAP")
     set(QT_SRC ${HEADERS} ${FORMS})
 endif ()
