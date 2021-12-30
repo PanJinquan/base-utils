@@ -1,0 +1,42 @@
+cmake_minimum_required(VERSION 3.5)
+project(QTProject)
+
+set(CMAKE_CXX_STANDARD 11)
+
+# OpenCV配置
+find_package(OpenCV REQUIRED)
+include_directories(${OpenCV_INCLUDE_DIRS} ./src/)
+
+# QT配置
+set(REQUIRED_LIBS Core Gui Widgets)
+set(REQUIRED_LIBS_QUALIFIED Qt5::Core Qt5::Gui Qt5::Widgets)
+SET(CMAKE_INCLUDE_CURRENT_DIR ON)
+find_package(Qt5 COMPONENTS ${REQUIRED_LIBS} REQUIRED)
+
+# 配置QT的资源文件
+set(QT5_AUTO_ENABLE OFF CACHE BOOL "Enable QTAUTO" FORCE)
+if (QT5_AUTO_ENABLE)
+    # 需要把*.ui等资源文件放在同一目录下，否则无法找到
+    set(CMAKE_AUTOMOC ON)
+    set(CMAKE_AUTORCC ON)
+    set(CMAKE_AUTOUIC ON)
+    message(STATUS "USE QT5_AUTO")
+    set(QT_SRC)
+else ()
+    #如果头文件中使用了QT，则调用MOC进行处理，相当于*.pri配置中的HEADERS
+    QT5_WRAP_CPP(HEADERS src/mainwindow.h)
+    #使用uic将*.ui文件转为对应的头文件,相当于*.pri配置中的FORMS
+    QT5_WRAP_UI(FORMS assets/ui/mainwindow.ui)
+    # .qrc文件需要由rcc程序处理。
+    #使用rcc处理.qrc文件，相当于*.pri配置中的RESOURCES
+    #QT5_ADD_RESOURCES(RESOURCES img.qrc)
+    message(STATUS "USE QT5_WRAP")
+    set(QT_SRC ${HEADERS} ${FORMS})
+endif ()
+
+include_directories(src)
+set(SOURCE_FILES src/mainwindow.cpp)
+add_executable(${PROJECT_NAME} src/main.cpp ${SOURCE_FILES} ${QT_SRC})
+target_link_libraries(${PROJECT_NAME} ${REQUIRED_LIBS_QUALIFIED})
+
+
