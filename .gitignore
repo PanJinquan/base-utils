@@ -1,7 +1,8 @@
 # git rm -r --cached .
 # git add .
 # git commit -m 'update .gitignore'
-
+__pycache__/
+*.py[cod]
 *.iml
 .gradle
 /local.properties
@@ -22,3 +23,8 @@ test/cmake-build-debug
 cmake-build-debug
 test/build
 build
+*.egg-info/
+dist/
+
+
+

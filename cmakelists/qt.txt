@@ -42,4 +42,3 @@ set(SOURCE_FILES src/mainwindow.cpp)
 add_executable(${PROJECT_NAME} src/main.cpp ${SOURCE_FILES} ${QT_SRC})
 target_link_libraries(${PROJECT_NAME} ${QT_LIBS})
 
-
