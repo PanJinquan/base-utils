@@ -186,11 +186,13 @@ def image_hstack(images):
     """图像左右拼接"""
     image_new = images[0]
     shape = image_new.shape
+    if len(shape) == 2:
+        image_new = cv2.cvtColor(image_new, cv2.COLOR_GRAY2BGR)
     for i in range(1, len(images)):
         image = images[i]
-        if not shape == image.shape:
+        if not shape[:2] == image.shape[:2]:
             image = cv2.resize(image, dsize=(shape[1], shape[0]), interpolation=cv2.INTER_NEAREST)
-        if len(image.shape) == 2 and len(shape) == 3:
+        if len(image.shape) == 2:
             image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
         image_new = np.hstack((image_new, image))
     return image_new
@@ -199,10 +201,12 @@ def image_hstack(images):
 def image_vstack(images):
     """图像上下拼接"""
     image_new = images[0]
-    shape = image_new.shape
+    shape = image_new.shape[:2]
+    if len(shape) == 2:
+        image_new = cv2.cvtColor(image_new, cv2.COLOR_GRAY2BGR)
     for i in range(1, len(images)):
         image = images[i]
-        if not shape == image.shape:
+        if not shape[:2] == image.shape[:2]:
             image = cv2.resize(image, dsize=(shape[1], shape[0]), interpolation=cv2.INTER_NEAREST)
         if len(image.shape) == 2:
             image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
