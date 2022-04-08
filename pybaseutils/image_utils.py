@@ -182,36 +182,56 @@ def show_images_list(name, images_list, delay=0):
     cv2.waitKey(delay)
 
 
-def image_hstack(images):
+def resize_image_like(image_list, dst_img):
+    """
+    按dst_img的图像大小对image_list所有图片进行resize
+    :param image_list: 图片列表
+    :param dst_img: 目标图片大小
+    :return:
+    """
+    shape = dst_img.shape
+    is_rgb = len(shape) == 3
+    for i in range(len(image_list)):
+        if not shape[:2] == image_list[i].shape[:2]:
+            image_list[i] = cv2.resize(image_list[i], dsize=(shape[1], shape[0]), interpolation=cv2.INTER_NEAREST)
+        if is_rgb and len(image_list[i].shape) == 2:
+            image_list[i] = cv2.cvtColor(image_list[i], cv2.COLOR_GRAY2BGR)
+    return image_list
+
+
+def image_hstack(images, split_line=False):
     """图像左右拼接"""
-    image_new = images[0]
-    shape = image_new.shape
-    if len(shape) == 2:
-        image_new = cv2.cvtColor(image_new, cv2.COLOR_GRAY2BGR)
-    for i in range(1, len(images)):
-        image = images[i]
-        if not shape[:2] == image.shape[:2]:
-            image = cv2.resize(image, dsize=(shape[1], shape[0]), interpolation=cv2.INTER_NEAREST)
-        if len(image.shape) == 2:
-            image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
-        image_new = np.hstack((image_new, image))
-    return image_new
+    dst_images = resize_image_like(image_list=images, dst_img=images[0])
+    dst_images = np.hstack(dst_images)
+    if len(dst_images.shape) == 2:
+        dst_images = cv2.cvtColor(dst_images, cv2.COLOR_GRAY2BGR)
+    if split_line:
+        h, w = dst_images.shape[:2]
+        x = w // len(images)
+        y = h
+        for i in range(len(images)):
+            p1 = (i * x, 0)
+            p2 = (i * x, y)
+            print(p1, p2)
+            dst_images = cv2.line(dst_images, p1, p2, color=(255, 0, 0), thickness=2)
+    return dst_images
 
 
-def image_vstack(images):
+def image_vstack(images, split_line=False):
     """图像上下拼接"""
-    image_new = images[0]
-    shape = image_new.shape[:2]
-    if len(shape) == 2:
-        image_new = cv2.cvtColor(image_new, cv2.COLOR_GRAY2BGR)
-    for i in range(1, len(images)):
-        image = images[i]
-        if not shape[:2] == image.shape[:2]:
-            image = cv2.resize(image, dsize=(shape[1], shape[0]), interpolation=cv2.INTER_NEAREST)
-        if len(image.shape) == 2:
-            image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
-        image_new = np.vstack((image_new, image))
-    return image_new
+    dst_images = resize_image_like(image_list=images, dst_img=images[0])
+    dst_images = np.vstack(dst_images)
+    if len(dst_images.shape) == 2:
+        dst_images = cv2.cvtColor(dst_images, cv2.COLOR_GRAY2BGR)
+    if split_line:
+        h, w = dst_images.shape[:2]
+        x = w
+        y = h // len(images)
+        for i in range(len(images)):
+            p1 = (0, i * y)
+            p2 = (x, i * y)
+            dst_images = cv2.line(dst_images, p1, p2, color=(255, 0, 0), thickness=2)
+    return dst_images
 
 
 def image_fliplr(image):
