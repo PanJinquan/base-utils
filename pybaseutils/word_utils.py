@@ -10,35 +10,37 @@ from typing import List, Tuple, Dict
 from pybaseutils import image_utils
 
 
-def concat_stroke_image(mask, seg_list, vis=False):
+def concat_stroke_image(mask, seg_list, split_line=False, vis=False):
     """
     水平拼接笔画图片
     :param mask: 整字的笔画mask
     :param seg_list: 字的笔画mask列表
+    :param split_line: 是否显示分隔线
     :param vis: 是否可视化
     :return:返回水平拼接笔画图片
     """
     seg_mask = np.max(seg_list, axis=0)
     images = [mask] + [seg_mask] + seg_list
-    vis_image = np.concatenate(images, axis=-1)
+    vis_image = image_utils.image_hstack(images, split_line=split_line)
     if vis:
         image_utils.cv_show_image("mask-seg-stroke", vis_image, use_rgb=False)
     return vis_image
 
 
-def concat_pd_gt_stroke_image(pd_mask, pd_segs, gt_mask, gt_segs, vis=False):
+def concat_pd_gt_stroke_image(pd_mask, pd_segs, gt_mask, gt_segs, split_line=True, vis=False):
     """
     对比标准字的笔画和待测字的笔画分割图
     :param pd_mask:待测字整字mask
     :param pd_segs:待测字分割后的笔画mask列表
     :param gt_mask:标准字整字mask
     :param gt_segs:标准字真实的笔画mask列表
+    :param split_line: 是否显示分隔线
     :param vis: 是否可视化
     :return:
     """
-    pd_stroke = concat_stroke_image(pd_mask, pd_segs, vis=False)
-    gt_stroke = concat_stroke_image(gt_mask, gt_segs, vis=False)
-    vis_image = image_utils.image_vstack([gt_stroke, pd_stroke])
+    pd_stroke = concat_stroke_image(pd_mask, pd_segs, split_line=split_line, vis=False)
+    gt_stroke = concat_stroke_image(gt_mask, gt_segs, split_line=split_line, vis=False)
+    vis_image = image_utils.image_vstack([gt_stroke, pd_stroke], split_line=split_line)
     if vis:
         image_utils.cv_show_image("gt-pd-stroke", vis_image, use_rgb=False)
     return vis_image

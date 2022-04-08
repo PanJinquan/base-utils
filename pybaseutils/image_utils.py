@@ -212,7 +212,6 @@ def image_hstack(images, split_line=False):
         for i in range(len(images)):
             p1 = (i * x, 0)
             p2 = (i * x, y)
-            print(p1, p2)
             dst_images = cv2.line(dst_images, p1, p2, color=(255, 0, 0), thickness=2)
     return dst_images
 
