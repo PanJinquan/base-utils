@@ -122,8 +122,6 @@ def base642array(data: Any, prefix=IMG_PREFIX, use_rgb=False) -> Any:
     """
     if isinstance(data, str) and prefix == data[0:len(prefix)]:
         return base642image(data, prefix=prefix, use_rgb=use_rgb)
-    elif isinstance(data, np.ndarray):
-        return data.tolist()
     elif isinstance(data, list):
         for i in range(len(data)):
             data[i] = base642array(data[i], prefix=prefix, use_rgb=use_rgb)
