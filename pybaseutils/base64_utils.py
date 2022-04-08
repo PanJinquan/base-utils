@@ -12,26 +12,35 @@ import base64
 import numpy as np
 from typing import Any
 
+IMG_PREFIX = "image/png"  # 图片base64字符串前缀
 
-def base642image(image_base64, prefix="image", use_rgb=False) -> np.ndarray:
+
+def isbase64(data: str, prefix=IMG_PREFIX):
+    """判断是否是二进制字符串图像"""
+    return prefix == data[0:len(prefix)]
+
+
+def base642image(bs64, prefix=IMG_PREFIX, use_rgb=False) -> np.ndarray:
     """
     將二进制字符串解码为图像
-    :param image_base64: 二进制字符串图像
+    :param bs64: 二进制字符串图像
     :param prefix: base64字符串前缀,用于表识字符串的类型
     :param use_rgb: True:返回RGB的图像, False:返回BGR格式的图像
     :return: 返回图像
     """
-    image_base64 = image_base64[len(prefix):]
-    image_base64 = bytes(image_base64, 'utf-8')
-    image = base64.b64decode(image_base64)
+    if prefix == bs64[0:len(prefix)]:
+        bs64 = bs64[len(prefix):]
+    bs64 = bytes(bs64, 'utf-8')
+    image = base64.b64decode(bs64)
     image = np.fromstring(image, np.uint8)
-    image = cv2.imdecode(image, cv2.IMREAD_COLOR)
+    image = cv2.imdecode(image, flags=cv2.IMREAD_UNCHANGED)
+    # image = cv2.imdecode(image, cv2.IMREAD_COLOR)
     if use_rgb:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     return image
 
 
-def image2base64(image: np.ndarray, prefix="image", use_rgb=False) -> str:
+def image2base64(image: np.ndarray, prefix=IMG_PREFIX, use_rgb=False) -> str:
     """
     将图像编码为二进制字符串
     ``` python
@@ -44,29 +53,52 @@ def image2base64(image: np.ndarray, prefix="image", use_rgb=False) -> str:
     ```
     :param image: 图像
     :param prefix: base64字符串前缀,用于表识字符串的类型
-    :param use_rgb: True:输入image是RGB的图像, False:返输入image是BGR格式的图像
+    :param use_rgb: True:输入image是RGB的图像, False:输入image是BGR格式的图像
     :return: 返回图像
     """
     img = image.copy()
     if len(img.shape) == 3 and use_rgb:
         img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-    img = cv2.imencode('.jpeg', img)[1]
-    image_base64 = prefix + base64.b64encode(img).decode()
-    return image_base64
+    ext = prefix.split("/")
+    ext = "." + ext[1] if len(ext) == 2 else ".png"
+    img = cv2.imencode(ext, img)[1]
+    bs64 = prefix + base64.b64encode(img).decode()
+    return bs64
 
 
-def read_file2base64(file, prefix="image") -> str:
+def file2base64(file, prefix=IMG_PREFIX) -> str:
     """
-    读取文件,并编码为二进制字符串
+    将文件编码为base64字符串
     :param file: 文件路径
     :param prefix: base64字符串前缀,用于表识字符串的类型
-    :return:返回二进制字符串
+    :return:base64字符串
     """
-    file_base64 = prefix + base64.b64encode(open(file, 'rb').read()).decode()
-    return file_base64
+    bs64 = prefix + base64.b64encode(open(file, 'rb').read()).decode()
+    return bs64
 
 
-def array2base64(data: Any, prefix="image", use_rgb=False) -> Any:
+def base642file(file, bs64, prefix=IMG_PREFIX) -> str:
+    """
+    将base64字符串解码为文件
+    :param file: 文件路径
+    :param prefix: base64字符串前缀,用于表识字符串的类型
+    :return:文件路径
+    """
+    if prefix == bs64[0:len(prefix)]:
+        bs64 = bs64[len(prefix):]
+    bs64 = base64.b64decode(bs64)
+    with open(file, 'wb') as f: f.write(bs64)
+    return file
+
+
+def array2base64(data: Any, prefix=IMG_PREFIX, use_rgb=False) -> Any:
+    """
+    将输入数据含有图像数据(ndarray)都编码为base64字符串
+    :param data: 输入数据
+    :param prefix: base64字符串前缀,用于表识字符串的类型
+    :param use_rgb: True:输入image是RGB的图像, False:输入image是BGR格式的图像
+    :return:
+    """
     if isinstance(data, np.ndarray) and data.dtype == np.uint8:
         return image2base64(data, prefix=prefix, use_rgb=use_rgb)
     elif isinstance(data, np.ndarray):
@@ -80,7 +112,14 @@ def array2base64(data: Any, prefix="image", use_rgb=False) -> Any:
     return data
 
 
-def base642array(data: Any, prefix="image", use_rgb=False) -> Any:
+def base642array(data: Any, prefix=IMG_PREFIX, use_rgb=False) -> Any:
+    """
+    将输入数据含有base64字符串都解码为图像数据(ndarray)
+    :param data: 输入数据
+    :param prefix: base64字符串前缀,用于表识字符串的类型
+    :param use_rgb: True:输入image是RGB的图像, False:输入image是BGR格式的图像
+    :return:
+    """
     if isinstance(data, str) and prefix == data[0:len(prefix)]:
         return base642image(data, prefix=prefix, use_rgb=use_rgb)
     elif isinstance(data, np.ndarray):
@@ -116,7 +155,7 @@ if __name__ == "__main__":
     file = "/home/dm/project/python-learning-notes/utils/test.jpg"
     bgr1 = cv2.imread(file)
     image_base64 = image2base64(bgr1)
-    image_base64 = read_file2base64(file)
+    image_base64 = file2base64(file)
     bgr2 = base642image(image_base64, use_rgb=False)
     cv_show_image("bgr1", bgr1, use_rgb=False, delay=1)
     cv_show_image("bgr2", bgr2, use_rgb=False)
