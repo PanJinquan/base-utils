@@ -84,25 +84,28 @@ def show_word_packer(packer, image, keys=[], delay=0):
     _keys = ['label', 'cls_score', 'box', 'det_score']
     for word in packer:
         label = word['label'] if "label" in word else ""
-        image = image_utils.draw_image_bboxes_text(image, boxes=[word["box"]], boxes_name=[label], color=(0, 0, 255))
         images = [word[k] for k in keys if k in word]
         info = ["{}:{}".format(k, word[k]) for k in _keys if k in word]
         print(info)
-        show_image("dets", [image], delay=1)
+        if isinstance(image, np.ndarray):
+            image = image_utils.draw_image_bboxes_text(image, boxes=[word["box"]],
+                                                       boxes_name=[label], color=(0, 0, 255))
+            show_image("dets", [image], delay=1)
         show_image("packer", images, delay=delay)
 
 
-def show_word_unpacker(unpacker, image, keys=[], waitKey=0):
+def show_word_unpacker(unpacker, image, keys=[], delay=0):
     _keys = ['label', 'cls_score', 'box', 'det_score']
     for i in range(len(unpacker["box"])):
         label = unpacker["label"][i] if "label" in unpacker else ""
-        image = image_utils.draw_image_bboxes_text(image, boxes=[unpacker["box"][i]],
-                                                   boxes_name=[label], color=(0, 0, 255))
         images = [unpacker[k][i] for k in keys if k in unpacker]
         info = ["{}:{}".format(k, unpacker[k][i]) for k in _keys if k in unpacker]
         print(info)
-        show_image("dets", [image], delay=1)
-        show_image("unpacker", images, delay=waitKey)
+        if isinstance(image, np.ndarray):
+            image = image_utils.draw_image_bboxes_text(image, boxes=[unpacker["box"][i]],
+                                                       boxes_name=[label], color=(0, 0, 255))
+            show_image("dets", [image], delay=1)
+        show_image("unpacker", images, delay=delay)
 
 
 def show_image(title, images, use_rgb=False, delay=0):
