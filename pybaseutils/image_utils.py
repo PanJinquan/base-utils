@@ -1,7 +1,5 @@
 # -*-coding: utf-8 -*-
 """
-    @Project: IntelligentManufacture
-    @File   : image_processing.py
     @Author : panjq
     @E-mail : pan_jinquan@163.com
     @Date   : 2019-02-14 15:34:50
@@ -2413,7 +2411,7 @@ def image_composite(image: np.ndarray, alpha: np.ndarray, bg_img=(219, 142, 67))
     return image
 
 
-def images2gif_by_imageio(frames, out_gif_path="test.gif", fps=2):
+def frames2gif_by_imageio(frames, out_gif_path="test.gif", fps=2):
     """
     pip install imageio
     :param image_list:
@@ -2429,7 +2427,7 @@ def images2gif_by_imageio(frames, out_gif_path="test.gif", fps=2):
     # imageio.mimwrite(out_gif_path, frames, fps=20)
 
 
-def images2gif_by_pil(frames, out_gif_path="test.gif", fps=2):
+def frames2gif_by_pil(frames, out_gif_path="test.gif", fps=2):
     """
     https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html#gif
     :param frames:
@@ -2464,7 +2462,7 @@ def image_file_list2gif(file_list, image_size=None, out_gif_path="test.gif", fps
         image = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
         image = resize_image(image, resize_height=image_size[1], resize_width=image_size[0])
         frames.append(image)
-    images2gif_by_pil(frames, out_gif_path, fps=fps)
+    frames2gif_by_pil(frames, out_gif_path, fps=fps)
     # images2gif_by_imageio(frames, out_gif_path, fps=fps)
 
 

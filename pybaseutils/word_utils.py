@@ -19,7 +19,10 @@ def concat_stroke_image(mask, seg_list, split_line=False, vis=False):
     :param vis: 是否可视化
     :return:返回水平拼接笔画图片
     """
-    seg_mask = np.max(seg_list, axis=0)
+    if len(seg_list) > 0:
+        seg_mask = np.max(seg_list, axis=0)
+    else:
+        seg_mask = np.zeros_like(mask)
     images = [mask] + [seg_mask] + seg_list
     vis_image = image_utils.image_hstack(images, split_line=split_line)
     if vis:
@@ -78,6 +81,28 @@ def word_unpacker(packer: List[Dict], keys):
             if key in keys:
                 unpacker[key].append(value)
     return unpacker
+
+
+def get_content_value(content: Dict, key: str):
+    """在字典content中,查找包含key的所有数据"""
+    r = None
+    for k, v in content.items():
+        if k == key:
+            return v
+        elif isinstance(v, Dict):
+            r = get_content_value(v, key)
+        elif isinstance(v, List):
+            r = [get_content_value(c, key) for c in v if isinstance(c, Dict)]
+    return r
+
+
+def find_key_metadata(metadata: List[Dict], key):
+    """在metadata中,查找包含key的所有数据"""
+    values = []
+    for content in metadata:
+        v = get_content_value(content, key)
+        values.append(v)
+    return values
 
 
 def show_word_packer(packer, image, keys=[], delay=0):
