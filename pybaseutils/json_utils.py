@@ -30,27 +30,27 @@ def get_keys_vaules(content, func=None):
     """
     遍历json数据并获得所有value的key路径
     :param content:
-    :param func: 过滤条件函数,默认为None,表示获取有的,获得所有value的key路径,一些常用的过滤方法：
-           过滤所有文件：func = lambda v: isinstance(v, str) and os.path.isfile(v) and os.path.exists(v)
-           过滤所有字符串：func = lambda v: isinstance(v, str)
-           过滤所有数字：func = lambda v: isinstance(v, numbers.Number)
+    :param func: 过滤条件函数func(k,v),默认为None,表示获取有的,获得所有value的key路径,一些常用的过滤方法：
+           过滤所有文件：func = lambda k,v: isinstance(v, str) and os.path.isfile(v) and os.path.exists(v)
+           过滤所有字符串：func = lambda k,v: isinstance(v, str)
+           过滤所有数字：func = lambda k,v: isinstance(v, numbers.Number)
     :return: 返回满足条件的keys, values
     """
 
-    def recursion(data, key=None, sub=[]):
+    def recursion(value, key=None, sub=[]):
         if not key is None: sub.append(key)
-        if isinstance(data, list):
-            for i in range(len(data)):
-                recursion(data[i], key=i)
-        elif isinstance(data, dict):
-            for k, v in data.items():
+        if isinstance(value, list):
+            for i in range(len(value)):
+                recursion(value[i], key=i)
+        elif isinstance(value, dict):
+            for k, v in value.items():
                 recursion(v, key=k)
         elif func is None:
             keys.append(sub.copy())
-            values.append(data)
-        elif func(data):
+            values.append(value)
+        elif func(key, value):
             keys.append(sub.copy())
-            values.append(data)
+            values.append(value)
         if sub: sub.pop()
 
     keys = []
@@ -104,7 +104,7 @@ if __name__ == "__main__":
             "url": "url1"
         }
     }
-    # func = lambda v: isinstance(v, str) and os.path.isfile(v) and os.path.exists(v)
+    func = lambda k, v: isinstance(v, numbers.Number)
     # 遍历获得data中所有value的路径
     keys, values = get_keys_vaules(content, func=func)
     for k, v in zip(keys, values):
