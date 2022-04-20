@@ -5,8 +5,10 @@
     @Date   : 2022-04-19 10:40:26
     @Brief  :
 """
+import os
 import toolz
 import json
+import numbers
 from pybaseutils.file_utils import read_json_data, write_json_path
 from typing import List, Tuple, Dict
 
@@ -24,8 +26,16 @@ def formatting(content):
     return info
 
 
-def get_keys_vaules(content):
-    """遍历json数据并获得所有value的key路径"""
+def get_keys_vaules(content, func=None):
+    """
+    遍历json数据并获得所有value的key路径
+    :param content:
+    :param func: 过滤条件函数,默认为None,表示获取有的,获得所有value的key路径,一些常用的过滤方法：
+           过滤所有文件：func = lambda v: isinstance(v, str) and os.path.isfile(v) and os.path.exists(v)
+           过滤所有字符串：func = lambda v: isinstance(v, str)
+           过滤所有数字：func = lambda v: isinstance(v, numbers.Number)
+    :return: 返回满足条件的keys, values
+    """
 
     def recursion(data, key=None, sub=[]):
         if not key is None: sub.append(key)
@@ -35,8 +45,10 @@ def get_keys_vaules(content):
         elif isinstance(data, dict):
             for k, v in data.items():
                 recursion(v, key=k)
-        else:
-            # print(sub, data)
+        elif func is None:
+            keys.append(sub.copy())
+            values.append(data)
+        elif func(data):
             keys.append(sub.copy())
             values.append(data)
         if sub: sub.pop()
@@ -87,13 +99,14 @@ if __name__ == "__main__":
     content = {
         "code": "0",
         "data": {
-            "image": ["image1", "image2"],
-            "file": {"file1": "1", "file2": "2", "file3": ["file3_v1", "file3_v2"], },
+            "image": ["image1", 0],
+            "file": {"file1": "path/to/image1.jpg", "file2": 2, "file3": ["file3_v1", "file3_v2"], },
             "url": "url1"
         }
     }
+    # func = lambda v: isinstance(v, str) and os.path.isfile(v) and os.path.exists(v)
     # 遍历获得data中所有value的路径
-    keys, values = get_keys_vaules(content)
+    keys, values = get_keys_vaules(content, func=func)
     for k, v in zip(keys, values):
         print("path={}\t    value={}".format(k, v))
     print("===" * 20)
