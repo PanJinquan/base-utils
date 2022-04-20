@@ -30,6 +30,8 @@ setup(name='pybaseutils',
           'demo': ['data/*.dat']
       },
       install_requires=[
+          'toolz>=0.11.2',  # 所需要包的版本号
+          'PyYAML>=5.3.2',  # 所需要包的版本号
           # 'pandas>=0.20.0',  # 所需要包的版本号
           # 'numpy>=1.14.0'  # 所需要包的版本号
       ],
@@ -50,6 +52,5 @@ def readme2rst(in_file='README.md'):
     # 修复中文乱码问题： <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     pypandoc.convert(in_file, 'html', format='md', outputfile="README.html", encoding='utf-8')
     pypandoc.convert(in_file, 'rst', format='md', outputfile="README.rst", encoding='utf-8')
-
 
 # readme2rst()
