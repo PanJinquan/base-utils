@@ -2202,7 +2202,7 @@ def draw_image_contours(image, contours: List[np.ndarray], color=(0, 255, 0), th
     return image
 
 
-def get_mask_boundrect(mask):
+def get_mask_boundrect_cv(mask):
     """
     获得mask的最大外接矩形框
     :param mask:
@@ -2214,6 +2214,29 @@ def get_mask_boundrect(mask):
     ymin = np.min(contours[:, 1])
     xmax = np.max(contours[:, 0])
     ymax = np.max(contours[:, 1])
+    return [xmin, ymin, xmax, ymax]
+
+
+def get_mask_boundrect(mask):
+    """
+    获得mask的最大外接矩形框
+    :param mask:
+    :return: box=[xmin,ymin,xmax,ymax]
+    """
+
+    def get_argminmax(v):
+        """获得首个和最后一个最大值的index"""
+        v = np.asarray(v)
+        max1 = np.argmax(v)
+        max2 = len(v) - np.argmax(v[::-1]) - 1
+        return max1, max2
+
+    y = np.sum(mask, axis=1)  # 将图像往Y轴累加投影
+    x = np.sum(mask, axis=0)  # 将图像往X轴累加投影
+    y = y > 0
+    x = x > 0
+    ymin, ymax = get_argminmax(y)
+    xmin, xmax = get_argminmax(x)
     return [xmin, ymin, xmax, ymax]
 
 

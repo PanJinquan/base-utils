@@ -5,9 +5,10 @@
     @Date   : 2022-03-29 16:15:09
     @Brief  :
 """
+import cv2
 import numpy as np
 from typing import List, Tuple, Dict
-from pybaseutils import image_utils
+from pybaseutils import image_utils, json_utils
 
 
 def concat_stroke_image(mask, seg_list, split_line=False, vis=False):
@@ -23,30 +24,79 @@ def concat_stroke_image(mask, seg_list, split_line=False, vis=False):
         seg_mask = np.max(seg_list, axis=0)
     else:
         seg_mask = np.zeros_like(mask)
-    images = [mask] + [seg_mask] + seg_list
+    diff = np.abs(mask - seg_mask)
+    images = [mask] + [seg_mask] + [diff] + seg_list
     vis_image = image_utils.image_hstack(images, split_line=split_line)
     if vis:
-        image_utils.cv_show_image("mask-seg-stroke", vis_image, use_rgb=False)
+        image_utils.cv_show_image("mask-seg-diff-stroke", vis_image, use_rgb=False)
     return vis_image
 
 
-def concat_pd_gt_stroke_image(pd_mask, pd_segs, gt_mask, gt_segs, split_line=True, vis=False):
+def concat_hw_gt_stroke_image(hw_mask, hw_segs, gt_mask, gt_segs, split_line=True, vis=False):
     """
-    对比标准字的笔画和待测字的笔画分割图
-    :param pd_mask:待测字整字mask
-    :param pd_segs:待测字分割后的笔画mask列表
+    对比标准字的笔画和手写字的笔画分割图
+    :param hw_mask:手写字整字mask
+    :param hw_segs:手写字分割后的笔画mask列表
     :param gt_mask:标准字整字mask
     :param gt_segs:标准字真实的笔画mask列表
     :param split_line: 是否显示分隔线
     :param vis: 是否可视化
     :return:
     """
-    pd_stroke = concat_stroke_image(pd_mask, pd_segs, split_line=split_line, vis=False)
+    hw_stroke = concat_stroke_image(hw_mask, hw_segs, split_line=split_line, vis=False)
     gt_stroke = concat_stroke_image(gt_mask, gt_segs, split_line=split_line, vis=False)
-    vis_image = image_utils.image_vstack([gt_stroke, pd_stroke], split_line=split_line)
+    vis_image = image_utils.image_vstack([gt_stroke, hw_stroke], split_line=split_line)
     if vis:
         image_utils.cv_show_image("gt-pd-stroke", vis_image, use_rgb=False)
     return vis_image
+
+
+def show_word_info(word_info):
+    print(json_utils.formatting(word_info['content'] if 'content' in word_info else ""))
+    keys = ["label", "stroke_label", "stroke_names"]
+    content = ["{}\t:{}".format(key, word_info[key]) for key in keys if key in word_info]
+    print("\n".join(content))
+    if len(word_info['stroke_segs']) == 0 or word_info['mask'] is None: return
+    stroke_img = concat_stroke_image(word_info['mask'], word_info['stroke_segs'], split_line=True, vis=False)
+    image_utils.cv_show_image("mask-seg-stroke", stroke_img, use_rgb=False)
+    for i in range(len(word_info['piece_segs'])):
+        stroke = word_info['stroke_segs'][i]
+        piece = word_info['piece_segs'][i]
+        names = word_info['stroke_label'][i]
+        print("i={:0=3d}\tname={}\tpiece_num={}".format(i, names, len(piece)))
+        if len(piece) == 0: continue
+        piece_img = concat_stroke_image(stroke, piece, split_line=True, vis=False)
+        image_utils.cv_show_image("mask-seg-piece", piece_img, use_rgb=False)
+    cv2.destroyWindow("mask-seg-piece")
+    print("---" * 20)
+
+
+def show_hw_gt_word_info(word_info):
+    """可视化标准字和手写字的分割效果"""
+    keys = ["label", "stroke_label", "stroke_names"]
+    for word in word_info:
+        hw_word = word["handwriting"]
+        gt_word = word["groundtruth"]
+        print(json_utils.formatting(hw_word['content'] if 'content' in hw_word else ""))
+        # print(json_utils.formatting(gt_info['content'] if 'content' in gt_info else ""))
+        text = ["{}={}".format(key, hw_word[key]) for key in keys if key in hw_word]
+        print("\t".join(text))
+        if len(hw_word['stroke_segs']) == 0 or hw_word['mask'] is None: return
+        concat_hw_gt_stroke_image(hw_mask=hw_word['mask'], hw_segs=hw_word['stroke_segs'],
+                                  gt_mask=gt_word['mask'], gt_segs=gt_word['stroke_segs'], vis=True)
+        for i in range(len(hw_word['piece_segs'])):
+            hw_stroke = hw_word['stroke_segs'][i]
+            hw_piece = hw_word['piece_segs'][i]
+            gt_stroke = gt_word['stroke_segs'][i]
+            gt_piece = gt_word['piece_segs'][i]
+            names = hw_word['stroke_label'][i]
+            print("i={:0=3d}\tname={}\tpiece_num={}".format(i, names, len(hw_piece)))
+            if len(hw_piece) == 0: continue
+            piece_image = concat_hw_gt_stroke_image(hw_mask=hw_stroke, hw_segs=hw_piece,
+                                                    gt_mask=gt_stroke, gt_segs=gt_piece, vis=False)
+            image_utils.cv_show_image("mask-seg-piece", piece_image)
+        cv2.destroyWindow("mask-seg-piece")
+        print("---" * 20)
 
 
 def concat_packer(packers: List[List[Dict]]):
