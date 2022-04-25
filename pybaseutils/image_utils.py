@@ -2202,12 +2202,14 @@ def draw_image_contours(image, contours: List[np.ndarray], color=(0, 255, 0), th
     return image
 
 
-def get_mask_boundrect_cv(mask):
+def get_mask_boundrect_cv(mask, binarize=False):
     """
     获得mask的最大外接矩形框
     :param mask:
     :return: box=[xmin,ymin,xmax,ymax]
     """
+    if binarize:
+        ret, mask = cv2.threshold(mask, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
     contours = find_mask_contours(mask)
     contours = np.concatenate(contours)
     xmin = np.min(contours[:, 0])
@@ -2217,10 +2219,11 @@ def get_mask_boundrect_cv(mask):
     return [xmin, ymin, xmax, ymax]
 
 
-def get_mask_boundrect(mask):
+def get_mask_boundrect(mask, binarize=False):
     """
     获得mask的最大外接矩形框
     :param mask:
+    :param binarize: 是否对mask进行二值化
     :return: box=[xmin,ymin,xmax,ymax]
     """
 
@@ -2231,6 +2234,8 @@ def get_mask_boundrect(mask):
         max2 = len(v) - np.argmax(v[::-1]) - 1
         return max1, max2
 
+    if binarize:
+        ret, mask = cv2.threshold(mask, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
     y = np.sum(mask, axis=1)  # 将图像往Y轴累加投影
     x = np.sum(mask, axis=0)  # 将图像往X轴累加投影
     y = y > 0
