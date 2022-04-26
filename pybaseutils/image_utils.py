@@ -581,7 +581,9 @@ def resize_image_padding(image, size: Tuple[int, int], use_length=True, color=(0
     :param color: 短边进行填充的color value
     :return:
     """
-    image = resize_scale_image(image, size=max(size), use_length=use_length)
+    height, width = image.shape[:2]
+    _size = max(size) if use_length else min(size)
+    image = resize_scale_image(image, size=int(_size), use_length=use_length)
     image = center_crop_padding(image, crop_size=size, color=color)
     return image
 
@@ -823,6 +825,75 @@ def scale_rect(orig_rect, orig_shape, dest_shape):
     new_h = int(orig_rect[3] * dest_shape[0] / orig_shape[0])
     dest_rect = [new_x, new_y, new_w, new_h]
     return dest_rect
+
+
+
+def xyxy2xywh(xyxy: np.ndarray):
+    """(xmin,ymin,xmax,ymax)==>(xmin,ymin,w,h)"""
+    xywh = xyxy.copy()
+    xywh[:, 2] = xywh[:, 2] - xywh[:, 0]  # w=xmax-xmin
+    xywh[:, 3] = xywh[:, 3] - xywh[:, 1]  # w=ymax-ymin
+    return xywh
+
+
+def xywh2xyxy(xywh: np.ndarray):
+    """(xmin,ymin,w,h)==>(xmin,ymin,xmax,ymax)"""
+    xyxy = xywh.copy()
+    xyxy[:, 2] = xyxy[:, 0] + xyxy[:, 2]  # xmax=xmin+w
+    xyxy[:, 3] = xyxy[:, 1] + xyxy[:, 3]  # ymax=ymin+h
+    return xyxy
+
+
+def xyxy2cxcywh(xyxy: np.ndarray, width=None, height=None, normalized=False):
+    """(xmin, ymin, xmax, ymax)==>(cx,cy,w,h)"""
+    cxcywh = np.zeros_like(xyxy)
+    cxcywh[:, 0] = (xyxy[:, 2] + xyxy[:, 0]) / 2  # cx
+    cxcywh[:, 1] = (xyxy[:, 3] + xyxy[:, 1]) / 2  # cy
+    cxcywh[:, 2] = (xyxy[:, 2] - xyxy[:, 0])  # w
+    cxcywh[:, 3] = (xyxy[:, 3] - xyxy[:, 1])  # h
+    if normalized:
+        cxcywh = cxcywh / (width, height, width, height)
+    return cxcywh
+
+
+def cxcywh2xyxy(cxcywh: np.ndarray, width=None, height=None, normalized=False):
+    """(cx,cy,w,h)==>xmin, ymin, xmax, ymax)"""
+    xyxy = np.zeros_like(cxcywh)
+    xyxy[:, 0] = cxcywh[:, 0] - cxcywh[:, 2] / 2  # top left x
+    xyxy[:, 1] = cxcywh[:, 1] - cxcywh[:, 3] / 2  # top left y
+    xyxy[:, 2] = cxcywh[:, 0] + cxcywh[:, 2] / 2  # bottom right x
+    xyxy[:, 3] = cxcywh[:, 1] + cxcywh[:, 3] / 2  # bottom right y
+    if normalized:
+        xyxy = xyxy * (width, height, width, height)
+    return xyxy
+
+
+def extend_xyxy(xyxy: np.ndarray, scale=[1.0, 1.0]):
+    """
+    :param bboxes: [[xmin, ymin, xmax, ymax]]
+    :param scale: [sx,sy]==>(W,H)
+    :return:
+    """
+    cxcywh = np.zeros_like(xyxy, dtype=xyxy.dtype)
+    cxcywh[:, 0] = (xyxy[:, 2] + xyxy[:, 0]) / 2  # cx
+    cxcywh[:, 1] = (xyxy[:, 3] + xyxy[:, 1]) / 2  # cy
+    cxcywh[:, 2] = (xyxy[:, 2] - xyxy[:, 0]) * scale[0]  # w
+    cxcywh[:, 3] = (xyxy[:, 3] - xyxy[:, 1]) * scale[1]  # h
+    dxyxy = cxcywh2xyxy(cxcywh, width=None, height=None, normalized=False)
+    return dxyxy
+
+
+def extend_xywh(xywh: np.ndarray, scale=[1.0, 1.0]):
+    """
+    :param bboxes: [[xmin, ymin, xmax, ymax]]
+    :param scale: [sx,sy]==>(W,H)
+    :return:
+    """
+    xyxy = xywh2xyxy(xywh)
+    xyxy = extend_xyxy(xyxy, scale)
+    dxywh = xyxy2xywh(xyxy)
+    return dxywh
+
 
 
 def get_rect_intersection(rec1, rec2):
@@ -1858,120 +1929,6 @@ def center_crop_padding(image, crop_size, color=(0, 0, 0)):
     rect = [x, y, crop_size[0], crop_size[1]]
     roi_image = get_rect_crop_padding(image, rect, color=color)
     return roi_image
-
-
-def extend_face2body_bboxes(faces_boxes, width_factor=1.0, height_factor=1.0):
-    """
-    extend boxes ,such as extend faces_boxes to body_boxes
-    :param faces_boxes:
-    :param width_factor:
-    :param height_factor:
-    :return:
-    """
-    body_boxes = []
-    for face_box in faces_boxes:
-        [x1, y1, x2, y2] = face_box
-        w = (x2 - x1)
-        h = (y2 - y1)
-        x1 = x1 - width_factor * w
-        y1 = y1 - width_factor * h
-        x1 = np.where(x1 > 0, x1, 0)
-        y1 = np.where(y1 > 0, y1, 0)
-        w = 3 * width_factor * w
-        h = height_factor * h
-        body_boxes.append([x1, y1, x1 + w, y1 + h])
-    return body_boxes
-
-
-def extend_rects(rects, scale=[1.0, 1.0]):
-    """
-    :param rects:
-    :param scale: [sx,sy]==>(W,H)
-    :return:
-    """
-    bboxes = rects2bboxes(rects)
-    out_bboxes = extend_bboxes(bboxes, scale)
-    out_rects = bboxes2rects(out_bboxes)
-    return out_rects
-
-
-def extend_bboxes(bboxes, scale=[1.0, 1.0]):
-    """
-    :param bboxes: [[xmin, ymin, xmax, ymax]]
-    :param scale: [sx,sy]==>(W,H)
-    :return:
-    """
-    out_bboxes = []
-    sx = scale[0]
-    sy = scale[1]
-    for box in bboxes:
-        xmin, ymin, xmax, ymax = box
-        cx = (xmin + xmax) / 2
-        cy = (ymin + ymax) / 2
-
-        ex_w = (xmax - xmin) * sx
-        ex_h = (ymax - ymin) * sy
-        ex_xmin = cx - 0.5 * ex_w
-        ex_ymin = cy - 0.5 * ex_h
-        ex_xmax = ex_xmin + ex_w
-        ex_ymax = ex_ymin + ex_h
-        ex_box = [ex_xmin, ex_ymin, ex_xmax, ex_ymax]
-        out_bboxes.append(ex_box)
-    return out_bboxes
-
-
-def get_square_bboxes(bboxes, fixed="H"):
-    """
-    :param bboxes:
-    :param fixed: (W)width (H)height,(L) longest edge
-    :return:
-    """
-    new_bboxes = []
-    for bbox in bboxes:
-        xmin, ymin, xmax, ymax = bbox
-        w = xmax - xmin
-        h = ymax - ymin
-        cx, cy = (int((xmin + xmax) / 2), int((ymin + ymax) / 2))
-        if fixed in ["H", "h"]:
-            dd = h / 2
-        elif fixed in ["W", "w"]:
-            dd = w / 2
-        elif fixed in ["L", "l"]:
-            l = max(w, h)
-            dd = l / 2
-        else:
-            l = max(w, h)
-            dd = l / 2 * fixed
-        fxmin = int(cx - dd)
-        fymin = int(cy - dd)
-        fxmax = int(cx + dd)
-        fymax = int(cy + dd)
-        new_bbox = (fxmin, fymin, fxmax, fymax)
-        new_bboxes.append(new_bbox)
-    return new_bboxes
-
-
-def get_square_rects(rects, fixed="H"):
-    """
-    ------------------------
-    e.g.:
-    image_path = "../dataset/dataset/A/test1.jpg"
-    image = read_image(image_path, 400, 400)
-    rects = [[100, 50, 180, 50]]
-    print(rects)
-    rect_image = show_image_rects("rect", image, rects, delay=1)
-    rects2 = get_square_rects(rects, fixed="h")
-    # red is square_rects
-    rect_image = show_image_rects("rect", rect_image, rects2, color=(255, 0, 0), delay=0)
-    ------------------------
-    :param rects:
-    :param fixed:
-    :return:
-    """
-    bboxes = rects2bboxes(rects)
-    out_bboxes = get_square_bboxes(bboxes, fixed)
-    out_rects = bboxes2rects(out_bboxes)
-    return out_rects
 
 
 def points2bbox(keypoints):
