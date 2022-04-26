@@ -88,7 +88,7 @@ def get_image_tensor(image_path, image_size, transpose=False):
     image = read_image(image_path)
     # transform = default_transform(image_size)
     # torch_image = transform(image).detach().numpy()
-    image = resize_image(image, int(128 * image_size[0] / 112), int(128 * image_size[1] / 112))
+    image = resize_image(image, size=(int(128 * image_size[0] / 112), int(128 * image_size[1] / 112)))
     image = center_crop(image, crop_size=image_size)
     image_tensor = image_normalization(image, mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
     if transpose:
@@ -298,7 +298,7 @@ def image_unnormalization(image, mean=None, std=None):
 
 
 def data_normalization(data, omin, omax, imin=None, imax=None):
-    '''
+    """
     NORMALIZATION 将数据x归一化到任意区间[ymin,omax]范围的方法
     :param data:  输入参数x：需要被归一化的数据,numpy
     :param omin: 输入参数omin：归一化的区间[omin,omax]下限
@@ -306,7 +306,7 @@ def data_normalization(data, omin, omax, imin=None, imax=None):
     :param imin: 输入参数imin的最小值
     :param imax: 输入参数ymax的最大值
     :return: 输出参数y：归一化到区间[omin,omax]的数据
-    '''
+    """
     imax = imax if imax is not None else np.max(data)  # %计算最大值
     imin = imin if imin is not None else np.min(data)  # %计算最小值
     y = (omax - omin) * (data - imin) / (imax - imin) + omin
@@ -314,8 +314,7 @@ def data_normalization(data, omin, omax, imin=None, imax=None):
 
 
 def cv_image_normalization(image, min_val=0.0, max_val=1.0):
-    '''
-
+    """
     :param image:
     :param min_val:
     :param max_val:
@@ -323,7 +322,7 @@ def cv_image_normalization(image, min_val=0.0, max_val=1.0):
     :param dtype:
     :param mask:
     :return:
-    '''
+    """
     dtype = cv2.CV_32F
     norm_type = cv2.NORM_MINMAX
     out = np.zeros(shape=image.shape, dtype=np.float32)
@@ -332,12 +331,12 @@ def cv_image_normalization(image, min_val=0.0, max_val=1.0):
 
 
 def get_prewhiten_images(images_list, normalization=False):
-    '''
+    """
     批量白化图片处理
     :param images_list:
     :param normalization:
     :return:
-    '''
+    """
     out_images = []
     for image in images_list:
         if normalization:
@@ -347,16 +346,14 @@ def get_prewhiten_images(images_list, normalization=False):
     return out_images
 
 
-def read_image(filename, resize_height=None, resize_width=None, normalization=False, use_rgb=True):
-    '''
+def read_image(filename, size=None, normalization=False, use_rgb=True):
+    """
     读取图片数据,默认返回的是uint8,[0,255]
     :param filename:
-    :param resize_height:
-    :param resize_width:
     :param normalization:是否归一化到[0.,1.0]
     :param use_rgb 输出格式：RGB or BGR
     :return: 返回的图片数据
-    '''
+    """
 
     image = cv2.imread(filename)
     # bgr_image = cv2.imread(filename,cv2.IMREAD_IGNORE_ORIENTATION|cv2.IMREAD_UNCHANGED)
@@ -372,24 +369,21 @@ def read_image(filename, resize_height=None, resize_width=None, normalization=Fa
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # 将BGR转为RGB
     # show_image(filename,image)
     # image=Image.open(filename)
-    image = resize_image(image, resize_height, resize_width)
+    image = resize_image(image, size=size)
     image = np.asanyarray(image)
     if normalization:
         image = image_normalization(image)
-    # show_image("src resize image",image)
     return image
 
 
-def read_image_pil(filename, resize_height=None, resize_width=None, normalization=False):
-    '''
+def read_image_pil(filename, size, normalization=False):
+    """
     读取图片数据,默认返回的是uint8,[0,255]
     :param filename:
-    :param resize_height:
-    :param resize_width:
+    :param size:
     :param normalization:是否归一化到[0.,1.0]
     :return: 返回的图片数据
-    '''
-
+    """
     rgb_image = Image.open(filename)
     rgb_image = np.asarray(rgb_image)
     if rgb_image is None:
@@ -401,23 +395,21 @@ def read_image_pil(filename, resize_height=None, resize_width=None, normalizatio
 
     # show_image(filename,image)
     # image=Image.open(filename)
-    image = resize_image(rgb_image, resize_height, resize_width)
+    image = resize_image(rgb_image, size=size)
     if normalization:
         image = image_normalization(image)
-    # show_image("src resize image",image)
     return image
 
 
-def read_image_gbk(filename, resize_height=None, resize_width=None, normalization=False, use_rgb=True):
-    '''
+def read_image_gbk(filename, size, normalization=False, use_rgb=True):
+    """
     解决imread不能读取中文路径的问题,读取图片数据,默认返回的是uint8,[0,255]
     :param filename:
-    :param resize_height:
-    :param resize_width:
+    :param size:
     :param normalization:是否归一化到[0.,1.0]
     :param use_rgb 输出格式：RGB or BGR
     :return: 返回的RGB图片数据
-    '''
+    """
     try:
         with open(filename, 'rb') as f:
             data = f.read()
@@ -437,7 +429,7 @@ def read_image_gbk(filename, resize_height=None, resize_width=None, normalizatio
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # 将BGR转为RGB
     # show_image(filename,image)
     # image=Image.open(filename)
-    image = resize_image(image, resize_height, resize_width)
+    image = resize_image(image, size=size)
     image = np.asanyarray(image)
     if normalization:
         image = image_normalization(image)
@@ -446,11 +438,11 @@ def read_image_gbk(filename, resize_height=None, resize_width=None, normalizatio
 
 
 def requests_url(url):
-    '''
+    """
     读取网络数据流
     :param url:
     :return:
-    '''
+    """
     stream = None
     try:
         res = requests.get(url, timeout=15)
@@ -461,16 +453,15 @@ def requests_url(url):
     return stream
 
 
-def read_images_url(url, resize_height=None, resize_width=None, normalization=False, use_rgb='RGB'):
-    '''
+def read_images_url(url, size=None, normalization=False, use_rgb='RGB'):
+    """
     根据url或者图片路径，读取图片
     :param url:
-    :param resize_height:
-    :param resize_width:
+    :param size:
     :param normalization:
     :param use_rgb:
     :return:
-    '''
+    """
     if re.match(r'^https?:/{2}\w.+$', url):
         stream = requests_url(url)
         if stream is None:
@@ -492,20 +483,19 @@ def read_images_url(url, resize_height=None, resize_width=None, normalization=Fa
         image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
     if use_rgb:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # 将BGR转为RGB
-    image = resize_image(image, resize_height, resize_width)
+    image = resize_image(image, size=size)
     image = np.asanyarray(image)
     if normalization:
         image = image_normalization(image)
-    # show_image("src resize image",image)
     return image
 
 
 def read_image_batch(image_list):
-    '''
+    """
     批量读取图片
     :param image_list:
     :return:
-    '''
+    """
     image_batch = []
     out_image_list = []
     for image_path in image_list:
@@ -519,7 +509,7 @@ def read_image_batch(image_list):
 
 
 def fast_read_image_roi(filename, orig_rect, ImreadModes=cv2.IMREAD_COLOR, normalization=False, use_rgb=True):
-    '''
+    """
     快速读取图片的方法
     :param filename: 图片路径
     :param orig_rect:原始图片的感兴趣区域rect
@@ -539,7 +529,7 @@ def fast_read_image_roi(filename, orig_rect, ImreadModes=cv2.IMREAD_COLOR, norma
     :param normalization: 是否归一化
     :param use_rgb 输出格式：RGB or BGR
     :return: 返回感兴趣区域ROI
-    '''
+    """
     # 当采用IMREAD_REDUCED模式时，对应rect也需要缩放
     scale = 1
     if ImreadModes == cv2.IMREAD_REDUCED_COLOR_2 or ImreadModes == cv2.IMREAD_REDUCED_COLOR_2:
@@ -567,12 +557,12 @@ def fast_read_image_roi(filename, orig_rect, ImreadModes=cv2.IMREAD_COLOR, norma
     return roi_image
 
 
-def resize_scale_image(image, size=320, use_length=True):
+def resize_scale_image(image, size: int, use_length=True):
     """
-    按照长短边进行等比例缩放
+    按照长/短边进行等比例缩放
     :param image:
     :param size: 目标长度
-    :param use_length: True长边缩放，False: 短边缩放
+    :param use_length: True长边对齐缩放，False: 短边对齐缩放
     :return:
     """
     height, width = image.shape[:2]
@@ -582,16 +572,32 @@ def resize_scale_image(image, size=320, use_length=True):
     return dimage
 
 
-def resize_image(image, resize_height=None, resize_width=None):
-    '''
+def resize_image_padding(image, size: Tuple[int, int], use_length=True, color=(0, 0, 0)):
+    """
+    按照长/短边进行等比例缩放，短边会进行填充,长边会被裁剪，避免出现形变
+    :param image:
+    :param size: (width,height)
+    :param use_length: True长边对齐缩放,短边会进行填充;False短边对齐缩放，长边会被裁剪
+    :param color: 短边进行填充的color value
+    :return:
+    """
+    image = resize_scale_image(image, size=max(size), use_length=use_length)
+    image = center_crop_padding(image, crop_size=size, color=color)
+    return image
+
+
+def resize_image(image, size: Tuple[int, int]):
+    """
     tf.image.resize_images(images,size),images=[batch, height, width, channels],size=(new_height, new_width)
-    cv2.resize(image, dsize=(resize_width, resize_height)),与image.shape相反
+    cv2.resize(image, dsize=(width, height)),与image.shape相反
     images[50,10]与image.shape的原理相同，它表示的是image=(y=50,x=10)
     :param image:
-    :param resize_height:
-    :param resize_width:
+    :param size: (width,height)
     :return:
-    '''
+    """
+    if not size: return image
+    size = (size, size) if len(size) == 1 else size
+    resize_width, resize_height = size
     height, width = image.shape[:2]
     if (resize_height is None) and (resize_width is None):  # 错误写法：resize_height and resize_width is None
         return image
@@ -635,7 +641,7 @@ def image_boxes_resize_padding(image, input_size, boxes=None, color=(0, 0, 0)):
 
 def image_boxes_resize_padding_inverse(image_size, input_size, boxes=None):
     """
-    resize_image_padding的逆过程
+    image_boxes_resize_padding的逆过程
     """
     width, height = image_size
     scale = min([input_size[0] / width, input_size[1] / height])
@@ -650,14 +656,14 @@ def image_boxes_resize_padding_inverse(image_size, input_size, boxes=None):
     return boxes
 
 
-def resize_image_bboxes(image, resize_height=None, resize_width=None, bboxes=None):
+def resize_image_bboxes(image, size, bboxes=None):
     """
     :param image:
-    :param resize_height:
-    :param resize_width:
+    :param size: (W,H)
     :param bboxes:
     :return:
     """
+    resize_width, resize_height = size
     height, width, _ = image.shape
     if (resize_height is None) and (resize_width is None):  # 错误写法：resize_height and resize_width is None
         return image, bboxes
@@ -675,21 +681,21 @@ def resize_image_bboxes(image, resize_height=None, resize_width=None, bboxes=Non
 
 
 def scale_image(image, scale):
-    '''
+    """
     :param image:
     :param scale: (scale_w,scale_h)
     :return:
-    '''
+    """
     image = cv2.resize(image, dsize=None, fx=scale[0], fy=scale[1])
     return image
 
 
 def get_rect_image(image, rect):
-    '''
+    """
     :param image:
     :param rect: [x,y,w,h]
     :return:
-    '''
+    """
     shape = image.shape  # h,w
     height = shape[0]
     width = shape[1]
@@ -701,43 +707,41 @@ def get_rect_image(image, rect):
     return cut_image
 
 
-def get_rects_image(image, rects_list, resize_height=None, resize_width=None):
-    '''
+def get_rects_image(image, rects_list, size):
+    """
     获得裁剪区域
     :param image:
     :param rects_list:
-    :param resize_height:
-    :param resize_width:
+    :param size:
     :return:
-    '''
+    """
     rect_images = []
     for rect in rects_list:
         roi = get_rect_image(image, rect)
-        roi = resize_image(roi, resize_height, resize_width)
+        roi = resize_image(roi, size=size)
         rect_images.append(roi)
     return rect_images
 
 
-def get_bboxes_image(image, bboxes_list, resize_height=None, resize_width=None):
-    '''
+def get_bboxes_image(image, bboxes_list, size):
+    """
     获得裁剪区域
     :param image:
     :param bboxes_list:
-    :param resize_height:
-    :param resize_width:
+    :param size:
     :return:
-    '''
+    """
     rects_list = bboxes2rects(bboxes_list)
-    rect_images = get_rects_image(image, rects_list, resize_height, resize_width)
+    rect_images = get_rects_image(image, rects_list, size=size)
     return rect_images
 
 
 def bboxes2rects(bboxes_list):
-    '''
+    """
     将bboxes=[x1,y1,x2,y2] 转为rect=[x1,y1,w,h]
     :param bboxes_list:
     :return:
-    '''
+    """
     rects_list = []
     for bbox in bboxes_list:
         x1, y1, x2, y2 = bbox
@@ -747,11 +751,11 @@ def bboxes2rects(bboxes_list):
 
 
 def rects2bboxes(rects_list):
-    '''
+    """
     将rect=[x1,y1,w,h]转为bboxes=[x1,y1,x2,y2]
     :param rects_list:
     :return:
-    '''
+    """
     bboxes_list = []
     for rect in rects_list:
         x1, y1, w, h = rect
@@ -763,12 +767,12 @@ def rects2bboxes(rects_list):
 
 
 def bboxes2center(bboxes_list):
-    '''
+    """
     center = (boxes[:, [0, 1]] + boxes[:, [2, 3]]) / 2
     将bboxes=[x1,y1,x2,y2] 转为center_list=[cx,cy,w,h]
     :param bboxes_list:
     :return:
-    '''
+    """
     center_list = []
     for bbox in bboxes_list:
         x1, y1, x2, y2 = bbox
@@ -778,11 +782,11 @@ def bboxes2center(bboxes_list):
 
 
 def center2bboxes(center_list):
-    '''
+    """
     将center_list=[cx,cy,w,h] 转为bboxes=[x1,y1,x2,y2]
     :param bboxes_list:
     :return:
-    '''
+    """
     bboxes_list = []
     for c in center_list:
         cx, cy, w, h = c
@@ -792,11 +796,11 @@ def center2bboxes(center_list):
 
 
 def center2rects(center_list):
-    '''
+    """
     将center_list=[cx,cy,w,h] 转为rect=[x,y,w,h]
     :param bboxes_list:
     :return:
-    '''
+    """
     rect_list = []
     for c in center_list:
         cx, cy, w, h = c
@@ -806,13 +810,13 @@ def center2rects(center_list):
 
 
 def scale_rect(orig_rect, orig_shape, dest_shape):
-    '''
+    """
     对图像进行缩放时，对应的rectangle也要进行缩放
     :param orig_rect: 原始图像的rect=[x,y,w,h]
     :param orig_shape: 原始图像的维度shape=[h,w]
     :param dest_shape: 缩放后图像的维度shape=[h,w]
     :return: 经过缩放后的rectangle
-    '''
+    """
     new_x = int(orig_rect[0] * dest_shape[1] / orig_shape[1])
     new_y = int(orig_rect[1] * dest_shape[0] / orig_shape[0])
     new_w = int(orig_rect[2] * dest_shape[1] / orig_shape[1])
@@ -822,12 +826,12 @@ def scale_rect(orig_rect, orig_shape, dest_shape):
 
 
 def get_rect_intersection(rec1, rec2):
-    '''
+    """
     计算两个rect的交集坐标
     :param rec1:
     :param rec2:
     :return:
-    '''
+    """
     xmin1, ymin1, xmax1, ymax1 = rects2bboxes([rec1])[0]
     xmin2, ymin2, xmax2, ymax2 = rects2bboxes([rec2])[0]
     x1 = max(xmin1, xmin2)
@@ -840,12 +844,12 @@ def get_rect_intersection(rec1, rec2):
 
 
 def get_bbox_intersection(box1, box2):
-    '''
+    """
     计算两个boxes的交集坐标
     :param rec1:
     :param rec2:
     :return:
-    '''
+    """
     xmin1, ymin1, xmax1, ymax1 = box1
     xmin2, ymin2, xmax2, ymax2 = box2
     x1 = max(xmin1, xmin2)
@@ -873,27 +877,27 @@ def draw_image_boxes(bgr_image, boxes_list, color=(0, 0, 255), thickness=1):
     return bgr_image
 
 
-def show_image_rects(win_name, image, rect_list, color=(0, 0, 255), delay=0):
-    '''
-    :param win_name:
+def show_image_rects(title, image, rect_list, color=(0, 0, 255), delay=0):
+    """
+    :param title:
     :param image:
     :param rect_list:[[ x, y, w, h],[ x, y, w, h]]
     :return:
-    '''
+    """
     image = draw_image_rects(image.copy(), rect_list, color)
-    cv_show_image(win_name, image, delay=delay)
+    cv_show_image(title, image, delay=delay)
     return image
 
 
-def show_image_boxes(win_name, image, boxes_list, color=(0, 0, 255), delay=0):
-    '''
-    :param win_name:
+def show_image_boxes(title, image, boxes_list, color=(0, 0, 255), delay=0):
+    """
+    :param title:
     :param image:
     :param boxes_list:[[ x1, y1, x2, y2],[ x1, y1, x2, y2]]
     :return:
-    '''
+    """
     image = draw_image_boxes(image, boxes_list, color)
-    cv_show_image(win_name, image, delay=delay)
+    cv_show_image(title, image, delay=delay)
     return image
 
 
@@ -919,7 +923,16 @@ def draw_image_bboxes_text(rgb_image, boxes, boxes_name, color, drawType="custom
 
 
 def draw_image_bboxes_labels_text(rgb_image, boxes, labels, boxes_name=None, color=None, drawType="custom", top=True):
-    """"""
+    """
+    :param rgb_image:
+    :param boxes:
+    :param labels:
+    :param boxes_name:
+    :param color:
+    :param drawType:
+    :param top:
+    :return:
+    """
     rgb_image = rgb_image.copy()
     if isinstance(labels, np.ndarray):
         labels = labels.reshape(-1).tolist()
@@ -932,20 +945,29 @@ def draw_image_bboxes_labels_text(rgb_image, boxes, labels, boxes_name=None, col
 
 
 def draw_image_rects_labels_text(rgb_image, rects, labels, boxes_name=None, color=None, drawType="custom", top=True):
-    """"""
+    """
+    :param rgb_image:
+    :param rects:
+    :param labels:
+    :param boxes_name:
+    :param color:
+    :param drawType:
+    :param top:
+    :return:
+    """
     boxes = rects2bboxes(rects)
     rgb_image = draw_image_bboxes_labels_text(rgb_image, boxes, labels, boxes_name, color, drawType, top)
     return rgb_image
 
 
 def show_image_bboxes_text(title, rgb_image, boxes, boxes_name, color=None, drawType="custom", delay=0, top=True):
-    '''
+    """
     :param boxes_name:
     :param bgr_image: bgr image
     :param color: BGR color:[B,G,R]
     :param boxes: [[x1,y1,x2,y2],[x1,y1,x2,y2]]
     :return:
-    '''
+    """
     bgr_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR)
     bgr_image = draw_image_bboxes_text(bgr_image, boxes, boxes_name, color, drawType, top)
     rgb_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2RGB)
@@ -960,12 +982,12 @@ def draw_image_rects_text(rgb_image, rects, rects_name, color=None, drawType="cu
 
 
 def show_image_rects_text(title, rgb_image, rects, rects_name, color=None, drawType="custom", delay=0, top=True):
-    '''
+    """
     :param rects_name:
     :param bgr_image: bgr image
     :param rects: [[x1,y1,w,h],[x1,y1,w,h]]
     :return:
-    '''
+    """
     boxes = rects2bboxes(rects)
     rgb_image = show_image_bboxes_text(title, rgb_image, boxes, rects_name, color, drawType, delay, top)
     return rgb_image
@@ -978,14 +1000,14 @@ def draw_image_detection_rects(rgb_image, rects, probs, labels, class_name=None)
 
 
 def show_image_detection_rects(title, rgb_image, rects, probs, lables, color=None, delay=0):
-    '''
+    """
     :param title:
     :param rgb_image:
     :param rects: [[x1,y1,w,h],[x1,y1,w,h]]
     :param probs:
     :param lables:
     :return:
-    '''
+    """
     bboxes = rects2bboxes(rects)
     rgb_image = show_image_detection_bboxes(title, rgb_image, bboxes, probs, lables, color, delay)
     return rgb_image
@@ -998,14 +1020,14 @@ def flat_data(data):
 
 
 def draw_image_detection_bboxes(rgb_image, bboxes, probs, labels, class_name=None):
-    '''
+    """
     :param title:
     :param rgb_image:
     :param bboxes:  [[x1,y1,x2,y2],[x1,y1,x2,y2]]
     :param probs:
     :param labels:
     :return:
-    '''
+    """
     labels = np.asarray(labels, dtype=np.int32).reshape(-1)
     probs = np.asarray(probs).reshape(-1)
     for label, box, prob in zip(labels, bboxes, probs):
@@ -1093,14 +1115,14 @@ def custom_bbox_line(image, bbox, color, name, drawType="custom", top=True):
     return image
 
 
-def show_boxList(win_name, boxList, rgb_image, delay=0):
-    '''
+def show_boxList(title, boxList, rgb_image, delay=0):
+    """
     [xmin,ymin,xmax,ymax]
-    :param win_name:
+    :param title:
     :param boxList:
     :param rgb_image:
     :return:
-    '''
+    """
     bgr_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR)
     for item in boxList:
         name = item["label"]
@@ -1116,8 +1138,8 @@ def show_boxList(win_name, boxList, rgb_image, delay=0):
     # cv2.imshow(title, bgr_image)
     # cv2.delay(0)
     rgb_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2RGB)
-    if win_name:
-        cv_show_image(win_name, rgb_image, delay=delay)
+    if title:
+        cv_show_image(title, rgb_image, delay=delay)
     return rgb_image
 
 
@@ -1136,43 +1158,42 @@ def draw_landmark(image, landmarks_list, color=(0, 0, 255), vis_id=False):
     return image
 
 
-def show_landmark_boxes(win_name, image, landmarks_list, boxes):
-    '''
+def show_landmark_boxes(title, image, landmarks_list, boxes):
+    """
     显示landmark和boxex
-    :param win_name:
+    :param title:
     :param image:
     :param landmarks_list: [[x1, y1], [x2, y2]]
     :param boxes:     [[ x1, y1, x2, y2],[ x1, y1, x2, y2]]
     :return:
-    '''
+    """
     image = draw_landmark(image, landmarks_list)
-    image = show_image_boxes(win_name, image, boxes)
+    image = show_image_boxes(title, image, boxes)
     return image
 
 
-def show_landmark(win_name, image, landmarks_list, vis_id=False, delay=0):
-    '''
+def show_landmark(title, image, landmarks_list, vis_id=False, delay=0):
+    """
     显示landmark和boxex
-    :param win_name:
+    :param title:
     :param image:
     :param landmarks_list: [[x1, y1], [x2, y2]]
     :return:
-    '''
+    """
     image = draw_landmark(image, landmarks_list, vis_id=vis_id)
-    cv_show_image(win_name, image, delay=delay)
+    cv_show_image(title, image, delay=delay)
     return image
 
 
 def draw_points_text(image, points, texts=None, color=(255, 0, 0), thickness=1, drawType="simple"):
-    '''
-
+    """
     :param image:
     :param points:
     :param texts:
     :param color:
     :param drawType: custom or simple
     :return:
-    '''
+    """
     if texts is None:
         texts = [""] * len(points)
     for point, text in zip(points, texts):
@@ -1183,13 +1204,13 @@ def draw_points_text(image, points, texts=None, color=(255, 0, 0), thickness=1, 
 
 
 def draw_text(image, point, text, bg_color=(255, 0, 0), thickness=5, drawType="custom"):
-    '''
+    """
     :param image:
     :param point:
     :param text:
     :param drawType: custom or simple
     :return:
-    '''
+    """
     fontScale = 0.5
     text_thickness = 1
     fontFace = cv2.FONT_HERSHEY_SIMPLEX
@@ -1208,13 +1229,13 @@ def draw_text(image, point, text, bg_color=(255, 0, 0), thickness=5, drawType="c
 
 
 def draw_text_line(image, point, text_line: str, bg_color=(255, 0, 0), thickness=1, drawType="custom"):
-    '''
+    """
     :param image:
     :param point:
     :param text:
     :param drawType: custom or custom
     :return:
-    '''
+    """
     fontScale = 0.4
     fontFace = cv2.FONT_HERSHEY_SIMPLEX
     # fontFace=cv2.FONT_HERSHEY_SIMPLEX
@@ -1254,12 +1275,12 @@ def draw_key_point_in_image(image,
                             circle_color=(0, 255, 0),
                             line_color=(0, 0, 255),
                             thickness=2):
-    '''
+    """
     :param key_points: list(ndarray(19,2)) or ndarray(n_person,19,2)
     :param image:
     :param pointline: `auto`->pointline = circle_line(len(points), iscircle=True)
     :return:
-    '''
+    """
     image = copy.deepcopy(image)
     for person_id, points in enumerate(key_points):
         if points is None:
@@ -1277,12 +1298,12 @@ def draw_key_point_in_image(image,
 
 
 def draw_key_point_arrowed_in_image(image, key_points, pointline=[], color=None):
-    '''
+    """
     :param key_points: list(ndarray(19,2)) or ndarray(n_person,19,2)
     :param image:
     :param pointline:[[start-->end]]
     :return:
-    '''
+    """
     image = copy.deepcopy(image)
     person_nums = len(key_points)
     for person_id, points in enumerate(key_points):
@@ -1299,7 +1320,7 @@ def draw_image_points_lines(image,
                             circle_color=(0, 255, 0),
                             line_color=(0, 0, 255),
                             thickness=2):
-    '''
+    """
     在图像中画点和连接线
     :param image:
     :param points: 点列表
@@ -1309,7 +1330,7 @@ def draw_image_points_lines(image,
     :param drawType: simple or custom
     :param check:
     :return:
-    '''
+    """
     points = np.asarray(points, dtype=np.int32)
     if texts is None:
         texts = list(range(len(points)))
@@ -1328,7 +1349,7 @@ def draw_image_points_arrowed_lines(image, points,
                                     texts=None,
                                     drawType="simple",
                                     reverse=False):
-    '''
+    """
     在图像中画点箭头线
     :param image:
     :param points: 点列表
@@ -1338,7 +1359,7 @@ def draw_image_points_arrowed_lines(image, points,
     :param drawType: simple or custom
     :param check:
     :return:
-    '''
+    """
     points = np.asarray(points, dtype=np.int32)
     thickness = 2
     if texts is None:
@@ -1390,7 +1411,7 @@ def draw_image_arrowed_lines(image,
 
 
 def draw_image_polylines(image, points, color=(0, 0, 255)):
-    '''
+    """
     # points是三维坐标，分别表示(多边形个数，多边形坐标点x,多边形坐标点y)=(num_polylines,num_point,2)
     points = np.asarray([[[100, 100], [200, 100], [400, 200]],
                          [[500, 600], [300, 400], [500, 700]]]
@@ -1400,14 +1421,14 @@ def draw_image_polylines(image, points, color=(0, 0, 255)):
     参数3 isClosed：必选参数。用于设置绘制的折线是否关闭，若设置为True，则从折线的最后一个顶点到其第一个顶点会自动绘制一条线进行闭合。
     参数4 color：必选参数。用于设置多边形的颜色
     参数5 lineType：可选参数。用于设置线段的类型，可选8（8邻接连接线-默认）、4（4邻接连接线）和cv2.LINE_AA 为抗锯齿
-    '''
+    """
     points = np.asarray(points, dtype=np.int32)
     image = cv2.polylines(image, points, isClosed=True, color=color, thickness=2)  # 画任意多边形
     return image
 
 
 def draw_image_fillPoly(image, points, color=(0, 0, 255)):
-    '''
+    """
     # points是三维坐标，分别表示(多边形个数，多边形坐标点x,多边形坐标点y)=(num_polylines,num_point,2)
     points = np.asarray([[[100, 100], [200, 100], [400, 200]],
                          [[500, 600], [300, 400], [500, 700]]]
@@ -1417,21 +1438,21 @@ def draw_image_fillPoly(image, points, color=(0, 0, 255)):
     参数3 isClosed：必选参数。用于设置绘制的折线是否关闭，若设置为True，则从折线的最后一个顶点到其第一个顶点会自动绘制一条线进行闭合。
     参数4 color：必选参数。用于设置多边形的颜色
     参数5 lineType：可选参数。用于设置线段的类型，可选8（8邻接连接线-默认）、4（4邻接连接线）和cv2.LINE_AA 为抗锯齿
-    '''
+    """
     points = np.asarray(points, dtype=np.int32)
     image = cv2.fillPoly(image, points, color=color)
     return image
 
 
 def circle_line(num_point, iscircle=True):
-    '''
+    """
     产生连接线的点,用于绘制连接线
     points_line=circle_line(len(points),iscircle=True)
     >> [(0, 1), (1, 2), (2, 0)]
     :param num_point:
     :param iscircle: 首尾是否相连
     :return:
-    '''
+    """
     start = 0
     end = num_point - 1
     points_line = []
@@ -1479,23 +1500,23 @@ def cv_rotate(image, angle, center=None, scale=1.0):  # 1
 
 
 def rgb_to_gray(image):
-    '''
+    """
     RGB to Gray image
     :param image:
     :return:
-    '''
+    """
     image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
     return image
 
 
 def save_image(image_path, rgb_image, toUINT8=False):
-    '''
+    """
     保存图片
     :param image_path:
     :param rgb_image:
     :param toUINT8:
     :return:
-    '''
+    """
     save_dir = os.path.dirname(image_path)
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
@@ -1518,7 +1539,7 @@ def save_image_lable_dir(save_root, image_list, image_ids, index):
 
 
 def combime_save_image(orig_image, dest_image, out_dir, name, prefix):
-    '''
+    """
     命名标准：out_dir/name_prefix.jpg
     :param orig_image:
     :param dest_image:
@@ -1526,7 +1547,7 @@ def combime_save_image(orig_image, dest_image, out_dir, name, prefix):
     :param out_dir:
     :param prefix:
     :return:
-    '''
+    """
     dest_path = os.path.join(out_dir, name + "_" + prefix + ".jpg")
     save_image(dest_path, dest_image)
 
@@ -1535,19 +1556,19 @@ def combime_save_image(orig_image, dest_image, out_dir, name, prefix):
 
 
 def combile_label_prob(label_list, prob_list):
-    '''
+    """
     将label_list和prob_list拼接在一起，以便显示
     :param label_list:
     :param prob_list:
     :return:
-    '''
+    """
     info = [str(l) + ":" + str(p)[:5] for l, p in zip(label_list, prob_list)]
     return info
 
 
 def nms_bboxes_cv2(bboxes_list, scores_list, labels_list, width=None, height=None, score_threshold=0.5,
                    nms_threshold=0.45):
-    '''
+    """
     NMS
     fix a bug: cv2.dnn.NMSBoxe bboxes, scores params must be list and float data,can not be float32 or int
     :param bboxes_list: [list[xmin,ymin,xmax,ymax],[],,,]
@@ -1558,7 +1579,7 @@ def nms_bboxes_cv2(bboxes_list, scores_list, labels_list, width=None, height=Non
     :param score_threshold:
     :param nms_threshold:
     :return:
-    '''
+    """
     assert isinstance(scores_list, list), "scores_list must be list"
     assert isinstance(bboxes_list, list), "bboxes_list must be list"
     assert isinstance(labels_list, list), "labels_list must be list"
@@ -1586,14 +1607,14 @@ def nms_bboxes_cv2(bboxes_list, scores_list, labels_list, width=None, height=Non
 
 
 def filtering_scores(bboxes_list, scores_list, labels_list, score_threshold=0.0):
-    '''
+    """
     filtering low score bbox
     :param bboxes_list:
     :param scores_list:
     :param labels_list:
     :param score_threshold:
     :return:
-    '''
+    """
     dest_scores_list = []
     dest_labels_list = []
     dest_bboxes_list = []
@@ -1643,25 +1664,25 @@ def image_base642rgb_image(image_base64, use_rgb=False) -> np.ndarray:
     return image
 
 
-def read_image_base64(image_path, resize_height=None, resize_width=None):
-    if resize_height is None and resize_width is None:
+def read_image_base64(image_path, size=None):
+    if not size:
         with open(image_path, 'rb') as f_in:
             image_base64 = base64.b64encode(f_in.read())
             image_base64 = str(image_base64, encoding='utf-8')
     else:
-        bgr_image = read_image(image_path, resize_height, resize_width, use_rgb=False)
+        bgr_image = read_image(image_path, size=size, use_rgb=False)
         image_base64 = bgr_image2image_base64(bgr_image)
     return image_base64
 
 
-def bin2image(bin_data, resize_height=None, resize_width=None, normalization=False, use_rgb=True):
+def bin2image(bin_data, size, normalization=False, use_rgb=True):
     data = np.asarray(bytearray(bin_data), dtype="uint8")
     image = cv2.imdecode(data, cv2.IMREAD_COLOR)
     if use_rgb:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # 将BGR转为RGB
     # show_image(filename,image)
     # image=Image.open(filename)
-    image = resize_image(image, resize_height, resize_width)
+    image = resize_image(image, size=size)
     image = np.asanyarray(image)
     if normalization:
         image = image_normalization(image)
@@ -1670,12 +1691,12 @@ def bin2image(bin_data, resize_height=None, resize_width=None, normalization=Fal
 
 
 def post_process(input, axis=1):
-    '''
+    """
     l2_norm
     :param input:
     :param axis:
     :return:
-    '''
+    """
     # norm = torch.norm(input, 2, axis, True)
     # output = torch.div(input, norm)
     output = input / np.linalg.norm(input, axis=1, keepdims=True)
@@ -1698,12 +1719,12 @@ def softmax(x, axis=1):
 
 
 def convert_anchor(anchors, height, width):
-    '''
+    """
     height, width, _ = image.shape
     :param win_name:
     :param anchors: <class 'tuple'>: (nums, 4)
     :return: boxes_list:[xmin, ymin, xmax, ymax]
-    '''
+    """
     boxes_list = []
     for index, anchor in enumerate(anchors):
         xmin = anchor[0] * width
@@ -1714,14 +1735,15 @@ def convert_anchor(anchors, height, width):
     return boxes_list
 
 
-def get_rect_crop_padding(image, rect):
+def get_rect_crop_padding(image, rect, color=(0, 0, 0)):
     """
     :param image:
     :param rect:
+    :param color: padding color value
     :return:
     """
     rect = [int(v) for v in rect]
-    rows, cols = image.shape  # h,w,d
+    rows, cols = image.shape[:2]  # h,w,d
     x, y, width, height = rect
     crop_x1 = max(0, x)
     crop_y1 = max(0, y)
@@ -1739,7 +1761,7 @@ def get_rect_crop_padding(image, rect):
         top_y = np.where(top_y > 0, top_y, 0)
         down_y = np.where(down_y > 0, down_y, 0)
         roi_image = cv2.copyMakeBorder(roi_image, int(top_y), int(down_y), int(left_x), int(right_x),
-                                       cv2.BORDER_CONSTANT, value=0)
+                                       cv2.BORDER_CONSTANT, value=color)
     return roi_image
 
 
@@ -1778,23 +1800,23 @@ def get_bboxes_crop(image, bboxes):
     return crops
 
 
-def get_bboxes_crop_padding(image, bboxes, resize_height=None, resize_width=None):
+def get_bboxes_crop_padding(image, bboxes, size):
     """
     :param image:
     :param bboxes:
-    :param resize:
+    :param size:
     :return:
     """
     rects = bboxes2rects(bboxes)
     roi_images = []
     for rect in rects:
         roi_image = get_rect_crop_padding(image, rect)
-        roi_image = resize_image(roi_image, resize_height, resize_width)
+        roi_image = resize_image(roi_image, size=size)
         roi_images.append(roi_image)
     return roi_images
 
 
-def get_rects_crop_padding(image, rects, resize_height=None, resize_width=None):
+def get_rects_crop_padding(image, rects, size):
     """
     :param image:
     :param rects:
@@ -1804,18 +1826,18 @@ def get_rects_crop_padding(image, rects, resize_height=None, resize_width=None):
     roi_images = []
     for rect in rects:
         roi_image = get_rect_crop_padding(image, rect)
-        roi_image = resize_image(roi_image, resize_height, resize_width)
+        roi_image = resize_image(roi_image, size=size)
         roi_images.append(roi_image)
     return roi_images
 
 
 def center_crop(image, crop_size=[112, 112]):
-    '''
+    """
     central_crop
     :param image: input numpy type image
     :param crop_size:crop_size must less than x.shape[:2]=[crop_h,crop_w]
     :return:
-    '''
+    """
     h, w = image.shape[:2]
     y = int(round((h - crop_size[0]) / 2.))
     x = int(round((w - crop_size[1]) / 2.))
@@ -1824,7 +1846,7 @@ def center_crop(image, crop_size=[112, 112]):
     return image[y:y + crop_size[0], x:x + crop_size[1]]
 
 
-def center_crop_padding(image, crop_size):
+def center_crop_padding(image, crop_size, color=(0, 0, 0)):
     """
     :param image:
     :param crop_size: [crop_w,crop_h]
@@ -1834,18 +1856,18 @@ def center_crop_padding(image, crop_size):
     y = int(round((h - crop_size[1]) / 2.))
     x = int(round((w - crop_size[0]) / 2.))
     rect = [x, y, crop_size[0], crop_size[1]]
-    roi_image = get_rect_crop_padding(image, rect)
+    roi_image = get_rect_crop_padding(image, rect, color=color)
     return roi_image
 
 
 def extend_face2body_bboxes(faces_boxes, width_factor=1.0, height_factor=1.0):
-    '''
+    """
     extend boxes ,such as extend faces_boxes to body_boxes
     :param faces_boxes:
     :param width_factor:
     :param height_factor:
     :return:
-    '''
+    """
     body_boxes = []
     for face_box in faces_boxes:
         [x1, y1, x2, y2] = face_box
@@ -1899,11 +1921,11 @@ def extend_bboxes(bboxes, scale=[1.0, 1.0]):
 
 
 def get_square_bboxes(bboxes, fixed="H"):
-    '''
+    """
     :param bboxes:
     :param fixed: (W)width (H)height,(L) longest edge
     :return:
-    '''
+    """
     new_bboxes = []
     for bbox in bboxes:
         xmin, ymin, xmax, ymax = bbox
@@ -2202,12 +2224,15 @@ def draw_image_contours(image, contours: List[np.ndarray], color=(0, 255, 0), th
     return image
 
 
-def get_mask_boundrect_cv(mask, binarize=False):
+def get_mask_boundrect_cv(mask, binarize=False, shift=True):
     """
-    获得mask的最大外接矩形框
+    获得mask的最大外接矩形框(其速度比get_mask_boundrect快2倍左右)
     :param mask:
+    :param binarize: 是否对mask进行二值化
+    :param shift: 矩形框偏移量,shift>0表示扩大shift个像素，shift<0表示缩小shift个像素，默认为0不偏移
     :return: box=[xmin,ymin,xmax,ymax]
     """
+    h, w = mask.shape[:2]
     if binarize:
         ret, mask = cv2.threshold(mask, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
     contours = find_mask_contours(mask)
@@ -2216,14 +2241,19 @@ def get_mask_boundrect_cv(mask, binarize=False):
     ymin = np.min(contours[:, 1])
     xmax = np.max(contours[:, 0])
     ymax = np.max(contours[:, 1])
+    xmin = max(0, xmin - shift)
+    ymin = max(0, ymin - shift)
+    xmax = min(w, xmax + shift)
+    ymax = min(h, ymax + shift)
     return [xmin, ymin, xmax, ymax]
 
 
-def get_mask_boundrect(mask, binarize=False):
+def get_mask_boundrect(mask, binarize=False, shift=0):
     """
-    获得mask的最大外接矩形框
+    获得mask的最大外接矩形框(比较慢)
     :param mask:
     :param binarize: 是否对mask进行二值化
+    :param shift: 矩形框偏移量,shift>0表示扩大shift个像素，shift<0表示缩小shift个像素，默认为0不偏移
     :return: box=[xmin,ymin,xmax,ymax]
     """
 
@@ -2234,6 +2264,7 @@ def get_mask_boundrect(mask, binarize=False):
         max2 = len(v) - np.argmax(v[::-1]) - 1
         return max1, max2
 
+    h, w = mask.shape[:2]
     if binarize:
         ret, mask = cv2.threshold(mask, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
     y = np.sum(mask, axis=1)  # 将图像往Y轴累加投影
@@ -2242,6 +2273,10 @@ def get_mask_boundrect(mask, binarize=False):
     x = x > 0
     ymin, ymax = get_argminmax(y)
     xmin, xmax = get_argminmax(x)
+    xmin = max(0, xmin - shift)
+    ymin = max(0, ymin - shift)
+    xmax = min(w, xmax + shift)
+    ymax = min(h, ymax + shift)
     return [xmin, ymin, xmax, ymax]
 
 
@@ -2313,13 +2348,13 @@ def fig2data(fig):
 
 
 def addMouseCallback(winname, param, callbackFunc=None, info="%"):
-    '''
+    """
      添加点击事件
     :param winname:
     :param param:
     :param callbackFunc:
     :return:
-    '''
+    """
     cv2.namedWindow(winname)
 
     def default_callbackFunc(event, x, y, flags, param):
@@ -2343,13 +2378,13 @@ class EventCv():
             print("(x,y)=({},{}),data={}".format(x, y, self.image[y][x]))
 
     def add_mouse_event(self, winname, param=None, callbackFunc=None):
-        '''
+        """
          添加点击事件
         :param winname:
         :param param:
         :param callbackFunc:
         :return:
-        '''
+        """
         cv2.namedWindow(winname)
         if callbackFunc is None:
             callbackFunc = self.callback_print_image
@@ -2439,36 +2474,44 @@ def image_composite(image: np.ndarray, alpha: np.ndarray, bg_img=(219, 142, 67))
     return image
 
 
-def frames2gif_by_imageio(frames, out_gif_path="test.gif", fps=2):
+def frames2gif_by_imageio(frames, gif_file="test.gif", fps=2, loop=0):
     """
     pip install imageio
-    :param image_list:
-    :param out_gif_path:
-    :param fps:
+    :param frames:
+    :param gif_file: 输出的GIF图的路径
+    :param fps: 刷新频率
+    :param loop: 循环次数
     :return:
     """
     import imageio
-    writer = imageio.get_writer(uri=out_gif_path, mode='I', fps=fps)
+    writer = imageio.get_writer(uri=gif_file, mode='I', fps=fps, loop=loop)
     for image in frames:
         writer.append_data(image)
     writer.close()
     # imageio.mimwrite(out_gif_path, frames, fps=20)
 
 
-def frames2gif_by_pil(frames, out_gif_path="test.gif", fps=2):
+def frames2gif_by_pil(frames, gif_file="test.gif", fps=2, loop=0):
     """
     https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html#gif
+    PS :loop=0表示无限循环，loop=n表示循环n+1次，如要循环一次，需要去掉loop参数(很奇葩吧！！！)
     :param frames:
-    :param out_gif_path:
-    :param fps:
+    :param gif_file: 输出的GIF图的路径
+    :param fps: 刷新频率
+    :param loop: 循环次数
     :return:
     """
-    frames = [Image.fromarray(img) for img in frames]
-    frames[0].save(out_gif_path, save_all=True, append_images=frames[1:], duration=1000 / fps,
-                   optimize=False, loop=0)
+    images = [Image.fromarray(img) for img in frames]
+    if loop == 1:
+        images[0].save(gif_file, save_all=True, append_images=images[1:], duration=1000 / fps,
+                       optimize=False)
+    else:
+        loop = max(0, loop - 1)
+        images[0].save(gif_file, save_all=True, append_images=images[1:], duration=1000 / fps,
+                       optimize=False, loop=loop)
 
 
-def image_file_list2gif(file_list, image_size=None, out_gif_path="test.gif", fps=4):
+def image_file_list2gif(file_list, size=None, gif_file="test.gif", fps=4, loop=0):
     """
     pip install imageio
     uri：合成后的gif动图的名字，可以随意更改。
@@ -2479,19 +2522,20 @@ def image_file_list2gif(file_list, image_size=None, out_gif_path="test.gif", fps
         image_list = file_processing.get_files_lists(image_dir)
         image_file_list2gif(image_list, out_gif_path=out_gif_path, fps=fps)
     :param file_list:图片列表
-    :param image_size:gif图片的大小
-    :param out_gif_path:
-    :param fps:
+    :param size:gif图片的大小
+    :param gif_file: 输出的GIF图的路径
+    :param fps: 刷新频率
+    :param loop: 循环次数
     :return:
     """
     frames = []
     for file in file_list:
         bgr = cv2.imread(file)
         image = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
-        image = resize_image(image, resize_height=image_size[1], resize_width=image_size[0])
+        image = resize_image(image, size=size)
         frames.append(image)
-    frames2gif_by_pil(frames, out_gif_path, fps=fps)
-    # images2gif_by_imageio(frames, out_gif_path, fps=fps)
+    frames2gif_by_pil(frames, gif_file, fps=fps, loop=loop)
+    # images2gif_by_imageio(frames,gif_file, fps=fps, loop=loop)
 
 
 def get_video_info(video_cap):
