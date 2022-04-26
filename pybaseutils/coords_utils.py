@@ -14,6 +14,7 @@ import numpy as np
 
 def xyxy2xywh(xyxy: np.ndarray):
     """(xmin,ymin,xmax,ymax)==>(xmin,ymin,w,h)"""
+    if not isinstance(xyxy, np.ndarray): xyxy = np.asarray(xyxy)
     xywh = xyxy.copy()
     xywh[:, 2] = xywh[:, 2] - xywh[:, 0]  # w=xmax-xmin
     xywh[:, 3] = xywh[:, 3] - xywh[:, 1]  # w=ymax-ymin
@@ -22,6 +23,7 @@ def xyxy2xywh(xyxy: np.ndarray):
 
 def xywh2xyxy(xywh: np.ndarray):
     """(xmin,ymin,w,h)==>(xmin,ymin,xmax,ymax)"""
+    if not isinstance(xywh, np.ndarray): xywh = np.asarray(xywh)
     xyxy = xywh.copy()
     xyxy[:, 2] = xyxy[:, 0] + xyxy[:, 2]  # xmax=xmin+w
     xyxy[:, 3] = xyxy[:, 1] + xyxy[:, 3]  # ymax=ymin+h
@@ -30,7 +32,8 @@ def xywh2xyxy(xywh: np.ndarray):
 
 def xyxy2cxcywh(xyxy: np.ndarray, width=None, height=None, normalized=False):
     """(xmin, ymin, xmax, ymax)==>(cx,cy,w,h)"""
-    cxcywh = np.zeros_like(xyxy)
+    if not isinstance(xyxy, np.ndarray): xyxy = np.asarray(xyxy)
+    cxcywh = xyxy.copy()
     cxcywh[:, 0] = (xyxy[:, 2] + xyxy[:, 0]) / 2  # cx
     cxcywh[:, 1] = (xyxy[:, 3] + xyxy[:, 1]) / 2  # cy
     cxcywh[:, 2] = (xyxy[:, 2] - xyxy[:, 0])  # w
@@ -42,7 +45,8 @@ def xyxy2cxcywh(xyxy: np.ndarray, width=None, height=None, normalized=False):
 
 def cxcywh2xyxy(cxcywh: np.ndarray, width=None, height=None, normalized=False):
     """(cx,cy,w,h)==>xmin, ymin, xmax, ymax)"""
-    xyxy = np.zeros_like(cxcywh)
+    if not isinstance(cxcywh, np.ndarray): cxcywh = np.asarray(cxcywh)
+    xyxy = cxcywh.copy()
     xyxy[:, 0] = cxcywh[:, 0] - cxcywh[:, 2] / 2  # top left x
     xyxy[:, 1] = cxcywh[:, 1] - cxcywh[:, 3] / 2  # top left y
     xyxy[:, 2] = cxcywh[:, 0] + cxcywh[:, 2] / 2  # bottom right x
@@ -58,7 +62,8 @@ def extend_xyxy(xyxy: np.ndarray, scale=[1.0, 1.0]):
     :param scale: [sx,sy]==>(W,H)
     :return:
     """
-    cxcywh = np.zeros_like(xyxy, dtype=xyxy.dtype)
+    if not isinstance(xyxy, np.ndarray): xyxy = np.asarray(xyxy)
+    cxcywh = xyxy.copy()
     cxcywh[:, 0] = (xyxy[:, 2] + xyxy[:, 0]) / 2  # cx
     cxcywh[:, 1] = (xyxy[:, 3] + xyxy[:, 1]) / 2  # cy
     cxcywh[:, 2] = (xyxy[:, 2] - xyxy[:, 0]) * scale[0]  # w
@@ -73,6 +78,7 @@ def extend_xywh(xywh: np.ndarray, scale=[1.0, 1.0]):
     :param scale: [sx,sy]==>(W,H)
     :return:
     """
+    if not isinstance(xywh, np.ndarray): xywh = np.asarray(xywh)
     xyxy = xywh2xyxy(xywh)
     xyxy = extend_xyxy(xyxy, scale)
     dxywh = xyxy2xywh(xyxy)
@@ -86,8 +92,7 @@ def get_square_bboxes(boxes, use_max=True):
     :param use_max: 是否按照每个box(w,h)最大值进行转换
     :return:
     """
-    if not isinstance(boxes, np.ndarray):
-        boxes = np.asarray(boxes)
+    if not isinstance(boxes, np.ndarray): boxes = np.asarray(boxes)
     center = xyxy2cxcywh(boxes)
     if use_max:
         b = np.max(center[:, 2:4], axis=1)
@@ -129,7 +134,7 @@ class YOLOCoords(object):
 
 
 def show_image(name, image, boxes, labels, center2bboxes=False, untranspose=False, waitKey=0):
-    from utils import image_utils
+    from pybaseutils import image_utils
     if center2bboxes:
         boxes = cxcywh2xyxy(boxes)
     if untranspose:
@@ -139,7 +144,7 @@ def show_image(name, image, boxes, labels, center2bboxes=False, untranspose=Fals
 
 
 def demo_for_augment():
-    from utils import image_utils
+    from pybaseutils import image_utils
     input_size = [320, 320]
     image_path = "test.jpg"
     boxes = [[98, 42, 160, 100], [244, 260, 297, 332], [98 + 50, 42 + 50, 160 + 50, 100 + 50]]
