@@ -1,13 +1,28 @@
-# base_utils
-集成C/C++ OpenCV常用的算法
+# base-utils
+
+### (1)base_utils(C++)
+base_util是个人开发常用的C++库，集成了C/C++ OpenCV等常用的算法
 - 增加了debug测试宏定义，如时间测试，LOG信息等
 - 针对目标坐标点的卡尔曼滤波，加权平均滤波
 - 常用的文件处理函数
 - 常用的OpenCV图像处理函数
 
+### (2)pybaseutils(Python)
+pybaseutils是个人开发常用的python库，集成了python等常用的算法
+- file_utils.py
+- image_utils.py 
+- base64_utils.py
+- coords_utils.py
+- yaml_utils.py
+- numpy_tools.py
+
+
+
+
 ## 1.目录结构
 ```
 ├── base_utils         # base_utils的源代码
+├── pybaseutils        # base_utils的源代码
 ├── data               # 相关测试数据
 ├── test               # base_utils的测试代码
 │   ├── build.sh
