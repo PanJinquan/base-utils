@@ -117,6 +117,27 @@ def get_square_rects(rects, use_max=True):
     return rects
 
 
+def get_section(start, end, nums=2, scale=1.0, dtype=None):
+    """
+    均匀划分nums个线段，并返回截断点(nums+1)
+    :param start: 起点
+    :param end: 终点
+    :param nums: 将范围[start,end]均匀划分的段数，默认2段
+    :param scale: 对范围[start,end]进行缩放
+    :param dtype: 输出类型
+    :return: 返回截断点,其个数是nums+1
+    """
+    d = end - start
+    c = (start + end) * 0.5  # 中心点
+    start = int(c - d * scale * 0.5)
+    end = int(c + d * scale * 0.5)
+    unit = (end - start) / nums
+    out = np.arange(start, end + 0.1 * unit, unit)
+    dtype = dtype if dtype else out.dtype
+    out = np.asarray(out, dtype=dtype)
+    return out
+
+
 class YOLOCoords(object):
     def __init__(self, max_boxes=120, norm=False):
         self.max_boxes = max_boxes
