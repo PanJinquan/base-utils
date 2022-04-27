@@ -39,7 +39,7 @@ def xyxy2cxcywh(xyxy: np.ndarray, width=None, height=None, normalized=False):
     cxcywh[:, 2] = (xyxy[:, 2] - xyxy[:, 0])  # w
     cxcywh[:, 3] = (xyxy[:, 3] - xyxy[:, 1])  # h
     if normalized:
-        cxcywh = cxcywh / (width, height, width, height)
+        cxcywh[:, 0:4] = cxcywh[:, 0:4] / (width, height, width, height)
     return cxcywh
 
 
@@ -52,7 +52,7 @@ def cxcywh2xyxy(cxcywh: np.ndarray, width=None, height=None, normalized=False):
     xyxy[:, 2] = cxcywh[:, 0] + cxcywh[:, 2] / 2  # bottom right x
     xyxy[:, 3] = cxcywh[:, 1] + cxcywh[:, 3] / 2  # bottom right y
     if normalized:
-        xyxy = xyxy * (width, height, width, height)
+        xyxy[:, 0:4] = xyxy[:, 0:4] * (width, height, width, height)
     return xyxy
 
 
