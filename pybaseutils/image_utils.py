@@ -2181,7 +2181,7 @@ def draw_image_contours(image, contours: List[np.ndarray], color=(0, 255, 0), th
     return image
 
 
-def get_mask_boundrect_cv(mask, binarize=False, shift=True):
+def get_mask_boundrect_cv(mask, binarize=False, shift=0):
     """
     获得mask的最大外接矩形框(其速度比get_mask_boundrect快2倍左右)
     :param mask:
@@ -2198,10 +2198,10 @@ def get_mask_boundrect_cv(mask, binarize=False, shift=True):
     ymin = np.min(contours[:, 1])
     xmax = np.max(contours[:, 0])
     ymax = np.max(contours[:, 1])
-    xmin = max(0, xmin - shift)
-    ymin = max(0, ymin - shift)
-    xmax = min(w, xmax + shift)
-    ymax = min(h, ymax + shift)
+    xmin = max(0, int(xmin - shift))
+    ymin = max(0, int(ymin - shift))
+    xmax = min(w, int(xmax + shift))
+    ymax = min(h, int(ymax + shift))
     return [xmin, ymin, xmax, ymax]
 
 
@@ -2230,10 +2230,10 @@ def get_mask_boundrect(mask, binarize=False, shift=0):
     x = x > 0
     ymin, ymax = get_argminmax(y)
     xmin, xmax = get_argminmax(x)
-    xmin = max(0, xmin - shift)
-    ymin = max(0, ymin - shift)
-    xmax = min(w, xmax + shift)
-    ymax = min(h, ymax + shift)
+    xmin = max(0, int(xmin - shift))
+    ymin = max(0, int(ymin - shift))
+    xmax = min(w, int(xmax + shift))
+    ymax = min(h, int(ymax + shift))
     return [xmin, ymin, xmax, ymax]
 
 
