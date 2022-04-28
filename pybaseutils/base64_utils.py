@@ -93,7 +93,7 @@ def base642file(file, bs64, prefix=IMG_PREFIX) -> str:
 
 def array2base64(data: Any, prefix=IMG_PREFIX, use_rgb=False) -> Any:
     """
-    将输入数据含有图像数据(ndarray)都编码为base64字符串
+    序列化:将输入数据含有图像数据(ndarray)都编码为base64字符串
     :param data: 输入数据
     :param prefix: base64字符串前缀,用于表识字符串的类型
     :param use_rgb: True:输入image是RGB的图像, False:输入image是BGR格式的图像
@@ -103,6 +103,10 @@ def array2base64(data: Any, prefix=IMG_PREFIX, use_rgb=False) -> Any:
         return image2base64(data, prefix=prefix, use_rgb=use_rgb)
     elif isinstance(data, np.ndarray):
         return data.tolist()
+    elif isinstance(data, np.integer):
+        return int(data)
+    elif isinstance(data, np.floating):
+        return float(data)
     elif isinstance(data, list):
         for i in range(len(data)):
             data[i] = array2base64(data[i], prefix=prefix, use_rgb=use_rgb)
@@ -114,7 +118,7 @@ def array2base64(data: Any, prefix=IMG_PREFIX, use_rgb=False) -> Any:
 
 def base642array(data: Any, prefix=IMG_PREFIX, use_rgb=False) -> Any:
     """
-    将输入数据含有base64字符串都解码为图像数据(ndarray)
+    反序列化:将输入数据含有base64字符串都解码为图像数据(ndarray)
     :param data: 输入数据
     :param prefix: base64字符串前缀,用于表识字符串的类型
     :param use_rgb: True:输入image是RGB的图像, False:输入image是BGR格式的图像
@@ -131,23 +135,8 @@ def base642array(data: Any, prefix=IMG_PREFIX, use_rgb=False) -> Any:
     return data
 
 
-def cv_show_image(title: str, image: np.ndarray, use_rgb=True, delay=0):
-    """
-    调用OpenCV显示RGB图片
-    :param title: 图像标题
-    :param image: 输入是否是RGB图像
-    :param use_rgb: True:输入image是RGB的图像, False:返输入image是BGR格式的图像
-    :return:
-    """
-    img = image.copy()
-    if img.shape[-1] == 3 and use_rgb:
-        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)  # 将BGR转为RGB
-    # cv2.namedWindow(title, flags=cv2.WINDOW_AUTOSIZE)
-    cv2.namedWindow(title, flags=cv2.WINDOW_NORMAL)
-    cv2.imshow(title, img)
-    cv2.waitKey(delay)
-    return img
-
+serialization = array2base64  # 序列化
+deserialization = base642array  # 反序列化
 
 if __name__ == "__main__":
     file = "/home/dm/project/python-learning-notes/utils/test.jpg"
@@ -155,5 +144,3 @@ if __name__ == "__main__":
     image_base64 = image2base64(bgr1)
     image_base64 = file2base64(file)
     bgr2 = base642image(image_base64, use_rgb=False)
-    cv_show_image("bgr1", bgr1, use_rgb=False, delay=1)
-    cv_show_image("bgr2", bgr2, use_rgb=False)
