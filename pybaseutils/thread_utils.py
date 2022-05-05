@@ -8,7 +8,6 @@
 
 import threading
 import time
-import queue
 from typing import List, Callable
 from concurrent.futures import ThreadPoolExecutor
 
@@ -74,5 +73,6 @@ class ThreadPool(ThreadPoolExecutor):
 if __name__ == "__main__":
     tp = ThreadPool(max_workers=2)
     contents = ["{}.jpg".format(i) for i in range(10)]
+    print(contents)
     result = tp.task(func=consumer, inputs=contents)
     print("result:{}".format(result))
