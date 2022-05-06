@@ -8,8 +8,6 @@
 import threading
 import time
 import random
-from abc import ABC
-
 from pybaseutils.worker import Worker, Compose
 from pybaseutils.thread_utils import thread_lock_decorator, thread_lock
 from pybaseutils import debug
