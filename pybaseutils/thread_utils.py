@@ -12,7 +12,7 @@ from typing import List, Callable
 from concurrent.futures import ThreadPoolExecutor
 
 # 创建线程锁
-lock = threading.Lock()
+thread_lock = threading.Lock()
 
 
 def thread_safety(func, *args, **kwargs):
@@ -32,7 +32,7 @@ def thread_safety(func, *args, **kwargs):
     :param kwargs:
     :return:
     """
-    with lock:
+    with thread_lock:
         r = func(*args, **kwargs)
     return r
 
@@ -43,7 +43,7 @@ def consumer(image_path):
     :return:
     """
     time.sleep(1)
-    with lock:
+    with thread_lock:
         print("正在处理数据：{}  ".format(image_path))
     return image_path
 
@@ -68,6 +68,18 @@ class ThreadPool(ThreadPoolExecutor):
         for r in self.executor.map(func, inputs):
             result.append(r)
         return result
+
+
+def thread_lock_decorator():
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            with thread_lock:
+                result = func(*args, **kwargs)
+            return result
+
+        return wrapper
+
+    return decorator
 
 
 if __name__ == "__main__":

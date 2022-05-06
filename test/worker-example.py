@@ -10,84 +10,74 @@ import time
 import random
 from abc import ABC
 
-from pybaseutils.worker import Worker, as_completed
+from pybaseutils.worker import Worker, Compose
+from pybaseutils.thread_utils import thread_lock_decorator, thread_lock
 from pybaseutils import debug
+from typing import List, Callable
 
 
 class Producer(Worker):
-    def __init__(self, input=None, num_worker=2, maxsize=5):
-        super(Producer, self).__init__(input, num_worker=num_worker, maxsize=maxsize)
+    def __init__(self, num_worker=2, maxsize=5, *args, **kwargs):
+        super(Producer, self).__init__(num_worker=num_worker, maxsize=maxsize, args=args, kwargs=kwargs)
+        self.nums = kwargs["nums"]
 
-    def task(self, nums):
+    def task(self, ):
         """发送数据"""
         done = True
         count = 0
         while done:
-            time.sleep(0.01)  # 每隔一段时间发送一次数据
+            # time.sleep(1)  # 每隔一段时间发送一次数据
             data = "{}.jpg".format(count)
             data = {"index": count, "data": data}
             self.output.put(data)
             print("{},发送数据：{}".format(self.info(), data))
-            done = nums > count
+            done = self.nums > count
             count += 1
 
-    def start(self, nums=10):
-        t = threading.Thread(target=self.task, args=(nums,))
+    def start(self, *args, **kwargs):
+        t = threading.Thread(target=self.task, args=args, kwargs=kwargs)
         # 执行线程
         t.start()
 
 
 class Consumer1(Worker):
-    def __init__(self, input=None, num_worker=2, maxsize=5):
-        """
-        :param input:  输入队列
-        :param num_worker:  线程池最大线程数
-        :param maxsize:
-        """
-        super(Consumer1, self).__init__(input, num_worker=num_worker, maxsize=maxsize)
+    def __init__(self, num_worker=2, maxsize=5, *args, **kwargs):
+        super(Consumer1, self).__init__(num_worker=num_worker, maxsize=maxsize, args=args, kwargs=kwargs)
 
+    # @thread_lock_decorator()
     def task(self, data):
         # data.update({"C2": 2})
-        t = random.uniform(0, 4)
+        t = random.uniform(0, 2)
         time.sleep(t)
         print("{},处理数据：{}".format(self.info(), data))
         return data
 
 
 class Consumer2(Worker):
-    def __init__(self, input=None, num_worker=2, maxsize=5):
-        """
-        :param input:  输入队列
-        :param num_worker:  线程池最大线程数
-        :param maxsize:
-        """
-        super(Consumer2, self).__init__(input, num_worker=num_worker, maxsize=maxsize)
+    def __init__(self, num_worker=2, maxsize=5, *args, **kwargs):
+        super(Consumer2, self).__init__(num_worker=num_worker, maxsize=maxsize, args=args, kwargs=kwargs)
 
     def task(self, data):
-        t = random.uniform(0, 4)
+        t = random.uniform(0, 3)
         time.sleep(t)
         print("{},处理数据：{}".format(self.info(), data))
         return data
 
 
 class Result(Worker):
-    def __init__(self, input=None, num_worker=2, maxsize=5):
-        """
-        :param input:  输入队列
-        :param num_worker:  线程池最大线程数
-        :param maxsize:
-        """
-        super(Result, self).__init__(input, num_worker=num_worker, maxsize=maxsize)
+    def __init__(self, num_worker=2, maxsize=5, *args, **kwargs):
+        super(Result, self).__init__(num_worker=num_worker, maxsize=maxsize, args=args, kwargs=kwargs)
+        self.nums = kwargs["nums"]
 
     def task(self):
         data = self.input.get(block=True, timeout=None)
         return data
 
     @debug.run_time_decorator()
-    def start(self, nums):
+    def start(self, ):
         """线程任务"""
         result = []
-        while nums > len(result):
+        while self.nums >= len(result):
             try:
                 data = self.task()
                 result.append(data)
@@ -96,6 +86,7 @@ class Result(Worker):
                 pass
             finally:
                 pass
+        print("result:{}".format(result))
         return result
 
 
@@ -105,12 +96,10 @@ if __name__ == "__main__":
     _target_v2 13534.188032150269ms 13520.671367645264ms 
     """
     nums = 10
-    p = Producer(input=None, num_worker=4, maxsize=5)
-    c1 = Consumer1(input=p, num_worker=4, maxsize=5)
-    c2 = Consumer2(input=c1, num_worker=4, maxsize=5)
-    r = Result(input=c2, num_worker=4, maxsize=5)
-    p.start(nums=nums)
-    c1.start()
-    c2.start()
-    result = r.start(nums=nums)
-    print(result)
+    consumer = Compose([
+        Producer(num_worker=4, maxsize=5, nums=nums),
+        Consumer1(num_worker=8, maxsize=5),
+        Consumer2(num_worker=4, maxsize=5),
+        Result(num_worker=4, maxsize=5, nums=nums),
+    ])
+    consumer.start()
