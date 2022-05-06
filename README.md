@@ -1,28 +1,30 @@
 # base-utils
 
 ### (1)base_utils(C++)
+
 base_util是个人开发常用的C++库，集成了C/C++ OpenCV等常用的算法
+
 - 增加了debug测试宏定义，如时间测试，LOG信息等
 - 针对目标坐标点的卡尔曼滤波，加权平均滤波
 - 常用的文件处理函数
 - 常用的OpenCV图像处理函数
 
 ### (2)pybaseutils(Python)
+
 pybaseutils是个人开发常用的python库，集成了python等常用的算法
+
 - file_utils.py
-- image_utils.py 
+- image_utils.py
 - base64_utils.py
 - coords_utils.py
 - yaml_utils.py
 - numpy_tools.py
 
+## 目录结构
 
-
-
-## 1.目录结构
 ```
-├── base_utils         # base_utils的源代码
-├── pybaseutils        # base_utils的源代码
+├── base_utils         # base_utils的C++源代码
+├── pybaseutils        # pybaseutils的python源代码
 ├── data               # 相关测试数据
 ├── test               # base_utils的测试代码
 │   ├── build.sh
@@ -33,8 +35,12 @@ pybaseutils是个人开发常用的python库，集成了python等常用的算法
 
 ```
 
-## 2.相关配置
+# base_utils(C++)
+
+## 1.相关配置
+
 - OpenCV配置方法
+
 ```cmake
 # opencv set
 find_package(OpenCV REQUIRED)
@@ -43,6 +49,7 @@ MESSAGE(STATUS "OpenCV_INCLUDE_DIRS = ${OpenCV_INCLUDE_DIRS}")
 ```
 
 - base-utils库的配置方法
+
 ```cmake
 # base-utils
 set(BASE_ROOT ../) # 设置base-utils所在的根目录
@@ -53,7 +60,7 @@ MESSAGE(STATUS "BASE_ROOT = ${BASE_ROOT}")
 ```
 
 - 配置OpenCL（可选）
-    1. OpenCL: https://software.intel.com/content/www/us/en/develop/tools/opencl-sdk/choose-download.html 
+    1. OpenCL: https://software.intel.com/content/www/us/en/develop/tools/opencl-sdk/choose-download.html
     2. Android系统一般都支持OpenCL，Linux系统可参考如下配置：
 
 ```bash
@@ -70,16 +77,17 @@ sudo apt-get install mono-complete
 sudo sh install.sh
 ```
 
-
-
-## 3.Demo测试
+## 2.Demo测试
 
 - `build`
+
 ```bash
 cd test
 bash build.sh
 ```
+
 - `test/main.cpp`测试样例
+
 ```c++
 #include<opencv2/opencv.hpp>
 #include<string>
@@ -104,4 +112,23 @@ int main() {
 
 ```
 
-<img src="docs/demo.jpg" width="0" height="" />
+# pybaseutils(python)
+
+## 1.install
+
+- 源码安装
+
+```bash
+git clone https://github.com/PanJinquan/base-utils
+cd base-utils
+bash setup.sh
+pip install dist/pybaseutils-*.*.*.tar.gz
+```
+
+- pip安装: https://pypi.org/project/pybaseutils/0.2.8/
+
+```bash
+pip install pybaseutils
+```
+
+
