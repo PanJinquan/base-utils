@@ -827,7 +827,6 @@ def scale_rect(orig_rect, orig_shape, dest_shape):
     return dest_rect
 
 
-
 def xyxy2xywh(xyxy: np.ndarray):
     """(xmin,ymin,xmax,ymax)==>(xmin,ymin,w,h)"""
     xywh = xyxy.copy()
@@ -893,7 +892,6 @@ def extend_xywh(xywh: np.ndarray, scale=[1.0, 1.0]):
     xyxy = extend_xyxy(xyxy, scale)
     dxywh = xyxy2xywh(xyxy)
     return dxywh
-
 
 
 def get_rect_intersection(rec1, rec2):
@@ -1561,13 +1559,23 @@ def pil_paste_image(im, mask, start_point=(0, 0)):
     return np.asarray(out)
 
 
-def cv_rotate(image, angle, center=None, scale=1.0):  # 1
-    (h, w) = image.shape[:2]  # 2
-    if center is None:  # 3
-        center = (w // 2, h // 2)  # 4
-    M = cv2.getRotationMatrix2D(center, angle, scale)  # 5
-    rotated = cv2.warpAffine(image, M, (w, h))  # 6
-    return rotated  # 7
+def image_rotation(image, angle, center=None, scale=1.0, borderValue=(0, 0, 0)):
+    """
+    图像旋转
+    :param image:
+    :param angle:
+    :param center:
+    :param scale:
+    :param borderValue:
+    :return:
+    """
+    h, w = image.shape[:2]
+    if not center:
+        # center = (w // 2, h // 2)
+        center = (w / 2., h / 2.)
+    mat = cv2.getRotationMatrix2D(center, angle, scale)
+    rotated = cv2.warpAffine(image, mat, dsize=(w, h), borderMode=cv2.BORDER_CONSTANT, borderValue=borderValue)
+    return rotated
 
 
 def rgb_to_gray(image):
