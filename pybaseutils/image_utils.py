@@ -180,15 +180,16 @@ def show_images_list(name, images_list, delay=0):
     cv2.waitKey(delay)
 
 
-def resize_image_like(image_list, dst_img):
+def resize_image_like(image_list, dst_img, is_rgb=True):
     """
     按dst_img的图像大小对image_list所有图片进行resize
     :param image_list: 图片列表
     :param dst_img: 目标图片大小
+    :param is_rgb: 是否将灰度图转换为RGB格式
     :return:
     """
     shape = dst_img.shape
-    is_rgb = len(shape) == 3
+    is_rgb = len(shape) == 3 or is_rgb
     for i in range(len(image_list)):
         if not shape[:2] == image_list[i].shape[:2]:
             image_list[i] = cv2.resize(image_list[i], dsize=(shape[1], shape[0]), interpolation=cv2.INTER_NEAREST)
@@ -197,9 +198,9 @@ def resize_image_like(image_list, dst_img):
     return image_list
 
 
-def image_hstack(images, split_line=False):
+def image_hstack(images, split_line=False, is_rgb=True):
     """图像左右拼接"""
-    dst_images = resize_image_like(image_list=images, dst_img=images[0])
+    dst_images = resize_image_like(image_list=images, dst_img=images[0], is_rgb=is_rgb)
     dst_images = np.hstack(dst_images)
     if len(dst_images.shape) == 2:
         dst_images = cv2.cvtColor(dst_images, cv2.COLOR_GRAY2BGR)
@@ -214,9 +215,9 @@ def image_hstack(images, split_line=False):
     return dst_images
 
 
-def image_vstack(images, split_line=False):
+def image_vstack(images, split_line=False, is_rgb=True):
     """图像上下拼接"""
-    dst_images = resize_image_like(image_list=images, dst_img=images[0])
+    dst_images = resize_image_like(image_list=images, dst_img=images[0], is_rgb=is_rgb)
     dst_images = np.vstack(dst_images)
     if len(dst_images.shape) == 2:
         dst_images = cv2.cvtColor(dst_images, cv2.COLOR_GRAY2BGR)

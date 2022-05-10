@@ -155,7 +155,7 @@ def find_key_metadata(metadata: List[Dict], key):
     return values
 
 
-def show_word_packer(packer, image, keys=[], delay=0):
+def show_word_packer(packer, image, keys=[], split_line=False, delay=0):
     _keys = ['label', 'cls_score', 'box', 'det_score']
     for word in packer:
         label = word['label'] if "label" in word else ""
@@ -165,11 +165,11 @@ def show_word_packer(packer, image, keys=[], delay=0):
         if isinstance(image, np.ndarray):
             image = image_utils.draw_image_bboxes_text(image, boxes=[word["box"]],
                                                        boxes_name=[label], color=(0, 0, 255))
-            show_image("dets", [image], delay=1)
-        show_image("packer", images, delay=delay)
+            show_image("dets", [image], split_line=split_line, delay=1)
+        show_image("packer", images, split_line=split_line, delay=delay)
 
 
-def show_word_unpacker(unpacker, image, keys=[], delay=0):
+def show_word_unpacker(unpacker, image, keys=[], split_line=False, delay=0):
     _keys = ['label', 'cls_score', 'box', 'det_score']
     for i in range(len(unpacker["box"])):
         label = unpacker["label"][i] if "label" in unpacker else ""
@@ -179,12 +179,12 @@ def show_word_unpacker(unpacker, image, keys=[], delay=0):
         if isinstance(image, np.ndarray):
             image = image_utils.draw_image_bboxes_text(image, boxes=[unpacker["box"][i]],
                                                        boxes_name=[label], color=(0, 0, 255))
-            show_image("dets", [image], delay=1)
-        show_image("unpacker", images, delay=delay)
+            show_image("dets", [image], split_line=split_line, delay=1)
+        show_image("unpacker", images, split_line=split_line, delay=delay)
 
 
-def show_image(title, images, use_rgb=False, delay=0):
+def show_image(title, images, use_rgb=False, split_line=False, delay=0):
     if isinstance(images, np.ndarray): images = [images]
     if len(images) == 0: return
-    image = image_utils.image_hstack(images)
+    image = image_utils.image_hstack(images, split_line=split_line)
     image_utils.cv_show_image(title, image, use_rgb=use_rgb, delay=delay)

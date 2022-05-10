@@ -1,6 +1,6 @@
 # base-utils
 
-## base_utils(C++)
+### (1)base_utils(C++)
 
 base_util是个人开发常用的C++库，集成了C/C++ OpenCV等常用的算法
 
@@ -9,7 +9,7 @@ base_util是个人开发常用的C++库，集成了C/C++ OpenCV等常用的算�
 - 常用的文件处理函数
 - 常用的OpenCV图像处理函数
 
-## pybaseutils(Python)
+### (2)pybaseutils(Python)
 
 pybaseutils是个人开发常用的python库，集成了python等常用的算法
 
@@ -111,3 +111,24 @@ int main() {
 }
 
 ```
+
+# pybaseutils(python)
+
+## 1.install
+
+- 源码安装
+
+```bash
+git clone https://github.com/PanJinquan/base-utils
+cd base-utils
+bash setup.sh
+pip install dist/pybaseutils-*.*.*.tar.gz
+```
+
+- pip安装: https://pypi.org/project/pybaseutils/0.2.8/
+
+```bash
+pip install pybaseutils
+```
+
+
