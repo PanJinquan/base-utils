@@ -1836,10 +1836,10 @@ def get_rect_crop_padding(image, rect, color=(0, 0, 0)):
     roi_image = image[crop_y1:crop_y2, crop_x1:crop_x2]
     # 只要存在边界越界的情况，就需要边界填充
     if top_y > 0 or down_y > 0 or left_x > 0 or right_x > 0:
-        left_x = np.where(left_x > 0, left_x, 0)
-        right_x = np.where(right_x > 0, right_x, 0)
-        top_y = np.where(top_y > 0, top_y, 0)
-        down_y = np.where(down_y > 0, down_y, 0)
+        left_x = max(left_x, 0)
+        right_x = max(right_x, 0)
+        top_y = max(top_y, 0)
+        down_y = max(0, down_y, 0)
         roi_image = cv2.copyMakeBorder(roi_image, int(top_y), int(down_y), int(left_x), int(right_x),
                                        cv2.BORDER_CONSTANT, value=color)
     return roi_image
