@@ -8,7 +8,7 @@
 import cv2
 import numpy as np
 from typing import List, Tuple, Dict
-from pybaseutils import image_utils, json_utils
+from pybaseutils import image_utils, json_utils, file_utils
 
 
 def concat_stroke_image(mask, seg_list, split_line=False, vis=False):
@@ -165,8 +165,8 @@ def show_word_packer(packer, image, keys=[], split_line=False, delay=0):
         if isinstance(image, np.ndarray):
             image = image_utils.draw_image_bboxes_text(image, boxes=[word["box"]],
                                                        boxes_name=[label], color=(0, 0, 255))
-            show_image("dets", [image], split_line=split_line, delay=1)
-        show_image("packer", images, split_line=split_line, delay=delay)
+            show_images("dets", [image], split_line=split_line, delay=1)
+        show_images("packer", images, split_line=split_line, delay=delay)
 
 
 def show_word_unpacker(unpacker, image, keys=[], split_line=False, delay=0):
@@ -179,12 +179,30 @@ def show_word_unpacker(unpacker, image, keys=[], split_line=False, delay=0):
         if isinstance(image, np.ndarray):
             image = image_utils.draw_image_bboxes_text(image, boxes=[unpacker["box"][i]],
                                                        boxes_name=[label], color=(0, 0, 255))
-            show_image("dets", [image], split_line=split_line, delay=1)
-        show_image("unpacker", images, split_line=split_line, delay=delay)
+            show_images("dets", [image], split_line=split_line, delay=1)
+        show_images("unpacker", images, split_line=split_line, delay=delay)
 
 
-def show_image(title, images, use_rgb=False, split_line=False, delay=0):
+def show_images(title, images, use_rgb=False, split_line=False, delay=0):
     if isinstance(images, np.ndarray): images = [images]
     if len(images) == 0: return
     image = image_utils.image_hstack(images, split_line=split_line)
     image_utils.cv_show_image(title, image, use_rgb=use_rgb, delay=delay)
+
+
+def save_images(images, dsize=None, out_dir="./output"):
+    for img in images:
+        name = file_utils.get_time("p") + ".png"
+        file = file_utils.create_dir(out_dir, None, name)
+        img = image_utils.resize_image(img, size=dsize)
+        cv2.imwrite(file, img)
+
+
+def save_packer_images(packer, keys=["crop"], dsize=None, out_dir="./output"):
+    for i, word in enumerate(packer):
+        time = file_utils.get_time("p")
+        for k in keys:
+            name = "{:0=3d}_{}_{}.png".format(i, time, k)
+            file = file_utils.create_dir(out_dir, None, name)
+            img = image_utils.resize_image(word[k], size=dsize)
+            cv2.imwrite(file, img)

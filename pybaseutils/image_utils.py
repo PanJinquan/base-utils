@@ -454,7 +454,7 @@ def requests_url(url):
     return stream
 
 
-def read_images_url(url, size=None, normalization=False, use_rgb='RGB'):
+def read_images_url(url, size=None, normalization=False, use_rgb=True):
     """
     根据url或者图片路径，读取图片
     :param url:
@@ -2159,6 +2159,29 @@ def get_contours_iou(contour1, contour2, image_size: Tuple = None, plot=False):
         cv_show_image("mask1+mask2", mask1 + mask2, delay=1)
         cv_show_image("U(mask1,mask2)={:3.3f}".format(iou), mask, delay=0)
     return contours, iou
+
+
+def get_mask_iou(mask1, mask2, binarize=True):
+    """
+    计算两个Mask的IOU
+    :param mask1:
+    :param mask2:
+    :param binarize:
+    :return:
+    """
+    if binarize:
+        ret, mask1 = cv2.threshold(mask1, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+        ret, mask2 = cv2.threshold(mask2, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+    h, w = mask1.shape[:2]
+    mask2 = cv2.resize(mask2, dsize=(w, h), interpolation=cv2.INTER_NEAREST)
+    mask1 = mask1 >= 255
+    mask2 = mask2 >= 255
+    area1 = mask1.sum()
+    area2 = mask2.sum()
+    inter = mask1 * mask2
+    inter_ = (inter == 1).sum()  # 交集
+    iou = inter_ / (area1 + area2 - inter_)
+    return iou
 
 
 def pointPolygonTest(point, contour, measureDist=False):
