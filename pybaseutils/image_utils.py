@@ -180,7 +180,7 @@ def show_images_list(name, images_list, delay=0):
     cv2.waitKey(delay)
 
 
-def resize_image_like(image_list, dst_img, is_rgb=True):
+def resize_image_like(image_list, dst_img, is_rgb=False):
     """
     按dst_img的图像大小对image_list所有图片进行resize
     :param image_list: 图片列表
@@ -198,7 +198,7 @@ def resize_image_like(image_list, dst_img, is_rgb=True):
     return image_list
 
 
-def image_hstack(images, split_line=False, is_rgb=True):
+def image_hstack(images, split_line=False, is_rgb=False):
     """图像左右拼接"""
     dst_images = resize_image_like(image_list=images, dst_img=images[0], is_rgb=is_rgb)
     dst_images = np.hstack(dst_images)
@@ -215,7 +215,7 @@ def image_hstack(images, split_line=False, is_rgb=True):
     return dst_images
 
 
-def image_vstack(images, split_line=False, is_rgb=True):
+def image_vstack(images, split_line=False, is_rgb=False):
     """图像上下拼接"""
     dst_images = resize_image_like(image_list=images, dst_img=images[0], is_rgb=is_rgb)
     dst_images = np.vstack(dst_images)

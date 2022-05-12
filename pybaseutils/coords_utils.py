@@ -138,6 +138,60 @@ def get_section(start, end, nums=2, scale=1.0, dtype=None):
     return out
 
 
+def box_iou_v1(box1, box2):
+    """
+    :param box1: 预测框(n, 4)
+    :param box2: GT框 (m, 4)
+    :return: IOU (n, m)
+    numpy 广播机制 从后向前对齐。 维度为1 的可以重复等价为任意维度
+    eg: (4,3,2)   (3,2)  (3,2)会扩充为(4,3,2)
+        (4,1,2)   (3,2) (4,1,2) 扩充为(4, 3, 2)  (3, 2)扩充为(4, 3,2) 扩充的方法为重复
+    广播会在numpy的函数 如sum, maximun等函数中进行
+    pytorch同理。
+    扩充维度的方法：
+    eg: a  a.shape: (3,2)  a[:, None, :] a.shape: (3, 1, 2) None 对应的维度相当于newaxis
+    """
+    if not isinstance(box1, np.ndarray):
+        box1 = np.array(box1)
+    if not isinstance(box2, np.ndarray):
+        box2 = np.array(box2)
+    lt = np.maximum(box1[:, None, :2], box2[:, :2])  # left_top (x, y)
+    rb = np.minimum(box1[:, None, 2:], box2[:, 2:])  # right_bottom (x, y)
+    wh = np.maximum(rb - lt + 1, 0)  # inter_area (w, h)
+    inter_areas = wh[:, :, 0] * wh[:, :, 1]  # shape: (n, m)
+    box_areas = (box1[:, 2] - box1[:, 0] + 1) * (box1[:, 3] - box1[:, 1] + 1)
+    gt_areas = (box2[:, 2] - box2[:, 0] + 1) * (box2[:, 3] - box2[:, 1] + 1)
+    iou = inter_areas / (box_areas[:, None] + gt_areas - inter_areas)
+    return iou
+
+
+def box_iou_v2(box1, box2):
+    """
+    https://www.jb51.net/article/178732.htm
+    :param box1:
+    :param box2:
+    :return:
+    """
+    if not isinstance(box1, np.ndarray):
+        box1 = np.array(box1)
+    if not isinstance(box2, np.ndarray):
+        box2 = np.array(box2)
+    xmin1, ymin1, xmax1, ymax1, = np.split(box1, 4, axis=-1)
+    xmin2, ymin2, xmax2, ymax2, = np.split(box2, 4, axis=-1)
+    area1 = (xmax1 - xmin1) * (ymax1 - ymin1)
+    area2 = (xmax2 - xmin2) * (ymax2 - ymin2)
+    ymin = np.maximum(ymin1, np.squeeze(ymin2, axis=-1))
+    xmin = np.maximum(xmin1, np.squeeze(xmin2, axis=-1))
+    ymax = np.minimum(ymax1, np.squeeze(ymax2, axis=-1))
+    xmax = np.minimum(xmax1, np.squeeze(xmax2, axis=-1))
+    h = np.maximum(ymax - ymin, 0)
+    w = np.maximum(xmax - xmin, 0)
+    intersect = h * w
+    union = area1 + np.squeeze(area2, axis=-1) - intersect
+    iou = intersect / union
+    return iou
+
+
 class YOLOCoords(object):
     def __init__(self, max_boxes=120, norm=False):
         self.max_boxes = max_boxes
