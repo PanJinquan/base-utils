@@ -9,7 +9,7 @@
 import threading
 import time
 from typing import List, Callable
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # 创建线程锁
 thread_lock = threading.Lock()
@@ -37,37 +37,63 @@ def thread_safety(func, *args, **kwargs):
     return r
 
 
-def consumer(image_path):
+def consumer(image_path: str):
     """
     :param image_path:
     :return:
     """
-    time.sleep(1)
-    with thread_lock:
-        print("正在处理数据：{}  ".format(image_path))
+    t = int(image_path.split(".")[0])
+    time.sleep(t)
+    # with thread_lock:
+    print("正在处理数据：{}  ".format(image_path))
     return image_path
 
 
-class ThreadPool(ThreadPoolExecutor):
-    def __init__(self, max_workers=2, maxsize=10):
+class ThreadPool(object):
+    def __init__(self, max_workers=2):
         """
         :param max_workers:  线程池最大线程数
         :param maxsize:
         """
-        self.executor = ThreadPoolExecutor(max_workers)
+        self.executor = ThreadPoolExecutor(max_workers=max_workers)
 
     def submit(self, func: Callable, *args, **kwargs):
         """递交线程任务"""
         t = self.executor.submit(func, *args, **kwargs)
         return t
 
-    def task(self, func: Callable, inputs: List):
-        """线程任务"""
+    def task_map(self, func: Callable, inputs: List):
+        """线程任务，返回结果有序(map与submit的性能基于一致)"""
         # 通过executor的 map 获取已经完成的task的值
         result = []
         for r in self.executor.map(func, inputs):
             result.append(r)
         return result
+
+    def task_submit(self, func: Callable, inputs: List):
+        """线程任务，返回结果无序(map与submit的性能基于一致)"""
+        task_list = [self.executor.submit(func, p) for p in inputs]
+        result = []
+        for task in as_completed(task_list):
+            result.append(task.result())
+        return result
+
+    def task_submit_v1(self, func: Callable, inputs: List):
+        """线程任务，返回结果无序"""
+        task_list = [self.executor.submit(func, p) for p in inputs]
+        result = []
+        while len(task_list) > 0:
+            index = []
+            for i, task in enumerate(task_list):
+                if task.done():
+                    result.append(task.result())
+                else:
+                    index.append(i)
+            task_list = [task_list[i] for i in index]
+        return result
+
+    def shutdown(self, wait=True):
+        self.executor.shutdown(wait=wait)
 
 
 def thread_lock_decorator():
@@ -83,8 +109,19 @@ def thread_lock_decorator():
 
 
 if __name__ == "__main__":
-    tp = ThreadPool(max_workers=2)
-    contents = ["{}.jpg".format(i) for i in range(10)]
+    import random
+    from pybaseutils import debug
+
+    tp = ThreadPool(max_workers=4)
+    contents = ["{}.jpg".format(i / 5) for i in range(10)]
+    random.shuffle(contents)
     print(contents)
-    result = tp.task(func=consumer, inputs=contents)
-    print("result:{}".format(result))
+    t0 = debug.TIME()
+    result1 = tp.task_map(func=consumer, inputs=contents)
+    t1 = debug.TIME()
+    result2 = tp.task_submit(func=consumer, inputs=contents)
+    t2 = debug.TIME()
+    print("task_map   :{}".format(debug.RUN_TIME(t1 - t0)))
+    print("task_submit:{}".format(debug.RUN_TIME(t2 - t1)))
+    print(result1)
+    print(result2)
