@@ -59,6 +59,12 @@ def get_keys_vaules(content, func=None):
     return keys, values
 
 
+def get_value(content, key, default=None):
+    """根据key路径获得对应的值"""
+    value = toolz.get_in(key, content, default=default)
+    return value
+
+
 def get_values(content, keys):
     """根据keys路径获得对应的值"""
     values = [toolz.get_in(k, content) for k in keys]
@@ -111,7 +117,9 @@ if __name__ == "__main__":
         print("path={}\t    value={}".format(k, v))
     print("===" * 20)
     # toolz使用toolz工具或得所有keys的值,values1与values的值是一样的
-    values1 = get_values(content, keys=keys)
+    # values1 = get_values(content, keys=keys)
+    # values1 = get_values(content, keys=[['data1', 'image', 1], ['data', 'file', 'file11']])
+    values1 = get_value(None, key=['data', 'image', 1],default={"data"})
     print(values1)
     print("===" * 20)
     values = list(range(len(values)))

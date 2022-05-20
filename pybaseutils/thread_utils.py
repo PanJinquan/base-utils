@@ -63,7 +63,7 @@ class ThreadPool(object):
         return t
 
     def task_map(self, func: Callable, inputs: List):
-        """线程任务，返回结果有序(map与submit的性能基于一致)"""
+        """线程任务，返回结果有序(map与submit的性能基本一致)"""
         # 通过executor的 map 获取已经完成的task的值
         result = []
         for r in self.executor.map(func, inputs):
@@ -71,7 +71,7 @@ class ThreadPool(object):
         return result
 
     def task_submit(self, func: Callable, inputs: List):
-        """线程任务，返回结果无序(map与submit的性能基于一致)"""
+        """线程任务，返回结果无序(map与submit的性能基本一致)"""
         task_list = [self.executor.submit(func, p) for p in inputs]
         result = []
         for task in as_completed(task_list):
@@ -113,12 +113,14 @@ if __name__ == "__main__":
     from pybaseutils import debug
 
     tp = ThreadPool(max_workers=4)
-    contents = ["{}.jpg".format(i / 5) for i in range(10)]
-    random.shuffle(contents)
+    # contents = ["{}.jpg".format(i / 5) for i in range(10)]
+    # random.shuffle(contents)
+    contents = ["1.jpg", "4.jpg", "4.jpg", "4.jpg", "2.jpg"]
     print(contents)
     t0 = debug.TIME()
     result1 = tp.task_map(func=consumer, inputs=contents)
     t1 = debug.TIME()
+    print()
     result2 = tp.task_submit(func=consumer, inputs=contents)
     t2 = debug.TIME()
     print("task_map   :{}".format(debug.RUN_TIME(t1 - t0)))

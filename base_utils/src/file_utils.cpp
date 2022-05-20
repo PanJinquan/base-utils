@@ -65,7 +65,7 @@ bool file_exists(string path) {
 
 
 std::string load_file(string path) {
-    std::ifstream file(path, std::ios::in);
+    std::ifstream file(path, std::ios::in | std::ios::binary);
     if (file.is_open()) {
         file.seekg(0, file.end);
         int size = file.tellg();
