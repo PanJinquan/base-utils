@@ -34,12 +34,14 @@ cv::Mat rotate_image(cv::Mat &image, cv::Point2f center, float angle, cv::Scalar
     return dst;
 }
 
-vector<cv::Point2f> rotate_image_points(cv::Mat &image, vector<cv::Point2f> &points, cv::Point2f center, float angle) {
+vector<cv::Point2f>
+rotate_image_points(cv::Mat &image, vector<cv::Point2f> &points, cv::Point2f center, float angle) {
     image = rotate_image(image, center, angle);
     return rotate_points(points, center, image.cols, image.rows, angle);;
 }
 
-cv::Point2f rotate_point(cv::Point2f point, cv::Point2f center, int image_width, int image_height, float angle) {
+cv::Point2f rotate_point(cv::Point2f point, cv::Point2f center, int image_width, int image_height,
+                         float angle) {
     // 将图像坐标转换到平面坐标
     float x1 = point.x;
     float y1 = image_height - point.y;
@@ -170,7 +172,8 @@ void draw_point_text(cv::Mat &image, cv::Point2f points, string text, cv::Scalar
     }
 }
 
-void draw_points_texts(cv::Mat &image, vector<cv::Point2f> points, vector<string> texts, cv::Scalar color) {
+void draw_points_texts(cv::Mat &image, vector<cv::Point2f> points, vector<string> texts,
+                       cv::Scalar color) {
     int num = points.size();
     if (texts.size() != num && texts.size() == 0) {
         for (int i = 0; i < num; ++i) {
@@ -183,22 +186,23 @@ void draw_points_texts(cv::Mat &image, vector<cv::Point2f> points, vector<string
 }
 
 
-void draw_rect_text(cv::Mat &image, cv::Rect rect, string text, cv::Scalar color) {
-    cv::rectangle(image, rect, color, 2);
+void draw_rect_text(cv::Mat &image, cv::Rect rect, string text, cv::Scalar color, int thickness) {
+    cv::rectangle(image, rect, color, thickness);
     if (text != "") {
         cv::putText(image,
                     text,
                     cv::Point(rect.x + 5, rect.y),
                     cv::FONT_HERSHEY_COMPLEX,
                     0.5,
-                    color);
+                    color, thickness);
     }
 }
 
 void draw_rects_texts(cv::Mat &image,
                       vector<cv::Rect> rects,
                       vector<string> texts,
-                      cv::Scalar color) {
+                      cv::Scalar color,
+                      int thickness) {
     int num = rects.size();
     if (texts.size() != num && texts.size() == 0) {
         for (int i = 0; i < num; ++i) {
@@ -206,7 +210,7 @@ void draw_rects_texts(cv::Mat &image,
         }
     }
     for (int i = 0; i < num; ++i) {
-        draw_rect_text(image, rects[i], texts[i], color);
+        draw_rect_text(image, rects[i], texts[i], color, thickness);
     }
 }
 
@@ -242,7 +246,7 @@ void draw_arrowed_lines(cv::Mat &image,
 
 
 void draw_yaw_pitch_roll_in_left_axis(cv::Mat &imgBRG, float pitch, float yaw, float roll,
-                                      cv::Point center, bool vis, int size,int thickness ) {
+                                      cv::Point center, int size, int thickness, bool vis) {
 
     float cx = center.x;
     float cy = center.y;
@@ -264,11 +268,14 @@ void draw_yaw_pitch_roll_in_left_axis(cv::Mat &imgBRG, float pitch, float yaw, f
     float y3 = size * (-cos(yaw) * sin(pitch)) + cy;
     cv::Scalar color_roll_z(255, 0, 0);
     float tipLength = 0.2;
-    cv::arrowedLine(imgBRG, cv::Point(int(cx), int(cy)), cv::Point(int(x1), int(y1)), color_yaw_x, thickness,
+    cv::arrowedLine(imgBRG, cv::Point(int(cx), int(cy)), cv::Point(int(x1), int(y1)), color_yaw_x,
+                    thickness,
                     tipLength);
-    cv::arrowedLine(imgBRG, cv::Point(int(cx), int(cy)), cv::Point(int(x2), int(y2)), color_pitch_y, thickness,
+    cv::arrowedLine(imgBRG, cv::Point(int(cx), int(cy)), cv::Point(int(x2), int(y2)), color_pitch_y,
+                    thickness,
                     tipLength);
-    cv::arrowedLine(imgBRG, cv::Point(int(cx), int(cy)), cv::Point(int(x3), int(y3)), color_roll_z, thickness,
+    cv::arrowedLine(imgBRG, cv::Point(int(cx), int(cy)), cv::Point(int(x3), int(y3)), color_roll_z,
+                    thickness,
                     tipLength);
     if (vis) {
         cv::putText(imgBRG,
