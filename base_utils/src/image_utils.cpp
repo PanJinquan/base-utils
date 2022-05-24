@@ -242,7 +242,7 @@ void draw_arrowed_lines(cv::Mat &image,
 
 
 void draw_yaw_pitch_roll_in_left_axis(cv::Mat &imgBRG, float pitch, float yaw, float roll,
-                                      cv::Point center, bool vis, int size) {
+                                      cv::Point center, bool vis, int size,int thickness ) {
 
     float cx = center.x;
     float cy = center.y;
@@ -264,11 +264,11 @@ void draw_yaw_pitch_roll_in_left_axis(cv::Mat &imgBRG, float pitch, float yaw, f
     float y3 = size * (-cos(yaw) * sin(pitch)) + cy;
     cv::Scalar color_roll_z(255, 0, 0);
     float tipLength = 0.2;
-    cv::arrowedLine(imgBRG, cv::Point(int(cx), int(cy)), cv::Point(int(x1), int(y1)), color_yaw_x, 2,
+    cv::arrowedLine(imgBRG, cv::Point(int(cx), int(cy)), cv::Point(int(x1), int(y1)), color_yaw_x, thickness,
                     tipLength);
-    cv::arrowedLine(imgBRG, cv::Point(int(cx), int(cy)), cv::Point(int(x2), int(y2)), color_pitch_y, 2,
+    cv::arrowedLine(imgBRG, cv::Point(int(cx), int(cy)), cv::Point(int(x2), int(y2)), color_pitch_y, thickness,
                     tipLength);
-    cv::arrowedLine(imgBRG, cv::Point(int(cx), int(cy)), cv::Point(int(x3), int(y3)), color_roll_z, 2,
+    cv::arrowedLine(imgBRG, cv::Point(int(cx), int(cy)), cv::Point(int(x3), int(y3)), color_roll_z, thickness,
                     tipLength);
     if (vis) {
         cv::putText(imgBRG,

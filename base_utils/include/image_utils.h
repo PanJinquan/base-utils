@@ -207,7 +207,7 @@ void draw_arrowed_lines(cv::Mat &image, vector<cv::Point2f> points, vector<vecto
  * @param size
  */
 void draw_yaw_pitch_roll_in_left_axis(cv::Mat &imgBRG, float pitch, float yaw, float roll,
-                                      cv::Point center, bool vis = true, int size = 50);
+                                      cv::Point center, bool vis = true, int size = 50,int thickness=2);
 
 
 /***
