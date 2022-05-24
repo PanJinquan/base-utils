@@ -40,7 +40,8 @@ cv::Mat rotate_image(cv::Mat &image, cv::Point2f center, float angle, cv::Scalar
  * @param angle  旋转角度
  * @return
  */
-vector<cv::Point2f> rotate_image_points(cv::Mat &image, vector<cv::Point2f> &points, cv::Point2f center, float angle);
+vector<cv::Point2f>
+rotate_image_points(cv::Mat &image, vector<cv::Point2f> &points, cv::Point2f center, float angle);
 
 /***
  * 逆时针旋转图像中点
@@ -51,7 +52,8 @@ vector<cv::Point2f> rotate_image_points(cv::Mat &image, vector<cv::Point2f> &poi
  * @param angle 旋转角度
  * @return
  */
-cv::Point2f rotate_point(cv::Point2f point, cv::Point2f center, int image_width, int image_height, float angle);
+cv::Point2f
+rotate_point(cv::Point2f point, cv::Point2f center, int image_width, int image_height, float angle);
 
 /***
  * 逆时针旋转图像中点
@@ -146,7 +148,8 @@ void image_save(string name, cv::Mat &image);
  * @param point
  * @param text
  */
-void draw_point_text(cv::Mat &image, cv::Point2f points, string text = "", cv::Scalar color = (0, 0, 255));
+void draw_point_text(cv::Mat &image, cv::Point2f points, string text = "",
+                     cv::Scalar color = (0, 0, 255));
 
 
 /***
@@ -165,7 +168,8 @@ void draw_points_texts(cv::Mat &image, vector<cv::Point2f> points, vector<string
  * @param rect
  * @param text
  */
-void draw_rect_text(cv::Mat &image, cv::Rect rect, string text = "", cv::Scalar color = (255, 0, 0));
+void draw_rect_text(cv::Mat &image, cv::Rect rect, string text = "",
+                    cv::Scalar color = (255, 0, 0), int thickness = 2);
 
 
 /***
@@ -174,7 +178,8 @@ void draw_rect_text(cv::Mat &image, cv::Rect rect, string text = "", cv::Scalar 
  * @param rects
  * @param texts
  */
-void draw_rects_texts(cv::Mat &image, vector<cv::Rect> rects, vector<string> texts, cv::Scalar color = (255, 0, 0));
+void draw_rects_texts(cv::Mat &image, vector<cv::Rect> rects, vector<string> texts,
+                      cv::Scalar color = (255, 0, 0), int thickness = 2);
 
 
 /***
@@ -183,8 +188,8 @@ void draw_rects_texts(cv::Mat &image, vector<cv::Rect> rects, vector<string> tex
  * @param points
  * @param skeleton 需要连接的ID序号
  */
-void
-draw_lines(cv::Mat &image, vector<cv::Point2f> points, vector<vector<int>> skeleton, cv::Scalar color = (0, 255, 0));
+void draw_lines(cv::Mat &image, vector<cv::Point2f> points, vector<vector<int>> skeleton,
+                cv::Scalar color = (0, 255, 0));
 
 /***
  * 绘制带箭头的连接线
@@ -207,7 +212,8 @@ void draw_arrowed_lines(cv::Mat &image, vector<cv::Point2f> points, vector<vecto
  * @param size
  */
 void draw_yaw_pitch_roll_in_left_axis(cv::Mat &imgBRG, float pitch, float yaw, float roll,
-                                      cv::Point center, bool vis = true, int size = 50);
+                                      cv::Point center, int size = 50, int thickness = 2,
+                                      bool vis = true);
 
 
 /***
@@ -218,7 +224,8 @@ void draw_yaw_pitch_roll_in_left_axis(cv::Mat &imgBRG, float pitch, float yaw, f
  * @param out    输出融合图像
  * @param bg     输入背景图像Mat(可任意大小)，也可以通过Scalar指定纯色的背景
  */
-void image_fusion(cv::Mat &imgBGR, cv::Mat matte, cv::Mat &out, cv::Scalar bg = cv::Scalar(219, 142, 67));
+void image_fusion(cv::Mat &imgBGR, cv::Mat matte, cv::Mat &out,
+                  cv::Scalar bg = cv::Scalar(219, 142, 67));
 
 void image_fusion(cv::Mat &imgBGR, cv::Mat matte, cv::Mat &out, cv::Mat bg);
 
