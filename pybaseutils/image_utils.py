@@ -2380,29 +2380,6 @@ class EventCv():
         cv2.setMouseCallback(winname, callbackFunc, param=param)
 
 
-def get_video_capture(video_path, width=None, height=None, fps=None):
-    """
-     --   7W   Pix--> width=320,height=240
-     --   30W  Pix--> width=640,height=480
-     720P,100W Pix--> width=1280,height=720
-     960P,130W Pix--> width=1280,height=1024
-    1080P,200W Pix--> width=1920,height=1080
-    :param video_path:
-    :param width:
-    :param height:
-    :return:
-    """
-    video_cap = cv2.VideoCapture(video_path)
-    # 设置分辨率
-    if width:
-        video_cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-    if height:
-        video_cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-    if fps:
-        video_cap.set(cv2.CAP_PROP_FPS, 15)
-    return video_cap
-
-
 def get_image_block(image, grid=[3, 3], same=False):
     """
     :param image:
@@ -2525,6 +2502,29 @@ def image_file_list2gif(file_list, size=None, gif_file="test.gif", fps=4, loop=0
         frames.append(image)
     frames2gif_by_pil(frames, gif_file, fps=fps, loop=loop)
     # images2gif_by_imageio(frames,gif_file, fps=fps, loop=loop)
+
+
+def get_video_capture(video_path, width=None, height=None, fps=None):
+    """
+     --   7W   Pix--> width=320,height=240
+     --   30W  Pix--> width=640,height=480
+     720P,100W Pix--> width=1280,height=720
+     960P,130W Pix--> width=1280,height=1024
+    1080P,200W Pix--> width=1920,height=1080
+    :param video_path:
+    :param width:
+    :param height:
+    :return:
+    """
+    video_cap = cv2.VideoCapture(video_path)
+    # 设置分辨率
+    if width:
+        video_cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+    if height:
+        video_cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+    if fps:
+        video_cap.set(cv2.CAP_PROP_FPS, 15)
+    return video_cap
 
 
 def get_video_info(video_cap):
