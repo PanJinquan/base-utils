@@ -172,23 +172,23 @@ class CVVideo():
     def __init__(self):
         pass
 
-    def start_capture(self, video_path, save_video=None, detect_freq=1):
+    def start_capture(self, video_file, save_video=None, interval=1):
         """
         start capture video
-        :param video_path: *.avi,*.mp4,...
+        :param video_file: *.avi,*.mp4,...
         :param save_video: *.avi
-        :param detect_freq:
+        :param interval:
         :return:
         """
         # cv2.moveWindow("test", 1000, 100)
-        video_cap = get_video_capture(video_path)
+        video_cap = get_video_capture(video_file)
         width, height, numFrames, fps = get_video_info(video_cap)
         if save_video:
             self.video_writer = get_video_writer(save_video, width, height, fps)
         # freq = int(fps / detect_freq)
         count = 0
         while True:
-            if count % detect_freq == 0:
+            if count % interval == 0:
                 # 设置抽帧的位置
                 video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
                 isSuccess, frame = video_cap.read()
