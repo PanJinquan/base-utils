@@ -1915,12 +1915,12 @@ def center_crop(image, crop_size=[112, 112]):
     """
     central_crop
     :param image: input numpy type image
-    :param crop_size:crop_size must less than x.shape[:2]=[crop_h,crop_w]
+    :param crop_size: (W,H) crop_size must less than x.shape[:2]=[crop_h,crop_w]
     :return:
     """
     h, w = image.shape[:2]
-    y = int(round((h - crop_size[0]) / 2.))
-    x = int(round((w - crop_size[1]) / 2.))
+    y = int(round((h - crop_size[1]) / 2.))
+    x = int(round((w - crop_size[0]) / 2.))
     y = max(y, 0)
     x = max(x, 0)
     return image[y:y + crop_size[0], x:x + crop_size[1]]
