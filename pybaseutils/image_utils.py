@@ -971,7 +971,7 @@ def show_image_boxes(title, image, boxes_list, color=(0, 0, 255), delay=0):
     return image
 
 
-def draw_image_bboxes_text(rgb_image, boxes, boxes_name, color, drawType="custom", top=True):
+def draw_image_bboxes_text(rgb_image, boxes, boxes_name, color, thickness=2, drawType="custom", top=True):
     """
     :param boxes_name:
     :param bgr_image: bgr image
@@ -988,11 +988,12 @@ def draw_image_bboxes_text(rgb_image, boxes, boxes_name, color, drawType="custom
         # cv2.putText(bgr_image, name, (crop_type[0], crop_type[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), thickness=2)
         # cv2.rectangle(bgr_image, (crop_type[0], crop_type[1]), (crop_type[2], crop_type[3]), color, 2, 8, 0)
         # cv2.putText(bgr_image, str(name), (crop_type[0], crop_type[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, thickness=2)
-        custom_bbox_line(rgb_image, box, color, name, drawType, top)
+        custom_bbox_line(rgb_image, box, color, name, thickness, drawType, top)
     return rgb_image
 
 
-def draw_image_bboxes_labels_text(rgb_image, boxes, labels, boxes_name=None, color=None, drawType="custom", top=True):
+def draw_image_bboxes_labels_text(rgb_image, boxes, labels, boxes_name=None, color=None, thickness=2, drawType="custom",
+                                  top=True):
     """
     :param rgb_image:
     :param boxes:
@@ -1010,7 +1011,7 @@ def draw_image_bboxes_labels_text(rgb_image, boxes, labels, boxes_name=None, col
     for label, box, name in zip(labels, boxes, boxes_name):
         box = [int(b) for b in box]
         color_ = color if color else color_map[int(label)]
-        custom_bbox_line(rgb_image, box, color_, str(name), drawType, top)
+        custom_bbox_line(rgb_image, box, color_, str(name), thickness, drawType, top)
     return rgb_image
 
 
@@ -1089,7 +1090,7 @@ def flat_data(data):
     return data
 
 
-def draw_image_detection_bboxes(rgb_image, bboxes, probs, labels, class_name=None):
+def draw_image_detection_bboxes(rgb_image, bboxes, probs, labels, class_name=None, thickness=2):
     """
     :param title:
     :param rgb_image:
@@ -1106,7 +1107,7 @@ def draw_image_detection_bboxes(rgb_image, bboxes, probs, labels, class_name=Non
         if class_name:
             label = class_name[int(label)]
         boxes_name = "{}:{:3.3f}".format(label, prob)
-        custom_bbox_line(rgb_image, box, color, boxes_name, drawType="custom")
+        custom_bbox_line(rgb_image, box, color, boxes_name, thickness, drawType="custom")
     return rgb_image
 
 
@@ -1148,7 +1149,7 @@ def draw_dt_gt_dets(image, dt_boxes, dt_label, gt_boxes, gt_label, vis_diff=Fals
     return image
 
 
-def custom_bbox_line(image, bbox, color, name, drawType="custom", top=True):
+def custom_bbox_line(image, bbox, color, name, thickness=2, drawType="custom", top=True):
     """
     :param image:
     :param bbox:
@@ -1159,7 +1160,6 @@ def custom_bbox_line(image, bbox, color, name, drawType="custom", top=True):
     :return:
     """
     fontScale = 0.5
-    thickness = 1
     if not name:
         drawType = "simple"
     if drawType == "simple":
@@ -1923,7 +1923,7 @@ def center_crop(image, crop_size=[112, 112]):
     x = int(round((w - crop_size[0]) / 2.))
     y = max(y, 0)
     x = max(x, 0)
-    return image[y:y + crop_size[0], x:x + crop_size[1]]
+    return image[y:y + crop_size[1], x:x + crop_size[0]]
 
 
 def center_crop_padding(image, crop_size, color=(0, 0, 0)):

@@ -155,7 +155,7 @@ def find_key_metadata(metadata: List[Dict], key):
     return values
 
 
-def show_word_packer(packer, image, keys=[], split_line=False, delay=0):
+def show_word_packer(packer, image, keys=[], split_line=False, color=(0, 0, 255), thickness=2, delay=0):
     _keys = ['label', 'cls_score', 'box', 'det_score']
     for word in packer:
         label = word['label'] if "label" in word else ""
@@ -163,13 +163,17 @@ def show_word_packer(packer, image, keys=[], split_line=False, delay=0):
         info = ["{}:{}".format(k, word[k]) for k in _keys if k in word]
         print(info)
         if isinstance(image, np.ndarray):
-            image = image_utils.draw_image_bboxes_text(image, boxes=[word["box"]],
-                                                       boxes_name=[label], color=(0, 0, 255))
+            image = image_utils.draw_image_bboxes_text(image,
+                                                       boxes=[word["box"]],
+                                                       boxes_name=[label],
+                                                       color=color,
+                                                       thickness=thickness)
             show_images("dets", [image], split_line=split_line, delay=1)
         show_images("packer", images, split_line=split_line, delay=delay)
+    return image
 
 
-def show_word_unpacker(unpacker, image, keys=[], split_line=False, delay=0):
+def show_word_unpacker(unpacker, image, keys=[], split_line=False, color=(0, 0, 255), thickness=2, delay=0):
     _keys = ['label', 'cls_score', 'box', 'det_score']
     for i in range(len(unpacker["box"])):
         label = unpacker["label"][i] if "label" in unpacker else ""
@@ -177,10 +181,14 @@ def show_word_unpacker(unpacker, image, keys=[], split_line=False, delay=0):
         info = ["{}:{}".format(k, unpacker[k][i]) for k in _keys if k in unpacker]
         print(info)
         if isinstance(image, np.ndarray):
-            image = image_utils.draw_image_bboxes_text(image, boxes=[unpacker["box"][i]],
-                                                       boxes_name=[label], color=(0, 0, 255))
+            image = image_utils.draw_image_bboxes_text(image,
+                                                       boxes=[unpacker["box"][i]],
+                                                       boxes_name=[label],
+                                                       color=color,
+                                                       thickness=thickness)
             show_images("dets", [image], split_line=split_line, delay=1)
         show_images("unpacker", images, split_line=split_line, delay=delay)
+    return image
 
 
 def show_images(title, images, use_rgb=False, split_line=False, delay=0):
