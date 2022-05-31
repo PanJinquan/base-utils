@@ -16,3 +16,12 @@ mprof plot
 mprof plot mprofile_20200329173152.dat # 指定绘制文件
 mprof plot --flame mprofile_20200329173152.dat # 查看火焰图
 ```
+
+## pip安装慢的问题
+- 新建/修改: vim ~/.pip/pip.conf:
+```
+[global]
+index-url = https://pypi.tuna.tsinghua.edu.cn/simple
+disable-pip-version-check = true
+timeout = 120
+```

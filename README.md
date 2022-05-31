@@ -20,6 +20,9 @@ pybaseutils是个人开发常用的python库，集成了python等常用的算法
 - yaml_utils.py
 - numpy_tools.py
 
+## 一些问题修复说明
+- [问题修复说明](./docs/README.md)
+
 ## 目录结构
 
 ```
