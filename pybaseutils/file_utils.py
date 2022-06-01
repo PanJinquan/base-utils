@@ -19,6 +19,8 @@ import numbers
 import pickle
 from datetime import datetime
 
+IMG_POSTFIX = ['*.jpg', '*.jpeg', '*.png', '*.tif']
+
 
 def str2bool(v):
     return v.lower() in ('yes', 'true', 't', 'y', '1')
@@ -323,6 +325,7 @@ def remove_dir(dir):
 
 def get_prefix_files(file_dir, prefix):
     """
+    获得符合前缀条件所有文件
     :param file_dir:
     :param prefix: "best*"
     :return:
@@ -333,6 +336,7 @@ def get_prefix_files(file_dir, prefix):
 
 def remove_prefix_files(file_dir, prefix):
     """
+    删除符合前缀条件所有文件
     :param file_dir:
     :param prefix: "best*"
     :return:
@@ -343,6 +347,35 @@ def remove_prefix_files(file_dir, prefix):
             remove_file(file)
         elif os.path.isdir(file):
             remove_dir(file)
+
+
+get_files_with_prefix = get_prefix_files
+remove_files_with_prefix = remove_prefix_files
+
+
+def get_file_prefix_postfix(filename):
+    """
+    获得文件的前缀prefix和后缀postfix
+    对于path/to/file.txt其前缀prefix='path/to/file'，后缀postfix='txt'
+    :param filename:
+    :return:
+    """
+    postfix = filename.split(".")[-1]
+    prefix = filename[:-len(postfix) - 1]
+    return prefix, postfix
+
+
+def get_files_id(file_list):
+    """
+    :param file_list:
+    :return:
+    """
+    image_idx = []
+    for path in file_list:
+        basename = os.path.basename(path)
+        id = basename.split(".")[0]
+        image_idx.append(id)
+    return image_idx
 
 
 def remove_file(path):
@@ -556,7 +589,17 @@ def get_sub_list(file_list, dirname: str):
     return file_list
 
 
-def get_files_lists(file_dir, postfix=["*.jpg", "*.png"], subname="", shuffle=False):
+def get_all_files(file_dir):
+    """获取file_dir目录下，所有文本路径，包括子目录文件"""
+    file_list = []
+    for walk in os.walk(file_dir):
+        # paths = [os.path.join(walk[0], file).replace("\\", "/") for file in walk[2]]
+        paths = [os.path.join(walk[0], file) for file in walk[2]]
+        file_list.extend(paths)
+    return file_list
+
+
+def get_files_lists(file_dir, postfix=IMG_POSTFIX, subname="", shuffle=False):
     """
     读取文件和列表: list,*.txt ,image path, directory
     :param file_dir: list,*.txt ,image path, directory
@@ -580,16 +623,6 @@ def get_files_lists(file_dir, postfix=["*.jpg", "*.png"], subname="", shuffle=Fa
         random.seed(100)
         random.shuffle(image_list)
     return image_list
-
-
-def get_all_files(file_dir):
-    """获取file_dir目录下，所有文本路径，包括子目录文件"""
-    file_list = []
-    for walk in os.walk(file_dir):
-        # paths = [os.path.join(walk[0], file).replace("\\", "/") for file in walk[2]]
-        paths = [os.path.join(walk[0], file) for file in walk[2]]
-        file_list.extend(paths)
-    return file_list
 
 
 def get_files_list(file_dir, prefix="", postfix=None, basename=False):
@@ -642,7 +675,7 @@ def get_files_list_v2(file_dir, prefix="", postfix=None, basename=False):
     return file_list
 
 
-def get_images_list(file_dir, prefix="", postfix=["*.png", "*.jpg"], basename=False):
+def get_images_list(file_dir, prefix="", postfix=IMG_POSTFIX, basename=False):
     """
     :param file_dir:
     :param prefix: 前缀
@@ -653,7 +686,7 @@ def get_images_list(file_dir, prefix="", postfix=["*.png", "*.jpg"], basename=Fa
     return get_files_list(file_dir, prefix=prefix, postfix=postfix, basename=basename)
 
 
-def get_files_labels(file_dir, prefix="", postfix=["*.png", "*.jpg"], basename=False):
+def get_files_labels(file_dir, prefix="", postfix=IMG_POSTFIX, basename=False):
     '''
     获取files_dir路径下所有文件路径，以及labels,其中labels用子级文件名表示
     files_dir目录下，同一类别的文件放一个文件夹，其labels即为文件的名
@@ -796,19 +829,6 @@ def get_set_inter_union_diff(set1, set2):
     return intersection, union, difference
 
 
-def get_files_id(file_list):
-    """
-    :param file_list:
-    :return:
-    """
-    image_idx = []
-    for path in file_list:
-        basename = os.path.basename(path)
-        id = basename.split(".")[0]
-        image_idx.append(id)
-    return image_idx
-
-
 def get_loacl_eth2():
     '''
     想要获取linux设备网卡接口，并用列表进行保存
@@ -912,7 +932,7 @@ def multi_thread_task(content_list, func, num_processes=4, remove_bad=False, Asy
 
 
 def save_pickle(obj, file):
-    with open(file, 'wb') as f:pickle.dump(obj, f)
+    with open(file, 'wb') as f: pickle.dump(obj, f)
 
 
 def load_pickle(file):
@@ -922,6 +942,6 @@ def load_pickle(file):
 
 if __name__ == '__main__':
     data1 = np.asarray([0, 1, 2, 3])
-    save_pickle(data1,"data.pkl")
+    save_pickle(data1, "data.pkl")
     data2 = load_pickle("data.pkl")
     print(data2)

@@ -30,8 +30,8 @@ setup(name='pybaseutils',
           'demo': ['data/*.dat']
       },
       install_requires=[
-          'toolz>=0.11.2',  # 所需要包的版本号
-          'PyYAML>=5.3.2',  # 所需要包的版本号
+          # 'toolz>=0.11.2',  # 所需要包的版本号
+          # 'PyYAML>=5.3.2',  # 所需要包的版本号
           # 'pandas>=0.20.0',  # 所需要包的版本号
           # 'numpy>=1.14.0'  # 所需要包的版本号
       ],
