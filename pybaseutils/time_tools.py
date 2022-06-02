@@ -15,13 +15,12 @@ class Recorder(object):
         self.content: Dict = {}
 
     def push(self, key, v):
-        if not key in self.content:
-            data = {"avg": v, "total": v, "count": 1}
-            self.content[key] = data
-        else:
+        if key in self.content:
             self.content[key]["total"] = self.content[key]["total"] + v
             self.content[key]["count"] = self.content[key]["count"] + 1
             self.content[key]["avg"] = self.content[key]["total"] / self.content[key]["count"]
+        else:
+            self.content[key] = {"avg": v, "total": v, "count": 1}
 
     def get(self, key) -> Dict:
         return self.content[key]
