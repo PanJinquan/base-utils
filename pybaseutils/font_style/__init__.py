@@ -15,6 +15,7 @@ FONT_TYPE = {
     "宋体": "simsun.ttc",
     "仿宋": "simfang.ttf",
     "黑体": "simhei.ttf",
-    "simhei": "simhei.ttf",
+    # "simhei": "simhei.ttf", # 与黑体相近
+    # "等线": "Deng.ttf",
     "方正": "方正粗黑宋简体.ttf",
 }

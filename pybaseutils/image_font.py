@@ -88,6 +88,8 @@ def draw_font(text, style="楷体", scale=1.0, size=20, c1=(255, 255, 255), c2=(
 if __name__ == "__main__":
     size = 512
     point = (0, 0)
-    string = "飞"
-    image = draw_font(string, style="宋体", size=size, scale=0.8, c2=(100, 0, 255))
-    image_utils.cv_show_image("image", image, use_rgb=False)
+    string = "你"
+    for style, path in FONT_TYPE.items():
+        print(style, path)
+        image = draw_font(string, style=style, size=size, scale=0.8, c2=(100, 0, 255))
+        image_utils.cv_show_image(style, image, use_rgb=False)
