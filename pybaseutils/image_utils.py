@@ -37,6 +37,25 @@ def get_colors_color_map(nums):
     return colors
 
 
+def create_image(shape, color=(255, 255, 255), dtype=np.uint8, uas_rgb=False):
+    """
+    生成一张图片
+    :param shape:
+    :param color: (b,g,r)
+    :param dtype:
+    :param uas_rgb:
+    :return:
+    """
+    image = np.zeros(shape, dtype=np.uint8)
+    ndim = image.ndim
+    if ndim == 2: return np.asarray(image + max(color), dtype=dtype)
+    for i in range(len(color)):
+        image[:, :, i] = color[i]
+    if uas_rgb:
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    return image
+
+
 def points_protection(points, height, width):
     """
     Avoid array overbounds
@@ -2195,13 +2214,13 @@ def get_scale_mask(mask, scale=0.85, offset=(0, 0)):
     :return: 返回缩放的轮廓Mask
     """
     h, w = mask.shape[:2]
-    image = np.zeros(shape=(h, w), dtype=np.uint8)
-    mask = cv2.resize(mask, dsize=(int(w * scale), int(h * scale)), interpolation=cv2.INTER_NEAREST)
+    image = np.zeros_like(mask, dtype=np.uint8)
+    mask_ = cv2.resize(mask, dsize=(int(w * scale), int(h * scale)), interpolation=cv2.INTER_NEAREST)
     # mask = cv2.resize(mask, dsize=(int(w * scale), int(h * scale)), interpolation=cv2.INTER_AREA)
-    sh, sw = mask.shape[:2]
+    sh, sw = mask_.shape[:2]
     xmin = (w - sw) // 2 + offset[0]
     ymin = (h - sh) // 2 + offset[1]
-    image[ymin:ymin + sh, xmin:xmin + sw] = mask
+    image[ymin:ymin + sh, xmin:xmin + sw] = mask_
     return image
 
 
@@ -2632,7 +2651,7 @@ class CVVideo():
 
 
 if __name__ == "__main__":
-    from utils import image_utils
+    # from utils import image_utils
 
     input_size = [int(490 / 2), int(800 / 2)]
     image_path = "test.jpg"
@@ -2644,3 +2663,4 @@ if __name__ == "__main__":
     image1 = show_image_boxes("Det", image1, boxes1, color=(255, 0, 0), delay=3)
     boxes = image_boxes_resize_padding_inverse((image.shape[1], image.shape[0]), input_size, boxes1)
     show_image_boxes("image", image, boxes)
+
