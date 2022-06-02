@@ -2205,23 +2205,26 @@ def get_mask_iou(mask1, mask2, binarize=True):
     return iou
 
 
-def get_scale_mask(mask, scale=0.85, offset=(0, 0)):
+def get_scale_image(image, scale=0.85, offset=(0, 0), color=(0, 0, 0)):
     """
-    同比居中缩小Mask，以便居中显示
-    :param mask: mask
+    同比居中缩小image，以便居中显示
+    :param image: mask
     :param scale: 缩放比例
     :param offset: 偏移量(x,y)
     :return: 返回缩放的轮廓Mask
     """
-    h, w = mask.shape[:2]
-    image = np.zeros_like(mask, dtype=np.uint8)
-    mask_ = cv2.resize(mask, dsize=(int(w * scale), int(h * scale)), interpolation=cv2.INTER_NEAREST)
-    # mask = cv2.resize(mask, dsize=(int(w * scale), int(h * scale)), interpolation=cv2.INTER_AREA)
-    sh, sw = mask_.shape[:2]
+    h, w = image.shape[:2]
+    bg = create_image(image.shape, color=color)
+    fg = cv2.resize(image, dsize=(int(w * scale), int(h * scale)), interpolation=cv2.INTER_NEAREST)
+    # fg = cv2.resize(image, dsize=(int(w * scale), int(h * scale)), interpolation=cv2.INTER_AREA)
+    sh, sw = fg.shape[:2]
     xmin = (w - sw) // 2 + offset[0]
     ymin = (h - sh) // 2 + offset[1]
-    image[ymin:ymin + sh, xmin:xmin + sw] = mask_
-    return image
+    bg[ymin:ymin + sh, xmin:xmin + sw] = fg
+    return bg
+
+
+get_scale_mask = get_scale_image
 
 
 def get_scale_contours(contours, size, scale=0.85, offset=(0, 0)):
@@ -2663,4 +2666,3 @@ if __name__ == "__main__":
     image1 = show_image_boxes("Det", image1, boxes1, color=(255, 0, 0), delay=3)
     boxes = image_boxes_resize_padding_inverse((image.shape[1], image.shape[0]), input_size, boxes1)
     show_image_boxes("image", image, boxes)
-
