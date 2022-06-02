@@ -2186,6 +2186,45 @@ def get_mask_iou(mask1, mask2, binarize=True):
     return iou
 
 
+def get_scale_mask(mask, scale=0.85, offset=(0, 0)):
+    """
+    同比居中缩小Mask，以便居中显示
+    :param mask: mask
+    :param scale: 缩放比例
+    :param offset: 偏移量(x,y)
+    :return: 返回缩放的轮廓Mask
+    """
+    h, w = mask.shape[:2]
+    image = np.zeros(shape=(h, w), dtype=np.uint8)
+    mask = cv2.resize(mask, dsize=(int(w * scale), int(h * scale)), interpolation=cv2.INTER_NEAREST)
+    # mask = cv2.resize(mask, dsize=(int(w * scale), int(h * scale)), interpolation=cv2.INTER_AREA)
+    sh, sw = mask.shape[:2]
+    xmin = (w - sw) // 2 + offset[0]
+    ymin = (h - sh) // 2 + offset[1]
+    image[ymin:ymin + sh, xmin:xmin + sw] = mask
+    return image
+
+
+def get_scale_contours(contours, size, scale=0.85, offset=(0, 0)):
+    """
+    同比居中缩小mask的轮廓，以便居中显示
+    :param contours:  mask的轮廓
+    :param size: 输出大小(W,H)
+    :param scale: 缩放比例
+    :param offset: 偏移量(x,y)
+    :return: 返回缩放的轮廓contours
+    """
+    dst_contours = copy.deepcopy(contours)
+    sw, sh = (int(size[0] * scale), int(size[1] * scale))
+    xmin = (size[0] - sw) // 2
+    ymin = (size[1] - sh) // 2
+    for i in range(len(dst_contours)):
+        for c in range(len(dst_contours[i])):
+            d = dst_contours[i][c] * scale + (xmin, ymin) + offset
+            dst_contours[i][c] = np.asarray(d, dtype=np.int32)
+    return dst_contours
+
+
 def pointPolygonTest(point, contour, measureDist=False):
     """
     此功能可查找图像中的点与轮廓之间的最短距离.
