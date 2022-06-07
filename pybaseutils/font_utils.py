@@ -9,12 +9,13 @@
 import os
 import cv2
 import numpy as np
+import PIL
 from PIL import Image, ImageDraw, ImageFont
 from pybaseutils import image_utils, file_utils
 from pybaseutils.font_style import FONT_TYPE, FONT_ROOT
 
 
-class FontStyle(object):
+class FontType(object):
     def __init__(self, root=FONT_ROOT, style="宋体", size=20):
         """
         :param root: 安装字体的路径
@@ -37,11 +38,17 @@ class FontStyle(object):
         """设置字体风格和大小"""
         self.__init__(root=self.font_root, style=style, size=size)
 
-    def get_font_style(self):
+    def set_font_type(self, font_file, size):
+        self.font_root = os.path.dirname(font_file)
+        self.font_style = os.path.basename(font_file)
+        self.font_size = size
+        self.font_type = ImageFont.truetype(self.font_file, size=size, encoding="utf-8")
+
+    def get_font_type(self):
         return self.font_type
 
 
-font_style = FontStyle()
+font_type = FontType()
 
 
 def draw_image_text(image, point, text, style="楷体", size=20, color=(255, 255, 255)):
@@ -58,11 +65,13 @@ def draw_image_text(image, point, text, style="楷体", size=20, color=(255, 255
     """
     image = Image.fromarray(image)
     draw = ImageDraw.Draw(image)
-    # simhei.ttf 是字体，你如果没有字体，需要下载
-    # font = ImageFont.truetype("simhei.ttf", size=size, encoding="utf-8")
-    font_style.set_font_style(style=style, size=size)
-    font_type = font_style.get_font_style()
-    draw.text(point, text, fill=color, font=font_type)
+    if os.path.isfile(style):
+        font = ImageFont.truetype(style, size=size, encoding="utf-8")
+    else:
+        # simhei.ttf 是字体，你如果没有字体，需要下载
+        font_type.set_font_style(style=style, size=size)
+        font = font_type.get_font_type()
+    draw.text(point, text, fill=color, font=font)
     image = np.asarray(image)
     return image
 
@@ -88,8 +97,9 @@ def draw_font(text, style="楷体", scale=1.0, size=20, c1=(255, 255, 255), c2=(
 if __name__ == "__main__":
     size = 512
     point = (0, 0)
-    string = "你"
+    string = "我"
     for style, path in FONT_TYPE.items():
-        print(style, path)
+        style = "/home/dm/nasdata/dataset-dmai/ziku/1200款精品字体/书法字体库 37款/国祥手写体.ttf"
+        # print(style, path)
         image = draw_font(string, style=style, size=size, scale=0.8, c2=(100, 0, 255))
-        image_utils.cv_show_image(style, image, use_rgb=False)
+        image_utils.cv_show_image("style", image, use_rgb=False)
