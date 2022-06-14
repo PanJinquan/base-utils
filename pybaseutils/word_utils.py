@@ -155,8 +155,25 @@ def find_key_metadata(metadata: List[Dict], key):
     return values
 
 
-def show_word_packer(packer, image, keys=[], split_line=False, color=(0, 0, 255), thickness=2, delay=0):
+def draw_word_packer_in_image(packer, image, vis=False, delay=0):
+    for word in packer:
+        image = draw_word_in_image(image, word["mask"], word["box"])
+    if vis: image_utils.cv_show_image("image-mask", image, delay=delay)
+    return image
+
+
+def draw_word_in_image(image, mask, box):
+    if not isinstance(image, np.ndarray): return image
+    xmin, ymin, xmax, ymax = box
+    mask: np.ndarray = image_utils.resize_image(mask, size=(xmax - xmin, ymax - ymin))
+    if mask.ndim == 2: mask = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
+    image = image_utils.cv_paste_image(image, mask, start_point=(int(xmin), int(ymin)))
+    return image
+
+
+def show_word_packer(packer, image, keys=[], split_line=False, color=(0, 0, 255), thickness=2, vis=False, delay=0):
     _keys = ['label', 'cls_score', 'box', 'det_score']
+    mask = image.copy() if isinstance(image, np.ndarray) else None
     for word in packer:
         label = word['label'] if "label" in word else ""
         images = [word[k] for k in keys if k in word]
@@ -168,13 +185,15 @@ def show_word_packer(packer, image, keys=[], split_line=False, color=(0, 0, 255)
                                                        boxes_name=[label],
                                                        color=color,
                                                        thickness=thickness)
-            show_images("dets", [image], split_line=split_line, delay=1)
-        show_images("packer", images, split_line=split_line, delay=delay)
-    return image
+            mask = draw_word_in_image(mask, word["mask"], word["box"])
+            if vis: show_images("dets", [image, mask], split_line=split_line, delay=1)
+        if vis: show_images("packer", images, split_line=split_line, delay=delay)
+    return image, mask
 
 
-def show_word_unpacker(unpacker, image, keys=[], split_line=False, color=(0, 0, 255), thickness=2, delay=0):
+def show_word_unpacker(unpacker, image, keys=[], split_line=False, color=(0, 0, 255), thickness=2, vis=False, delay=0):
     _keys = ['label', 'cls_score', 'box', 'det_score']
+    mask = image.copy() if isinstance(image, np.ndarray) else None
     for i in range(len(unpacker["box"])):
         label = unpacker["label"][i] if "label" in unpacker else ""
         images = [unpacker[k][i] for k in keys if k in unpacker]
@@ -186,9 +205,10 @@ def show_word_unpacker(unpacker, image, keys=[], split_line=False, color=(0, 0, 
                                                        boxes_name=[label],
                                                        color=color,
                                                        thickness=thickness)
-            show_images("dets", [image], split_line=split_line, delay=1)
-        show_images("unpacker", images, split_line=split_line, delay=delay)
-    return image
+            mask = draw_word_in_image(mask, unpacker["mask"][i], unpacker["box"][i])
+            if vis: show_images("dets", [image, mask], split_line=split_line, delay=1)
+        if vis: show_images("unpacker", images, split_line=split_line, delay=delay)
+    return image, mask
 
 
 def show_images(title, images, use_rgb=False, split_line=False, delay=0):

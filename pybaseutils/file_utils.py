@@ -583,10 +583,11 @@ def get_sub_list(file_list, dirname: str):
     :return:
     """
     dirname = dirname[:-len(os.sep)] if dirname.endswith(os.sep) else dirname
+    sub_list = []
     for i, f in enumerate(file_list):
-        if dirname in f:
-            file_list[i] = f[len(dirname) + 1:]
-    return file_list
+        if dirname == f[:len(dirname)]:
+            sub_list.append(f[len(dirname) + 1:])
+    return sub_list
 
 
 def get_all_files(file_dir):
@@ -691,13 +692,16 @@ def get_files_labels(file_dir, prefix="", postfix=IMG_POSTFIX, basename=False):
     获取files_dir路径下所有文件路径，以及labels,其中labels用子级文件名表示
     files_dir目录下，同一类别的文件放一个文件夹，其labels即为文件的名
     :param file_dir:
-    :postfix 后缀名
+    :param prefix: 前缀
+    :param postfix: 后缀
+    :param basename: 返回的列表是文件名（True），还是文件的完整路径(False)
     :return:file_list所有文件的路径,label_list对应的labels
     '''
     file_list = get_files_list(file_dir, prefix=prefix, postfix=postfix, basename=basename)
+    sub_list = get_sub_list(file_list, file_dir)
     label_list = []
-    for filePath in file_list:
-        label = filePath.split(os.sep)[-2]
+    for filePath in sub_list:
+        label = filePath.split(os.sep)[0]
         label_list.append(label)
     return file_list, label_list
 
@@ -941,7 +945,6 @@ def load_pickle(file):
 
 
 if __name__ == '__main__':
-    data1 = np.asarray([0, 1, 2, 3])
-    save_pickle(data1, "data.pkl")
-    data2 = load_pickle("data.pkl")
-    print(data2)
+    dir = "/home/dm/nasdata/dataset-dmai/handwriting/word-class/trainval/unknown"
+    file_list, label_list = get_files_labels(dir)
+    print(label_list)

@@ -120,6 +120,9 @@ def get_square_rects(rects, use_max=True):
 def get_section(start, end, nums=2, scale=1.0, dtype=None):
     """
     均匀划分nums个线段，并返回截断点(nums+1)
+    s1 = get_section(start, end, nums=nums)
+    等价于：
+    s2 = np.linspace(start, end, num=nums + 1,endpoint=True)
     :param start: 起点
     :param end: 终点
     :param nums: 将范围[start,end]均匀划分的段数，默认2段
@@ -235,4 +238,9 @@ def demo_for_augment():
 
 
 if __name__ == "__main__":
-    demo_for_augment()
+    start, end = 1, 20
+    nums = 5
+    s1 = get_section(start, end, nums=5)
+    s2 = np.linspace(start, end, num=nums + 1, endpoint=True)
+    print(s1)
+    print(s2)

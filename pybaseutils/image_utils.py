@@ -629,7 +629,7 @@ def resize_image(image, size: Tuple[int, int]):
         resize_height = int(height * resize_width / width)
     elif resize_width is None:
         resize_width = int(width * resize_height / height)
-    image = cv2.resize(image, dsize=(resize_width, resize_height))
+    image = cv2.resize(image, dsize=(int(resize_width), int(resize_height)))
     return image
 
 
@@ -2288,6 +2288,7 @@ def get_mask_boundrect_cv(mask, binarize=False, shift=0):
     if binarize:
         ret, mask = cv2.threshold(mask, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
     contours = find_mask_contours(mask)
+    if len(contours) == 0: return []
     contours = np.concatenate(contours)
     xmin = np.min(contours[:, 0])
     ymin = np.min(contours[:, 1])

@@ -76,7 +76,8 @@ def draw_image_text(image, point, text, style="楷体", size=20, color=(255, 255
     return image
 
 
-def draw_font(text, style="楷体", scale=1.0, size=20, c1=(255, 255, 255), c2=(0, 0, 0)):
+
+def draw_font(text, style="楷体", scale=1.0, size=20, c1=(255, 255, 255), c2=(0, 0, 0), center=True):
     """
     绘制汉字
     :param text:
@@ -85,10 +86,21 @@ def draw_font(text, style="楷体", scale=1.0, size=20, c1=(255, 255, 255), c2=(
     :param size: 字体大小
     :param c1:字体颜色
     :param c2:背景颜色
+    :param center: 是否居中显示
     :return:
     """
-    image = image_utils.create_image(shape=(size, size, 3), color=c2)
-    image = draw_image_text(image, (0, 0), text, style=style, size=size, color=c1)
+    if center:
+        image = image_utils.create_image(shape=(size * 2, size * 2, 3), color=c2)
+        image = draw_image_text(image, (0, 0), text, style=style, size=size, color=c1)
+        if np.sum(image) < 1: return None
+        mask = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        box = image_utils.get_mask_boundrect_cv(mask, binarize=True, shift=10)
+        image = image_utils.get_bbox_crop(image, box)
+        image = image_utils.resize_image_padding(image, size=(size, size), color=(0, 0, 0))
+    else:
+        image = image_utils.create_image(shape=(size, size, 3), color=c2)
+        image = draw_image_text(image, (0, 0), text, style=style, size=size, color=c1)
+        if np.sum(image) < 1: return None
     if scale < 1.0:
         image = image_utils.get_scale_image(image, scale=scale, offset=(0, 0), color=c2)
     return image
