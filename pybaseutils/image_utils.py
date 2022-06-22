@@ -22,19 +22,12 @@ from PIL import ImageDraw, ImageFont
 from math import cos, sin
 
 IMG_POSTFIX = ['*.jpg', '*.jpeg', '*.png', '*.tif']
-color_map = [(255, 0, 0), (0, 255, 0), (0, 0, 255),
+color_map = [(0, 0, 0), (255, 0, 0), (0, 255, 0), (0, 0, 255),
              (128, 0, 0), (0, 128, 0), (128, 128, 0),
              (0, 0, 128), (128, 0, 128), (0, 128, 128), (128, 128, 128),
              (64, 0, 0), (192, 0, 0), (64, 128, 0), (192, 128, 0),
              (64, 0, 128), (192, 0, 128), (64, 128, 128), (192, 128, 128),
-             (0, 64, 0), (128, 64, 0), (0, 192, 0), (128, 192, 0), (0, 64, 128)] * 100
-
-
-def get_colors_color_map(nums):
-    cmap = plt.get_cmap('rainbow')
-    colors = [cmap(i) for i in np.linspace(0, 1, nums + 2)]
-    colors = [(c[2], c[1], c[0]) for c in colors]
-    return colors
+             (0, 64, 0), (128, 64, 0), (0, 192, 0), (128, 192, 0), (0, 64, 128)] * 10
 
 
 def create_image(shape, color=(255, 255, 255), dtype=np.uint8, uas_rgb=False):

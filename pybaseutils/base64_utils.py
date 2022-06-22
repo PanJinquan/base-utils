@@ -13,6 +13,7 @@ import numpy as np
 from typing import Any
 
 IMG_PREFIX = "image/png"  # 图片base64字符串前缀
+precision = 6  # 小数点精度
 
 
 def isbase64(data: str, prefix=IMG_PREFIX):
@@ -106,7 +107,9 @@ def array2base64(data: Any, prefix=IMG_PREFIX, use_rgb=False) -> Any:
     elif isinstance(data, np.integer):
         return int(data)
     elif isinstance(data, np.floating):
-        return float(data)
+        return round(float(data), precision)
+    elif isinstance(data, float):
+        return round(data, precision)
     elif isinstance(data, list):
         for i in range(len(data)):
             data[i] = array2base64(data[i], prefix=prefix, use_rgb=use_rgb)
