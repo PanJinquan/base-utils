@@ -20,6 +20,7 @@ import PIL.Image as Image
 from typing import List, Dict, Tuple
 from PIL import ImageDraw, ImageFont
 from math import cos, sin
+from pybaseutils.coords_utils import *
 
 IMG_POSTFIX = ['*.jpg', '*.jpeg', '*.png', '*.tif']
 color_map = [(0, 0, 0), (255, 0, 0), (0, 255, 0), (0, 0, 255),
@@ -842,73 +843,6 @@ def scale_rect(orig_rect, orig_shape, dest_shape):
     return dest_rect
 
 
-def xyxy2xywh(xyxy: np.ndarray):
-    """(xmin,ymin,xmax,ymax)==>(xmin,ymin,w,h)"""
-    xywh = xyxy.copy()
-    xywh[:, 2] = xywh[:, 2] - xywh[:, 0]  # w=xmax-xmin
-    xywh[:, 3] = xywh[:, 3] - xywh[:, 1]  # w=ymax-ymin
-    return xywh
-
-
-def xywh2xyxy(xywh: np.ndarray):
-    """(xmin,ymin,w,h)==>(xmin,ymin,xmax,ymax)"""
-    xyxy = xywh.copy()
-    xyxy[:, 2] = xyxy[:, 0] + xyxy[:, 2]  # xmax=xmin+w
-    xyxy[:, 3] = xyxy[:, 1] + xyxy[:, 3]  # ymax=ymin+h
-    return xyxy
-
-
-def xyxy2cxcywh(xyxy: np.ndarray, width=None, height=None, normalized=False):
-    """(xmin, ymin, xmax, ymax)==>(cx,cy,w,h)"""
-    cxcywh = np.zeros_like(xyxy)
-    cxcywh[:, 0] = (xyxy[:, 2] + xyxy[:, 0]) / 2  # cx
-    cxcywh[:, 1] = (xyxy[:, 3] + xyxy[:, 1]) / 2  # cy
-    cxcywh[:, 2] = (xyxy[:, 2] - xyxy[:, 0])  # w
-    cxcywh[:, 3] = (xyxy[:, 3] - xyxy[:, 1])  # h
-    if normalized:
-        cxcywh = cxcywh / (width, height, width, height)
-    return cxcywh
-
-
-def cxcywh2xyxy(cxcywh: np.ndarray, width=None, height=None, normalized=False):
-    """(cx,cy,w,h)==>xmin, ymin, xmax, ymax)"""
-    xyxy = np.zeros_like(cxcywh)
-    xyxy[:, 0] = cxcywh[:, 0] - cxcywh[:, 2] / 2  # top left x
-    xyxy[:, 1] = cxcywh[:, 1] - cxcywh[:, 3] / 2  # top left y
-    xyxy[:, 2] = cxcywh[:, 0] + cxcywh[:, 2] / 2  # bottom right x
-    xyxy[:, 3] = cxcywh[:, 1] + cxcywh[:, 3] / 2  # bottom right y
-    if normalized:
-        xyxy = xyxy * (width, height, width, height)
-    return xyxy
-
-
-def extend_xyxy(xyxy: np.ndarray, scale=[1.0, 1.0]):
-    """
-    :param bboxes: [[xmin, ymin, xmax, ymax]]
-    :param scale: [sx,sy]==>(W,H)
-    :return:
-    """
-    cxcywh = np.zeros_like(xyxy, dtype=xyxy.dtype)
-    cxcywh[:, 0] = (xyxy[:, 2] + xyxy[:, 0]) / 2  # cx
-    cxcywh[:, 1] = (xyxy[:, 3] + xyxy[:, 1]) / 2  # cy
-    cxcywh[:, 2] = (xyxy[:, 2] - xyxy[:, 0]) * scale[0]  # w
-    cxcywh[:, 3] = (xyxy[:, 3] - xyxy[:, 1]) * scale[1]  # h
-    dxyxy = cxcywh2xyxy(cxcywh, width=None, height=None, normalized=False)
-    return dxyxy
-
-
-def extend_xywh(xywh: np.ndarray, scale=[1.0, 1.0]):
-    """
-    :param bboxes: [[xmin, ymin, xmax, ymax]]
-    :param scale: [sx,sy]==>(W,H)
-    :return:
-    """
-    xyxy = xywh2xyxy(xywh)
-    xyxy = extend_xyxy(xyxy, scale)
-    dxywh = xyxy2xywh(xyxy)
-    return dxywh
-
-
 def get_rect_intersection(rec1, rec2):
     """
     计算两个rect的交集坐标
@@ -1227,18 +1161,16 @@ def show_boxList(title, boxList, rgb_image, delay=0):
     return rgb_image
 
 
-def draw_landmark(image, landmarks_list, color=(0, 0, 255), vis_id=False):
+def draw_landmark(image, landmarks_list, radius=1, thickness=2, color=(0, 0, 255), vis_id=False):
     image = copy.copy(image)
-    point_size = 1
-    thickness = 2  # 可以为 0 、4、8
     for landmarks in landmarks_list:
         for i, landmark in enumerate(landmarks):
             # 要画的点的坐标
             point = (int(landmark[0]), int(landmark[1]))
-            cv2.circle(image, point, point_size, color, thickness)
+            cv2.circle(image, point, radius, color, thickness)
             if vis_id:
-                image = draw_points_text(image, [point], texts=[str(i)], color=color, thickness=thickness,
-                                         drawType="simple")
+                image = draw_points_text(image, [point], texts=[str(i)],
+                                         color=color, thickness=thickness, drawType="simple")
     return image
 
 
@@ -1859,14 +1791,14 @@ def get_rect_crop_padding(image, rect, color=(0, 0, 0)):
     return roi_image
 
 
-def get_bbox_crop_padding(image, bbox):
+def get_bbox_crop_padding(image, bbox, color=(0, 0, 0)):
     """
     :param image:
     :param bbox:
     :return:
     """
     rect = bboxes2rects([bbox])[0]
-    roi_image = get_rect_crop_padding(image, rect)
+    roi_image = get_rect_crop_padding(image, rect, color=color)
     return roi_image
 
 
@@ -1894,7 +1826,7 @@ def get_bboxes_crop(image, bboxes):
     return crops
 
 
-def get_bboxes_crop_padding(image, bboxes, size):
+def get_bboxes_crop_padding(image, bboxes, size, color=(0, 0, 0)):
     """
     :param image:
     :param bboxes:
@@ -1904,13 +1836,13 @@ def get_bboxes_crop_padding(image, bboxes, size):
     rects = bboxes2rects(bboxes)
     roi_images = []
     for rect in rects:
-        roi_image = get_rect_crop_padding(image, rect)
+        roi_image = get_rect_crop_padding(image, rect, color=color)
         roi_image = resize_image(roi_image, size=size)
         roi_images.append(roi_image)
     return roi_images
 
 
-def get_rects_crop_padding(image, rects, size):
+def get_rects_crop_padding(image, rects, size, color=(0, 0, 0)):
     """
     :param image:
     :param rects:
@@ -1919,7 +1851,7 @@ def get_rects_crop_padding(image, rects, size):
     """
     roi_images = []
     for rect in rects:
-        roi_image = get_rect_crop_padding(image, rect)
+        roi_image = get_rect_crop_padding(image, rect, color=color)
         roi_image = resize_image(roi_image, size=size)
         roi_images.append(roi_image)
     return roi_images
@@ -2497,24 +2429,26 @@ def image_composite(image: np.ndarray, alpha: np.ndarray, bg_img=(219, 142, 67))
     return image
 
 
-def frames2gif_by_imageio(frames, gif_file="test.gif", fps=2, loop=0):
+def frames2gif_by_imageio(frames, gif_file="test.gif", fps=2, loop=0, use_rgb=False):
     """
     pip install imageio
     :param frames:
     :param gif_file: 输出的GIF图的路径
     :param fps: 刷新频率
     :param loop: 循环次数
+    :param use_rgb: frames是RGB格式，需要是BGR格式，use_bgr=True
     :return:
     """
     import imageio
     writer = imageio.get_writer(uri=gif_file, mode='I', fps=fps, loop=loop)
     for image in frames:
+        if use_rgb: image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         writer.append_data(image)
     writer.close()
     # imageio.mimwrite(out_gif_path, frames, fps=20)
 
 
-def frames2gif_by_pil(frames, gif_file="test.gif", fps=2, loop=0):
+def frames2gif_by_pil(frames, gif_file="test.gif", fps=2, loop=0, use_rgb=False):
     """
     https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html#gif
     PS :loop=0表示无限循环，loop=n表示循环n+1次，如要循环一次，需要去掉loop参数(很奇葩吧！！！)
@@ -2524,6 +2458,7 @@ def frames2gif_by_pil(frames, gif_file="test.gif", fps=2, loop=0):
     :param loop: 循环次数
     :return:
     """
+    if use_rgb: frames = [cv2.cvtColor(img, cv2.COLOR_BGR2RGB) for img in frames]
     images = [Image.fromarray(img) for img in frames]
     if loop == 1:
         images[0].save(gif_file, save_all=True, append_images=images[1:], duration=1000 / fps,

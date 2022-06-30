@@ -442,11 +442,12 @@ def copy_dir_delete(src, dst):
     # time.sleep(3 / 1000.)
 
 
-def copy_dir(src, dst):
+def copy_dir(src, dst, sub=False):
     """ copy src-directory to dst-directory, will cover the same files"""
     if not os.path.exists(src):
         print("\nno src path:{}".format(src))
         return
+    if sub: dst = os.path.join(dst, os.path.basename(src))
     for root, dirs, files in os.walk(src, topdown=False):
         dest_path = os.path.join(dst, os.path.relpath(root, src))
         if not os.path.exists(dest_path):

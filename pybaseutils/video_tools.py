@@ -69,7 +69,7 @@ def get_video_writer(video_file, width, height, fps):
     return video_writer
 
 
-def video2gif(video_file, gif_file=None, func=None, interval=1, vis=True):
+def video2gif(video_file, gif_file=None, func=None, interval=1, use_pil=False, vis=True):
     """
     将视频文件直接转为GIF图像
     :param video_file: 输入视频文件
@@ -84,7 +84,7 @@ def video2gif(video_file, gif_file=None, func=None, interval=1, vis=True):
         gif_file = os.path.join(os.path.dirname(video_file), name + ".gif")
     video_cap = get_video_capture(video_file)
     width, height, numFrames, fps = get_video_info(video_cap)
-    if not os.path.exists(gif_file): os.makedirs(gif_file)
+    if not os.path.exists(gif_file): file_utils.create_file_path(gif_file)
     count = 0
     frames = []
     while True:
@@ -103,7 +103,10 @@ def video2gif(video_file, gif_file=None, func=None, interval=1, vis=True):
         count += 1
     video_cap.release()
     fps = fps / interval
-    image_utils.frames2gif_by_pil(frames, gif_file=gif_file, fps=fps, loop=0)
+    if use_pil:
+        image_utils.frames2gif_by_pil(frames, gif_file=gif_file, fps=fps, loop=0)
+    else:
+        image_utils.frames2gif_by_imageio(frames, gif_file=gif_file, fps=fps, loop=0)
 
 
 def video2frames(video_file, out_dir=None, func=None, interval=1, vis=True):
