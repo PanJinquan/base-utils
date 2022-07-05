@@ -11,6 +11,30 @@ import math
 from sklearn import metrics, preprocessing
 
 
+def matching_embedding(inputs, target, use_max=False):
+    """
+    按照最小L2距离进行特征匹配
+    :param inputs: 输入待匹配的特点，shape=(n,D),其中n表示样本个数，D表示特征维度
+    :param target: 目标匹配数据库,shape=(N,D),其中N表示数据库样本个数，D表示特征维度
+    :param use_max: False:按照最小距离进行匹配,True:按照最大距离进行匹配
+    :return: indexes： 与target匹配的索引
+             distance：与target匹配的最小L2距离(欧式距离=np.sqrt(L2)=np.sqrt(distance))
+    """
+    assert inputs.shape[1] == target.shape[1]  # 特征维度必须一致
+    data = np.expand_dims(inputs, axis=-1)  # (n,512)->(n,512,1)
+    dataset = target.transpose(1, 0)  # (N, 512)->(512, N)
+    dataset = np.expand_dims(dataset, axis=0)  # (1,512, N)
+    diff = data - dataset  # (n, 512, 1) - (1, 512, N) = (n, 512, N)
+    dist = np.sum(np.power(diff, 2), axis=1)  # (n, N)
+    if use_max:
+        indexes = np.argmax(dist, axis=1)
+        distance = np.max(dist, axis=1)
+    else:
+        indexes = np.argmin(dist, axis=1)
+        distance = np.min(dist, axis=1)
+    return indexes, distance
+
+
 def matching_data_vecror(data, vector):
     '''
     从data中匹配vector向量，查找出现vector的index,如：
@@ -227,6 +251,22 @@ def mean_absolute_error(y_true, y_pre):
     """MAE(Mean Absolute Error)平均绝对差值(L1),也等于MAD(Mean Absolute Difference)"""
     l1 = np.sum(np.abs(y_true - y_pre))
     return l1 / y_true.size
+
+
+def euclidean_distance(p1, p2, axis=1):
+    """
+    计算欧氏距离
+    point1 = [[3, 4], [4, 3], [4, 3]]
+    center = [[0, 0]]
+    point1 = np.asarray(point1)
+    center = np.asarray(center)
+    # 下面三个计算是等价的
+    d1 = np.sqrt(numpy_tools.l2(point1 - center, axis=1)) # L2开根号就是欧式距离
+    d2 = numpy_tools.norm(point1 - center, p=2, axis=1)
+    d3 = numpy_tools.euclidean_distance(point1, center, axis=1)
+    """
+    d = np.sqrt(np.sum(np.square(p1 - p2), axis=axis))
+    return d
 
 
 def mean(data):
