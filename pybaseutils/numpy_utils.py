@@ -29,10 +29,67 @@ def matching_embedding(inputs, target, use_max=False):
     if use_max:
         indexes = np.argmax(dist, axis=1)
         distance = np.max(dist, axis=1)
+        # distance = np.asarray([dist[i][c] for i, c in enumerate(indexes)])
     else:
         indexes = np.argmin(dist, axis=1)
         distance = np.min(dist, axis=1)
+        # distance = np.asarray([dist[i][c] for i, c in enumerate(indexes)])
     return indexes, distance
+
+
+def get_nearest_point(points, center, axis=1, use_max=False):
+    """
+    求离center最近/最远的点
+    :param points: shape=(n,D),其中n表示样本个数，D表示特征维度
+    :param center: (x,y)
+    :param axis:
+    :param use_max: False:按照最小距离进行匹配,True:按照最大距离进行匹配
+    :return: index： 最近点index
+             distance：最近点L2距离
+    """
+    if not isinstance(points, np.ndarray): points = np.asarray(points)
+    # l2 = np.sum(np.square(x), axis=axis)
+    l2dist = np.sum(np.square(points - center), axis=axis)  # l2距离，L2开根号就是欧式距离
+    if use_max:
+        index = np.argmax(l2dist)
+        distance = l2dist[index]
+    else:
+        index = np.argmin(l2dist)
+        distance = l2dist[index]
+    return index, distance
+
+
+def get_nearest_point_minmax(points, center, axis=1, use_max=False, minmax=-1):
+    """
+    求离center最近/最远的点
+    :param points: shape=(n,D),其中n表示样本个数，D表示特征维度
+    :param center: (x,y)
+    :param axis:
+    :param use_max: False:按照最小距离进行匹配,True:按照最大距离进行匹配
+    :param minmax:  use_max=False,表示查找不低于阈值minmax的最小距离；
+                    use_max=True, 表示查找不高于阈值minmax的最大距离；
+                    当minmax=-1则，该功能无效
+    :return: index： 最近点index
+             distance：最近点L2距离
+    """
+    if not isinstance(points, np.ndarray): points = np.asarray(points)
+    l2dist = np.sum(np.square(points - center), axis=axis)  # l2距离，L2开根号就是欧式距离
+    num = len(l2dist)
+    if use_max:
+        indexes = np.argsort(-l2dist)  # 从大到小排列
+        index = 0
+        distance = l2dist[indexes[index]]
+        while minmax > 0 and index < num and distance > minmax:
+            index += 1
+            distance = l2dist[indexes[index]]
+    else:
+        indexes = np.argsort(l2dist)  # 从小到大排列
+        index = 0
+        distance = l2dist[indexes[index]]
+        while minmax > 0 and index < num and distance < minmax:
+            index += 1
+            distance = l2dist[indexes[index]]
+    return indexes[index], distance
 
 
 def matching_data_vecror(data, vector):
@@ -262,8 +319,8 @@ def euclidean_distance(p1, p2, axis=1):
     center = np.asarray(center)
     # 下面三个计算是等价的
     d1 = np.sqrt(numpy_tools.l2(point1 - center, axis=1)) # L2开根号就是欧式距离
-    d2 = numpy_tools.norm(point1 - center, p=2, axis=1)
-    d3 = numpy_tools.euclidean_distance(point1, center, axis=1)
+    d2 = numpy_utils.norm(point1 - center, p=2, axis=1)
+    d3 = numpy_utils.euclidean_distance(point1, center, axis=1)
     """
     d = np.sqrt(np.sum(np.square(p1 - p2), axis=axis))
     return d

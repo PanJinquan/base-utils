@@ -12,6 +12,19 @@ import cv2
 import numpy as np
 
 
+def clip_xyxy(xyxy: np.ndarray, valid_range):
+    """
+    限制xyxy的有效范围，避免越界
+    :param xyxy:
+    :param valid_range:有效范围(xmin,ymin,xmax,ymax)
+    :return:
+    """
+    xmin, ymin, xmax, ymax = valid_range
+    xyxy[:, [0, 2]] = np.clip(xyxy[:, [0, 2]], xmin, xmax)
+    xyxy[:, [1, 3]] = np.clip(xyxy[:, [1, 3]], ymin, ymax)
+    return xyxy
+
+
 def xyxy2xywh(xyxy: np.ndarray):
     """(xmin,ymin,xmax,ymax)==>(xmin,ymin,w,h)"""
     if not isinstance(xyxy, np.ndarray): xyxy = np.asarray(xyxy)
@@ -56,10 +69,11 @@ def cxcywh2xyxy(cxcywh: np.ndarray, width=None, height=None, normalized=False):
     return xyxy
 
 
-def extend_xyxy(xyxy: np.ndarray, scale=[1.0, 1.0]):
+def extend_xyxy(xyxy: np.ndarray, scale=[1.0, 1.0], valid_range=[]):
     """
     :param bboxes: [[xmin, ymin, xmax, ymax]]
     :param scale: [sx,sy]==>(W,H)
+    :param valid_range:有效范围(xmin,ymin,xmax,ymax)
     :return:
     """
     if not isinstance(xyxy, np.ndarray): xyxy = np.asarray(xyxy)
@@ -69,6 +83,7 @@ def extend_xyxy(xyxy: np.ndarray, scale=[1.0, 1.0]):
     cxcywh[:, 2] = (xyxy[:, 2] - xyxy[:, 0]) * scale[0]  # w
     cxcywh[:, 3] = (xyxy[:, 3] - xyxy[:, 1]) * scale[1]  # h
     dxyxy = cxcywh2xyxy(cxcywh, width=None, height=None, normalized=False)
+    if valid_range: dxyxy = clip_xyxy(dxyxy, valid_range=valid_range)
     return dxyxy
 
 
@@ -85,11 +100,12 @@ def extend_xywh(xywh: np.ndarray, scale=[1.0, 1.0]):
     return dxywh
 
 
-def get_square_bboxes(boxes, use_max=True):
+def get_square_bboxes(boxes, use_max=True, baseline=-1):
     """
     将bboxes转换为正方形的bboxes
     :param boxes:
     :param use_max: 是否按照每个box(w,h)最大值进行转换
+    :param baseline: 当baseline>0，表示正方形最小边长
     :return:
     """
     if not isinstance(boxes, np.ndarray): boxes = np.asarray(boxes)
@@ -98,21 +114,25 @@ def get_square_bboxes(boxes, use_max=True):
         b = np.max(center[:, 2:4], axis=1)
     else:
         b = np.min(center[:, 2:4], axis=1)
+    if baseline > 0:
+        index = b < baseline
+        b[index] = baseline
     b = b.reshape(len(boxes), 1)
     center[:, 2:4] = b
     _boxes = cxcywh2xyxy(center)
     return _boxes
 
 
-def get_square_rects(rects, use_max=True):
+def get_square_rects(rects, use_max=True, baseline=-1):
     """
     将rects转换为正方形的bboxes
     :param rects: xywh
     :param use_max: 是否按照每个box(w,h)最大值进行转换
+    :param baseline: 当baseline>0，表示正方形最小边长
     :return:
     """
     boxes = xywh2xyxy(rects)
-    boxes = get_square_bboxes(boxes, use_max=use_max)
+    boxes = get_square_bboxes(boxes, use_max=use_max, baseline=baseline)
     rects = xyxy2xywh(boxes)
     return rects
 

@@ -135,6 +135,12 @@ def untranspose(data):
     return data
 
 
+def swap_image(image):
+    # image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+    image = image[:, :, ::-1]  # RGB->BGR
+    return image
+
+
 def show_batch_image(title, batch_images, index=0):
     '''
     批量显示图片
@@ -958,7 +964,7 @@ def draw_image_bboxes_labels_text(rgb_image, boxes, labels, boxes_name=None, col
     boxes_name = boxes_name if boxes_name else labels
     for label, box, name in zip(labels, boxes, boxes_name):
         box = [int(b) for b in box]
-        color_ = color if color else color_map[int(label)]
+        color_ = color if color else color_map[int(label) + 1]
         custom_bbox_line(rgb_image, box, color_, str(name), thickness, drawType, top)
     return rgb_image
 
@@ -1050,7 +1056,7 @@ def draw_image_detection_bboxes(rgb_image, bboxes, probs, labels, class_name=Non
     labels = np.asarray(labels, dtype=np.int32).reshape(-1)
     probs = np.asarray(probs).reshape(-1)
     for label, box, prob in zip(labels, bboxes, probs):
-        color = color_map[int(label)]
+        color = color_map[int(label) + 1]
         box = [int(b) for b in box]
         if class_name:
             label = class_name[int(label)]
@@ -2057,7 +2063,7 @@ def boxes2polygons(boxes: np.ndarray or List[np.ndarray]):
     polygons = []
     for box in boxes:
         xmin, ymin, xmax, ymax = box
-        p = [[xmin, ymin], [xmin, ymax], [xmax, ymax], [xmax, ymin]]
+        p = [[xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax]]
         polygons.append(p)
     polygons = np.asarray(polygons)
     return polygons
@@ -2170,6 +2176,25 @@ def get_scale_contours(contours, size, scale=0.85, offset=(0, 0)):
             d = dst_contours[i][c] * scale + (xmin, ymin) + offset
             dst_contours[i][c] = np.asarray(d, dtype=np.int32)
     return dst_contours
+
+
+def resize_image_points(image: np.ndarray, points, size):
+    """
+    缩放图片，并缩放对应的points
+    :param image: 图片
+    :param points: shape is (N,2)
+    :param size:
+    :return:
+    """
+    height, width = image.shape[:2]
+    image = resize_image(image, size=size)
+    resize_height, resize_width = image.shape[:2]
+    scale = [resize_width / width, resize_height / height]
+    if len(points) > 0:
+        if points.shape[1] > 2:  # 如果points是多维度
+            scale += [0] * (points.shape[1] - 2)
+        points = np.asarray(points * scale)
+    return image, points
 
 
 def pointPolygonTest(point, contour, measureDist=False):
@@ -2299,6 +2324,45 @@ def find_image_contours(mask: np.ndarray, target_label: List[int] = [1, 2]) -> L
         contour = find_mask_contours(m)
         contours.append(contour)
     return contours
+
+
+def get_image_points_valid_range(image, points, valid_range, crop=True, color=(255, 255, 255)):
+    """
+    获得在valid_range范围的points
+    :param image: 图像
+    :param points: 点集合shape: (N,2)
+    :param valid_range: 有效范围(xmin,ymin,xmax,ymax)
+    :param crop: 是否采裁剪图像在valid_range有效区域
+    :param color: crop图像时，填充颜色
+    :return:
+    """
+    valid_point, valid_index = get_points_valid_range(points, valid_range)
+    if crop:
+        image = get_bbox_crop_padding(image, valid_range, color=color)
+        valid_point = valid_point - (valid_range[0], valid_range[1])
+    return image, valid_point, valid_index
+
+
+def get_points_valid_range(points, valid_range):
+    """
+    获得在valid_range范围的points
+    :param points: 点集合shape: (N,2)
+    :param valid_range: 有效范围(xmin,ymin,xmax,ymax)
+    :return:
+    """
+    xmin, ymin, xmax, ymax = valid_range
+    contour = [[xmin, ymin], [xmin, ymax], [xmax, ymax], [xmax, ymin]]
+    valid_point = []
+    valid_index = []
+    for i in range(len(points)):
+        pt = points[i, :]
+        dist = pointPolygonTest(pt, contour)
+        if dist > 0:
+            valid_point.append(pt)
+            valid_index.append(i)
+    valid_point = np.asarray(valid_point)
+    valid_index = np.asarray(valid_index)
+    return valid_point, valid_index
 
 
 def fig2data(fig):

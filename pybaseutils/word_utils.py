@@ -171,7 +171,7 @@ def draw_word_in_image(image, mask, box):
     return image
 
 
-def show_word_packer(packer, image, keys=[], split_line=False, color=(0, 0, 255), thickness=2, vis=False, delay=0):
+def show_word_packer(packer, image, keys=[], split_line=False, color=(255, 0, 0), thickness=2, vis=False, delay=0):
     _keys = ['label', 'cls_score', 'box', 'det_score']
     mask = image.copy() if isinstance(image, np.ndarray) else None
     for word in packer:
@@ -191,7 +191,7 @@ def show_word_packer(packer, image, keys=[], split_line=False, color=(0, 0, 255)
     return image, mask
 
 
-def show_word_unpacker(unpacker, image, keys=[], split_line=False, color=(0, 0, 255), thickness=2, vis=False, delay=0):
+def show_word_unpacker(unpacker, image, keys=[], split_line=False, color=(255, 0, 0), thickness=2, vis=False, delay=0):
     _keys = ['label', 'cls_score', 'box', 'det_score']
     mask = image.copy() if isinstance(image, np.ndarray) else None
     for i in range(len(unpacker["box"])):
