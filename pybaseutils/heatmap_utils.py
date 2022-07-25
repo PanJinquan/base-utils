@@ -78,7 +78,7 @@ def get_image_heatmap(image, points: list, input_size=[448, 448], radius=2, fusi
     :param image: image array
     :param points: 坐标列表(N,2)
     :param radius: 半径
-    :param fusion: 融合方式:[color,gray,split]
+    :param fusion: 融合方式:[color,white,black,split]
     :return:
     """
     # 生成热力图
@@ -109,8 +109,7 @@ def get_image_heatmap(image, points: list, input_size=[448, 448], radius=2, fusi
         overlay = np.asarray(np.clip(image, 0, 255), dtype=np.uint8)
     elif fusion == "split":
         overlay = image.copy()
-        overlay[:, :, 1] = mask
-        out_mask = mask
+        overlay[:, :, 1] = out_mask
     else:
         raise Exception("fusion ERROR:{}".format(fusion))
     # dst = src1[i] * alpha + src2[i] * beta + gamma;//两张图片每个通道对应数值之和。
@@ -129,7 +128,7 @@ if __name__ == "__main__":
     image = image_utils.read_image(image_path)
     input_size = [416, 416]
     points = [[100, 200], [400, 200]]
-    colormap = "color"
+    colormap = "split"
     # image = np.zeros_like(image, dtype=np.uint8)
     image, mask = get_image_heatmap(image, points, input_size=input_size, fusion=colormap)
     image_utils.cv_show_image("mask", mask, delay=1)
