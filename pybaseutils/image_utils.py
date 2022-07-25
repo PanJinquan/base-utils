@@ -2136,7 +2136,7 @@ def get_mask_iou(mask1, mask2, binarize=True):
     return iou
 
 
-def get_scale_image(image, scale=0.85, offset=(0, 0), color=(0, 0, 0)):
+def get_scale_image(image, scale=0.85, offset=(0, 0), color=(0, 0, 0), interpolation=cv2.INTER_NEAREST):
     """
     同比居中缩小image，以便居中显示
     :param image: mask
@@ -2146,8 +2146,7 @@ def get_scale_image(image, scale=0.85, offset=(0, 0), color=(0, 0, 0)):
     """
     h, w = image.shape[:2]
     bg = create_image(image.shape, color=color)
-    fg = cv2.resize(image, dsize=(int(w * scale), int(h * scale)), interpolation=cv2.INTER_NEAREST)
-    # fg = cv2.resize(image, dsize=(int(w * scale), int(h * scale)), interpolation=cv2.INTER_AREA)
+    fg = cv2.resize(image, dsize=(int(w * scale), int(h * scale)), interpolation=interpolation)
     sh, sw = fg.shape[:2]
     xmin = (w - sw) // 2 + offset[0]
     ymin = (h - sh) // 2 + offset[1]
