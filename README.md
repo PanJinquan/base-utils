@@ -1,5 +1,8 @@
 # base-utils
 
+- 源码  ： https://github.com/PanJinquan/base-utils
+- 安装包： https://pypi.org/project/pybaseutils/
+
 ## base_utils(C++)
 
 base_util是个人开发常用的C++库，集成了C/C++ OpenCV等常用的算法
