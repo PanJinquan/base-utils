@@ -39,6 +39,7 @@ def get_batch_dict_sample(data_dict: Dict, batch_size: int):
     for i in range(batch_num):
         start = i * batch_size
         end = min((i + 1) * batch_size, sample_num)
+        # batch = {k: data_dict[k][start:end] if len(data_dict[k]) > 0 else [] for k in keys}
         batch = {k: data_dict[k][start:end] for k in keys}
         yield batch
 
@@ -66,6 +67,7 @@ if __name__ == "__main__":
     for batch in get_batch_sample(image_list, batch_size):
         print("batch:{}".format(batch))
 
-    data_dict = {"image": image_list,"label": list(range(len(image_list)))}
+    # data_dict = {"image": image_list, "label": list(range(len(image_list)))}
+    data_dict = {"image": image_list, "label": [0, 1, 2]}
     for batch in get_batch_dict_sample(data_dict, batch_size):
         print("batch:{}".format(batch))

@@ -7,15 +7,15 @@
 
 import math
 import random
-import torch
 import cv2
+import numbers
 import numpy as np
 
 
 def clip_xyxy(xyxy: np.ndarray, valid_range):
     """
     限制xyxy的有效范围，避免越界
-    :param xyxy:
+    :param xyxy:shape=(N,4),(x,y,x,y)
     :param valid_range:有效范围(xmin,ymin,xmax,ymax)
     :return:
     """
@@ -23,6 +23,31 @@ def clip_xyxy(xyxy: np.ndarray, valid_range):
     xyxy[:, [0, 2]] = np.clip(xyxy[:, [0, 2]], xmin, xmax)
     xyxy[:, [1, 3]] = np.clip(xyxy[:, [1, 3]], ymin, ymax)
     return xyxy
+
+
+def clip_xywh_minmax(xywh, wh_thresh, use_max=True):
+    """
+    限制xywh的(w,h)最大最小值
+    :param xywh:shape=(N,4),(x,y,w,h)
+    :param wh_thresh: 有效长宽的阈值(w,h)
+    :param use_max: True：最大值限制, False: 最小值限制
+    :return:
+    """
+    if isinstance(wh_thresh, numbers.Number): wh_thresh = [wh_thresh, wh_thresh]
+    if not isinstance(xywh, np.ndarray): xywh = np.asarray(xywh)
+    rects = xywh.copy()
+
+    if use_max:
+        w = rects[:, 2] > wh_thresh[0]
+        rects[w, 2] = wh_thresh[0]
+        h = rects[:, 3] > wh_thresh[1]
+        rects[h, 3] = wh_thresh[1]
+    else:
+        w = rects[:, 2] < wh_thresh[0]
+        rects[w, 2] = wh_thresh[0]
+        h = rects[:, 3] < wh_thresh[1]
+        rects[h, 3] = wh_thresh[1]
+    return rects
 
 
 def xyxy2xywh(xyxy: np.ndarray):
