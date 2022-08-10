@@ -1,4 +1,4 @@
- # -*-coding: utf-8 -*-
+# -*-coding: utf-8 -*-
 """
     @Author : panjq
     @E-mail : pan_jinquan@163.com
@@ -416,7 +416,7 @@ class AffineTransform(object):
 
     @staticmethod
     def affine_transform_for_image_points(image, points, output_size,
-                                          center, scale=1., rot=0.,
+                                          center, scale=[1.0, 1.0], rot=0.,
                                           inv=False, color=(0, 0, 0)):
         """
         h, w = image.shape[:2]
@@ -531,7 +531,7 @@ def demo_for_image_affine_transform():
     land_mark = np.asarray(land_mark).reshape(-1, 10)
     output_size = [320, 320]
     image = image_utils.read_image(image_path)
-    image_utils.show_image_boxes("src", image, bboxes, waitKey=10)
+    image_utils.show_image_boxes("src", image, bboxes, delay=10)
     at = AffineTransform()
     for i in range(360):
         trans_image, trans_boxes, center, scale, kwargs = at.affine_transform(image,
@@ -544,7 +544,7 @@ def demo_for_image_affine_transform():
         points = kwargs["land_mark"].reshape(len(trans_boxes), -1, 2)
         print("shape:{},bboxes     ：{}".format(image.shape, bboxes))
         print("shape:{},trans_boxes：{}".format(trans_image.shape, trans_boxes))
-        image_utils.show_image_boxes("trans", trans_image, trans_boxes, color=(0, 255, 0), waitKey=1)
+        image_utils.show_image_boxes("trans", trans_image, trans_boxes, color=(0, 255, 0), delay=1)
         img = image_utils.draw_landmark(img, points, color=(0, 255, 0))
         image_utils.show_image_boxes("img", img, image_boxes, color=(0, 255, 0))
 

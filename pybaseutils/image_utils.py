@@ -21,6 +21,7 @@ from typing import List, Dict, Tuple
 from PIL import ImageDraw, ImageFont
 from math import cos, sin
 from pybaseutils.coords_utils import *
+from pybaseutils.transforms import affine_transform
 
 IMG_POSTFIX = ['*.jpg', '*.jpeg', '*.png', '*.tif']
 color_map = [(0, 0, 0), (255, 0, 0), (0, 255, 0), (0, 0, 255),
@@ -1529,6 +1530,22 @@ def image_rotation(image, angle, center=None, scale=1.0, borderValue=(0, 0, 0)):
     mat = cv2.getRotationMatrix2D(center, angle, scale)
     rotated = cv2.warpAffine(image, mat, dsize=(w, h), borderMode=cv2.BORDER_CONSTANT, borderValue=borderValue)
     return rotated
+
+
+def image_points_rotation(image, points, angle, center=None, scale=1.0, borderValue=(0, 0, 0)):
+    h, w = image.shape[:2]
+    if not center:
+        # center = (w // 2, h // 2)
+        center = (w / 2., h / 2.)
+    output_size = [w, h]
+    image, points, trans = affine_transform.AffineTransform.affine_transform_for_image_points(image, points,
+                                                                                              output_size,
+                                                                                              center,
+                                                                                              scale=[scale, scale],
+                                                                                              rot=angle,
+                                                                                              inv=False,
+                                                                                              color=borderValue)
+    return image, points
 
 
 def rgb_to_gray(image):
