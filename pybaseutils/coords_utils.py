@@ -25,29 +25,29 @@ def clip_xyxy(xyxy: np.ndarray, valid_range):
     return xyxy
 
 
-def clip_xywh_minmax(xywh, wh_thresh, use_max=True):
+def clip_cxcywh_minmax(cxcywh, wh_thresh, use_max=True):
     """
-    限制xywh的(w,h)最大最小值
-    :param xywh:shape=(N,4),(x,y,w,h)
+    限制cxcywh的(w,h)最大最小值
+    :param cxcywh:shape=(N,4),(cx,cy,w,h)
     :param wh_thresh: 有效长宽的阈值(w,h)
     :param use_max: True：最大值限制, False: 最小值限制
     :return:
     """
     if isinstance(wh_thresh, numbers.Number): wh_thresh = [wh_thresh, wh_thresh]
-    if not isinstance(xywh, np.ndarray): xywh = np.asarray(xywh)
-    rects = xywh.copy()
+    if not isinstance(cxcywh, np.ndarray): cxcywh = np.asarray(cxcywh)
+    centers = cxcywh.copy()
 
     if use_max:
-        w = rects[:, 2] > wh_thresh[0]
-        rects[w, 2] = wh_thresh[0]
-        h = rects[:, 3] > wh_thresh[1]
-        rects[h, 3] = wh_thresh[1]
+        w = centers[:, 2] > wh_thresh[0]
+        centers[w, 2] = wh_thresh[0]
+        h = centers[:, 3] > wh_thresh[1]
+        centers[h, 3] = wh_thresh[1]
     else:
-        w = rects[:, 2] < wh_thresh[0]
-        rects[w, 2] = wh_thresh[0]
-        h = rects[:, 3] < wh_thresh[1]
-        rects[h, 3] = wh_thresh[1]
-    return rects
+        w = centers[:, 2] < wh_thresh[0]
+        centers[w, 2] = wh_thresh[0]
+        h = centers[:, 3] < wh_thresh[1]
+        centers[h, 3] = wh_thresh[1]
+    return centers
 
 
 def xyxy2xywh(xyxy: np.ndarray):
