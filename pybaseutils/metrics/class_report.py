@@ -7,10 +7,10 @@
     @Date   : 2019-07-13 13:23:05
 """
 import os
-from sklearn import metrics
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn import metrics
 from pybaseutils import pandas_utils
 
 def plot_confusion_matrix(conf_matrix, labels_name, title, normalization=True):
