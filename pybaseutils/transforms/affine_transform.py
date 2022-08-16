@@ -356,7 +356,7 @@ class RandomAffineTransform(object):
     def __call__(self, image, points):
         is_pil = isinstance(image, Image.Image)
         image = np.asarray(image) if is_pil else image
-        height, width, _ = image.shape
+        height, width = image.shape[:2]
         angle = 0
         if random.random() < self.rot:
             angle = random.uniform(self.degrees[0], self.degrees[1])

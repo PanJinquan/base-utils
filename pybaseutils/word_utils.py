@@ -234,3 +234,14 @@ def save_packer_images(packer, keys=["crop"], dsize=None, out_dir="./output"):
             file = file_utils.create_dir(out_dir, None, name)
             img = image_utils.resize_image(word[k], size=dsize)
             cv2.imwrite(file, img)
+
+
+def show_word_grid(packer, image, thickness=5, vis=True, delay=0):
+    for i, word in enumerate(packer):
+        color = image_utils.color_map[i + 1]
+        boxes = [word['box']]
+        grid_point = word['grid_point']
+        thickness_ = max(int(thickness * 0.5), 1)
+        image = image_utils.draw_image_boxes(image, boxes, color=(255, 0, 0), thickness=thickness_)
+        image = image_utils.draw_image_lines(image, grid_point, thickness=thickness, color=color)
+        if vis: image_utils.cv_show_image("image", image, use_rgb=False, delay=delay)
