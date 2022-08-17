@@ -247,16 +247,16 @@ def show_word_grid(packer, image, thickness=5, vis=True, delay=0):
         if vis: image_utils.cv_show_image("image", image, use_rgb=False, delay=delay)
 
 
-def get_grid_range(word_mask, word_box, grid_box):
+def get_grid_range(mask, word_box, grid_box):
     """
     获得网格有效区域
-    :param word_mask: 文字mask
+    :param mask: 文字mask
     :param word_box: 文字区域框 (xmin,ymin,xmax,ymax)
     :param grid_box: 网格区域框 (xmin,ymin,xmax,ymax)
     :return: grid_range: 网格有效区域 (x,y,w,h)
     """
     if sum(grid_box) < 0: return []
-    h, w = word_mask.shape[:2]
+    h, w = mask.shape[:2]
     rect = image_utils.xyxy2xywh([word_box, grid_box])
     scale = (w, h) / rect[0:1, 2:4]
     scale = np.repeat(scale, 2, axis=-1)[:, [0, 2, 1, 3]]
@@ -270,10 +270,11 @@ def get_grid_rang_mask(mask: np.ndarray or List, grid_range):
     """
     根据网格区域对mask进行填充
     Usage:
-        grid_range = get_grid_range(mask, hw_word["word_box"], hw_word["grid_box"])      # 获得网格有效区域
-        grid_mask = get_grid_rang_mask(mask, grid_range=grid_range)                      # 获得网格区域的mask
-        stroke_segs = get_grid_rang_mask(hw_word["stroke_segs"], grid_range=grid_range)  # 获得网格区域的笔画mask
-        piece_segs = get_grid_rang_mask(hw_word["piece_segs"], grid_range=grid_range)    # 获得网格区域的笔段mask
+        from pybaseutils import word_utils
+        grid_range = word_utils.get_grid_range(mask, hw_word["word_box"], hw_word["grid_box"])      # 获得网格有效区域
+        grid_mask = word_utils.get_grid_rang_mask(mask, grid_range=grid_range)                      # 获得网格区域的mask
+        stroke_segs = word_utils.get_grid_rang_mask(hw_word["stroke_segs"], grid_range=grid_range)  # 获得网格区域的笔画mask
+        piece_segs = word_utils.get_grid_rang_mask(hw_word["piece_segs"], grid_range=grid_range)    # 获得网格区域的笔段mask
     :param mask: 文字mask或者mask列表
     :param grid_range: 网格有效区域 (x,y,w,h)，可由get_grid_range计算获得
     :return: mask
