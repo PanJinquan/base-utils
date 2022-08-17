@@ -242,6 +242,45 @@ def show_word_grid(packer, image, thickness=5, vis=True, delay=0):
         boxes = [word['box']]
         grid_point = word['grid_point']
         thickness_ = max(int(thickness * 0.5), 1)
-        image = image_utils.draw_image_boxes(image, boxes, color=(255, 0, 0), thickness=thickness_)
+        image = image_utils.draw_image_boxes(image, boxes, color=color, thickness=thickness_)
         image = image_utils.draw_image_lines(image, grid_point, thickness=thickness, color=color)
         if vis: image_utils.cv_show_image("image", image, use_rgb=False, delay=delay)
+
+
+def get_grid_range(word_mask, word_box, grid_box):
+    """
+    获得网格有效区域
+    :param word_mask: 文字mask
+    :param word_box: 文字区域框 (xmin,ymin,xmax,ymax)
+    :param grid_box: 网格区域框 (xmin,ymin,xmax,ymax)
+    :return: grid_range: 网格有效区域 (x,y,w,h)
+    """
+    if sum(grid_box) < 0: return []
+    h, w = word_mask.shape[:2]
+    rect = image_utils.xyxy2xywh([word_box, grid_box])
+    scale = (w, h) / rect[0:1, 2:4]
+    scale = np.repeat(scale, 2, axis=-1)[:, [0, 2, 1, 3]]
+    rect = np.asarray(rect * scale, dtype=np.int32)
+    word_rect, grid_rect = rect[0, :], rect[1, :]
+    grid_range = [grid_rect[0] - word_rect[0], grid_rect[1] - word_rect[1], word_rect[2], word_rect[3]]
+    return grid_range
+
+
+def get_grid_rang_mask(mask: np.ndarray or List, grid_range):
+    """
+    根据网格区域对mask进行填充
+    Usage:
+        grid_range = get_grid_range(mask, hw_word["word_box"], hw_word["grid_box"])      # 获得网格有效区域
+        grid_mask = get_grid_rang_mask(mask, grid_range=grid_range)                      # 获得网格区域的mask
+        stroke_segs = get_grid_rang_mask(hw_word["stroke_segs"], grid_range=grid_range)  # 获得网格区域的笔画mask
+        piece_segs = get_grid_rang_mask(hw_word["piece_segs"], grid_range=grid_range)    # 获得网格区域的笔段mask
+    :param mask: 文字mask或者mask列表
+    :param grid_range: 网格有效区域 (x,y,w,h)，可由get_grid_range计算获得
+    :return: mask
+    """
+    if len(grid_range) == 0: return mask
+    if isinstance(mask, np.ndarray):
+        mask = image_utils.get_rect_crop_padding(mask, grid_range, color=(0, 0, 0))
+    elif isinstance(mask, List):
+        mask = [get_grid_rang_mask(m, grid_range) for m in mask]
+    return mask
