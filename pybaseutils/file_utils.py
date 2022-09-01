@@ -612,9 +612,8 @@ def get_files_lists(file_dir, postfix=IMG_POSTFIX, subname="", shuffle=False):
         image_list = file_dir
     elif file_dir.endswith(".txt"):
         data_root = os.path.dirname(file_dir)
-        image_list = read_data(file_dir)
-        if subname:
-            image_list = [os.path.join(data_root, subname, str(n[0]) + postfix[0][1:]) for n in image_list]
+        image_list = read_data(file_dir, split=None)
+        if subname: image_list = [os.path.join(data_root, subname, n) for n in image_list]
     elif os.path.isdir(file_dir):
         image_list = get_files_list(file_dir, prefix="", postfix=postfix)
     elif os.path.isfile(file_dir):

@@ -2299,7 +2299,7 @@ def get_mask_boundrect(mask, binarize=False, shift=0):
     return [xmin, ymin, xmax, ymax]
 
 
-def find_mask_contours(mask):
+def find_mask_contours(mask, mode=cv2.RETR_LIST, method=cv2.CHAIN_APPROX_NONE):
     """
     寻找一个二值Mask图像的轮廓
     cv2.findContours(mask，mode, method)
@@ -2317,7 +2317,7 @@ def find_mask_contours(mask):
     :param mask: 输入mask必须是二值Mask图像，注意黑色表示背景，白色表示物体，即在黑色背景里寻找白色物体的轮廓
     :return: contours List[np.ndarray(num_point,2)] 返回二值Mask图像的轮廓
     """
-    contours, hierarchy = cv2.findContours(mask, mode=cv2.RETR_LIST, method=cv2.CHAIN_APPROX_SIMPLE)
+    contours, hierarchy = cv2.findContours(mask, mode=mode, method=method)
     contours = [c.reshape(-1, 2) for c in contours]
     return contours
 
