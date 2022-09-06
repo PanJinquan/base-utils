@@ -46,7 +46,7 @@ def get_confusion_matrix(true_labels, pred_labels, target_names=None, filename=N
     else:
         true_labels = [target_names[int(i)] for i in true_labels]
         pred_labels = [target_names[int(i)] for i in pred_labels]
-    conf_matrix = metrics.confusion_matrix(true_labels, pred_labels, target_names)
+    conf_matrix = metrics.confusion_matrix(true_labels, pred_labels, labels=target_names)
     if normalization:
         conf_matrix = conf_matrix.astype('float') / conf_matrix.sum(axis=1)[:, np.newaxis]  # 归一化
     pdf = pd.DataFrame(conf_matrix, columns=target_names, index=target_names)
@@ -138,4 +138,4 @@ if __name__ == "__main__":
     target_names = ["A", "B", "C", "D"]
     out_result = get_classification_report(true_labels, pred_labels, target_names=target_names, output_dict=False)
     print(out_result)
-    # get_confusion_matrix(true_labels, pred_labels, class_names=None, normalization=False,plot=True, title="NVR Confusion Matrix")
+    get_confusion_matrix(true_labels, pred_labels, target_names=target_names, normalization=False,plot=True, title="NVR Confusion Matrix")
