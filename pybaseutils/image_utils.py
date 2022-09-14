@@ -926,7 +926,8 @@ def show_image_boxes(title, image, boxes_list, color=(0, 0, 255), delay=0):
     return image
 
 
-def draw_image_bboxes_text(rgb_image, boxes, boxes_name, color, thickness=2, drawType="custom", top=True):
+def draw_image_bboxes_text(rgb_image, boxes, boxes_name, color, thickness=2, fontScale=0.5, drawType="custom",
+                           top=True):
     """
     :param boxes_name:
     :param bgr_image: bgr image
@@ -943,12 +944,12 @@ def draw_image_bboxes_text(rgb_image, boxes, boxes_name, color, thickness=2, dra
         # cv2.putText(bgr_image, name, (crop_type[0], crop_type[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), thickness=2)
         # cv2.rectangle(bgr_image, (crop_type[0], crop_type[1]), (crop_type[2], crop_type[3]), color, 2, 8, 0)
         # cv2.putText(bgr_image, str(name), (crop_type[0], crop_type[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, thickness=2)
-        custom_bbox_line(rgb_image, box, color, name, thickness, drawType, top)
+        custom_bbox_line(rgb_image, box, color, name, thickness, fontScale, drawType, top)
     return rgb_image
 
 
-def draw_image_bboxes_labels_text(rgb_image, boxes, labels, boxes_name=None, color=None, thickness=2, drawType="custom",
-                                  top=True):
+def draw_image_bboxes_labels_text(rgb_image, boxes, labels, boxes_name=None, color=None, thickness=2, fontScale=0.5,
+                                  drawType="custom", top=True):
     """
     :param rgb_image:
     :param boxes:
@@ -966,7 +967,7 @@ def draw_image_bboxes_labels_text(rgb_image, boxes, labels, boxes_name=None, col
     for label, box, name in zip(labels, boxes, boxes_name):
         box = [int(b) for b in box]
         color_ = color if color else color_map[int(label) + 1]
-        custom_bbox_line(rgb_image, box, color_, str(name), thickness, drawType, top)
+        custom_bbox_line(rgb_image, box, color_, str(name), thickness, fontScale, drawType, top)
     return rgb_image
 
 
@@ -1019,9 +1020,10 @@ def show_image_rects_text(title, rgb_image, rects, rects_name, color=None, drawT
     return rgb_image
 
 
-def draw_image_detection_rects(rgb_image, rects, probs, labels, class_name=None):
+def draw_image_detection_rects(rgb_image, rects, probs, labels, class_name=None, thickness=2, fontScale=0.5):
     bboxes = rects2bboxes(rects)
-    rgb_image = draw_image_detection_bboxes(rgb_image, bboxes, probs, labels, class_name)
+    rgb_image = draw_image_detection_bboxes(rgb_image, bboxes, probs, labels, class_name,
+                                            thickness=thickness, fontScale=fontScale)
     return rgb_image
 
 
@@ -1045,7 +1047,7 @@ def flat_data(data):
     return data
 
 
-def draw_image_detection_bboxes(rgb_image, bboxes, probs, labels, class_name=None, thickness=2):
+def draw_image_detection_bboxes(rgb_image, bboxes, probs, labels, class_name=None, thickness=2, fontScale=0.5):
     """
     :param title:
     :param rgb_image:
@@ -1062,12 +1064,14 @@ def draw_image_detection_bboxes(rgb_image, bboxes, probs, labels, class_name=Non
         if class_name:
             label = class_name[int(label)]
         boxes_name = "{}:{:3.3f}".format(label, prob)
-        custom_bbox_line(rgb_image, box, color, boxes_name, thickness, drawType="custom")
+        custom_bbox_line(rgb_image, box, color, boxes_name, thickness=thickness, fontScale=fontScale, drawType="custom")
     return rgb_image
 
 
-def show_image_detection_bboxes(title, rgb_image, bboxes, probs, labels, class_name=None, delay=0):
-    rgb_image = draw_image_detection_bboxes(rgb_image, bboxes, probs, labels, class_name)
+def show_image_detection_bboxes(title, rgb_image, bboxes, probs, labels, class_name=None, thickness=2, fontScale=0.5,
+                                delay=0):
+    rgb_image = draw_image_detection_bboxes(rgb_image, bboxes, probs, labels, class_name,
+                                            thickness=thickness, fontScale=fontScale)
     cv_show_image(title, rgb_image, delay=delay)
     return rgb_image
 
@@ -1104,7 +1108,7 @@ def draw_dt_gt_dets(image, dt_boxes, dt_label, gt_boxes, gt_label, vis_diff=Fals
     return image
 
 
-def custom_bbox_line(image, bbox, color, name, thickness=2, drawType="custom", top=True):
+def custom_bbox_line(image, bbox, color, name, thickness=2, fontScale=0.5, drawType="custom", top=True):
     """
     :param image:
     :param bbox:
@@ -1114,7 +1118,7 @@ def custom_bbox_line(image, bbox, color, name, thickness=2, drawType="custom", t
     :param top:
     :return:
     """
-    fontScale = 0.5
+    # fontScale = 0.5
     if not name:
         drawType = "simple"
     if drawType == "simple":
