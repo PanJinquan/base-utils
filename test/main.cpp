@@ -45,6 +45,33 @@ void test_rotate_points() {
     DEBUG_IMSHOW("dst", dst);
 }
 
+
+void test_image_padding() {
+    string path = "../../data/test_image/grid2.png";
+    DEBUG_TIME(t1);
+    cv::Mat image = cv::imread(path);
+    int height = image.rows;
+    int width = image.cols;
+    cv::Box box = {100, 100, 200, 200};
+    vector<cv::Box> boxes = {box};
+    vector<cv::Rect> rects;
+    boxes2rects(boxes, rects);
+    draw_rects_texts(image, rects, {}, cv::Scalar(255, 0, 0));
+    cv::Mat dst = image_boxes_resize_padding(image, cv::Size(400, 400), boxes);
+    vector<cv::Rect> rects2;
+    boxes2rects(boxes, rects2);
+    draw_rects_texts(dst, rects2);
+
+    image_boxes_resize_padding_inverse(cv::Size(width, height),
+                                       cv::Size(400, 400),
+                                       boxes);
+    vector<cv::Rect> rects3;
+    boxes2rects(boxes, rects3);
+    draw_rects_texts(image, rects3, {}, cv::Scalar(0, 255, 0));
+    DEBUG_IMSHOW("image", image, 10);
+    DEBUG_IMSHOW("dst", dst, 0);
+}
+
 void test_read_dir() {
     //string image_dir = "../../data/test_image/test1.jpg";
     string image_dir = "../../base_utils";
@@ -97,7 +124,8 @@ int main() {
     //test_read_dir();
     //test_read_write_file();
     //test_math_utils();
-    test_rotate_points();
-//    test_math_utils_vector();
+    //test_rotate_points();
+    //test_math_utils_vector();
+    test_image_padding();
     return 0;
 }

@@ -11,6 +11,14 @@
 using namespace std;
 
 
+namespace cv {
+    struct Box {
+        float x1, y1, x2, y2, score;   // 左上角x1,左上角y1,右下角x2,右下角y2,置信度分数score
+    };
+    static vector<Box> boxes = {};
+}
+
+
 /***
  * 缩放图片，若resize_width或者resize_height，有一个是小于等于0，则进行等比例缩放图片
  * @param image
@@ -29,7 +37,7 @@ cv::Mat image_resize(cv::Mat &image, int resize_width = -1, int resize_height = 
  * @param color  设置背景边界颜色：(0, 0, 0)
  * @return
  */
-cv::Mat rotate_image(cv::Mat &image, cv::Point2f center, float angle, cv::Scalar color = (0, 0, 0));
+cv::Mat rotate_image(cv::Mat &image, cv::Point2f center, float angle, cv::Scalar color = cv::Scalar(0,0,0));
 
 
 /***
@@ -105,7 +113,7 @@ cv::Mat image_crop(cv::Mat &image, int x1, int x2, int y1, int y2);
  * @param color 填充的颜色，默认黑色 color = (0, 0, 0)
  * @return
  */
-cv::Mat image_crop_padding(cv::Mat &image, cv::Rect rect, cv::Scalar color = (0, 0, 0));
+cv::Mat image_crop_padding(cv::Mat &image, cv::Rect rect, cv::Scalar color = cv::Scalar(0,0,0));
 
 
 /***
@@ -149,7 +157,7 @@ void image_save(string name, cv::Mat &image);
  * @param text
  */
 void draw_point_text(cv::Mat &image, cv::Point2f points, string text = "",
-                     cv::Scalar color = (0, 0, 255));
+                     cv::Scalar color = cv::Scalar(255,0,0));
 
 
 /***
@@ -159,7 +167,7 @@ void draw_point_text(cv::Mat &image, cv::Point2f points, string text = "",
  * @param texts
  */
 void draw_points_texts(cv::Mat &image, vector<cv::Point2f> points, vector<string> texts = {},
-                       cv::Scalar color = (0, 0, 255));
+                       cv::Scalar color = cv::Scalar(255,0,0));
 
 
 /***
@@ -169,7 +177,7 @@ void draw_points_texts(cv::Mat &image, vector<cv::Point2f> points, vector<string
  * @param text
  */
 void draw_rect_text(cv::Mat &image, cv::Rect rect, string text = "",
-                    cv::Scalar color = (255, 0, 0), int thickness = 2);
+                    cv::Scalar color = cv::Scalar(255,0,0), int thickness = 2);
 
 
 /***
@@ -178,8 +186,8 @@ void draw_rect_text(cv::Mat &image, cv::Rect rect, string text = "",
  * @param rects
  * @param texts
  */
-void draw_rects_texts(cv::Mat &image, vector<cv::Rect> rects, vector<string> texts,
-                      cv::Scalar color = (255, 0, 0), int thickness = 2);
+void draw_rects_texts(cv::Mat &image, vector<cv::Rect> rects, vector<string> texts = {},
+                      cv::Scalar color = cv::Scalar(255,0,0), int thickness = 2);
 
 
 /***
@@ -189,7 +197,7 @@ void draw_rects_texts(cv::Mat &image, vector<cv::Rect> rects, vector<string> tex
  * @param skeleton 需要连接的ID序号
  */
 void draw_lines(cv::Mat &image, vector<cv::Point2f> points, vector<vector<int>> skeleton,
-                cv::Scalar color = (0, 255, 0));
+                cv::Scalar color = cv::Scalar(255,0,0));
 
 /***
  * 绘制带箭头的连接线
@@ -198,7 +206,7 @@ void draw_lines(cv::Mat &image, vector<cv::Point2f> points, vector<vector<int>> 
  * @param skeleton 需要连接的ID序号
  */
 void draw_arrowed_lines(cv::Mat &image, vector<cv::Point2f> points, vector<vector<int>> skeleton,
-                        cv::Scalar color = (0, 255, 0));
+                        cv::Scalar color = cv::Scalar(255,0,0));
 
 
 /***
@@ -229,5 +237,23 @@ void image_fusion(cv::Mat &imgBGR, cv::Mat matte, cv::Mat &out,
 
 void image_fusion(cv::Mat &imgBGR, cv::Mat matte, cv::Mat &out, cv::Mat bg);
 
+void image_fusion_cv(cv::Mat &imgBGR, cv::Mat matte, cv::Mat &out, cv::Mat bg);
+
+
+cv::Mat image_boxes_resize_padding(cv::Mat &image, cv::Size input_size, cv::Scalar color = cv::Scalar(0,0,0));
+
+cv::Mat
+image_boxes_resize_padding(cv::Mat &image, cv::Size input_size, vector<cv::Box> &boxes, cv::Scalar color = cv::Scalar(0,0,0));
+
+void image_boxes_resize_padding_inverse(cv::Size image_size, cv::Size input_size, vector<cv::Box> &boxes = cv::boxes);
+
+
+cv::Box rect2box(cv::Rect &rect);
+
+cv::Rect box2rect(cv::Box &box);
+
+void boxes2rects(vector<cv::Box> &boxes, vector<cv::Rect> &rects);
+
+void rects2boxes(vector<cv::Rect> &rects, vector<cv::Box> &boxes);
 
 #endif //DETECTOR_IMAGE_UTILS_H

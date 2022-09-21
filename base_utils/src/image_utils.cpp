@@ -1,7 +1,8 @@
 //
 // Created by dm on 2021/1/15.
 //
-
+#include<opencv2/opencv.hpp>
+#include <opencv2/imgproc.hpp>
 #include "image_utils.h"
 #include "math_utils.h"
 
@@ -346,4 +347,86 @@ void image_fusion_cv(cv::Mat &imgBGR, cv::Mat matte, cv::Mat &out, cv::Mat bg) {
     // out = out.mul(alpha) + bgi.mul(1 - alpha);
     out = out.mul(matte) + bg.mul(cv::Scalar(1.0, 1.0, 1.0) - matte);
     out.convertTo(out, CV_8UC3, 1, 0);
+}
+
+cv::Mat image_boxes_resize_padding(cv::Mat &image, cv::Size input_size, cv::Scalar color) {
+    vector<cv::Box> boxes;
+    return image_boxes_resize_padding(image, input_size, boxes, color);
+}
+
+cv::Mat image_boxes_resize_padding(cv::Mat &image, cv::Size input_size, vector<cv::Box> &boxes, cv::Scalar color) {
+    int height = image.rows;
+    int width = image.cols;
+    //float scale = min([input_size[0] / width, input_size[1] / height]);
+    vector<float> scale_ = {(float) input_size.width / width, (float) input_size.height / height};
+    float scale = scale_[0] > scale_[1] ? scale_[1] : scale_[0];
+    vector<int> new_size{int(width * scale), int(height * scale)};
+    int pad_w = input_size.width - new_size[0];
+    int pad_h = input_size.height - new_size[1];
+    int top = pad_h / 2;
+    int bottom = pad_h - (pad_h / 2);
+    int left = pad_w / 2;
+    int right = pad_w - (pad_w / 2);
+    cv::Mat out;
+    cv::resize(image, out, cv::Size(new_size[0], new_size[1]));
+    //out = cv2::copyMakeBorder(out, top, bottom, left, right, cv2.BORDER_CONSTANT, value = color)
+    cv::copyMakeBorder(out, out, top, bottom, left, right, cv::BORDER_CONSTANT, color);
+    //if not boxes is None and len(boxes) > 0:
+    //boxes[:] = boxes[:] * scale
+    //boxes[:] = boxes[:] + [left, top, left, top]
+    for (int i = 0; i < boxes.size(); i++) {
+        boxes[i].x1 = boxes[i].x1 * scale + left;
+        boxes[i].y1 = boxes[i].y1 * scale + top;
+        boxes[i].x2 = boxes[i].x2 * scale + left;
+        boxes[i].y2 = boxes[i].y2 * scale + top;
+    }
+    return out;
+}
+
+void image_boxes_resize_padding_inverse(cv::Size image_size, cv::Size input_size, vector<cv::Box> &boxes) {
+    int height = image_size.height;
+    int width = image_size.width;
+    //scale = min([input_size[0] / width, input_size[1] / height])
+    vector<float> scale_ = {(float) input_size.width / width, (float) input_size.height / height};
+    float scale = scale_[0] > scale_[1] ? scale_[1] : scale_[0];
+    //new_size = [int(width * scale), int(height * scale)]
+    vector<int> new_size{int(width * scale), int(height * scale)};
+    int pad_w = input_size.width - new_size[0];
+    int pad_h = input_size.height - new_size[1];
+    int top = pad_h / 2;
+    int bottom = pad_h - (pad_h / 2);
+    int left = pad_w / 2;
+    int right = pad_w - (pad_w / 2);
+    //if not boxes is None and len(boxes) > 0:
+    //boxes[:] = boxes[:] - [left, top, left, top]
+    //boxes[:] = boxes[:] / scale
+    for (int i = 0; i < boxes.size(); i++) {
+        boxes[i].x1 = (boxes[i].x1 - left) / scale;
+        boxes[i].y1 = (boxes[i].y1 - top) / scale;
+        boxes[i].x2 = (boxes[i].x2 - left) / scale;
+        boxes[i].y2 = (boxes[i].y2 - top) / scale;
+    }
+}
+
+
+cv::Box rect2box(cv::Rect &rect) {
+    cv::Box box = {(float) rect.x, (float) rect.y, float(rect.x + rect.width), float(rect.y + rect.height)};
+    return box;
+}
+
+cv::Rect box2rect(cv::Box &box) {
+    cv::Rect rect = {(int) box.x1, (int) box.y1, int(box.x2 - box.x1), int(box.y2 - box.y1)};
+    return rect;
+}
+
+void boxes2rects(vector<cv::Box> &boxes, vector<cv::Rect> &rects) {
+    for (int i = 0; i < boxes.size(); i++) {
+        rects.push_back(box2rect(boxes[i]));
+    }
+}
+
+void rects2boxes(vector<cv::Rect> &rects, vector<cv::Box> &boxes) {
+    for (int i = 0; i < rects.size(); i++) {
+        boxes.push_back(rect2box(rects[i]));
+    }
 }

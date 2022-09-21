@@ -580,7 +580,7 @@ def fast_read_image_roi(filename, orig_rect, ImreadModes=cv2.IMREAD_COLOR, norma
     return roi_image
 
 
-def resize_scale_image(image, size: int, use_length=True):
+def resize_scale_image(image, size: int, use_length=True, interpolation=cv2.INTER_LINEAR):
     """
     按照长/短边进行等比例缩放
     :param image:
@@ -591,11 +591,11 @@ def resize_scale_image(image, size: int, use_length=True):
     height, width = image.shape[:2]
     r = [size / width, size / height]
     r = min(r) if use_length else max(r)
-    dimage = cv2.resize(image, dsize=(int(width * r), int(height * r)))
+    dimage = cv2.resize(image, dsize=(int(width * r), int(height * r)), interpolation=interpolation)
     return dimage
 
 
-def resize_image_padding(image, size: Tuple[int, int], use_length=True, color=(0, 0, 0)):
+def resize_image_padding(image, size: Tuple, use_length=True, color=(0, 0, 0), interpolation=cv2.INTER_LINEAR):
     """
     按照长/短边进行等比例缩放，短边会进行填充,长边会被裁剪，避免出现形变
     :param image:
@@ -606,12 +606,12 @@ def resize_image_padding(image, size: Tuple[int, int], use_length=True, color=(0
     """
     height, width = image.shape[:2]
     _size = max(size) if use_length else min(size)
-    image = resize_scale_image(image, size=int(_size), use_length=use_length)
+    image = resize_scale_image(image, size=int(_size), use_length=use_length, interpolation=interpolation)
     image = center_crop_padding(image, crop_size=size, color=color)
     return image
 
 
-def resize_image(image, size: Tuple[int, int]):
+def resize_image(image, size: Tuple[int, int], interpolation=cv2.INTER_LINEAR):
     """
     tf.image.resize_images(images,size),images=[batch, height, width, channels],size=(new_height, new_width)
     cv2.resize(image, dsize=(width, height)),与image.shape相反
@@ -630,7 +630,7 @@ def resize_image(image, size: Tuple[int, int]):
         resize_height = int(height * resize_width / width)
     elif resize_width is None:
         resize_width = int(width * resize_height / height)
-    image = cv2.resize(image, dsize=(int(resize_width), int(resize_height)))
+    image = cv2.resize(image, dsize=(int(resize_width), int(resize_height)), interpolation=interpolation)
     return image
 
 
@@ -2515,7 +2515,7 @@ def image_composite(image: np.ndarray, alpha: np.ndarray, bg_img=(219, 142, 67))
 
 def frames2gif_by_imageio(frames, gif_file="test.gif", fps=2, loop=0, use_rgb=False):
     """
-    pip install imageio
+    pip install imageio 文件大，但质量较好
     :param frames:
     :param gif_file: 输出的GIF图的路径
     :param fps: 刷新频率
@@ -2535,7 +2535,7 @@ def frames2gif_by_imageio(frames, gif_file="test.gif", fps=2, loop=0, use_rgb=Fa
 def frames2gif_by_pil(frames, gif_file="test.gif", fps=2, loop=0, use_rgb=False):
     """
     https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html#gif
-    PS :loop=0表示无限循环，loop=n表示循环n+1次，如要循环一次，需要去掉loop参数(很奇葩吧！！！)
+    PS :loop=0表示无限循环，loop=n表示循环n+1次，如要循环一次，需要去掉loop参数(很奇葩吧！！！)，文件小，但质量较差
     :param frames:
     :param gif_file: 输出的GIF图的路径
     :param fps: 刷新频率
@@ -2553,7 +2553,7 @@ def frames2gif_by_pil(frames, gif_file="test.gif", fps=2, loop=0, use_rgb=False)
                        optimize=False, loop=loop)
 
 
-def image_file_list2gif(file_list, size=None, gif_file="test.gif", fps=4, loop=0):
+def image_file_list2gif(file_list, size=None, gif_file="test.gif", fps=4, loop=0, use_pil=True):
     """
     pip install imageio
     uri：合成后的gif动图的名字，可以随意更改。
@@ -2568,16 +2568,23 @@ def image_file_list2gif(file_list, size=None, gif_file="test.gif", fps=4, loop=0
     :param gif_file: 输出的GIF图的路径
     :param fps: 刷新频率
     :param loop: 循环次数
+    :param use_pil: True使用PIL库生成GIF图，文件小，但质量较差
+                    False使用imageio库生成GIF图，文件大，但质量较好
     :return:
     """
     frames = []
     for file in file_list:
         bgr = cv2.imread(file)
         image = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
-        image = resize_image(image, size=size)
+        if size:
+            image = resize_image_padding(image, size=size)
+        else:
+            image = resize_image(image, size=size)
         frames.append(image)
-    frames2gif_by_pil(frames, gif_file, fps=fps, loop=loop)
-    # images2gif_by_imageio(frames,gif_file, fps=fps, loop=loop)
+    if use_pil:
+        frames2gif_by_pil(frames, gif_file, fps=fps, loop=loop)
+    else:
+        frames2gif_by_imageio(frames, gif_file, fps=fps, loop=loop)
 
 
 def get_video_capture(video_path, width=None, height=None, fps=None):
