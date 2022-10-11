@@ -18,9 +18,10 @@ class Recorder(object):
         if key in self.content:
             self.content[key]["total"] = self.content[key]["total"] + v
             self.content[key]["count"] = self.content[key]["count"] + 1
+            self.content[key]["current"] = v
             self.content[key]["avg"] = self.content[key]["total"] / self.content[key]["count"]
         else:
-            self.content[key] = {"avg": v, "total": v, "count": 1}
+            self.content[key] = {"avg": v, "total": v, "count": 1, "current": v}
 
     def get(self, key) -> Dict:
         return self.content[key]
@@ -46,9 +47,10 @@ def performance(tag=""):
             key = tag if tag else str(func.__name__)
             recorder.push(key=key, v=(t1 - t0) * 1000)
             content = recorder.get(key)
-            elapsed = "avg:{:.5f}ms\t total:{:.5f}ms\t count:{}".format(content["avg"],
-                                                                        content["total"],
-                                                                        content["count"])
+            elapsed = "current:{:.5f}ms\t avg:{:.5f}ms\t total:{:.5f}ms\t count:{}".format(content["current"],
+                                                                                           content["avg"],
+                                                                                           content["total"],
+                                                                                           content["count"])
             print("{} call {} elapsed: {}".format(tag, func.__name__, elapsed))
             return result
 
@@ -72,9 +74,10 @@ class Performance(object):
 
     def info(self, key):
         content = recorder.get(key)
-        elapsed = "avg:{:.5f}ms\t total:{:.5f}ms\t count:{}".format(content["avg"],
-                                                                    content["total"],
-                                                                    content["count"])
+        elapsed = "current:{:.5f}ms\t avg:{:.5f}ms\t total:{:.5f}ms\t count:{}".format(content["current"],
+                                                                                       content["avg"],
+                                                                                       content["total"],
+                                                                                       content["count"])
         print("{} elapsed: {}".format(self.tag, elapsed))
 
     def task(self):

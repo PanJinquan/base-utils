@@ -926,8 +926,8 @@ def show_image_boxes(title, image, boxes_list, color=(0, 0, 255), delay=0):
     return image
 
 
-def draw_image_bboxes_text(rgb_image, boxes, boxes_name, color, thickness=2, fontScale=0.5, drawType="custom",
-                           top=True):
+def draw_image_bboxes_text(rgb_image, boxes, boxes_name, color=(255, 0, 0), thickness=2, fontScale=0.5,
+                           drawType="custom", top=True):
     """
     :param boxes_name:
     :param bgr_image: bgr image
@@ -2636,7 +2636,7 @@ class CVVideo():
     def start_capture(self, video_path, save_video=None, detect_freq=1):
         """
         start capture video
-        :param video_path: *.avi,*.mp4,...
+        :param video_path: *.avi,*.mp4,...or camera id
         :param save_video: *.avi
         :param detect_freq:
         :return:
@@ -2651,7 +2651,7 @@ class CVVideo():
         while True:
             if count % detect_freq == 0:
                 # 设置抽帧的位置
-                video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
+                if isinstance(video_file, str): video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
                 isSuccess, frame = video_cap.read()
                 if not isSuccess:
                     break

@@ -142,7 +142,8 @@ def video2frames(video_file, out_dir=None, func=None, interval=1, vis=True):
     video_cap.release()
 
 
-def frames2video(image_dir, video_file=None, func=None, postfix=["*.png", "*.jpg"], interval=1, fps=30, vis=True):
+def frames2video(image_dir, video_file=None, func=None, size=None, postfix=["*.png", "*.jpg"], interval=1, fps=30,
+                 vis=True):
     """
     将抽帧图像转为视频文件(*.mp4)
     :param image_dir:抽帧图像路径
@@ -154,17 +155,26 @@ def frames2video(image_dir, video_file=None, func=None, postfix=["*.png", "*.jpg
     :param vis:
     :return:
     """
-    image_list = file_utils.get_images_list(image_dir, postfix=postfix)
+    if isinstance(image_dir, list):
+        image_list = image_dir
+    else:
+        image_list = file_utils.get_files_list(image_dir, postfix=postfix)
+        image_list = sorted(image_list)
     if not video_file:
         video_file = os.path.join(image_dir) + "_{}.mp4".format(file_utils.get_time('p'))
     if len(image_list) == 0: return
-    height, width = cv2.imread(image_list[0]).shape[:2]
+    if not size:
+        height, width = cv2.imread(image_list[0]).shape[:2]
+    else:
+        width, height = size
     video_writer = get_video_writer(video_file, width, height, fps)
     for count, image_file in tqdm(enumerate(image_list)):
         if count % interval == 0:
             frame = cv2.imread(image_file)
             if func:
                 frame = func(frame)
+            else:
+                frame = image_utils.resize_image_padding(frame, size=(width, height))
             if vis:
                 image_utils.cv_show_image("frame", frame, use_rgb=False, delay=30)
             video_writer.write(frame)

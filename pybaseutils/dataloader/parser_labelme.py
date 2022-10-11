@@ -196,7 +196,8 @@ class LabelMeDataset(Dataset):
                 "image_file": image_file, "json_file": json_file}
         return data
 
-    def parser_annotation(self, annotation: dict, class_dict, shape=None):
+    @staticmethod
+    def parser_annotation(annotation: dict, class_dict={}, shape=None):
         """
         :param annotation:  labelme标注的数据
         :param class_dict:  label映射
@@ -213,7 +214,7 @@ class LabelMeDataset(Dataset):
                     label = class_dict[label]
             pts = np.asarray(anno["points"], dtype=np.int32)
             if shape:
-                h, w, d = shape
+                h, w = shape[:2]
                 pts[:, 0] = np.clip(pts[:, 0], 0, w - 1)
                 pts[:, 1] = np.clip(pts[:, 1], 0, h - 1)
             box = image_utils.polygons2boxes([pts])[0]
@@ -264,10 +265,23 @@ class LabelMeDataset(Dataset):
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         return image
 
-    def load_annotations(self, ann_file: str):
+    @staticmethod
+    def load_annotations(ann_file: str):
         with open(ann_file, "r") as f: annotation = json.load(f)
         annos = annotation["shapes"]
         return annos
+
+
+def parser_labelme(json_file, class_dict={}, shape=None):
+    """
+    :param annotation:  labelme标注的数据
+    :param class_dict:  label映射
+    :param shape: 图片shape(H,W,C),可进行坐标点的维度检查，避免越界
+    :return:
+    """
+    annotation = LabelMeDataset.load_annotations(json_file)
+    bboxes, labels, points = LabelMeDataset.parser_annotation(annotation, class_dict, shape)
+    return bboxes, labels, points
 
 
 def show_target_image(image, bboxes, labels, points):
