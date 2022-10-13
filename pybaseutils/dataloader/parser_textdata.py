@@ -18,7 +18,8 @@ from pybaseutils import image_utils, file_utils, coords_utils
 from pybaseutils.dataloader.dataset import Dataset
 
 
-class LabelMeDataset(Dataset):
+class TextDataset(Dataset):
+    """YOLO格式解析器将归一化的数据[class cx cy w h]转换为[xmin,ymin,xmax,ymax]"""
 
     def __init__(self,
                  filename=None,
@@ -31,6 +32,11 @@ class LabelMeDataset(Dataset):
                  check=False,
                  **kwargs):
         """
+        Each row is [class cx cy w h](class x_center y_center width height) format;
+        Box coordinates must be in normalized xywh format (from 0 - 1).
+        If your boxes are in pixels, divide x_center and width by image width, and y_center and height by image height.
+        such as:[0, 0.9146634615384616, 0.3497596153846154, 0.11298076923076923, 0.14182692307692307]
+
         :param filename:
         :param data_root:
         :param anno_dir:
@@ -39,7 +45,7 @@ class LabelMeDataset(Dataset):
         :param use_rgb:
         :param shuffle:
         """
-        super(LabelMeDataset, self).__init__()
+        super(TextDataset, self).__init__()
         self.min_area = 1 / 1000  # 如果前景面积不足0.1%,则去除
         self.use_rgb = use_rgb
         self.class_name, self.class_dict = self.parser_classes(class_name)
@@ -127,7 +133,7 @@ class LabelMeDataset(Dataset):
             img_postfix = image_id.split(".")[-1]
             image_id = image_id[:-len(img_postfix) - 1]
         image_file = os.path.join(image_dir, "{}.{}".format(image_id, img_postfix))
-        annotation_file = os.path.join(anno_dir, "{}.json".format(image_id))
+        annotation_file = os.path.join(anno_dir, "{}.txt".format(image_id))
         return image_file, annotation_file, image_id
 
     def checking(self, image_ids: list, ignore_empty=True):
@@ -169,7 +175,7 @@ class LabelMeDataset(Dataset):
             image_id = self.read_files(filename, split=",")
             data_root = os.path.dirname(filename)
         if not anno_dir:  # 如果anno_dir为空，则自动搜寻可能存在图片目录
-            image_sub = ["json"]
+            image_sub = ["labels"]
             anno_dir = self.search_path(data_root, image_sub)
         if not image_dir:
             image_dir = self.search_path(data_root, ["JPEGImages", "images"])
@@ -191,8 +197,8 @@ class LabelMeDataset(Dataset):
         image = self.read_image(image_file, use_rgb=self.use_rgb)
         shape = image.shape
         annotation = self.load_annotations(anno_file)
-        box, label, point = self.parser_annotation(annotation, self.class_dict, shape)
-        data = {"image": image, "point": point, "box": box, "label": label,
+        box, label = self.parser_annotation(annotation, self.class_dict, shape)
+        data = {"image": image, "point": [], "box": box, "label": label,
                 "image_file": image_file, "anno_file": anno_file}
         return data
 
@@ -204,24 +210,16 @@ class LabelMeDataset(Dataset):
         :param shape: 图片shape(H,W,C),可进行坐标点的维度检查，避免越界
         :return:
         """
-        bboxes, labels, points = [], [], []
-        for anno in annotation:
-            label = anno["label"].lower()
-            if class_dict:
-                if not label in class_dict:
-                    continue
-                if isinstance(class_dict, dict):
-                    label = class_dict[label]
-            pts = np.asarray(anno["points"], dtype=np.int32)
-            if shape:
-                h, w = shape[:2]
-                pts[:, 0] = np.clip(pts[:, 0], 0, w - 1)
-                pts[:, 1] = np.clip(pts[:, 1], 0, h - 1)
-            box = image_utils.polygons2boxes([pts])[0]
-            labels.append(label)
-            bboxes.append(box)
-            points.append(pts)
-        return bboxes, labels, points
+        # annotation is [class cx cy w h]
+        annotation = np.asarray(annotation)
+        labels = annotation[:, 0:1]
+        center = annotation[:, 1:5]
+        if shape:
+            h, w = shape[:2]
+            bboxes = coords_utils.cxcywh2xyxy(center,width=w, height=h, normalized=True)
+        else:
+            bboxes = coords_utils.cxcywh2xyxy(center)
+        return bboxes, labels
 
     def index2id(self, index):
         """
@@ -267,8 +265,7 @@ class LabelMeDataset(Dataset):
 
     @staticmethod
     def load_annotations(ann_file: str):
-        with open(ann_file, "r") as f: annotation = json.load(f)
-        annos = annotation["shapes"]
+        annos = file_utils.read_data(ann_file, split=" ")
         return annos
 
 
@@ -279,9 +276,9 @@ def parser_labelme(anno_file, class_dict={}, shape=None):
     :param shape: 图片shape(H,W,C),可进行坐标点的维度检查，避免越界
     :return:
     """
-    annotation = LabelMeDataset.load_annotations(anno_file)
-    bboxes, labels, points = LabelMeDataset.parser_annotation(annotation, class_dict, shape)
-    return bboxes, labels, points
+    annotation = TextDataset.load_annotations(anno_file)
+    bboxes, labels = TextDataset.parser_annotation(annotation, class_dict, shape)
+    return bboxes, labels
 
 
 def show_target_image(image, bboxes, labels, points):
@@ -291,19 +288,16 @@ def show_target_image(image, bboxes, labels, points):
 
 
 if __name__ == "__main__":
-    filename = "/home/dm/nasdata/dataset-dmai/handwriting/grid-det/grid_cross_points_v3/trainval.txt"
-    # filename = None
-    # anno_dir = "/media/dm/新加卷/SDK/base-utils/data/labelme"
-    # image_dir = "/media/dm/新加卷/SDK/base-utils/data/labelme"
-    input_size = [160, 160]
-    dataset = LabelMeDataset(filename=filename,
-                             data_root=None,
-                             anno_dir=None,
-                             image_dir=None,
-                             class_name=None,
-                             check=False,
-                             phase="val",
-                             shuffle=False)
+    filename = "/home/dm/nasdata/dataset/csdn/helmet/helmet-dataset-v2/train.txt"
+    input_size = [640, 640]
+    dataset = TextDataset(filename=filename,
+                          data_root=None,
+                          anno_dir=None,
+                          image_dir=None,
+                          class_name=None,
+                          check=True,
+                          phase="val",
+                          shuffle=False)
     print("have num:{}".format(len(dataset)))
     for i in range(len(dataset)):
         print(i)  # i=20
@@ -311,6 +305,4 @@ if __name__ == "__main__":
         image, points, bboxes, labels = data["image"], data["point"], data["box"], data["label"]
         h, w = image.shape[:2]
         image_file = data["image_file"]
-        anno_file = os.path.join("masker", "{}.json".format(os.path.basename(image_file).split(".")[0]))
-        maker_labelme(anno_file, points, labels, (w, h), image_name=image_file, image_bs64=None)
         show_target_image(image, bboxes, labels, points)

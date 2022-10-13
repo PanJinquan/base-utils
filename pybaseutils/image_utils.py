@@ -1020,6 +1020,36 @@ def show_image_rects_text(title, rgb_image, rects, rects_name, color=None, drawT
     return rgb_image
 
 
+def draw_image_bboxes_labels(rgb_image, bboxes, labels, class_name=None, color=None, thickness=2, fontScale=0.5):
+    """
+    :param rgb_image:
+    :param bboxes:  [[x1,y1,x2,y2],[x1,y1,x2,y2]]
+    :param labels:
+    :return:
+    """
+    if isinstance(labels, np.ndarray): labels = labels.astype(np.int32).reshape(-1)
+    for label, box in zip(labels, bboxes):
+        color_ = color if color else color_map[int(label) + 1]
+        box = [int(b) for b in box]
+        if class_name: label = class_name[int(label)]
+        rgb_image = custom_bbox_line(rgb_image, box, color_, str(label), thickness=thickness,
+                                     fontScale=fontScale, drawType="custom")
+    return rgb_image
+
+
+def draw_image_rects_labels(rgb_image, rects, labels, class_name=None, color=None, thickness=2, fontScale=0.5):
+    """
+    :param rgb_image:
+    :param rects:
+    :param labels:
+    :return:
+    """
+    bboxes = rects2bboxes(rects)
+    rgb_image = draw_image_bboxes_labels(rgb_image, bboxes, labels, class_name=class_name, color=color,
+                                         thickness=thickness, fontScale=fontScale)
+    return rgb_image
+
+
 def draw_image_detection_rects(rgb_image, rects, probs, labels, class_name=None, thickness=2, fontScale=0.5):
     bboxes = rects2bboxes(rects)
     rgb_image = draw_image_detection_bboxes(rgb_image, bboxes, probs, labels, class_name,
@@ -1039,12 +1069,6 @@ def show_image_detection_rects(title, rgb_image, rects, probs, lables, color=Non
     bboxes = rects2bboxes(rects)
     rgb_image = show_image_detection_bboxes(title, rgb_image, bboxes, probs, lables, color, delay)
     return rgb_image
-
-
-def flat_data(data):
-    if isinstance(data, np.ndarray):
-        data = data.reshape(-1).tolist()
-    return data
 
 
 def draw_image_detection_bboxes(rgb_image, bboxes, probs, labels, class_name=None, thickness=2, fontScale=0.5):

@@ -400,10 +400,27 @@ def add_keypoints(xml, keypoint: list):
 
 
 def create_object(name, bndbox, keypoint=[]):
-    object = {
-        "name": name,
-        "bndbox": bndbox,
-        "keypoints": keypoint}
+    if keypoint:
+        object = {"name": name, "bndbox": bndbox, "keypoints": keypoint}
+    else:
+        object = {"name": name, "bndbox": bndbox}
+    return object
+
+
+def create_objects(bboxes: list, labels: list, keypoints=None, class_name={}):
+    """
+    :param bboxes: [[xmin,ymin,xmax,ymax]]
+    :param labels:[name1,name2]
+    :param keypoint:
+    :return:
+    """
+    object = []
+    for i in range(len(labels)):
+        name = class_name[labels[i]] if class_name else labels[i]
+        bndbox = bboxes[i]
+        keypoint = keypoints[i] if keypoints else []
+        obj = create_object(name, bndbox, keypoint)
+        object.append(obj)
     return object
 
 
