@@ -19,7 +19,11 @@ from pybaseutils.dataloader.dataset import Dataset
 
 
 class TextDataset(Dataset):
-    """YOLO格式解析器将归一化的数据[class cx cy w h]转换为[xmin,ymin,xmax,ymax]"""
+    """
+    YOLO数据格式解析器
+    数据格式：(class,cx,cy,w,h)/(1,width,height,width,height)，将归一化的Text数据
+    输出格式：box is (xmin,ymin,xmax,ymax)
+    """
 
     def __init__(self,
                  filename=None,
@@ -198,7 +202,7 @@ class TextDataset(Dataset):
         shape = image.shape
         annotation = self.load_annotations(anno_file)
         box, label = self.parser_annotation(annotation, self.class_dict, shape)
-        data = {"image": image, "point": [], "box": box, "label": label,
+        data = {"image": image, "box": box, "label": label,
                 "image_file": image_file, "anno_file": anno_file}
         return data
 
@@ -216,7 +220,7 @@ class TextDataset(Dataset):
         center = annotation[:, 1:5]
         if shape:
             h, w = shape[:2]
-            bboxes = coords_utils.cxcywh2xyxy(center,width=w, height=h, normalized=True)
+            bboxes = coords_utils.cxcywh2xyxy(center, width=w, height=h, normalized=True)
         else:
             bboxes = coords_utils.cxcywh2xyxy(center)
         return bboxes, labels
@@ -281,28 +285,29 @@ def parser_labelme(anno_file, class_dict={}, shape=None):
     return bboxes, labels
 
 
-def show_target_image(image, bboxes, labels, points):
-    image = image_utils.draw_image_bboxes_text(image, bboxes, labels, color=(255, 0, 0))
-    image = image_utils.draw_landmark(image, points, color=(0, 255, 0))
-    image_utils.cv_show_image("det", image)
+def show_target_image(image, bboxes, labels, class_name=None, use_rgb=True):
+    image = image_utils.draw_image_bboxes_labels(image, bboxes, labels, class_name=class_name)
+    image_utils.cv_show_image("det", image, use_rgb=use_rgb)
 
 
 if __name__ == "__main__":
-    filename = "/home/dm/nasdata/dataset/csdn/helmet/helmet-dataset-v2/train.txt"
-    input_size = [640, 640]
+    # filename = "/home/dm/nasdata/dataset/csdn/helmet/helmet-dataset-v2/train.txt"
+    # filename = "/home/dm/nasdata/dataset/csdn/helmet/helmet-asian/total.txt"
+    filename = "/home/dm/nasdata/dataset/csdn/helmet/helmet-asian/total.txt"
+    filename = "/home/dm/nasdata/dataset/csdn/helmet/Hard Hat Workers.v2-raw.voc/trainval.txt"
     dataset = TextDataset(filename=filename,
                           data_root=None,
                           anno_dir=None,
                           image_dir=None,
                           class_name=None,
-                          check=True,
+                          check=False,
                           phase="val",
                           shuffle=False)
     print("have num:{}".format(len(dataset)))
     for i in range(len(dataset)):
         print(i)  # i=20
         data = dataset.__getitem__(i)
-        image, points, bboxes, labels = data["image"], data["point"], data["box"], data["label"]
+        image, bboxes, labels = data["image"], data["box"], data["label"]
         h, w = image.shape[:2]
         image_file = data["image_file"]
-        show_target_image(image, bboxes, labels, points)
+        show_target_image(image, bboxes, labels)

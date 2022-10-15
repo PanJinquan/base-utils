@@ -1020,14 +1020,14 @@ def show_image_rects_text(title, rgb_image, rects, rects_name, color=None, drawT
     return rgb_image
 
 
-def draw_image_bboxes_labels(rgb_image, bboxes, labels, class_name=None, color=None, thickness=2, fontScale=0.5):
+def draw_image_bboxes_labels(rgb_image, bboxes, labels, class_name=None, color=None, thickness=2, fontScale=0.8):
     """
     :param rgb_image:
     :param bboxes:  [[x1,y1,x2,y2],[x1,y1,x2,y2]]
     :param labels:
     :return:
     """
-    if isinstance(labels, np.ndarray): labels = labels.astype(np.int32).reshape(-1)
+    if isinstance(labels, np.ndarray): labels = labels.astype(np.int32).reshape(-1).tolist()
     for label, box in zip(labels, bboxes):
         color_ = color if color else color_map[int(label) + 1]
         box = [int(b) for b in box]

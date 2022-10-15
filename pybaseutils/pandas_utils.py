@@ -21,7 +21,7 @@ def read_csv(filename, usecols=None):
     return df
 
 
-def get_rows_by_keys(df, keys=[]):
+def get_rows_by_keys(df, keys=[]) -> pd.DataFrame:
     """
     data =  data[["image_id","label"]]
     data =  get_rows_by_keys(df, ["image_id", "label"]).values
@@ -31,6 +31,12 @@ def get_rows_by_keys(df, keys=[]):
     """
     data = df[keys]
     return data
+
+
+def df2list(df):
+    """pandas.values转为list"""
+    list_ = df.values.tolist()
+    return list_
 
 
 def save_csv(filename, df, save_index=True):

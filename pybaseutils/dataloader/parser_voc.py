@@ -18,6 +18,11 @@ from pybaseutils.dataloader.dataset import Dataset
 
 
 class VOCDataset(Dataset):
+    """
+    VOC数据格式解析器
+    数据格式：(xmin,ymin,xmax,ymax)
+    输出格式：target is (xmin,ymin,xmax,ymax,label)
+    """
 
     def __init__(self,
                  filename=None,
@@ -190,7 +195,10 @@ class VOCDataset(Dataset):
             index = int(random.uniform(0, len(self)))
             return self.__getitem__(index)
         # return image, bboxes, labels
-        return image, {"target": target, "image_id": image_id, "size": [width, height]}
+        # return image, {"target": target, "image_id": image_id, "size": [width, height]}
+        data = {"image": image, "target": target, "image_id": image_id,
+                "size": [width, height], "image_file": image_file}
+        return data
 
     def get_image_anno_file(self, index):
         """
@@ -429,7 +437,7 @@ def VOCDatasets(filename=None,
     return datasets
 
 
-def show_boxes_image(image, bboxes, labels, normal=False, transpose=False):
+def show_target_image(image, bboxes, labels, normal=False, transpose=False, class_name=None, use_rgb=True):
     """
     :param image:
     :param targets_t:
@@ -443,9 +451,9 @@ def show_boxes_image(image, bboxes, labels, normal=False, transpose=False):
     image = np.asarray(image)
     bboxes = np.asarray(bboxes)
     labels = np.asarray(labels)
-    print("image:{}".format(image.shape))
-    print("bboxes:{}".format(bboxes))
-    print("labels:{}".format(labels))
+    # print("image:{}".format(image.shape))
+    # print("bboxes:{}".format(bboxes))
+    # print("labels:{}".format(labels))
     if transpose:
         image = image_utils.untranspose(image)
     h, w, _ = image.shape
@@ -455,32 +463,37 @@ def show_boxes_image(image, bboxes, labels, normal=False, transpose=False):
         bboxes = bboxes * bboxes_scale
     # image = image_processing.untranspose(image)
     # image = image_processing.convert_color_space(image, colorSpace="RGB")
-    image = image_utils.draw_image_bboxes_labels(image, bboxes, labels)
-    image_utils.cv_show_image("image", image, delay=0)
+    image = image_utils.draw_image_bboxes_labels(image, bboxes, labels, class_name=class_name)
+    image_utils.cv_show_image("image", image, delay=0, use_rgb=use_rgb)
     print("===" * 10)
 
 
 if __name__ == "__main__":
     # from models.transforms import data_transforms
     # filename = '/home/dm/nasdata/dataset/csdn/helmet/helmet-dataset/test.txt'
+    filename = '/home/dm/nasdata/dataset/csdn/helmet/helmet-asian/total.txt'
     filename = '/home/dm/nasdata/dataset/csdn/helmet/SafetyHelmetWearingDataset/VOC/train.txt'
-    # class_name = ['BACKGROUND', 'unique']
-    class_name = ['person', 'hat']
-    class_name = {'person': 0, 'hat': 1}
-    size = [320, 320]
+    filename = '/home/dm/nasdata/dataset/csdn/helmet/Helmet_Dataset(kaggle)/helmet_dataset/train.txt'
+    filename = '/home/dm/nasdata/dataset/csdn/helmet/Hard Hat Workers.v2-raw.voc/trainval.txt'
+    filename = '/home/dm/nasdata/dataset/csdn/helmet/Helmet-Asian/total.txt'
+    filename = '/home/dm/nasdata/dataset/csdn/helmet/Helmet-Europe/trainval.txt'
+    # class_dict = ['BACKGROUND', 'unique']
+    class_dict = {'head': 0, "helmet": 1}
+    class_name = ['head', "helmet"]
     dataset = VOCDatasets(filename=[filename],
                           data_root=None,
                           anno_dir=None,
                           image_dir=None,
-                          class_name=class_name,
+                          class_name=class_dict,
                           transform=None,
                           check=False,
-                          shuffle=False)
+                          shuffle=True)
     print("have num:{}".format(len(dataset)))
     for i in range(len(dataset)):
         print(i)
-        image, data = dataset.__getitem__(i)
-        targets, image_id = data["target"], data["image_id"]
+        data = dataset.__getitem__(i)
+        image, targets, image_id = data["image"], data["target"], data["image_id"]
+        print(image_id)
         bboxes, labels = targets[:, 0:4], targets[:, 4:5]
-        show_boxes_image(image, bboxes, labels, normal=False, transpose=False)
+        show_target_image(image, bboxes, labels, normal=False, transpose=False, class_name=class_name)
         # show_boxes_image(image, Dataset.cxcywh2xyxy(bboxes, 0, 0), labels, normal=False, transpose=True)
