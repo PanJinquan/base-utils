@@ -540,7 +540,7 @@ class Preprocessing(object):
     def feature_norm(x, axis=1):
         """
         特征归一化
-        :param x: (N,embedding-size)
+        :param x: 输入二维矩阵(N,embedding-size)，每行是一个样本，样本特征维度为embedding-size
         :param axis:
         :return:
         """
