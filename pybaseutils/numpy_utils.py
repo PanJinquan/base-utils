@@ -536,11 +536,25 @@ class Preprocessing(object):
         # y = x / norms[:, np.newaxis]
         return y
 
+    @staticmethod
+    def feature_norm(x, axis=1):
+        """
+        特征归一化
+        :param x: (N,embedding-size)
+        :param axis:
+        :return:
+        """
+        y = x / np.linalg.norm(x, axis=axis, keepdims=True)
+        return y
+
 
 if __name__ == "__main__":
-    X = np.array([[1., -1., 2.],
+    from pybaseutils import numpy_utils
+
+    x = np.array([[1., -1., 2.],
                   [2., 0., 0.],
                   [0., 1., -1.]])
-    # X_scale = Preprocessing.minmax_scaler(X)
-    X_scale = Preprocessing.normalization(X)
-    print(X_scale)
+    y = numpy_utils.Preprocessing.feature_norm(x)
+    print(y)
+    # y = Preprocessing.minmax_scaler(x)
+    # y = Preprocessing.normalization(x)
