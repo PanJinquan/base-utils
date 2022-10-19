@@ -13,6 +13,7 @@ import PIL
 from PIL import Image, ImageDraw, ImageFont
 from pybaseutils import image_utils, file_utils
 from pybaseutils.font_style import FONT_TYPE, FONT_ROOT
+from fontTools.ttLib import TTFont
 
 
 class FontType(object):
@@ -76,7 +77,6 @@ def draw_image_text(image, point, text, style="楷体", size=20, color=(255, 255
     return image
 
 
-
 def draw_font(text, style="楷体", scale=1.0, size=20, c1=(255, 255, 255), c2=(0, 0, 0), center=True):
     """
     绘制汉字
@@ -104,6 +104,33 @@ def draw_font(text, style="楷体", scale=1.0, size=20, c1=(255, 255, 255), c2=(
     if scale < 1.0:
         image = image_utils.get_scale_image(image, scale=scale, offset=(0, 0), color=c2)
     return image
+
+
+def is_chinese(uchar):
+    """判断一个uchar是否是汉字"""
+    for ch in uchar:
+        if '\u4e00' <= ch <= '\u9fff': return True
+    return False
+
+
+def get_font_char(font_file, only_chinese=False):
+    """
+    返回字库支持的所有字符
+    ord() 返回字符对应的ascii码
+    chr()返回ascii码对应的字符,python2是unichr
+    :param font_file:字库文件
+    :param only_chinese: 是否只返回汉字
+    :return:
+    """
+    font = TTFont(font_file)
+    info = font.getBestCmap()
+    fonts = []
+    for k, v in info.items():
+        w = chr(k)
+        if only_chinese and not is_chinese(w):
+            continue
+        fonts.append(w)
+    return fonts
 
 
 if __name__ == "__main__":

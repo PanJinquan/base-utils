@@ -71,19 +71,22 @@ def show_word_info(word_info):
     print("---" * 20)
 
 
-def show_hw_gt_word_info(word_info):
+def show_hw_gt_word_info(word_info, vis=True):
     """可视化标准字和手写字的分割效果"""
     keys = ["label", "stroke_label", "stroke_names"]
+    hw_gt_images = []
     for word in word_info:
         hw_word = word["handwriting"]
         gt_word = word["groundtruth"]
+        label = hw_word["label"]
         print(json_utils.formatting(hw_word['content'] if 'content' in hw_word else ""))
         # print(json_utils.formatting(gt_info['content'] if 'content' in gt_info else ""))
         text = ["{}={}".format(key, hw_word[key]) for key in keys if key in hw_word]
         print("\t".join(text))
         if len(hw_word['stroke_segs']) == 0 or hw_word['mask'] is None: return
-        concat_hw_gt_stroke_image(hw_mask=hw_word['mask'], hw_segs=hw_word['stroke_segs'],
-                                  gt_mask=gt_word['mask'], gt_segs=gt_word['stroke_segs'], vis=True)
+        hw_gt_image = concat_hw_gt_stroke_image(hw_mask=hw_word['mask'], hw_segs=hw_word['stroke_segs'],
+                                                gt_mask=gt_word['mask'], gt_segs=gt_word['stroke_segs'], vis=vis)
+        hw_gt_images.append({"image": hw_gt_image, "label": label})
         for i in range(len(hw_word['piece_segs'])):
             hw_stroke = hw_word['stroke_segs'][i]
             hw_piece = hw_word['piece_segs'][i]
@@ -94,9 +97,10 @@ def show_hw_gt_word_info(word_info):
             if len(hw_piece) == 0: continue
             piece_image = concat_hw_gt_stroke_image(hw_mask=hw_stroke, hw_segs=hw_piece,
                                                     gt_mask=gt_stroke, gt_segs=gt_piece, vis=False)
-            image_utils.cv_show_image("mask-seg-piece", piece_image)
-        cv2.destroyWindow("mask-seg-piece")
+            if vis: image_utils.cv_show_image("mask-seg-piece", piece_image)
+        if vis: cv2.destroyWindow("mask-seg-piece")
         print("---" * 20)
+    return hw_gt_images
 
 
 def concat_packer(packers: List[List[Dict]]):
