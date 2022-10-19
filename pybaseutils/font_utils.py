@@ -107,7 +107,11 @@ def draw_font(text, style="楷体", scale=1.0, size=20, c1=(255, 255, 255), c2=(
 
 
 def is_chinese(uchar):
-    """判断一个uchar是否是汉字"""
+    """
+    判断一个字符uchar是否为汉字
+    :param uchar:一个字符，如"我"
+    :return: True or False
+    """
     for ch in uchar:
         if '\u4e00' <= ch <= '\u9fff': return True
     return False
@@ -116,9 +120,9 @@ def is_chinese(uchar):
 def get_font_char(font_file, only_chinese=False):
     """
     返回字库支持的所有字符
-    ord() 返回字符对应的ascii码
+    ord()返回字符对应的ascii码
     chr()返回ascii码对应的字符,python2是unichr
-    :param font_file:字库文件
+    :param font_file:字库*.ttf文件，如 方正粗黑宋简体.ttf
     :param only_chinese: 是否只返回汉字
     :return:
     """
@@ -127,8 +131,7 @@ def get_font_char(font_file, only_chinese=False):
     fonts = []
     for k, v in info.items():
         w = chr(k)
-        if only_chinese and not is_chinese(w):
-            continue
+        if only_chinese and not is_chinese(w): continue
         fonts.append(w)
     return fonts
 
