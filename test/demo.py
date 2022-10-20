@@ -10,6 +10,6 @@ from pybaseutils import font_utils, file_utils
 
 font_file = '/home/dm/nasdata/dataset-dmai/handwriting/font-style/zykai-gb2312.ttf'
 
-chars = font_utils.get_font_char(font_file, only_chinese=True)
-file = "zykai-gb2312-{}.txt".format(len(chars))
+chars = font_utils.get_font_char(font_file, only_chinese=False)
+file = "zykai-gb2312-total-{}.txt".format(len(chars))
 file_utils.write_list_data(file, chars)

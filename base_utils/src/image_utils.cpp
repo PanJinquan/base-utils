@@ -430,3 +430,36 @@ void rects2boxes(vector<cv::Rect> &rects, vector<cv::Box> &boxes) {
         boxes.push_back(rect2box(rects[i]));
     }
 }
+
+void clip(cv::Mat &src, float vmin, float vmax) {
+    int h = src.rows;
+    int w = src.cols;
+    if (src.isContinuous() && src.isContinuous()) {
+        h = 1;
+        w = w * src.rows * src.channels();
+    }
+    for (int i = 0; i < h; i++) {
+        float *sptr = src.ptr<float>(i);
+        for (int j = 0; j < w; j++) {
+            //*dptr++ = *sptr++;
+            sptr[j] = sptr[j] < vmax ? sptr[j] : vmax;
+            sptr[j] = sptr[j] > vmin ? sptr[j] : vmin;
+        }
+    }
+}
+
+void clip_min(cv::Mat &src, float th, float v) {
+    int h = src.rows;
+    int w = src.cols;
+    if (src.isContinuous() && src.isContinuous()) {
+        h = 1;
+        w = w * src.rows * src.channels();
+    }
+    for (int i = 0; i < h; i++) {
+        float *sptr = src.ptr<float>(i);
+        for (int j = 0; j < w; j++) {
+            //*dptr++ = *sptr++;
+            sptr[j] = sptr[j] < th ? v : sptr[j];
+        }
+    }
+}

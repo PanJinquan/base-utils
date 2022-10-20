@@ -256,4 +256,21 @@ void boxes2rects(vector<cv::Box> &boxes, vector<cv::Rect> &rects);
 
 void rects2boxes(vector<cv::Rect> &rects, vector<cv::Box> &boxes);
 
+/***
+ * 限制最大最小值
+ * @param src
+ * @param vmin
+ * @param vmax
+ */
+void clip(cv::Mat &src, float vmin, float vmax);
+
+/***
+ * 限制最大最小值
+ * @param src
+ * @param th
+ * @param vmin
+ */
+void clip_min(cv::Mat &src, float th, float vmin);
+
+
 #endif //DETECTOR_IMAGE_UTILS_H
