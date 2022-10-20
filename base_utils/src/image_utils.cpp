@@ -6,6 +6,60 @@
 #include "image_utils.h"
 #include "math_utils.h"
 
+
+bool get_video_capture(string video_file, cv::VideoCapture &cap, int width, int height, int fps) {
+    //VideoCapture video_cap;
+    cap.open(video_file);
+    if (width > 0 && height > 0) {
+        cap.set(cv::CAP_PROP_FRAME_WIDTH, width); //设置图像的宽度
+        cap.set(cv::CAP_PROP_FRAME_HEIGHT, height); //设置图像的高度
+    }
+    if (fps > 0) {
+        cap.set(cv::CAP_PROP_FPS, fps);
+    }
+    if (!cap.isOpened())//判断是否读取成功
+    {
+        return false;
+    }
+    return true;
+}
+
+bool get_video_capture(int camera_id, cv::VideoCapture &cap, int width, int height, int fps) {
+    //VideoCapture video_cap;
+    cap.open(camera_id);    //摄像头ID号，默认从0开始
+    if (width > 0 && height > 0) {
+        cap.set(cv::CAP_PROP_FRAME_WIDTH, width); //设置捕获图像的宽度
+        cap.set(cv::CAP_PROP_FRAME_HEIGHT, height);  //设置捕获图像的高度
+    }
+    if (fps > 0) {
+        cap.set(cv::CAP_PROP_FPS, fps);
+    }
+    if (!cap.isOpened()) //判断是否成功打开相机
+    {
+        return false;
+    }
+    return true;
+}
+
+
+
+int VideoCaptureDemo(string video_file) {
+    cv::VideoCapture cap;
+    bool ret = get_video_capture(video_file, cap, 640, 480);
+    cv::Mat frame;
+    while (ret) {
+        cap >> frame;
+        if (frame.empty()) break;
+        cv::imshow("frame", frame);
+        if (27 == cv::waitKey(30)) {
+            break;
+        }
+    }
+    cap.release();         //释放对相机的控制
+    return 0;
+}
+
+
 cv::Mat image_resize(cv::Mat &image, int resize_width, int resize_height) {
     cv::Mat dst;
     auto width = image.cols;
