@@ -33,7 +33,7 @@ def get_video_capture(video, width=None, height=None, fps=None):
     if height:
         video_cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
     if fps:
-        video_cap.set(cv2.CAP_PROP_FPS, 15)
+        video_cap.set(cv2.CAP_PROP_FPS, fps)
     return video_cap
 
 
@@ -45,10 +45,10 @@ def get_video_info(video_cap: cv2.VideoCapture):
     """
     width = int(video_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(video_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    numFrames = int(video_cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    num_frames = int(video_cap.get(cv2.CAP_PROP_FRAME_COUNT))
     fps = int(video_cap.get(cv2.CAP_PROP_FPS))
-    print("video:width:{},height:{},fps:{},numFrames:{}".format(width, height, fps, numFrames))
-    return width, height, numFrames, fps
+    print("video:width:{},height:{},fps:{},num_frames:{}".format(width, height, fps, num_frames))
+    return width, height, num_frames, fps
 
 
 def get_video_writer(video_file, width, height, fps):
@@ -69,13 +69,15 @@ def get_video_writer(video_file, width, height, fps):
     return video_writer
 
 
-def video2gif(video_file, gif_file=None, func=None, interval=1, use_pil=False, vis=True):
+def video2gif(video_file, gif_file=None, func=None, interval=1, use_pil=False, fps=-1, vis=True):
     """
     将视频文件直接转为GIF图像
     :param video_file: 输入视频文件
     :param gif_file: 保存GIF图文件
     :param func:
     :param interval:
+    :param use_pil: True使用PIL库生成GIF图，文件小，但质量较差
+                    False使用imageio库生成GIF图，文件大，但质量较好
     :param vis:
     :return:
     """
@@ -83,7 +85,7 @@ def video2gif(video_file, gif_file=None, func=None, interval=1, use_pil=False, v
     if not gif_file:
         gif_file = os.path.join(os.path.dirname(video_file), name + ".gif")
     video_cap = get_video_capture(video_file)
-    width, height, numFrames, fps = get_video_info(video_cap)
+    width, height, num_frames, _fps = get_video_info(video_cap)
     if not os.path.exists(gif_file): file_utils.create_file_path(gif_file)
     count = 0
     frames = []
@@ -102,7 +104,7 @@ def video2gif(video_file, gif_file=None, func=None, interval=1, use_pil=False, v
             frames.append(frame)
         count += 1
     video_cap.release()
-    fps = fps / interval
+    fps = _fps / interval if fps <= 0 else fps
     if use_pil:
         image_utils.frames2gif_by_pil(frames, gif_file=gif_file, fps=fps, loop=0)
     else:
@@ -122,7 +124,7 @@ def video2frames(video_file, out_dir=None, func=None, interval=1, vis=True):
     name = os.path.basename(video_file).split(".")[0]
     if not out_dir:  out_dir = os.path.join(os.path.dirname(video_file), name)
     video_cap = get_video_capture(video_file)
-    width, height, numFrames, fps = get_video_info(video_cap)
+    width, height, num_frames, fps = get_video_info(video_cap)
     if not os.path.exists(out_dir): os.makedirs(out_dir)
     count = 0
     while True:
@@ -181,6 +183,40 @@ def frames2video(image_dir, video_file=None, func=None, size=None, postfix=["*.p
     video_writer.release()
 
 
+def convert_video_format(video_file, save_video, interval=1):
+    return video2video(video_file, save_video, interval=interval)
+
+
+def video2video(video_file, save_video, interval=1, vis=True, delay=20):
+    """
+    转换视频格式
+    :param video_file: *.avi,*.mp4,...
+    :param save_video: *.avi
+    :param interval: 间隔
+    :return:
+    """
+    video_cap = get_video_capture(video_file)
+    width, height, num_frames, fps = get_video_info(video_cap)
+    video_writer = get_video_writer(save_video, width, height, fps)
+    # freq = int(fps / detect_freq)
+    count = 0
+    while True:
+        if count % interval == 0:
+            # 设置抽帧的位置
+            video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
+            isSuccess, frame = video_cap.read()
+            if not isSuccess:
+                break
+            if vis: image_utils.cv_show_image("frame", frame, use_rgb=False, delay=delay)
+            video_writer.write(frame)
+        count += 1
+    video_cap.release()
+
+
+def write_video(self, frame):
+    self.video_writer.write(frame)
+
+
 class CVVideo():
     def __init__(self):
         pass
@@ -195,7 +231,7 @@ class CVVideo():
         """
         # cv2.moveWindow("test", 1000, 100)
         video_cap = get_video_capture(video_file)
-        width, height, numFrames, fps = get_video_info(video_cap)
+        width, height, num_frames, fps = get_video_info(video_cap)
         if save_video:
             self.video_writer = get_video_writer(save_video, width, height, fps)
         # freq = int(fps / detect_freq)
@@ -226,15 +262,12 @@ class CVVideo():
 
 
 def target_task(frame):
-    frame = image_utils.resize_image(frame, size=(480, None))
+    frame = image_utils.resize_image(frame, size=(960, None))
     return frame
 
 
 if __name__ == "__main__":
-    # video_file = "../data/video/kunkun_cut.mp4"
-    video_file = "/home/dm/nasdata/Demo/petal_20220524_164006.mp4"
-    video_file = "/home/dm/nasdata/Demo/petal_20220524_183308.mp4"
-    image_dir = "../data/video/kunkun_cut"
+    video_file = "/home/dm/nasdata/Project/3D/Camera-Calibration-Reconstruct-Cpp/docs/双目测距Demo视频.MP4"
     # video2frames(video_file, interval=10, vis=True)
     # frames2video(image_dir, interval=1, vis=True)
-    video2gif(video_file, interval=10, func=target_task, vis=True)
+    video2gif(video_file, interval=18, func=target_task, fps=3,use_pil=False, vis=True)
