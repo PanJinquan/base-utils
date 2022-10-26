@@ -267,7 +267,10 @@ def target_task(frame):
 
 
 if __name__ == "__main__":
-    video_file = "/home/dm/nasdata/Project/3D/Camera-Calibration-Reconstruct-Cpp/docs/双目测距Demo视频.MP4"
+    video_file = "/home/dm/nasdata/release/CSDN/双目测距Demo视频(Python).MP4"
+    # video_file = "/home/dm/视频/双目测距Demo视频(Python).mp4"
+    # dst_file = "/home/dm/视频/双目测距Demo视频(Python)1.mp4"
     # video2frames(video_file, interval=10, vis=True)
     # frames2video(image_dir, interval=1, vis=True)
-    video2gif(video_file, interval=18, func=target_task, fps=3,use_pil=False, vis=True)
+    video2gif(video_file, interval=15, func=target_task, fps=3,use_pil=False, vis=True)
+    # video2video(video_file, dst_file, vis=True)

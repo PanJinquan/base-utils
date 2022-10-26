@@ -5,10 +5,16 @@
     @Date   : 2022-07-27 15:23:24
     @Brief  :
 """
-
-from pybaseutils import font_utils, file_utils, video_utils
+import json
+from pybaseutils import font_utils, file_utils, video_utils, numpy_utils
 
 if __name__ == "__main__":
-    video_file = "/home/dm/nasdata/Project/3D/Camera-Calibration-Reconstruct-Cpp/docs/双目测距Demo.mp4"
-    dst_file = "/home/dm/nasdata/Project/3D/Camera-Calibration-Reconstruct-Cpp/docs/双目测距Demo1.mp4"
-    video_utils.video2video(video_file, dst_file,delay=5)
+    import cv2
+    import numpy as np
+
+    t = [0.01, 0.02, 0.03]  # m
+    t = np.asarray(t)*1000
+    p = np.asarray(t) + 0.5
+    # MSE（均方误差）、RMSE （均方根误差）、MAE （平均绝对误差）
+    mse, rmse, mae = numpy_utils.get_error(t, p)
+    print(mse, rmse, mae)
