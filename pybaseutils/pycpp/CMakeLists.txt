@@ -17,7 +17,7 @@ include_directories(${OpenCV_INCLUDE_DIRS} ./src/)
 #MESSAGE(STATUS "OpenCV_INCLUDE_DIRS = ${OpenCV_INCLUDE_DIRS}")
 
 include_directories(src)
-set(SRC_LIST src/test.cpp)
+set(SRC_LIST src/ctypes_utils.cpp)
 add_library(CTLib SHARED ${SRC_LIST})
 target_link_libraries(CTLib ${OpenCV_LIBS})
 MESSAGE(STATUS "DIR_SRCS = ${SRC_LIST}")

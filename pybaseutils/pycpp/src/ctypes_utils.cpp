@@ -1,5 +1,5 @@
 #include "stdio.h"
-#include "test.h"
+#include "ctypes_utils.h"
 
 
 uchar *ct_imread(char *filename, int *rows, int *cols, int *dims) {
