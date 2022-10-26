@@ -8,5 +8,5 @@ cd build
 cmake ..
 make -j4
 sleep 1
-./Demo
+./CPPDemo
 
