@@ -2158,6 +2158,17 @@ def get_contours_iou(contour1, contour2, image_size: Tuple = None, plot=False):
     return contours, iou
 
 
+def get_image_mask(image: np.ndarray, inv):
+    """获得图像的mask"""
+    if image.ndim == 3:
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    if inv:
+        ret, mask = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)
+    else:
+        ret, mask = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+    return mask
+
+
 def get_mask_iou(mask1, mask2, binarize=True):
     """
     计算两个Mask的IOU
