@@ -445,7 +445,7 @@ cv::Mat image_boxes_resize_padding(cv::Mat &image, cv::Size input_size, vector<c
 }
 
 void image_boxes_resize_padding_inverse(cv::Size image_size, cv::Size input_size,
-                                        vector<cv::Box> &boxes) {
+                                        vector<cv::Box> &boxes, vector<cv::Point2f> &points) {
     int height = image_size.height;
     int width = image_size.width;
     //scale = min([input_size[0] / width, input_size[1] / height])
@@ -467,6 +467,10 @@ void image_boxes_resize_padding_inverse(cv::Size image_size, cv::Size input_size
         boxes[i].y1 = (boxes[i].y1 - top) / scale;
         boxes[i].x2 = (boxes[i].x2 - left) / scale;
         boxes[i].y2 = (boxes[i].y2 - top) / scale;
+    }
+    for (int i = 0; i < points.size(); i++) {
+        points[i].x = (points[i].x - left) / scale;
+        points[i].y = (points[i].y - top) / scale;
     }
 }
 

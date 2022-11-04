@@ -16,6 +16,7 @@ namespace cv {
         float x1, y1, x2, y2, score;   // 左上角x1,左上角y1,右下角x2,右下角y2,置信度分数score
     };
     static vector<Box> boxes = {};
+    static vector<cv::Point2f> points = {};
 }
 
 /***
@@ -311,7 +312,9 @@ image_boxes_resize_padding(cv::Mat &image, cv::Size input_size, vector<cv::Box> 
  * @param input_size
  * @param boxes
  */
-void image_boxes_resize_padding_inverse(cv::Size image_size, cv::Size input_size, vector<cv::Box> &boxes = cv::boxes);
+void image_boxes_resize_padding_inverse(cv::Size image_size, cv::Size input_size,
+                                        vector<cv::Box> &boxes = cv::boxes,
+                                        vector<cv::Point2f> &points = cv::points);
 
 
 /***
