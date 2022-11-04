@@ -42,7 +42,6 @@ bool get_video_capture(int camera_id, cv::VideoCapture &cap, int width, int heig
 }
 
 
-
 int VideoCaptureDemo(string video_file) {
     cv::VideoCapture cap;
     bool ret = get_video_capture(video_file, cap, 640, 480);
@@ -463,6 +462,54 @@ void image_boxes_resize_padding_inverse(cv::Size image_size, cv::Size input_size
 }
 
 
+void image_mosaic(cv::Mat &image, cv::Rect rect, int radius) {
+    //仅对矩形框区域进行像素修改。遍历矩形框区域像素，并对其进行修改
+    int n = image.channels();
+    rect &= cv::Rect(0, 0, image.cols, image.rows);
+    for (int i = rect.y; i < (rect.y + rect.height); i += radius) {
+        uchar *ptr1 = image.ptr<uchar>(i);
+        for (int j = rect.x; j < (rect.x + rect.width); j += radius) {
+            //将矩形框再细分为若干个小方块，依次对每个方块修改像素（相同方块赋予相同灰度值）
+            //cv::Vec3b v = image.at<cv::Vec3b>(i, j);
+            cv::Vec3b v(ptr1[n * j], ptr1[n * j + 1], ptr1[n * j + 2]);
+            for (int k = i; k < (radius + i); k++) {
+                uchar *ptr2 = image.ptr<uchar>(k);
+                for (int m = j; m < (radius + j); m++) {
+                    //对矩形区域像素值进行修改，rgb三通道
+                    ptr2[n * m] = v[0];
+                    ptr2[n * m + 1] = v[1];
+                    ptr2[n * m + 2] = v[2];
+                }
+            }
+        }
+    }
+}
+
+void image_mosaic(cv::Mat &image, vector<cv::Rect> rects, int radius) {
+    for (int i = 0; i < rects.size(); i++) {
+        image_mosaic(image, rects[i], radius);
+    }
+}
+
+
+void image_blur(cv::Mat &image, cv::Rect rect, int radius, bool gaussian) {
+    rect &= cv::Rect(0, 0, image.cols, image.rows);
+    cv::Mat roi = image(rect);
+    if (gaussian) {
+        radius = radius % 2 ? radius : (radius - 1); //取奇数
+        cv::GaussianBlur(roi, roi, cv::Size(radius, radius), 11, 11);
+    } else {
+        cv::blur(roi, roi, cv::Size(radius, radius));
+    }
+}
+
+void image_blur(cv::Mat &image, vector<cv::Rect> rects, int radius, bool gaussian) {
+    for (int i = 0; i < rects.size(); i++) {
+        image_blur(image, rects[i], radius, gaussian);
+    }
+}
+
+
 cv::Box rect2box(cv::Rect &rect) {
     cv::Box box = {(float) rect.x, (float) rect.y, float(rect.x + rect.width), float(rect.y + rect.height)};
     return box;
@@ -484,6 +531,7 @@ void rects2boxes(vector<cv::Rect> &rects, vector<cv::Box> &boxes) {
         boxes.push_back(rect2box(rects[i]));
     }
 }
+
 
 void clip(cv::Mat &src, float vmin, float vmax) {
     int h = src.rows;

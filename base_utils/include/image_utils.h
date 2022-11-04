@@ -265,18 +265,89 @@ void draw_yaw_pitch_roll_in_left_axis(cv::Mat &imgBRG, float pitch, float yaw, f
 void image_fusion(cv::Mat &imgBGR, cv::Mat matte, cv::Mat &out,
                   cv::Scalar bg = cv::Scalar(219, 142, 67));
 
+/***
+ * 对图像进行融合
+ * @param imgBGR
+ * @param matte
+ * @param out
+ * @param bg
+ */
 void image_fusion(cv::Mat &imgBGR, cv::Mat matte, cv::Mat &out, cv::Mat bg);
 
+/***
+ * 对图像进行融合
+ * @param imgBGR
+ * @param matte
+ * @param out
+ * @param bg
+ */
 void image_fusion_cv(cv::Mat &imgBGR, cv::Mat matte, cv::Mat &out, cv::Mat bg);
 
 
+/***
+ * 对图像进行等比例缩放和填充
+ * @param image
+ * @param input_size
+ * @param color
+ * @return
+ */
 cv::Mat image_boxes_resize_padding(cv::Mat &image, cv::Size input_size, cv::Scalar color = cv::Scalar(0, 0, 0));
 
+/***
+ * 对图像进行等比例缩放和填充
+ * @param image
+ * @param input_size
+ * @param boxes
+ * @param color
+ * @return
+ */
 cv::Mat
 image_boxes_resize_padding(cv::Mat &image, cv::Size input_size, vector<cv::Box> &boxes,
                            cv::Scalar color = cv::Scalar(0, 0, 0));
 
+/****
+ * image_boxes_resize_padding的逆过程
+ * @param image_size
+ * @param input_size
+ * @param boxes
+ */
 void image_boxes_resize_padding_inverse(cv::Size image_size, cv::Size input_size, vector<cv::Box> &boxes = cv::boxes);
+
+
+/***
+ * 对图像进行马赛克处理
+ * @param image 输入图像
+ * @param rect 马赛克区域
+ * @param radius 马赛克强度
+ */
+void image_mosaic(cv::Mat &image, cv::Rect rect, int radius = 5);
+
+/***
+ * 对图像进行马赛克处理
+ * @param image 输入图像
+ * @param rects 马赛克区域集合
+ * @param radius 马赛克强度
+ */
+void image_mosaic(cv::Mat &image, vector<cv::Rect> rects, int radius = 5);
+
+
+/***
+ * 对图像进行模糊处理
+ * @param image 输入图像
+ * @param rect 模糊处理区域
+ * @param radius 模糊强度
+ * @param gaussian 是否使用高斯模糊，默认均值模糊
+ */
+void image_blur(cv::Mat &image, cv::Rect rect, int radius = 5, bool gaussian = false);
+
+/***
+ * 对图像进行模糊处理
+ * @param image 输入图像
+ * @param rects 模糊处理区域集合
+ * @param radius 模糊强度
+ * @param gaussian 是否使用高斯模糊，默认均值模糊
+ */
+void image_blur(cv::Mat &image, vector<cv::Rect> rects, int radius = 5, bool gaussian = false);
 
 
 cv::Box rect2box(cv::Rect &rect);

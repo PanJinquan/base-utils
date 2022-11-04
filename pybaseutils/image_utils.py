@@ -220,7 +220,7 @@ def resize_image_like(image_list, dst_img, is_rgb=False):
     return image_list
 
 
-def image_hstack(images, split_line=False, is_rgb=False):
+def image_hstack(images, split_line=False, is_rgb=False, texts=[]):
     """图像左右拼接"""
     dst_images = resize_image_like(image_list=images, dst_img=images[0], is_rgb=is_rgb)
     dst_images = np.hstack(dst_images)
@@ -234,10 +234,12 @@ def image_hstack(images, split_line=False, is_rgb=False):
             p1 = (i * x, 0)
             p2 = (i * x, y)
             dst_images = cv2.line(dst_images, p1, p2, color=(255, 0, 0), thickness=2)
+            if texts: dst_images = draw_text(dst_images, point=(i * x + 10, 30), bg_color=(0, 0, 255),
+                                             fontScale=1.0, thickness=2, text=texts[i], drawType="simple")
     return dst_images
 
 
-def image_vstack(images, split_line=False, is_rgb=False):
+def image_vstack(images, split_line=False, is_rgb=False, texts=[]):
     """图像上下拼接"""
     dst_images = resize_image_like(image_list=images, dst_img=images[0], is_rgb=is_rgb)
     dst_images = np.vstack(dst_images)
@@ -251,6 +253,8 @@ def image_vstack(images, split_line=False, is_rgb=False):
             p1 = (0, i * y)
             p2 = (x, i * y)
             dst_images = cv2.line(dst_images, p1, p2, color=(255, 0, 0), thickness=2)
+            if texts: dst_images = draw_text(dst_images, point=(10, i * y + 30),
+                                             fontScale=1.0, thickness=2, text=texts[i], drawType="simple")
     return dst_images
 
 
@@ -1254,7 +1258,7 @@ def draw_points_text(image, points, texts=None, color=(255, 0, 0), thickness=1, 
     return image
 
 
-def draw_text(image, point, text, bg_color=(255, 0, 0), thickness=5, drawType="custom"):
+def draw_text(image, point, text, bg_color=(255, 0, 0), fontScale=0.5, thickness=5, drawType="custom"):
     """
     :param image:
     :param point:
@@ -1262,7 +1266,6 @@ def draw_text(image, point, text, bg_color=(255, 0, 0), thickness=5, drawType="c
     :param drawType: custom or simple
     :return:
     """
-    fontScale = 0.5
     text_thickness = 1
     fontFace = cv2.FONT_HERSHEY_SIMPLEX
     # fontFace=cv2.FONT_HERSHEY_SIMPLEX

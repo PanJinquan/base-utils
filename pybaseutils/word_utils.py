@@ -11,12 +11,13 @@ from typing import List, Tuple, Dict
 from pybaseutils import image_utils, json_utils, file_utils
 
 
-def concat_stroke_image(mask, seg_list, split_line=False, vis=False):
+def concat_stroke_image(mask, seg_list, split_line=False, texts=[], vis=False):
     """
     水平拼接笔画图片
     :param mask: 整字的笔画mask
     :param seg_list: 字的笔画mask列表
     :param split_line: 是否显示分隔线
+    :param texts: mask 显示
     :param vis: 是否可视化
     :return:返回水平拼接笔画图片
     """
@@ -26,11 +27,11 @@ def concat_stroke_image(mask, seg_list, split_line=False, vis=False):
         seg_mask = np.zeros_like(mask)
     diff = np.abs(mask - seg_mask)
     images = [mask] + [seg_mask] + [diff] + seg_list
-    vis_image = image_utils.image_hstack(images, split_line=split_line)
+    texts = [""] * 3 + texts if texts else []
+    vis_image = image_utils.image_hstack(images, split_line=split_line, texts=texts)
     if vis:
         image_utils.cv_show_image("mask-seg-diff-stroke", vis_image, use_rgb=False)
     return vis_image
-
 
 def concat_hw_gt_stroke_image(hw_mask, hw_segs, gt_mask, gt_segs, split_line=True, vis=False):
     """

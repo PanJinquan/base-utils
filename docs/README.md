@@ -56,3 +56,6 @@ ln -s source dist
 unzip -O CP936 xxx.zip # unzip -n test.zip -d /tmp
 tar -zxvf xxx.tar.gz
 ```
+- sudo apt-get install unar
+> unar *.zip得到的文件
+

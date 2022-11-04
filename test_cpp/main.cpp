@@ -25,6 +25,29 @@ void test_opencv() {
 }
 
 
+void test_mosaic() {
+    string path = "../../data/test.png";
+    DEBUG_TIME(t1);
+    cv::Mat image = cv::imread(path);
+    cv::Rect rect(140, 10, 100, 200);
+    vector<cv::Rect> rects;
+    rects.push_back(rect);
+    int radius = 7;//马赛克强度
+    image_blur(image, rect, radius);
+    image_mosaic(image, rect, radius);
+    draw_rect_text(image, rect);
+    LOGI("image:%s,w-h=[%d,%d]", path.c_str(), image.cols, image.rows);
+    LOGD("image:%s,w-h=[%d,%d]", path.c_str(), image.cols, image.rows);
+    LOGW("image:%s,w-h=[%d,%d]", path.c_str(), image.cols, image.rows);
+    LOGE("image:%s,w-h=[%d,%d]", path.c_str(), image.cols, image.rows);
+    LOGF("image:%s,w-h=[%d,%d]", path.c_str(), image.cols, image.rows);
+    DEBUG_TIME(t2);
+    LOGI("rum time:%3.3fms", RUN_TIME(t2 - t1));
+    cv::waitKey(0);
+    DEBUG_IMSHOW("image", image);
+}
+
+
 void test_rotate_points() {
     string path = "../../data/test_image/test1.jpg";
     DEBUG_TIME(t1);
@@ -126,6 +149,7 @@ int main() {
     //test_math_utils();
     //test_rotate_points();
     //test_math_utils_vector();
-    test_image_padding();
+    //test_image_padding();
+    test_mosaic();
     return 0;
 }
