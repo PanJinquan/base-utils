@@ -465,20 +465,23 @@ void image_boxes_resize_padding_inverse(cv::Size image_size, cv::Size input_size
 void image_mosaic(cv::Mat &image, cv::Rect rect, int radius) {
     //仅对矩形框区域进行像素修改。遍历矩形框区域像素，并对其进行修改
     int n = image.channels();
+    int xmax = rect.x + rect.width;
+    int ymax = rect.y + rect.height;
     rect &= cv::Rect(0, 0, image.cols, image.rows);
-    for (int i = rect.y; i < (rect.y + rect.height); i += radius) {
+    for (int i = rect.y; i < ymax; i += radius) {
         uchar *ptr1 = image.ptr<uchar>(i);
-        for (int j = rect.x; j < (rect.x + rect.width); j += radius) {
+        for (int j = rect.x; j < xmax; j += radius) {
             //将矩形框再细分为若干个小方块，依次对每个方块修改像素（相同方块赋予相同灰度值）
             //cv::Vec3b v = image.at<cv::Vec3b>(i, j);
             cv::Vec3b v(ptr1[n * j], ptr1[n * j + 1], ptr1[n * j + 2]);
-            for (int k = i; k < (radius + i); k++) {
-                uchar *ptr2 = image.ptr<uchar>(k);
-                for (int m = j; m < (radius + j); m++) {
+            for (int y = i; (y < (radius + i)) && (y < ymax); y++) {
+                uchar *ptr2 = image.ptr<uchar>(y);
+                for (int x = j; (x < (radius + j)) && (x < xmax); x++) {
+                    //if (x > xmax) continue;
                     //对矩形区域像素值进行修改，rgb三通道
-                    ptr2[n * m] = v[0];
-                    ptr2[n * m + 1] = v[1];
-                    ptr2[n * m + 2] = v[2];
+                    ptr2[n * x] = v[0];
+                    ptr2[n * x + 1] = v[1];
+                    ptr2[n * x + 2] = v[2];
                 }
             }
         }

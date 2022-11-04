@@ -32,8 +32,8 @@ void test_mosaic() {
     cv::Rect rect(140, 10, 100, 200);
     vector<cv::Rect> rects;
     rects.push_back(rect);
-    int radius = 7;//马赛克强度
-    image_blur(image, rect, radius);
+    int radius = 15;//马赛克强度
+    //image_blur(image, rect, radius);
     image_mosaic(image, rect, radius);
     draw_rect_text(image, rect);
     LOGI("image:%s,w-h=[%d,%d]", path.c_str(), image.cols, image.rows);
