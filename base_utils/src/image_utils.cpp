@@ -8,6 +8,7 @@
 
 
 bool get_video_capture(string video_file, cv::VideoCapture &cap, int width, int height, int fps) {
+#ifndef PLATFORM_ANDROID
     //VideoCapture video_cap;
     cap.open(video_file);
     if (width > 0 && height > 0) {
@@ -21,10 +22,12 @@ bool get_video_capture(string video_file, cv::VideoCapture &cap, int width, int 
     {
         return false;
     }
+#endif
     return true;
 }
 
 bool get_video_capture(int camera_id, cv::VideoCapture &cap, int width, int height, int fps) {
+#ifndef PLATFORM_ANDROID
     //VideoCapture video_cap;
     cap.open(camera_id);    //摄像头ID号，默认从0开始
     if (width > 0 && height > 0) {
@@ -38,11 +41,14 @@ bool get_video_capture(int camera_id, cv::VideoCapture &cap, int width, int heig
     {
         return false;
     }
+#endif
     return true;
 }
 
 
 int VideoCaptureDemo(string video_file) {
+#ifndef PLATFORM_ANDROID
+
     cv::VideoCapture cap;
     bool ret = get_video_capture(video_file, cap, 640, 480);
     cv::Mat frame;
@@ -55,6 +61,7 @@ int VideoCaptureDemo(string video_file) {
         }
     }
     cap.release();         //释放对相机的控制
+#endif
     return 0;
 }
 
@@ -407,7 +414,8 @@ cv::Mat image_boxes_resize_padding(cv::Mat &image, cv::Size input_size, cv::Scal
     return image_boxes_resize_padding(image, input_size, boxes, color);
 }
 
-cv::Mat image_boxes_resize_padding(cv::Mat &image, cv::Size input_size, vector<cv::Box> &boxes, cv::Scalar color) {
+cv::Mat image_boxes_resize_padding(cv::Mat &image, cv::Size input_size, vector<cv::Box> &boxes,
+                                   cv::Scalar color) {
     int height = image.rows;
     int width = image.cols;
     //float scale = min([input_size[0] / width, input_size[1] / height]);
@@ -436,7 +444,8 @@ cv::Mat image_boxes_resize_padding(cv::Mat &image, cv::Size input_size, vector<c
     return out;
 }
 
-void image_boxes_resize_padding_inverse(cv::Size image_size, cv::Size input_size, vector<cv::Box> &boxes) {
+void image_boxes_resize_padding_inverse(cv::Size image_size, cv::Size input_size,
+                                        vector<cv::Box> &boxes) {
     int height = image_size.height;
     int width = image_size.width;
     //scale = min([input_size[0] / width, input_size[1] / height])
@@ -511,7 +520,8 @@ void image_blur(cv::Mat &image, vector<cv::Rect> rects, int radius, bool gaussia
 
 
 cv::Box rect2box(cv::Rect &rect) {
-    cv::Box box = {(float) rect.x, (float) rect.y, float(rect.x + rect.width), float(rect.y + rect.height)};
+    cv::Box box = {(float) rect.x, (float) rect.y, float(rect.x + rect.width),
+                   float(rect.y + rect.height)};
     return box;
 }
 
