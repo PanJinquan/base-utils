@@ -117,6 +117,28 @@ def is_chinese(uchar):
     return False
 
 
+def get_string_chinese(string):
+    """
+    获得字符串中所有汉字，其他字符删除
+    new = re.sub('([^\u4e00-\u9fa5])', '', old) # 字符串删掉除汉字以外的所有字符
+    :param string: 
+    :return: 
+    """
+    new = re.sub('([^\u4e00-\u9fa5])', '', string)  # 字符串删掉除汉字以外的所有字符
+    return new
+
+
+def get_string_chinese_number(string):
+    """
+    获得字符串中所有汉字和数字，其他字符删除
+    new = re.sub('([^\u4e00-\u9fa5\u0030-\u0039])', '', old) # 字符串删掉除汉字和数字以外的其他字符
+    :param string: 
+    :return: 
+    """
+    new = re.sub('([^\u4e00-\u9fa5\u0030-\u0039])', '', string)  # 字符串删掉除汉字和数字以外的其他字符
+    return new
+
+
 def get_font_char(font_file, only_chinese=False):
     """
     返回字库支持的所有字符
