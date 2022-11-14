@@ -9,6 +9,7 @@
 import numpy as np
 import math
 from sklearn import metrics, preprocessing
+import heapq
 
 
 def matching_embedding(inputs, target, use_max=False):
@@ -477,6 +478,38 @@ def get_error(data1, data2):
     return mse, rmse, mae
 
 
+def get_topK(data, k=1, axis=-1, reverse=False):
+    """
+    多维数组排序
+    Args:
+        data: 多维数组
+        k: 取数
+        axis: 轴维度
+        reverse: 是否倒序
+    Returns:
+        top_sorted_scores: 值
+        top_sorted_indexes: 位置
+    """
+    data = np.asarray(data)
+    if reverse:
+        partition_index = np.take(np.argpartition(data, kth=k, axis=axis), range(0, k), axis)
+    else:
+        # argpartition分区排序，在给定轴上找到最小的值对应的idx，partition同理找对应的值
+        # kth表示在前的较小值的个数，带来的问题是排序后的结果两个分区间是仍然是无序的
+        # kth绝对值越小，分区排序效果越明显
+        axis_length = data.shape[axis]
+        partition_index = np.take(np.argpartition(data, kth=-k, axis=axis),
+                                  range(axis_length - k, axis_length), axis)
+    top_scores = np.take_along_axis(data, partition_index, axis)
+    # 分区后重新排序
+    sorted_index = np.argsort(top_scores, axis=axis)
+    if not reverse:
+        sorted_index = np.flip(sorted_index, axis=axis)
+    top_k_value = np.take_along_axis(top_scores, sorted_index, axis)
+    top_k_index = np.take_along_axis(partition_index, sorted_index, axis)
+    return top_k_value, top_k_index
+
+
 class Preprocessing(object):
     """
     参考：https://www.cnblogs.com/jojo123/p/6770340.html
@@ -558,3 +591,12 @@ if __name__ == "__main__":
     print(y)
     # y = Preprocessing.minmax_scaler(x)
     # y = Preprocessing.normalization(x)
+
+    value_list = [
+        [1, 2, 3, 4, 5, 6],
+        [5, 6, 1, 2, 3, 4],
+    ]
+    print(value_list)
+    top_k_value, top_k_index = get_topK(value_list, k=3, reverse=False)
+    print(top_k_value)
+    print(top_k_index)
