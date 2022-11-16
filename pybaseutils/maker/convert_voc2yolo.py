@@ -129,10 +129,10 @@ if __name__ == "__main__":
 
     # 定义类别数
     class_name = ["car", "dog"]
-    # VOC数据跟目录
+    # VOC数据目录
     data_root = "/media/dm/新加卷/SDK/base-utils/data/VOC2007"
     # data_root = "/path/to/VOC2007"
-    # 保存输出yolo格式数据
+    # 保存输出yolo格式数据目录
     out_text_dir = os.path.join(data_root, "labels")
     # 开始转换,vis=True进行可视化
     convert_voc2yolo.convert_voc2yolo(data_root, out_text_dir, class_name=class_name, vis=True)
