@@ -14,7 +14,7 @@ from pybaseutils.maker import maker_voc
 from pybaseutils import file_utils, image_utils
 
 
-def convert_text2voc(filename, out_xml_dir, out_image_dir=None, class_name=None, rename="", vis=True):
+def convert_yolo2voc(filename, out_xml_dir, out_image_dir=None, class_name=None, rename="", vis=True):
     """将YOLO格式数据(class,cx,cy,w,h)/(1,width,height,width,height)转换为VOC(xmin,ymin,xmax,ymax)
     :param filename:
     :param out_xml_dir: output VOC XML,Annotations
@@ -65,4 +65,4 @@ if __name__ == "__main__":
     # out_image_dir = os.path.join(os.path.dirname(filename),"VOC/JPEGImages")
     # out_image_dir = None
     class_name = {0: 'head', 1: "helmet"}
-    convert_text2voc(filename, out_xml_dir, out_image_dir=None, class_name=class_name, rename="", vis=False)
+    convert_yolo2voc(filename, out_xml_dir, out_image_dir=None, class_name=class_name, rename="", vis=False)

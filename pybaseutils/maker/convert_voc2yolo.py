@@ -29,7 +29,7 @@ def create_texts(bboxes: np.asarray, labels: list, width, height, class_name={})
     return contents
 
 
-def convert_voc2text(filename, out_text_dir, out_image_dir=None, class_name=None, rename="", vis=True):
+def convert_voc2yolo(filename, out_text_dir, out_image_dir=None, class_name=None, rename="", vis=True):
     """将VOC的(xmin,ymin,xmax,ymax)转换为YOLO格式数据(class,cx,cy,w,h)/(1,width,height,width,height)
     :param filename:
     :param out_text_dir: output VOC XML
@@ -83,4 +83,4 @@ if __name__ == "__main__":
     # class_name = {'person': 0, 'hat': 1}
     # class_name = {'person': 0, 'head': 1, "helmet": 2}
     class_name = {'head': 0, "helmet": 1}
-    convert_voc2text(filename, out_text_dir, out_image_dir=None, class_name=class_name,rename="", vis=False)
+    convert_voc2yolo(filename, out_text_dir, out_image_dir=None, class_name=class_name, rename="", vis=False)
