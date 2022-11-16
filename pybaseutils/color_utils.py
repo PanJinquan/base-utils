@@ -3,6 +3,22 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 
+VOC_NAMES = ["aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat",
+             "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person",
+             "pottedplant", "sheep", "sofa", "train", "tvmonitor"]
+
+COCO_NAMES = ['background', 'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train',
+              'truck', 'boat', 'traffic light', 'fire hydrant', 'stop sign',
+              'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse', 'sheep',
+              'cow', 'elephant', 'bear', 'zebra', 'giraffe', 'backpack', 'umbrella',
+              'handbag', 'tie', 'suitcase', 'frisbee', 'skis', 'snowboard', 'sports ball',
+              'kite', 'baseball bat', 'baseball glove', 'skateboard', 'surfboard', 'tennis racket',
+              'bottle', 'wine glass', 'cup', 'fork', 'knife', 'spoon', 'bowl', 'banana',
+              'apple', 'sandwich', 'orange', 'broccoli', 'carrot', 'hot dog', 'pizza',
+              'donut', 'cake', 'chair', 'couch', 'potted plant', 'bed', 'dining table', 'toilet',
+              'tv', 'laptop', 'mouse', 'remote', 'keyboard', 'cell phone', 'microwave',
+              'oven', 'toaster', 'sink', 'refrigerator', 'book', 'clock', 'vase', 'scissors',
+              'teddy bear', 'hair drier', 'toothbrush']
 
 def get_colormap(data_type="custom"):
     if data_type == 'pascal':

@@ -1,0 +1,28 @@
+<?xml version="1.0" ?>
+<annotation>
+ <folder>widerface</folder>
+ <filename>000007.jpg</filename>
+ <source>
+  <database>wider face Database</database>
+  <annotation>PASCAL VOC2007</annotation>
+  <flikerid>-1</flikerid>
+ </source>
+ <size>
+  <width>500</width>
+  <height>333</height>
+  <depth>3</depth>
+ </size>
+ <segmented>0</segmented>
+ <object>
+  <name>car</name>
+  <pose>Unspecified</pose>
+  <truncated>1</truncated>
+  <difficult>0</difficult>
+  <bndbox>
+   <xmin>141.0</xmin>
+   <ymin>50.0</ymin>
+   <xmax>500.0</xmax>
+   <ymax>330.0</ymax>
+  </bndbox>
+ </object>
+</annotation>

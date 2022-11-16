@@ -1,0 +1,66 @@
+<?xml version="1.0" ?>
+<annotation>
+ <folder>widerface</folder>
+ <filename>000001.jpg</filename>
+ <source>
+  <database>wider face Database</database>
+  <annotation>PASCAL VOC2007</annotation>
+  <flikerid>-1</flikerid>
+ </source>
+ <size>
+  <width>353</width>
+  <height>500</height>
+  <depth>3</depth>
+ </size>
+ <segmented>0</segmented>
+ <object>
+  <name>dog</name>
+  <pose>Unspecified</pose>
+  <truncated>1</truncated>
+  <difficult>0</difficult>
+  <bndbox>
+   <xmin>48.0</xmin>
+   <ymin>240.0</ymin>
+   <xmax>195.0</xmax>
+   <ymax>371.0</ymax>
+  </bndbox>
+ </object>
+ <object>
+  <name>person</name>
+  <pose>Unspecified</pose>
+  <truncated>1</truncated>
+  <difficult>0</difficult>
+  <bndbox>
+   <xmin>8.0</xmin>
+   <ymin>12.0</ymin>
+   <xmax>352.0</xmax>
+   <ymax>498.0</ymax>
+  </bndbox>
+ </object>
+ <object>
+  <name>face</name>
+  <pose>Unspecified</pose>
+  <truncated>1</truncated>
+  <difficult>0</difficult>
+  <bndbox>
+   <xmin>147.76751708984375</xmin>
+   <ymin>51.60520935058594</ymin>
+   <xmax>265.4585266113281</xmax>
+   <ymax>213.4471435546875</ymax>
+  </bndbox>
+  <lm>
+   <x1>170.7704620361328</x1>
+   <y1>127.99724578857422</y1>
+   <x2>220.77003479003906</x2>
+   <y2>117.16474151611328</y2>
+   <x3>191.6404266357422</x3>
+   <y3>153.10772705078125</y3>
+   <x4>177.97305297851562</x4>
+   <y4>184.284912109375</y4>
+   <x5>226.77618408203125</x5>
+   <y5>172.9976348876953</y5>
+   <visible>1</visible>
+   <blur>0.28</blur>
+  </lm>
+ </object>
+</annotation>
