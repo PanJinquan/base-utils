@@ -2591,7 +2591,7 @@ def frames2gif_by_pil(frames, gif_file="test.gif", fps=2, loop=0, use_rgb=False)
                        optimize=False, loop=loop)
 
 
-def image_file_list2gif(file_list, size=None, gif_file="test.gif", fps=4, loop=0, use_pil=True):
+def image_file_list2gif(file_list, size=None, gif_file="test.gif", fps=4, loop=0, padding=True, use_pil=True):
     """
     pip install imageio
     uri：合成后的gif动图的名字，可以随意更改。
@@ -2614,7 +2614,7 @@ def image_file_list2gif(file_list, size=None, gif_file="test.gif", fps=4, loop=0
     for file in file_list:
         bgr = cv2.imread(file)
         image = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
-        if size:
+        if padding:
             image = resize_image_padding(image, size=size)
         else:
             image = resize_image(image, size=size)
@@ -2671,16 +2671,16 @@ class CVVideo():
     def __init__(self):
         pass
 
-    def start_capture(self, video_path, save_video=None, detect_freq=1):
+    def start_capture(self, video_file, save_video=None, detect_freq=1):
         """
         start capture video
-        :param video_path: *.avi,*.mp4,...or camera id
+        :param video_file: *.avi,*.mp4,...or camera id
         :param save_video: *.avi
         :param detect_freq:
         :return:
         """
         # cv2.moveWindow("test", 1000, 100)
-        video_cap = get_video_capture(video_path)
+        video_cap = get_video_capture(video_file)
         width, height, numFrames, fps = get_video_info(video_cap)
         if save_video:
             self.video_writer = get_video_writer(save_video, width, height, fps)
