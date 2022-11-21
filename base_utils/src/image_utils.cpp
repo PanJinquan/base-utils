@@ -477,6 +477,7 @@ void image_boxes_resize_padding_inverse(cv::Size image_size, cv::Size input_size
 
 void image_mosaic(cv::Mat &image, cv::Rect rect, int radius) {
     //仅对矩形框区域进行像素修改。遍历矩形框区域像素，并对其进行修改
+    if (radius<=0) return;
     int n = image.channels();
     rect &= cv::Rect(0, 0, image.cols, image.rows);
     int xmax = rect.x + rect.width;
@@ -509,6 +510,7 @@ void image_mosaic(cv::Mat &image, vector<cv::Rect> rects, int radius) {
 
 
 void image_blur(cv::Mat &image, cv::Rect rect, int radius, bool gaussian) {
+    if (radius<=0) return;
     rect &= cv::Rect(0, 0, image.cols, image.rows);
     cv::Mat roi = image(rect);
     if (gaussian) {
