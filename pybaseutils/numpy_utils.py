@@ -93,6 +93,30 @@ def get_nearest_point_minmax(points, center, axis=1, use_max=False, minmax=-1):
     return indexes[index], distance
 
 
+def get_nearest_point_sort(points, center, axis=1, use_max=False, minmax=-1):
+    """
+    求离center最近/最远的点
+    :param points: shape=(n,D),其中n表示样本个数，D表示特征维度
+    :param center: (x,y)
+    :param axis:
+    :param use_max: False:按照最小距离进行匹配,True:按照最大距离进行匹配
+    :param minmax:  use_max=False,表示查找不低于阈值minmax的最小距离；
+                    use_max=True, 表示查找不高于阈值minmax的最大距离；
+                    当minmax=-1则，该功能无效
+    :return: index： 最近点index
+             distance：最近点L2距离
+    """
+    if not isinstance(points, np.ndarray): points = np.asarray(points)
+    l2dist = np.sum(np.square(points - center), axis=axis)  # l2距离，L2开根号就是欧式距离
+    if use_max:
+        indexes = np.argsort(-l2dist)  # 从大到小排列
+        distance = l2dist[indexes]
+    else:
+        indexes = np.argsort(l2dist)  # 从小到大排列
+        distance = l2dist[indexes]
+    return indexes, distance
+
+
 def matching_data_vecror(data, vector):
     '''
     从data中匹配vector向量，查找出现vector的index,如：

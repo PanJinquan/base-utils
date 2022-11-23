@@ -178,7 +178,7 @@ def show_image(title, rgb_image):
     plt.show()
 
 
-def cv_show_image(title, image, use_rgb=True, delay=0):
+def cv_show_image(title, image, use_rgb=False, delay=0):
     """
     调用OpenCV显示RGB图片
     :param title: 图像标题
@@ -854,6 +854,20 @@ def scale_rect(orig_rect, orig_shape, dest_shape):
     return dest_rect
 
 
+def scale_box(orig_box, orig_shape, dest_shape):
+    """
+    对图像进行缩放时，对应的rectangle也要进行缩放
+    :param orig_box: 原始图像的box=[xmin,ymin,xmax,ymax]
+    :param orig_shape: 原始图像的维度shape=[h,w]
+    :param dest_shape: 缩放后图像的维度shape=[h,w]
+    :return: 经过缩放后的rectangle
+    """
+    r = (dest_shape[1] / orig_shape[1], dest_shape[0] / orig_shape[0])
+    dest_box = [int(orig_box[0] * r[0]), int(orig_box[1] * r[1]),
+                int(orig_box[2] * r[0]), int(orig_box[3] * r[1])]
+    return dest_box
+
+
 def get_rect_intersection(rec1, rec2):
     """
     计算两个rect的交集坐标
@@ -906,7 +920,7 @@ def draw_image_boxes(bgr_image, boxes_list, color=(0, 0, 255), thickness=1):
     return bgr_image
 
 
-def show_image_rects(title, image, rect_list, color=(0, 0, 255), delay=0):
+def show_image_rects(title, image, rect_list, color=(0, 0, 255), delay=0, use_rgb=False):
     """
     :param title:
     :param image:
@@ -914,11 +928,11 @@ def show_image_rects(title, image, rect_list, color=(0, 0, 255), delay=0):
     :return:
     """
     image = draw_image_rects(image.copy(), rect_list, color)
-    cv_show_image(title, image, delay=delay)
+    cv_show_image(title, image, delay=delay, use_rgb=use_rgb)
     return image
 
 
-def show_image_boxes(title, image, boxes_list, color=(0, 0, 255), delay=0):
+def show_image_boxes(title, image, boxes_list, color=(0, 0, 255), delay=0, use_rgb=False):
     """
     :param title:
     :param image:
@@ -926,7 +940,7 @@ def show_image_boxes(title, image, boxes_list, color=(0, 0, 255), delay=0):
     :return:
     """
     image = draw_image_boxes(image, boxes_list, color)
-    cv_show_image(title, image, delay=delay)
+    cv_show_image(title, image, delay=delay, use_rgb=use_rgb)
     return image
 
 
@@ -1371,7 +1385,7 @@ def draw_image_points_lines(image,
                             points,
                             pointline=[],
                             texts=None,
-                            circle_color=(0, 255, 0),
+                            circle_color=(255, 0, 0),
                             line_color=(0, 0, 255),
                             thickness=2):
     """
