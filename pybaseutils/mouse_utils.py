@@ -14,7 +14,7 @@ from pybaseutils import image_utils
 class DrawImageMouse(object):
     """使用鼠标绘图"""
 
-    def __init__(self, max_point=-1, line_color=(0, 0, 255) , text_color=(255, 0, 0), thickness=2):
+    def __init__(self, max_point=-1, line_color=(0, 0, 255), text_color=(255, 0, 0), thickness=2):
         """
         :param max_point: 最多绘图的点数，超过后将绘制无效；默认-1表示无限制
         :param line_color: 线条的颜色
@@ -38,6 +38,10 @@ class DrawImageMouse(object):
         if self.orig is not None: self.last = self.orig.copy()
         if self.orig is not None: self.next = self.orig.copy()
 
+    def get_polygons(self):
+        """获得多边形数据"""
+        return self.polygons
+
     def task(self, image, callback: Callable, winname="winname"):
         """
         鼠标监听任务
@@ -54,11 +58,11 @@ class DrawImageMouse(object):
         while True:
             self.key = self.show_image(winname, self.next, delay=25)
             print("key={}".format(self.key))
-            if (self.key == 13 or self.key == 32) and len(self.polygons) > 0:  # 按空格32和回车键13退出
+            if (self.key == 13 or self.key == 32) and len(self.polygons) > 0:  # 按空格32和回车键13表示完成绘制
                 break
-            elif self.key == 27:  # ESC退出
+            elif self.key == 27:  # 按ESC退出程序
                 exit(0)
-            elif self.key == 99:  # 键盘c重新绘制
+            elif self.key == 99:  # 按键盘c重新绘制
                 self.clear()
         # cv2.destroyAllWindows()
         cv2.setMouseCallback(winname, self.event_default)
@@ -86,7 +90,7 @@ class DrawImageMouse(object):
             self.next = self.last.copy()
             self.polygons[1, :] = point
             cv2.rectangle(self.next, self.polygons[0, :], point, color=self.line_color, thickness=self.thickness)
-        print("point:{},have:{}".format(point, len(self.polygons)))
+        print("location:{},have:{}".format(point, len(self.polygons)))
 
     def event_draw_polygon(self, event, x, y, flags, param):
         """绘制多边形"""
@@ -107,11 +111,7 @@ class DrawImageMouse(object):
             cv2.circle(self.next, point, radius=5, color=self.focus_color, thickness=self.thickness)
             if len(self.polygons) > 0:
                 cv2.line(self.next, self.polygons[-1, :], point, color=self.line_color, thickness=self.thickness)
-        print("point:{},have:{}".format(point, len(self.polygons)))
-
-    def get_polygons(self):
-        """获得多边形数据"""
-        return self.polygons
+        print("location:{},have:{}".format(point, len(self.polygons)))
 
     @staticmethod
     def polygons2box(polygons):
@@ -154,10 +154,10 @@ class DrawImageMouse(object):
 
 def draw_image_rectangle_on_mouse_example(image_file, winname="draw_rectangle"):
     """
-    获得鼠标绘制的矩形框box=[xmin,ymin,xmax,ymax]
+    获得鼠标绘制的矩形框
     :param image_file:
     :param winname: 窗口名称
-    :return:
+    :return: box=[xmin,ymin,xmax,ymax]
     """
     image = cv2.imread(image_file)
     # 通过鼠标绘制矩形框rect
@@ -173,14 +173,14 @@ def draw_image_rectangle_on_mouse_example(image_file, winname="draw_rectangle"):
 
 def draw_image_polygon_on_mouse_example(image_file, winname="draw_polygon"):
     """
-    获得鼠标绘制的多边形box=[xmin,ymin,xmax,ymax]
+    获得鼠标绘制的多边形
     :param image_file:
     :param winname: 窗口名称
-    :return:
+    :return: polygons is (N,2)
     """
     image = cv2.imread(image_file)
     # 通过鼠标绘制多边形
-    mouse = DrawImageMouse(max_point=4)
+    mouse = DrawImageMouse(max_point=-1)
     polygons = mouse.draw_image_polygon_on_mouse(image, winname=winname)
     image = image_utils.draw_image_points_lines(image, polygons, thickness=2)
     mouse.show_image(winname, image, delay=0)
@@ -188,7 +188,9 @@ def draw_image_polygon_on_mouse_example(image_file, winname="draw_polygon"):
 
 
 if __name__ == '__main__':
-    image_path = "/media/dm/新加卷/SDK/base-utils/data/test.png"
-    out = draw_image_rectangle_on_mouse_example(image_path)
-    # out = draw_image_polygon_on_mouse_example(image_path)
-    # print(out)
+    image_file = "../data/test.png"
+    # 绘制矩形框
+    out = draw_image_rectangle_on_mouse_example(image_file)
+    # 绘制多边形
+    out = draw_image_polygon_on_mouse_example(image_file)
+    print(out)

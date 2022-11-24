@@ -1,6 +1,7 @@
 # base-utils
 
-- 源码  ： https://github.com/PanJinquan/base-utils
+- 开源不易,麻烦给个【Star】
+- 源码 ： https://github.com/PanJinquan/base-utils
 - 安装包： https://pypi.org/project/pybaseutils/
 
 ## base_utils(C++)
@@ -16,14 +17,10 @@ base_util是个人开发常用的C++库，集成了C/C++ OpenCV等常用的算�
 
 pybaseutils是个人开发常用的python库，集成了python等常用的算法
 
-- file_utils.py
-- image_utils.py
-- base64_utils.py
-- coords_utils.py
-- yaml_utils.py
-- numpy_tools.py
+- 安装方法：pip install pybaseutils
 
 ## 一些问题修复说明
+
 - [问题修复说明](./docs/README.md)
 
 ## 目录结构
