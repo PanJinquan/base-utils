@@ -504,6 +504,7 @@ def get_error(data1, data2):
 
 def get_topK(data, k=1, axis=-1, reverse=False):
     """
+    选取Top5: contours = sorted(contours, key=cv2.contourArea, reverse=True)[:5]
     多维数组排序
     Args:
         data: 多维数组

@@ -24,7 +24,9 @@ class DrawImageMouse(object):
         self.max_point = max_point
         self.line_color = line_color
         self.text_color = text_color
+        self.text_size = max(int(thickness * 0.4), 0.5)
         self.focus_color = (0, 255, 0)  # 鼠标焦点的颜色
+        self.focus_size = max(int(thickness * 2), 6)  # 鼠标焦点的颜色
         self.thickness = thickness
         self.key = -1  # 键盘值
         self.orig = None  # 原始图像
@@ -78,12 +80,13 @@ class DrawImageMouse(object):
             print("1-EVENT_LBUTTONDOWN")
             self.next = self.last.copy()
             self.polygons[0, :] = point
-            cv2.circle(self.next, point, radius=5, color=self.focus_color, thickness=self.thickness)
+            cv2.circle(self.next, point, radius=self.focus_size, color=self.focus_color, thickness=self.thickness)
         elif event == cv2.EVENT_MOUSEMOVE and (flags & cv2.EVENT_FLAG_LBUTTON):  # 按住左键拖曳，画框
             print("2-EVENT_FLAG_LBUTTON")
             self.next = self.last.copy()
-            cv2.circle(self.next, self.polygons[0, :], radius=4, color=self.focus_color, thickness=self.thickness)
-            cv2.circle(self.next, point, radius=4, color=self.focus_color, thickness=self.thickness)
+            cv2.circle(self.next, self.polygons[0, :], radius=self.focus_size, color=self.focus_color,
+                       thickness=self.thickness)
+            cv2.circle(self.next, point, radius=self.focus_size, color=self.focus_color, thickness=self.thickness)
             cv2.rectangle(self.next, self.polygons[0, :], point, color=self.line_color, thickness=self.thickness)
         elif event == cv2.EVENT_LBUTTONUP:  # 左键释放，显示
             print("3-EVENT_LBUTTONUP")
@@ -100,15 +103,16 @@ class DrawImageMouse(object):
         text = str(len(self.polygons))
         if event == cv2.EVENT_LBUTTONDOWN:  # 左键点击,则在原图打点
             print("1-EVENT_LBUTTONDOWN")
-            cv2.circle(self.next, point, radius=5, color=self.focus_color, thickness=self.thickness)
-            cv2.putText(self.next, text, point, cv2.FONT_HERSHEY_SIMPLEX, 0.5, self.text_color, 2)
+            cv2.circle(self.next, point, radius=self.focus_size, color=self.focus_color, thickness=self.thickness)
+            cv2.putText(self.next, text, point, cv2.FONT_HERSHEY_SIMPLEX, self.text_size, self.text_color,
+                        self.thickness)
             if len(self.polygons) > 0:
                 cv2.line(self.next, self.polygons[-1, :], point, color=self.line_color, thickness=self.thickness)
             if not exceed:
                 self.last = self.next
                 self.polygons = np.concatenate([self.polygons, np.array(point).reshape(1, 2)])
         else:
-            cv2.circle(self.next, point, radius=5, color=self.focus_color, thickness=self.thickness)
+            cv2.circle(self.next, point, radius=self.focus_size, color=self.focus_color, thickness=self.thickness)
             if len(self.polygons) > 0:
                 cv2.line(self.next, self.polygons[-1, :], point, color=self.line_color, thickness=self.thickness)
         print("location:{},have:{}".format(point, len(self.polygons)))
@@ -188,9 +192,9 @@ def draw_image_polygon_on_mouse_example(image_file, winname="draw_polygon"):
 
 
 if __name__ == '__main__':
-    image_file = "../data/test.png"
+    image_file = "../../data/test.png"
     # 绘制矩形框
-    out = draw_image_rectangle_on_mouse_example(image_file)
+    # out = draw_image_rectangle_on_mouse_example(image_file)
     # 绘制多边形
     out = draw_image_polygon_on_mouse_example(image_file)
     print(out)

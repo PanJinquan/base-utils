@@ -5,8 +5,7 @@
     @Date   : 2022-11-17 18:43:21
     @Brief  :
 """
-import json
-from pybaseutils import font_utils, file_utils, video_utils, image_utils
+from pybaseutils import file_utils, image_utils
 
 if __name__ == "__main__":
     image_dir = "/home/dm/nasdata/dataset/csdn/car/UA-DETRAC/DETRAC-train-data/result"

@@ -234,7 +234,7 @@ def image_hstack(images, split_line=False, is_rgb=False, texts=[]):
             p1 = (i * x, 0)
             p2 = (i * x, y)
             dst_images = cv2.line(dst_images, p1, p2, color=(255, 0, 0), thickness=2)
-            if texts: dst_images = draw_text(dst_images, point=(i * x + 10, 30), bg_color=(0, 0, 255),
+            if texts: dst_images = draw_text(dst_images, point=(i * x + 10, 30), color=(0, 0, 255),
                                              fontScale=1.0, thickness=2, text=texts[i], drawType="simple")
     return dst_images
 
@@ -615,7 +615,7 @@ def resize_image_padding(image, size: Tuple, use_length=True, color=(0, 0, 0), i
     return image
 
 
-def resize_image(image, size: Tuple[int, int], interpolation=cv2.INTER_LINEAR):
+def resize_image(image, size: Tuple, interpolation=cv2.INTER_LINEAR):
     """
     tf.image.resize_images(images,size),images=[batch, height, width, channels],size=(new_height, new_width)
     cv2.resize(image, dsize=(width, height)),与image.shape相反
@@ -1254,7 +1254,7 @@ def show_landmark(title, image, landmarks_list, vis_id=False, delay=0):
     return image
 
 
-def draw_points_text(image, points, texts=None, color=(255, 0, 0), thickness=1, drawType="simple"):
+def draw_points_text(image, points, texts=None, color=(255, 0, 0), fontScale=0.5, thickness=1, drawType="simple"):
     """
     :param image:
     :param points:
@@ -1268,11 +1268,11 @@ def draw_points_text(image, points, texts=None, color=(255, 0, 0), thickness=1, 
     for point, text in zip(points, texts):
         point = (int(point[0]), int(point[1]))
         cv2.circle(image, point, thickness * 2, color, -1)
-        draw_text(image, point, text, bg_color=color, thickness=thickness, drawType=drawType)
+        draw_text(image, point, text, color=color, fontScale=fontScale, thickness=thickness, drawType=drawType)
     return image
 
 
-def draw_text(image, point, text, bg_color=(255, 0, 0), fontScale=0.5, thickness=5, drawType="custom"):
+def draw_text(image, point, text, color=(255, 0, 0), fontScale=0.5, thickness=5, drawType="custom"):
     """
     :param image:
     :param point:
@@ -1287,12 +1287,12 @@ def draw_text(image, point, text, bg_color=(255, 0, 0), fontScale=0.5, thickness
         text_size, baseline = cv2.getTextSize(str(text), fontFace, fontScale, thickness)
         text_loc = (point[0], point[1] + text_size[1])
         cv2.rectangle(image, (text_loc[0] - 2 // 2, text_loc[1] - 2 - baseline),
-                      (text_loc[0] + text_size[0], text_loc[1] + text_size[1]), color=bg_color, thickness=thickness)
+                      (text_loc[0] + text_size[0], text_loc[1] + text_size[1]), color=color, thickness=thickness)
         # draw score value
         cv2.putText(image, str(text), (text_loc[0], text_loc[1] + baseline), fontFace, fontScale,
                     (255, 255, 255), text_thickness, 2)
     elif drawType == "simple":
-        cv2.putText(image, str(text), point, fontFace, fontScale, color=bg_color, thickness=thickness)
+        cv2.putText(image, str(text), point, fontFace, fontScale, color=color, thickness=thickness)
     return image
 
 
@@ -1385,6 +1385,7 @@ def draw_image_points_lines(image,
                             points,
                             pointline=[],
                             texts=None,
+                            fontScale=0.5,
                             circle_color=(255, 0, 0),
                             line_color=(0, 0, 255),
                             thickness=2):
@@ -1407,6 +1408,7 @@ def draw_image_points_lines(image,
     image = draw_points_text(image, points,
                              texts=texts,
                              color=circle_color,
+                             fontScale=fontScale,
                              thickness=thickness_,
                              drawType="simple")
     return image

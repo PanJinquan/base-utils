@@ -7,7 +7,8 @@
 """
 import cv2
 import numpy as np
-from pybaseutils import mouse_utils, file_utils, image_utils
+from pybaseutils.cvutils import mouse_utils, conner_utils
+from pybaseutils import file_utils, image_utils
 
 
 def get_target_points(src_pts: np.ndarray):
@@ -71,26 +72,65 @@ def document_image_correct(src, src_pts, dst_pts=None, out_size=None, use_ransac
     return dst
 
 
-def document_correct_image_example(image, winname="document_correct"):
-    pts_src = np.zeros(shape=(0, 2), dtype=np.int32)
-    mouse = mouse_utils.DrawImageMouse(max_point=4, thickness=3)
-    while len(pts_src) < 4:
-        pts_src = mouse.draw_image_polygon_on_mouse(image, winname=winname)
-        # pts_src = [[345., 114.], [579., 349.], [346., 582.], [111., 347.]]
-        pts_src = np.asarray(pts_src)
-        if len(pts_src) < 4:
+def document_correct_by_mouse(image, winname="document_correct_by_mouse"):
+    """
+    通过鼠标操作获得文档的四个角点
+    :param image: 输入图像
+    :param winname: 窗口名称
+    :return:
+    """
+    corners = np.zeros(shape=(0, 2), dtype=np.int32)
+    mouse = mouse_utils.DrawImageMouse(max_point=4, thickness=5)
+    while len(corners) < 4:
+        corners = mouse.draw_image_polygon_on_mouse(image, winname=winname)
+        corners = np.asarray(corners)
+        if len(corners) < 4:
             mouse.clear()
-            print("已经标记了文档的{}个角点，需要标记4个角点".format(len(pts_src)))
+            print("已经标记了文档的{}个角点，需要标记4个角点".format(len(corners)))
             cv2.waitKey(0)
-    print("标记文档的4个角点={}".format(pts_src.tolist()))
-    image = image_utils.draw_image_points_lines(image, pts_src, thickness=2)
+    print("标记文档的4个角点={}".format(corners.tolist()))
+    return corners
+
+
+def document_correct_by_auto(image, winname="document_correct_by_auto", vis=False):
+    """
+    通过算法自动获得文档的四个角点
+    :param image: 输入图像
+    :param winname: 窗口名称
+    :param vis: 是否可视化
+    :return:
+    """
+    corners = conner_utils.get_document_corners(image)
+    if vis:
+        image = image_utils.draw_image_points_lines(image, corners, fontScale=2.0, thickness=5)
+        image_utils.cv_show_image(winname, image, use_rgb=False)
+    return corners
+
+
+def document_correct_image_example(image, use_mouse=False, winname="document_correct"):
+    """
+    通过算法自动获得文档的四个角点
+    :param image: 输入图像
+    :param use_mouse: True:通过鼠标操作获得文档的四个角点;
+                      False:通过算法自动获得文档的四个角点
+    :param winname: 窗口名称
+    :return:
+    """
+    # 获得文档的四个角点
+    if use_mouse:
+        corners = document_correct_by_mouse(image)
+    else:
+        corners = document_correct_by_auto(image)
+    # 在原图显示角点
+    image = image_utils.draw_image_points_lines(image, corners, fontScale=2.0, thickness=5)
     image_utils.cv_show_image(winname, image, use_rgb=False, delay=10)
-    document_image_correct(image, pts_src, vis=True)
+    # 实现文档矫正
+    document_image_correct(image, corners, vis=True)
 
 
 if __name__ == '__main__':
-    image_dir = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/page-correct1"
-    # image_dir = "/home/dm/nasdata/dataset/csdn/文档矫正"
+    # image_dir = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/page-correct1"
+    image_dir = "/home/dm/nasdata/dataset/csdn/文档矫正/image"
     image_list = file_utils.get_files_lists(image_dir)
     for image_file in image_list:
         image = cv2.imread(image_file)

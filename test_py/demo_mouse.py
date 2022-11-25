@@ -7,7 +7,8 @@
 """
 import cv2
 import numpy as np
-from pybaseutils import image_utils, mouse_utils
+from pybaseutils import image_utils
+from pybaseutils.cvutils import mouse_utils
 
 
 def draw_image_rectangle_on_mouse_example(image_file, winname="image"):
