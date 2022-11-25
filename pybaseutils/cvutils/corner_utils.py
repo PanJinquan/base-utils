@@ -8,6 +8,7 @@
 import cv2
 import numpy as np
 from pybaseutils import image_utils, file_utils
+from pybaseutils.cluster import kmean
 
 
 def get_order_points(pts_src):
@@ -36,40 +37,64 @@ def get_order_points(pts_src):
     return pts_dst
 
 
-def get_image_four_corners(image, ksize=5, blur=True, vis=False):
+def get_image_four_corners(image, n_corners=4, ksize=5, blur=True, max_iter=10, vis=False):
     """
-    获得图像的4个角点
+    获得图像的角点
+       findContours的用法：https://blog.csdn.net/xfijun/article/details/117694917
+       approxPolyDP的用法：http://t.zoukankan.com/bjxqmy-p-12347265.html
     :param image: 输入BGR图像
+    :param n_corners: 最多角点的个数
     :param ksize:
-    :param blur:
+    :param blur: 边缘检测前，进行模糊可以有效去除虚假边缘的影响
     :return:
     """
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) if image.shape[-1] == 3 else image
     # 高斯滤波去除图像噪声
-    if blur: gray = cv2.GaussianBlur(gray, ksize=(ksize, ksize), sigmaX=0)
+    if blur: gray = cv2.GaussianBlur(gray, ksize=(2 * ksize + 1, 2 * ksize + 1), sigmaX=0)
+    # if blur: gray = cv2.GaussianBlur(gray, ksize=(ksize, ksize), sigmaX=0)
     # 进行边缘检测
     canny = cv2.Canny(gray, threshold1=0, threshold2=200)
     # 进行膨胀，合并边缘两侧
     canny = cv2.dilate(canny, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (ksize, ksize)))
-    # Finding contours for the detected edges.
-    contours, hierarchy = cv2.findContours(canny, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+    # 查询边缘的所有轮廓
+    contours, hierarchy = cv2.findContours(canny, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_SIMPLE)
+    if len(contours) == 0: return np.zeros((0, 2), np.int32)
+    if vis: cv2.drawContours(image, contours, -1, color=(255, 0, 0), thickness=1)
     # Keeping only the largest detected contour.
-    contours = sorted(contours, key=cv2.contourArea, reverse=True)[:5]
-    if vis: cv2.drawContours(image, contours, -1, color=(0, 255, 0), thickness=1)
-    # Loop over the contours.
-    corners = np.zeros(shape=(0, 1, 2), dtype=np.float32)
-    for contour in contours:
-        # Approximate the contour.
-        epsilon = 0.02 * cv2.arcLength(contour, closed=True)  # 计算轮廓周长
-        corners_ = cv2.approxPolyDP(contour, epsilon, closed=True)
-        # If our approximated contour has four points
-        if len(corners_) == 4:
-            corners = corners_
-            break
-    if len(corners) == 4:
-        # Sorting the corners and converting them to desired shape.
-        corners = np.concatenate(np.asarray(corners))
-        corners = get_order_points(corners)
+    areas = [cv2.contourArea(c) for c in contours]
+    contour = contours[np.argmax(areas)]
+    if vis: cv2.drawContours(image, [contour], -1, color=(0, 255, 0), thickness=1)
+    xmin, ymin, xmax, ymax = [min(contour[:, 0, 0]), min(contour[:, 0, 1]),
+                              max(contour[:, 0, 0]), max(contour[:, 0, 1])]
+    if vis: cv2.rectangle(image, (xmin, ymin), (xmax, ymax), color=(0, 255, 0), thickness=1)
+    # 使用approxPolyDP拟合多边形，减少多边形点的个数
+    # max_dist = 0.02 * cv2.arcLength(contour, closed=True)  # 轮廓周长
+    max_dist = 0.3 * sum([xmax - xmin, ymax - ymin]) / 2  # 外接矩形框
+    corners = cv2.approxPolyDP(contour, max_dist, closed=True)  # 所有角点
+    corners = corners.reshape(-1, 2)
+    if vis: print("contour={},corners={},max_dist={}".format(len(contour), len(corners), max_dist))
+    # 如果不够四个角点，则减小max_dist
+    decay = 0.8
+    iter = 0
+    while len(corners) < n_corners and iter < max_iter:
+        iter += 1
+        max_dist = decay * max_dist
+        corners = cv2.approxPolyDP(contour, max_dist, closed=True)  # 所有角点
+        corners = corners.reshape(-1, 2)
+        if vis: print("iter={},contour={},corners={},max_dist={}".format(iter, len(contour), len(corners), max_dist))
+    # 如果角点大于4个，则进行kmeans聚类
+    if len(corners) > n_corners:
+        index = kmean.sklearn_kmeans(corners, n_clusters=n_corners, max_iter=max_iter)
+        clusters = []
+        for i in range(n_corners):
+            c = np.mean(corners[index == i], axis=0)  # 取中心点
+            clusters.append(c)
+        corners = clusters
+    # Sorting the corners and converting them to desired shape.
+    corners = get_order_points(np.asarray(corners))
+    if vis:
+        image = image_utils.draw_image_points_lines(image, corners, fontScale=0.8, thickness=2)
+        image_utils.cv_show_image("canny-image", image, use_rgb=False)
     return corners
 
 
@@ -143,7 +168,7 @@ def get_document_corners_example(image_dir):
     """
     image_list = file_utils.get_files_lists(image_dir)
     for image_file in image_list:
-        # image_file = "test.png"
+        image_file = "/home/dm/nasdata/dataset/csdn/文档矫正/image2/test04.jpg"
         print(image_file)
         image = cv2.imread(image_file)
         corners = get_document_corners(image)

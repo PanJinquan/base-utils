@@ -20,6 +20,7 @@ import PIL.Image as Image
 from typing import List, Dict, Tuple
 from PIL import ImageDraw, ImageFont
 from math import cos, sin
+from pybaseutils import file_utils
 from pybaseutils.coords_utils import *
 from pybaseutils.transforms import affine_transform
 
@@ -2607,7 +2608,15 @@ def frames2gif_by_pil(frames, gif_file="test.gif", fps=2, loop=0, use_rgb=False)
                        optimize=False, loop=loop)
 
 
-def image_file_list2gif(file_list, size=None, gif_file="test.gif", fps=4, loop=0, padding=True, use_pil=True):
+def image_dir2gif(image_dir, size=None, gif_file=None, interval=1, fps=4, loop=0, padding=True, use_pil=True):
+    if not gif_file: gif_file = os.path.join(os.path.dirname(image_dir), os.path.basename(image_dir) + ".gif")
+    file_list = file_utils.get_images_list(image_dir)
+    image_file2gif(file_list, size=size, gif_file=gif_file, interval=interval, fps=fps, loop=loop,
+                   padding=padding, use_pil=use_pil)
+
+
+def image_file2gif(file_list, size=None, gif_file="test.gif", interval=1, fps=4, loop=0,
+                   padding=True, use_pil=True):
     """
     pip install imageio
     uri：合成后的gif动图的名字，可以随意更改。
@@ -2627,14 +2636,15 @@ def image_file_list2gif(file_list, size=None, gif_file="test.gif", fps=4, loop=0
     :return:
     """
     frames = []
-    for file in file_list:
-        bgr = cv2.imread(file)
-        image = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
-        if padding:
-            image = resize_image_padding(image, size=size)
-        else:
-            image = resize_image(image, size=size)
-        frames.append(image)
+    for count, file in enumerate(file_list):
+        if count % interval == 0:
+            bgr = cv2.imread(file)
+            image = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
+            if padding:
+                image = resize_image_padding(image, size=size)
+            else:
+                image = resize_image(image, size=size)
+            frames.append(image)
     if use_pil:
         frames2gif_by_pil(frames, gif_file, fps=fps, loop=loop)
     else:

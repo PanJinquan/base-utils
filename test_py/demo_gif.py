@@ -11,4 +11,4 @@ if __name__ == "__main__":
     image_dir = "/home/dm/nasdata/dataset/csdn/car/UA-DETRAC/DETRAC-train-data/result"
     gif_file = image_dir + ".gif"
     frames = file_utils.get_images_list(image_dir)
-    image_utils.image_file_list2gif(frames, size=(416, None), padding=False, gif_file=gif_file, fps=20)
+    image_utils.image_file2gif(frames, size=(416, None), padding=False, gif_file=gif_file, fps=20)
