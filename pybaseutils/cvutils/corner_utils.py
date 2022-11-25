@@ -152,5 +152,5 @@ def get_document_corners_example(image_dir):
 
 
 if __name__ == "__main__":
-    image_dir = "/home/dm/nasdata/dataset/csdn/文档矫正/image"
+    image_dir = "/home/dm/nasdata/dataset/csdn/文档矫正/image2"
     get_document_corners_example(image_dir)

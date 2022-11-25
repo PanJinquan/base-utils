@@ -7,7 +7,7 @@
 """
 import cv2
 import numpy as np
-from pybaseutils.cvutils import mouse_utils, conner_utils
+from pybaseutils.cvutils import mouse_utils, corner_utils
 from pybaseutils import file_utils, image_utils
 
 
@@ -68,7 +68,7 @@ def document_image_correct(src, src_pts, dst_pts=None, out_size=None, use_ransac
     dst = cv2.warpPerspective(src, m, dsize=out_size, flags=cv2.INTER_LINEAR)
     if vis:
         dst = image_utils.draw_points_text(dst, np.int32(dst_pts), color=(0, 255, 0), thickness=3)
-        image_utils.cv_show_image("correct", dst, use_rgb=False)
+        image_utils.cv_show_image("correct-result", dst, use_rgb=False)
     return dst
 
 
@@ -100,14 +100,14 @@ def document_correct_by_auto(image, winname="document_correct_by_auto", vis=Fals
     :param vis: 是否可视化
     :return:
     """
-    corners = conner_utils.get_document_corners(image)
+    corners = corner_utils.get_document_corners(image)
     if vis:
         image = image_utils.draw_image_points_lines(image, corners, fontScale=2.0, thickness=5)
         image_utils.cv_show_image(winname, image, use_rgb=False)
     return corners
 
 
-def document_correct_image_example(image, use_mouse=False, winname="document_correct"):
+def document_correct_image_example(image, use_mouse=False, winname="document"):
     """
     通过算法自动获得文档的四个角点
     :param image: 输入图像
@@ -130,7 +130,7 @@ def document_correct_image_example(image, use_mouse=False, winname="document_cor
 
 if __name__ == '__main__':
     # image_dir = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/page-correct1"
-    image_dir = "/home/dm/nasdata/dataset/csdn/文档矫正/image"
+    image_dir = "/home/dm/nasdata/dataset/csdn/文档矫正/image2"
     image_list = file_utils.get_files_lists(image_dir)
     for image_file in image_list:
         image = cv2.imread(image_file)
