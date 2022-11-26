@@ -156,5 +156,5 @@ def image_correction_demo(image_dir):
 
 
 if __name__ == "__main__":
-    image_dir = "/home/dm/nasdata/dataset/csdn/文档矫正/image1"
+    image_dir = "/home/dm/nasdata/dataset/csdn/文档矫正/image1/00031.jpg"
     image_correction_demo(image_dir)
