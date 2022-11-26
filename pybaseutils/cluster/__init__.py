@@ -2,7 +2,6 @@
 """
     @Author : panjq
     @E-mail : pan_jinquan@163.com
-    @Date   : 2019-05-07 17:40:27
+    @Date   : 2022-09-05 19:49:45
+    @Brief  :
 """
-
-__version__ = '0.6.7'
