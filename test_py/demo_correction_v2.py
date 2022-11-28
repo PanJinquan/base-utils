@@ -7,7 +7,7 @@
 """
 import cv2
 import numpy as np
-from pybaseutils.cvutils import mouse_utils, corner_utils
+from utils.cvutils import mouse_utils, corner_utils
 from pybaseutils import file_utils, image_utils
 
 
@@ -133,12 +133,11 @@ def document_correct_image_example(image, use_mouse=False, winname="document", v
 
 
 if __name__ == '__main__':
-    # image_dir = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/page-correct1"
-    image_dir = "/home/dm/nasdata/dataset/csdn/文档矫正/image1"
-    # image_dir = "/home/dm/nasdata/dataset/csdn/文档矫正/image2"
+    image_dir = "data/image2"  # 测试图片
+    use_mouse = True  # 是否通过鼠标操作获得文档的四个角点
     image_list = file_utils.get_files_lists(image_dir)
     for image_file in image_list:
         print(image_file)
         image = cv2.imread(image_file)
-        document_correct_image_example(image)
+        document_correct_image_example(image, use_mouse=use_mouse)
     cv2.waitKey(0)

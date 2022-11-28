@@ -8,8 +8,9 @@
 """
 import os
 import cv2
-import numpy as np
+import re
 import PIL
+import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 from pybaseutils import image_utils, file_utils
 from pybaseutils.font_style import FONT_TYPE, FONT_ROOT
@@ -117,25 +118,47 @@ def is_chinese(uchar):
     return False
 
 
-def get_string_chinese(string):
+def get_string_chinese(string, repl=""):
     """
+    https://zhuanlan.zhihu.com/p/407918235
     获得字符串中所有汉字，其他字符删除
     new = re.sub('([^\u4e00-\u9fa5])', '', old) # 字符串删掉除汉字以外的所有字符
-    :param string: 
-    :return: 
+    :param string:
+    :param repl:
+    :return:
     """
-    new = re.sub('([^\u4e00-\u9fa5])', '', string)  # 字符串删掉除汉字以外的所有字符
+    new = re.sub('([^\u4e00-\u9fa5])', repl, string)  # 字符串删掉除汉字以外的所有字符
     return new
 
 
-def get_string_chinese_number(string):
+def get_string_chinese_number(string, repl=""):
     """
-    获得字符串中所有汉字和数字，其他字符删除
+    获得字符串中所有汉字和数字，其他字符删除，PS小数点也会被删除
     new = re.sub('([^\u4e00-\u9fa5\u0030-\u0039])', '', old) # 字符串删掉除汉字和数字以外的其他字符
-    :param string: 
-    :return: 
+    :param string:
+    :param repl:
+    :return:
     """
-    new = re.sub('([^\u4e00-\u9fa5\u0030-\u0039])', '', string)  # 字符串删掉除汉字和数字以外的其他字符
+    new = re.sub('([^\u4e00-\u9fa5\u0030-\u0039])', repl, string)  # 字符串删掉除汉字和数字以外的其他字符
+    return new
+
+
+def match_string_chinese_number(string):
+    new = re.match(r"[a-zA-z]", string)
+    new = new.group() if new else new
+    return new
+
+
+def remove_string_special_characters(string, repl=""):
+    """
+    string = "你3.39好@、/、小，*、明&，在 %%%么100（）"
+    去除所有特殊字符
+    :param string:
+    :param repl:
+    :return:
+    """
+    # new = re.sub(r"[^\w]", repl, string)  # 删除特殊字符，数字除外
+    new = re.sub('[0-9’!"#$%&\'()（）*+,-./:;<=>?@，。?★、…【】《》？“”‘’！[\\]^_`{|}~\s]+', repl, string) # 删除特殊字符，数字也删除
     return new
 
 
@@ -158,12 +181,23 @@ def get_font_char(font_file, only_chinese=False):
     return fonts
 
 
-if __name__ == "__main__":
+def draw_font_example():
     size = 512
-    point = (0, 0)
     string = "我"
     for style, path in FONT_TYPE.items():
         style = "/home/dm/nasdata/dataset-dmai/ziku/1200款精品字体/书法字体库 37款/国祥手写体.ttf"
-        # print(style, path)
         image = draw_font(string, style=style, size=size, scale=0.8, c2=(100, 0, 255))
         image_utils.cv_show_image("style", image, use_rgb=False)
+
+
+def re_example():
+    string = "你3.39好@、/、小，*、明&，在 %%%么1.00（）"
+    out = remove_string_special_characters(string)
+    # out = get_string_chinese_number(string)
+    # out = match_string_chinese_number(string)
+    print(out)
+
+
+if __name__ == "__main__":
+    # draw_font_example()
+    re_example()
