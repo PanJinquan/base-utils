@@ -67,6 +67,6 @@ def save_file_list(file_dir, prefix="", postfix=["*.json"], only_id=True, basena
 
 
 if __name__ == "__main__":
-    annotations_dir = "/home/dm/nasdata/dataset/csdn/car/UA-DETRAC/DETRAC-train-voc/JPEGImages"
+    annotations_dir = "/home/dm/nasdata/dataset/csdn/traffic light/红绿灯数据集/images"
     save_file_list(annotations_dir, prefix="", postfix=image_utils.IMG_POSTFIX, only_id=False, basename=False,
                    shuffle=False, nums=None)

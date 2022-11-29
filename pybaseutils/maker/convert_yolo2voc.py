@@ -14,7 +14,7 @@ from pybaseutils.maker import maker_voc
 from pybaseutils import file_utils, image_utils
 
 
-def convert_yolo2voc(filename, out_xml_dir, out_image_dir=None, class_name=None, rename="", vis=True):
+def convert_yolo2voc(filename, out_xml_dir=None, out_image_dir=None, class_name=None, rename="", vis=True):
     """将YOLO格式数据(class,cx,cy,w,h)/(1,width,height,width,height)转换为VOC(xmin,ymin,xmax,ymax)
     :param filename:
     :param out_xml_dir: output VOC XML,Annotations
@@ -32,11 +32,14 @@ def convert_yolo2voc(filename, out_xml_dir, out_image_dir=None, class_name=None,
                                           phase="val",
                                           shuffle=False)
     print("have num:{}".format(len(dataset)))
+    class_set = []
     for i in tqdm(range(len(dataset))):
         data = dataset.__getitem__(i)
         image, bboxes, labels = data["image"], data["box"], data["label"]
         image_shape = image.shape
         image_file = data["image_file"]
+        class_set = labels.reshape(-1).tolist() + class_set
+        class_set = list(set(class_set))
         if len(labels) == 0 or image is None:
             print("Error:{}".format(image_file))
             continue
@@ -57,12 +60,13 @@ def convert_yolo2voc(filename, out_xml_dir, out_image_dir=None, class_name=None,
 
         if vis:
             parser_textdata.show_target_image(image, bboxes, labels, class_name=class_name, use_rgb=False)
+    print("class_set:{}".format(class_set))
 
 
 if __name__ == "__main__":
-    filename = "/home/dm/nasdata/dataset/csdn/helmet/Helmet-Asian/total.txt"
+    filename = "/home/dm/nasdata/dataset/csdn/traffic light/红绿灯数据集/train.txt"
     out_xml_dir = os.path.join(os.path.dirname(filename), "VOC/Annotations")
     # out_image_dir = os.path.join(os.path.dirname(filename),"VOC/JPEGImages")
     # out_image_dir = None
-    class_name = {0: 'head', 1: "helmet"}
+    class_name = {50: 'green', 51: "red", 52: 'yellow', 53: "none"}
     convert_yolo2voc(filename, out_xml_dir, out_image_dir=None, class_name=class_name, rename="", vis=False)

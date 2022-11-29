@@ -26,7 +26,7 @@ class LabelMeDataset(Dataset):
                  anno_dir=None,
                  image_dir=None,
                  class_name=None,
-                 use_rgb=True,
+                 use_rgb=False,
                  shuffle=False,
                  check=False,
                  **kwargs):
@@ -147,7 +147,8 @@ class LabelMeDataset(Dataset):
             if not os.path.exists(image_file):
                 continue
             annotation = self.load_annotations(annotation_file)
-            if len(annotation) == 0:
+            box, label, point = self.parser_annotation(annotation, self.class_dict, None)
+            if len(label) == 0:
                 continue
             dst_ids.append(image_id)
         print("have nums image:{},legal image:{}".format(len(image_ids), len(dst_ids)))
@@ -291,6 +292,8 @@ def show_target_image(image, bboxes, labels, points):
 
 
 if __name__ == "__main__":
+    from pybaseutils.maker import maker_labelme
+
     filename = "/home/dm/nasdata/dataset-dmai/handwriting/grid-det/grid_cross_points_v3/trainval.txt"
     # filename = None
     # anno_dir = "/media/dm/新加卷/SDK/base-utils/data/labelme"

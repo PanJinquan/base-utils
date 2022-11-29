@@ -216,7 +216,7 @@ class TextDataset(Dataset):
         """
         # annotation is [class cx cy w h]
         annotation = np.asarray(annotation)
-        labels = annotation[:, 0:1]
+        labels = annotation[:, 0:1].astype(int)
         center = annotation[:, 1:5]
         if shape:
             h, w = shape[:2]
@@ -293,8 +293,8 @@ def show_target_image(image, bboxes, labels, class_name=None, use_rgb=True):
 if __name__ == "__main__":
     # filename = "/home/dm/nasdata/dataset/csdn/helmet/helmet-dataset-v2/train.txt"
     # filename = "/home/dm/nasdata/dataset/csdn/helmet/helmet-asian/total.txt"
-    filename = "/home/dm/nasdata/dataset/csdn/helmet/helmet-asian/total.txt"
-    filename = "/home/dm/nasdata/dataset/csdn/helmet/Hard Hat Workers.v2-raw.voc/trainval.txt"
+    # filename = "/home/dm/nasdata/dataset/csdn/helmet/helmet-asian/total.txt"
+    filename = "/home/dm/nasdata/dataset/csdn/traffic light/红绿灯数据集/train.txt"
     dataset = TextDataset(filename=filename,
                           data_root=None,
                           anno_dir=None,
