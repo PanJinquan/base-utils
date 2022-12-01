@@ -1183,7 +1183,7 @@ def custom_bbox_line(image, bbox, color, name, thickness=2, fontScale=0.5, drawT
                       (text_loc[0] + text_size[0], text_loc[1] + text_size[1]), color, -1)
         # draw score value
         cv2.putText(image, str(name), (text_loc[0], text_loc[1] + baseline), cv2.FONT_HERSHEY_SIMPLEX, fontScale,
-                    (255, 255, 255), thickness, 4)
+                    (255, 255, 255), thickness)
     return image
 
 

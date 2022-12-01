@@ -7,7 +7,7 @@
 """
 import cv2
 import numpy as np
-from utils.cvutils import mouse_utils, corner_utils
+from pybaseutils.cvutils import mouse_utils, corner_utils
 from pybaseutils import file_utils, image_utils
 
 
@@ -83,7 +83,7 @@ def document_correct_by_mouse(image, winname="document_correct_by_mouse"):
     """
     corners = np.zeros(shape=(0, 2), dtype=np.int32)
     mouse = mouse_utils.DrawImageMouse(max_point=4, thickness=5)
-    image_utils.cv_show_image("correct-result", np.zeros_like(image) + 128, use_rgb=False, delay=1)
+    # image_utils.cv_show_image("correct-result", np.zeros_like(image) + 0, use_rgb=False, delay=1)
     while len(corners) < 4:
         corners = mouse.draw_image_polygon_on_mouse(image, winname=winname)
         corners = np.asarray(corners)
@@ -133,7 +133,8 @@ def document_correct_image_example(image, use_mouse=False, winname="document", v
 
 
 if __name__ == '__main__':
-    image_dir = "data/image2"  # 测试图片
+    # image_dir = "data/image2"  # 测试图片
+    image_dir = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/page-correct/image3"  # 测试图片
     use_mouse = True  # 是否通过鼠标操作获得文档的四个角点
     image_list = file_utils.get_files_lists(image_dir)
     for image_file in image_list:

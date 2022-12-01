@@ -177,7 +177,7 @@ class LabelMeDataset(Dataset):
         if anno_dir and not image_id:
             image_id = self.get_file_list(anno_dir, postfix=["*.json"], basename=True)
         elif image_dir and not image_id:
-            image_id = self.get_file_list(anno_dir, postfix=["*.jpg"], basename=True)
+            image_id = self.get_file_list(anno_dir, postfix=image_utils.IMG_POSTFIX, basename=True)
         # assert os.path.exists(image_dir), Exception("no directory:{}".format(image_dir))
         # assert os.path.exists(anno_dir), Exception("no directory:{}".format(anno_dir))
         return data_root, anno_dir, image_dir, image_id

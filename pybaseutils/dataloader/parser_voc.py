@@ -49,12 +49,12 @@ class VOCDataset(Dataset):
         parser = self.parser_paths(filename, data_root, anno_dir, image_dir)
         self.data_root, self.anno_dir, self.image_dir, self.image_id = parser
         self.postfix = self.get_image_postfix(self.image_dir, self.image_id)
+        if check or (self.class_name is None):
+            self.image_id = self.checking(self.image_id, class_name=self.class_name)
         self.transform = transform
         self.use_rgb = use_rgb
         self.classes = list(self.class_dict.values()) if self.class_dict else None
         self.num_classes = max(list(self.class_dict.values())) + 1 if self.class_dict else None
-        if check:
-            self.image_id = self.checking(self.image_id)
         if shuffle:
             random.seed(200)
             random.shuffle(self.image_id)
@@ -93,7 +93,7 @@ class VOCDataset(Dataset):
         annotation_file = os.path.join(anno_dir, "{}.xml".format(image_id))
         return image_file, annotation_file
 
-    def checking(self, image_ids: list, ignore_empty=True):
+    def checking(self, image_ids: list, class_name, ignore_empty=True):
         """
         :param image_ids:
         :param ignore_empty : 是否去除一些空数据
@@ -103,6 +103,7 @@ class VOCDataset(Dataset):
         dst_ids = []
         # image_ids = image_ids[:100]
         # image_ids = image_ids[100:]
+        class_set = []
         for image_id in tqdm(image_ids):
             image_file, annotation_file = self.get_image_anno_file(image_id)
             if not os.path.exists(annotation_file):
@@ -111,10 +112,17 @@ class VOCDataset(Dataset):
                 continue
             objects = self.get_annotation(annotation_file)
             bboxes, labels, is_difficult = objects["bboxes"], objects["labels"], objects["is_difficult"]
+            class_set = labels.reshape(-1).tolist() + class_set
+            class_set = list(set(class_set))
             if ignore_empty and (len(bboxes) == 0 or len(labels) == 0):
                 print("empty annotation:{}".format(annotation_file))
                 continue
             dst_ids.append(image_id)
+        class_set = sorted(class_set)
+        if not class_name:
+            print("class_name is None, Dataset will auto get class_set :{}".format(class_set))
+            self.class_name = class_set
+            self.class_dict = {class_name: i for i, class_name in enumerate(class_set)}
         print("have nums image:{},legal image:{}".format(len(image_ids), len(dst_ids)))
         return dst_ids
 
@@ -437,7 +445,7 @@ def VOCDatasets(filename=None,
     return datasets
 
 
-def show_target_image(image, bboxes, labels, normal=False, transpose=False, class_name=None, use_rgb=True):
+def show_target_image(image, bboxes, labels, normal=False, transpose=False, class_name=None, use_rgb=True, thickness=3):
     """
     :param image:
     :param targets_t:
@@ -463,7 +471,8 @@ def show_target_image(image, bboxes, labels, normal=False, transpose=False, clas
         bboxes = bboxes * bboxes_scale
     # image = image_processing.untranspose(image)
     # image = image_processing.convert_color_space(image, colorSpace="RGB")
-    image = image_utils.draw_image_bboxes_labels(image, bboxes, labels, class_name=class_name)
+    image = image_utils.draw_image_bboxes_labels(image, bboxes, labels, class_name=class_name,
+                                                 thickness=thickness, fontScale=1.5)
     image_utils.cv_show_image("image", image, delay=0, use_rgb=use_rgb)
     print("===" * 10)
 

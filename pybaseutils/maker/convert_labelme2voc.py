@@ -39,7 +39,7 @@ class LabelMeDemo(object):
         """
         :param out_root: VOC输出根目录
         :param class_name: label映射 list或dict
-        :param out_image_dir: 保存JPEGImages
+        :param out_image_dir: 保存 JPEGImages
         :param crop: 是否进行目标裁剪
         :param rename: 是否重命名
         :param vis: 是否可视化
@@ -91,8 +91,8 @@ class LabelMeDemo(object):
 
 
 if __name__ == "__main__":
-    json_dir = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/word-v4/json"
-    image_dir = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/word-v4/JPEGImages"
+    json_dir = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/zip/json"
+    image_dir = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/zip/JPEGImages"
     out_root = os.path.dirname(json_dir)
     class_name = None
     lm = LabelMeDemo(json_dir, image_dir)
