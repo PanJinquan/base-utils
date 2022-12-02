@@ -706,6 +706,34 @@ def get_files_labels(file_dir, prefix="", postfix=IMG_POSTFIX, basename=False):
     return file_list, label_list
 
 
+def save_file_list(file_dir, filename=None, prefix="", postfix=IMG_POSTFIX, only_id=True, shuffle=False, max_num=None):
+    """
+    保存文件列表
+    :param file_dir: 文件路径
+    :param filename: 输出文件列表
+    :param prefix:   需要筛选的文件前缀
+    :param postfix:  需要筛选的文件后缀
+    :param only_id:  是否去除后缀，只保留ID
+    :param shuffle:  是否打乱顺序
+    :param max_num:  最大文件数
+    :return:
+    """
+    if not filename: filename = os.path.join(os.path.dirname(file_dir), "file_list.txt")
+    file_list = get_files_list(file_dir, prefix=prefix, postfix=postfix, basename=False)
+    file_list = get_sub_list(file_list, dirname=file_dir)
+    if only_id:
+        file_list = [str(f).split(".")[0] for f in file_list]
+    if shuffle:
+        random.seed(100)
+        random.shuffle(file_list)
+    if max_num:
+        max_num = min(max_num, len(file_list))
+        file_list = file_list[0:max_num]
+    write_list_data(filename, file_list)
+    print("num files:{},out_path:{}".format(len(file_list), filename))
+    return file_list
+
+
 def decode_label(label_list, name_table):
     '''
     根据name_table解码label

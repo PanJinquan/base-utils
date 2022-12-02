@@ -60,6 +60,8 @@ def convert_yolo2voc(filename, out_xml_dir=None, out_image_dir=None, class_name=
 
         if vis:
             parser_textdata.show_target_image(image, bboxes, labels, class_name=class_name, use_rgb=False)
+    file_utils.save_file_list(out_image_dir, filename=None, prefix="", postfix=file_utils.IMG_POSTFIX,
+                              only_id=False, shuffle=False, max_num=None)
     print("class_set:{}".format(class_set))
 
 

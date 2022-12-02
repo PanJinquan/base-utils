@@ -72,6 +72,8 @@ class LabelMeDemo(object):
                 # cv2.imwrite(dst_file, image)
             if vis:
                 self.show_object_image(image, objects)
+        file_utils.save_file_list(out_image_dir, filename=None, prefix="", postfix=file_utils.IMG_POSTFIX,
+                                  only_id=False, shuffle=False, max_num=None)
 
     def save_object_crops(self, objects, image, out_dir, image_id):
         for i, item in enumerate(objects):

@@ -49,7 +49,7 @@ def save_file_list_labels(image_dir, class_file="", out_path=None, shuffle=False
     return content_list
 
 
-def save_file_list(file_dir, prefix="", postfix=["*.json"], only_id=True, basename=True, shuffle=False, nums=None):
+def save_file_list(file_dir, prefix="", postfix=image_utils.IMG_POSTFIX, only_id=True, shuffle=False, max_num=None):
     """保存文件列表"""
     filename = os.path.join(os.path.dirname(file_dir), "file_list.txt")
     file_list = file_utils.get_files_list(file_dir, prefix=prefix, postfix=postfix, basename=False)
@@ -59,14 +59,14 @@ def save_file_list(file_dir, prefix="", postfix=["*.json"], only_id=True, basena
     if shuffle:
         random.seed(100)
         random.shuffle(file_list)
-    if nums:
-        nums = min(nums, len(file_list))
-        file_list = file_list[0:nums]
+    if max_num:
+        max_num = min(max_num, len(file_list))
+        file_list = file_list[0:max_num]
     file_utils.write_list_data(filename, file_list)
     print("num files:{},out_path:{}".format(len(file_list), filename))
 
 
 if __name__ == "__main__":
     annotations_dir = "/home/dm/nasdata/dataset/csdn/car/BITVehicle/JPEGImages"
-    save_file_list(annotations_dir, prefix="", postfix=image_utils.IMG_POSTFIX, only_id=False, basename=False,
-                   shuffle=False, nums=None)
+    save_file_list(annotations_dir, prefix="", postfix=image_utils.IMG_POSTFIX, only_id=False, shuffle=False,
+                   max_num=None)

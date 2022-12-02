@@ -61,6 +61,49 @@ def get_ignored_region(objects):
     return bboxes, labels
 
 
+def show_ua_detrac_dataset(image_dir, annot_dir, out_draw="", vis=False):
+    """
+    可视化车辆检测数据集
+    class_set:['car', 'bus', 'others', 'van']
+    :param image_dir: UA-DETRAC数据集图片(*.jpg)根目录
+    :param annot_dir:  UA-DETRAC数据集标注文件(*.xml)根目录
+    :param vis: 是否可视化效果
+    """
+    print("image_dir:{}".format(image_dir))
+    print("annot_dir:{}".format(annot_dir))
+    xml_list = file_utils.get_files_list(annot_dir, postfix=["*.xml"])
+    class_set = []
+    for annot_file in tqdm(xml_list):
+        print(annot_file)
+        # 将xml转换为OrderedDict格式，方便解析
+        annotations = read_xml2json(annot_file)
+        subname = annotations['sequence']['@name']  # UA-DETRAC子目录
+        # 被忽略的区域
+        ignore_bboxes, ignore_labels = get_ignored_region(annotations['sequence']['ignored_region'])
+        # 遍一帧图像，获得车辆目标框
+        frame_info = annotations['sequence']['frame']
+        for i in range(len(frame_info)):
+            image_name, bboxes, labels = get_objects_info(frame_info[i])
+            image_id = image_name.split(".")[0]
+            image_file = os.path.join(image_dir, subname, image_name)
+            class_set = labels + class_set
+            class_set = list(set(class_set))
+            if not os.path.exists(image_file):
+                print("not exist:{}".format(image_file))
+                continue
+            image = cv2.imread(image_file)
+            image = image_utils.draw_image_bboxes_text(image, ignore_bboxes, ignore_labels,
+                                                       color=(10, 10, 10), thickness=2, fontScale=1.0)
+            image = image_utils.draw_image_bboxes_text(image, bboxes, labels,
+                                                       color=(255, 0, 0), thickness=2, fontScale=1.0)
+            if out_draw:
+                dst_file = file_utils.create_dir(out_draw, None, "{}_{}.jpg".format(subname, image_id))
+                cv2.imwrite(dst_file, image)
+            if vis:
+                image_utils.cv_show_image("det", image, use_rgb=False)
+    print("class_set:{}".format(class_set))
+
+
 def converter_ua_detrac2voc(image_dir, annot_dir, out_voc, vis=True):
     """
     将车辆检测数据集UA-DETRAC转换为VOC数据格式(xmin,ymin,xmax,ymax)
@@ -111,49 +154,8 @@ def converter_ua_detrac2voc(image_dir, annot_dir, out_voc, vis=True):
                 image = image_utils.draw_image_bboxes_text(image, bboxes, labels,
                                                            color=(255, 0, 0), thickness=2, fontScale=1.0)
                 image_utils.cv_show_image("det", image, use_rgb=False)
-    print("class_set:{}".format(class_set))
-
-
-def show_ua_detrac_dataset(image_dir, annot_dir, out_draw="", vis=False):
-    """
-    可视化车辆检测数据集
-    class_set:['car', 'bus', 'others', 'van']
-    :param image_dir: UA-DETRAC数据集图片(*.jpg)根目录
-    :param annot_dir:  UA-DETRAC数据集标注文件(*.xml)根目录
-    :param vis: 是否可视化效果
-    """
-    print("image_dir:{}".format(image_dir))
-    print("annot_dir:{}".format(annot_dir))
-    xml_list = file_utils.get_files_list(annot_dir, postfix=["*.xml"])
-    class_set = []
-    for annot_file in tqdm(xml_list):
-        print(annot_file)
-        # 将xml转换为OrderedDict格式，方便解析
-        annotations = read_xml2json(annot_file)
-        subname = annotations['sequence']['@name']  # UA-DETRAC子目录
-        # 被忽略的区域
-        ignore_bboxes, ignore_labels = get_ignored_region(annotations['sequence']['ignored_region'])
-        # 遍一帧图像，获得车辆目标框
-        frame_info = annotations['sequence']['frame']
-        for i in range(len(frame_info)):
-            image_name, bboxes, labels = get_objects_info(frame_info[i])
-            image_id = image_name.split(".")[0]
-            image_file = os.path.join(image_dir, subname, image_name)
-            class_set = labels + class_set
-            class_set = list(set(class_set))
-            if not os.path.exists(image_file):
-                print("not exist:{}".format(image_file))
-                continue
-            image = cv2.imread(image_file)
-            image = image_utils.draw_image_bboxes_text(image, ignore_bboxes, ignore_labels,
-                                                       color=(10, 10, 10), thickness=2, fontScale=1.0)
-            image = image_utils.draw_image_bboxes_text(image, bboxes, labels,
-                                                       color=(255, 0, 0), thickness=2, fontScale=1.0)
-            if out_draw:
-                dst_file = file_utils.create_dir(out_draw, None, "{}_{}.jpg".format(subname, image_id))
-                cv2.imwrite(dst_file, image)
-            if vis:
-                image_utils.cv_show_image("det", image, use_rgb=False)
+    file_utils.save_file_list(out_image_dir, filename=None, prefix="", postfix=file_utils.IMG_POSTFIX,
+                              only_id=False, shuffle=False, max_num=None)
     print("class_set:{}".format(class_set))
 
 
@@ -167,7 +169,7 @@ if __name__ == "__main__":
     # 可视化车辆检测数据集
     out_draw = os.path.join(os.path.dirname(image_dir), "result")
     show_ua_detrac_dataset(image_dir, annot_dir, out_draw=out_draw, vis=True)
-    
+
     # 将车辆检测数据集UA - DETRAC转换为VOC数据格式
     out_voc = os.path.join(os.path.dirname(image_dir), "VOC")
     converter_ua_detrac2voc(image_dir, annot_dir, out_voc, vis=True)
