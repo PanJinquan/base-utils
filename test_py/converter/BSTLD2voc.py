@@ -55,8 +55,14 @@ def converter_BSTLD2voc(image_dir, annot_file, out_voc, vis=True):
         print("i={},labels:{}".format(i, labels))
         if len(labels) == 0:
             continue
-        image_id = image_name.split(".")[0]
-        image_file = os.path.join(image_dir, image_name)
+        if phase == "test":
+            image_file = os.path.join(image_dir, "rgb", "test", os.path.basename(image_name))
+        else:
+            image_file = os.path.join(image_dir, image_name)
+        image_name = os.path.basename(image_name)
+        img_postfix = image_name.split(".")[-1]
+        image_id = image_name[:-len(img_postfix) - 1]
+
         class_set = labels + class_set
         class_set = list(set(class_set))
         if not os.path.exists(image_file):
@@ -64,11 +70,15 @@ def converter_BSTLD2voc(image_dir, annot_file, out_voc, vis=True):
             continue
         image = cv2.imread(image_file)
         image_shape = image.shape
-        new_name = "{}.jpg".format(image_id)
         xml_path = file_utils.create_dir(out_xml_dir, None, "{}.xml".format(image_id))
+        dst_file = file_utils.create_dir(out_image_dir, None, "{}.{}".format(image_id, img_postfix))
+        if os.path.exists(dst_file):
+            image_id = "{}_{}".format(image_id, file_utils.get_time())
+            image_name = "{}.{}".format(image_id, img_postfix)
+            xml_path = file_utils.create_dir(out_xml_dir, None, "{}.xml".format(image_id))
+            dst_file = file_utils.create_dir(out_image_dir, None, image_name)
         objects = maker_voc.create_objects(bboxes, labels)
-        maker_voc.write_voc_xml_objects(new_name, image_shape, objects, xml_path)
-        dst_file = file_utils.create_dir(out_image_dir, None, new_name)
+        maker_voc.write_voc_xml_objects(image_name, image_shape, objects, xml_path)
         file_utils.copy_file(image_file, dst_file)
         # cv2.imwrite(dst_file, image)
         if vis:
@@ -82,10 +92,16 @@ def converter_BSTLD2voc(image_dir, annot_file, out_voc, vis=True):
 
 if __name__ == "__main__":
     """
+    将车辆检测数据集BIT-Vehicle Dataset转换为VOC数据格式
     pip install pybaseutils
     """
-    image_dir = "/home/dm/nasdata/dataset/csdn/traffic light/Bosch Small Traffic Lights Dataset/dataset_train_rgb/"
+    # 5093
+    image_dir = "/home/dm/nasdata/dataset/csdn/traffic light/Bosch Small Traffic Lights Dataset/dataset_train_rgb"
     annot_file = "/home/dm/nasdata/dataset/csdn/traffic light/Bosch Small Traffic Lights Dataset/dataset_train_rgb/train.yaml"
-    # 将车辆检测数据集BIT-Vehicle Dataset转换为VOC数据格式
-    out_voc = os.path.join(os.path.dirname(image_dir), "VOC")
-    converter_BSTLD2voc(image_dir, annot_file, out_voc, vis=True)
+
+    # 8334
+    # image_dir = "/home/dm/nasdata/dataset/csdn/traffic light/Bosch Small Traffic Lights Dataset/dataset_test_rgb"
+    # annot_file = "/home/dm/nasdata/dataset/csdn/traffic light/Bosch Small Traffic Lights Dataset/dataset_test_rgb/test.yaml"
+
+    out_voc = os.path.join(image_dir, "VOC")
+    converter_BSTLD2voc(image_dir, annot_file, out_voc, vis=False)

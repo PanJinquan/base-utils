@@ -67,6 +67,6 @@ def save_file_list(file_dir, prefix="", postfix=image_utils.IMG_POSTFIX, only_id
 
 
 if __name__ == "__main__":
-    annotations_dir = "/home/dm/nasdata/dataset/csdn/car/BITVehicle/JPEGImages"
-    save_file_list(annotations_dir, prefix="", postfix=image_utils.IMG_POSTFIX, only_id=False, shuffle=False,
+    annotations_dir = "/home/dm/nasdata/dataset/csdn/traffic light/Traffic-Lights-Dataset/JPEGImages"
+    save_file_list(annotations_dir, prefix="", postfix=image_utils.IMG_POSTFIX, only_id=False, shuffle=True,
                    max_num=None)

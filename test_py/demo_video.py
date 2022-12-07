@@ -5,7 +5,7 @@
     @Date   : 2022-11-24 14:03:56
     @Brief  :
 """
-from pybaseutils import image_utils
+from pybaseutils import image_utils, file_utils
 from pybaseutils.cvutils import video_utils
 
 
@@ -18,15 +18,16 @@ def crop_fun(frame):
 
 def resize_fun(frame):
     h, w = frame.shape[:2]
-    frame = image_utils.resize_image(frame, size=(640, None))
+    frame = image_utils.resize_image(frame, size=(256, None))
     return frame
 
 
 if __name__ == "__main__":
-    video_file = "/home/dm/nasdata/dataset/csdn/文档矫正/video/document_correct_by_auto2.mp4"
+    video_file = "/home/dm/nasdata/dataset/csdn/car/demo/HnVideoEditor_2022_12_02_184850009.mp4"
     # video_utils.video2frames(video_file, interval=2, func=crop_fun, vis=True)
-    # video_utils.video2gif(video_file, interval=2, func=target_task, fps=3, use_pil=False, vis=True)
+    video_utils.video2gif(video_file, interval=5, func=resize_fun, fps=5, use_pil=False, vis=True)
     # video2video(video_file, dst_file, vis=True)
 
-    image_dir = "/home/dm/nasdata/dataset/csdn/文档矫正/video/document_correct_by_auto2"
-    image_utils.image_dir2gif(image_dir, size=(None, 720), interval=5, fps=4, loop=0, padding=False, use_pil=True)
+    image_dir = "/home/dm/nasdata/dataset/csdn/car/UA-DETRAC/sample/MVI_39051"
+    # video_utils.frames2video(image_dir)
+    # image_utils.image_dir2gif(image_dir, size=(None, 720), interval=5, fps=4, loop=0, padding=False, use_pil=True)

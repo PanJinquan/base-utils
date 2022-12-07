@@ -134,7 +134,7 @@ if __name__ == "__main__":
     # 定义类别数
     class_name = ['green', "red", 'yellow', "none"]
     # VOC数据目录
-    data_root = "/home/dm/nasdata/dataset/csdn/traffic light/红绿灯数据集"
+    data_root = "/home/dm/nasdata/dataset/csdn/traffic light/Traffic-Lights-Dataset-v1"
     # data_root = "/path/to/VOC2007"
     # 保存输出yolo格式数据目录
     out_text_dir = os.path.join(data_root, "labels")

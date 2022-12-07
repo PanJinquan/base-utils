@@ -11,8 +11,11 @@ if __name__ == "__main__":
     """
     """
     # from models.transforms import data_transforms
-    filename = "/home/dm/nasdata/dataset/csdn/car/BITVehicle/train.txt"
-    class_name = "/home/dm/nasdata/dataset/csdn/car/BITVehicle/class_name.txt"
+    # filename = "/home/dm/nasdata/dataset/csdn/traffic light/VOC/train.txt"
+    # class_name = "/home/dm/nasdata/dataset/csdn/traffic light/VOC/class_name.txt"
+    filename = "/home/dm/nasdata/dataset/csdn/traffic light/Traffic-Lights-Dataset-Foreign/train.txt"
+    class_name = "/home/dm/nasdata/dataset/csdn/traffic light/Traffic-Lights-Dataset-Foreign/class_name.txt"
+    # class_name=["off"]
     dataset = parser_voc.VOCDataset(filename=filename,
                                     data_root=None,
                                     anno_dir=None,

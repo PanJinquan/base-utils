@@ -71,4 +71,5 @@ if __name__ == "__main__":
     # out_image_dir = os.path.join(os.path.dirname(filename),"VOC/JPEGImages")
     # out_image_dir = None
     class_name = {50: 'green', 51: "red", 52: 'yellow', 53: "none"}
+    class_name = ['green', "red", 'yellow', "none"]
     convert_yolo2voc(filename, out_xml_dir, out_image_dir=None, class_name=class_name, rename="", vis=False)
