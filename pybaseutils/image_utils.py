@@ -2616,7 +2616,7 @@ def image_dir2gif(image_dir, size=None, gif_file=None, interval=1, fps=4, loop=0
 
 
 def image_file2gif(file_list, size=None, gif_file="test.gif", interval=1, fps=4, loop=0,
-                   padding=True, use_pil=True):
+                   padding=True, use_pil=False):
     """
     pip install imageio
     uri：合成后的gif动图的名字，可以随意更改。
