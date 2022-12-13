@@ -33,7 +33,8 @@ def concat_stroke_image(mask, seg_list, split_line=False, texts=[], vis=False):
         image_utils.cv_show_image("mask-seg-diff-stroke", vis_image, use_rgb=False)
     return vis_image
 
-def concat_hw_gt_stroke_image(hw_mask, hw_segs, gt_mask, gt_segs, split_line=True, vis=False):
+
+def concat_hw_gt_stroke_image(hw_mask, hw_segs, gt_mask, gt_segs, split_line=True, hw_texts=[], gt_texts=[], vis=False):
     """
     对比标准字的笔画和手写字的笔画分割图
     :param hw_mask:手写字整字mask
@@ -44,8 +45,8 @@ def concat_hw_gt_stroke_image(hw_mask, hw_segs, gt_mask, gt_segs, split_line=Tru
     :param vis: 是否可视化
     :return:
     """
-    hw_stroke = concat_stroke_image(hw_mask, hw_segs, split_line=split_line, vis=False)
-    gt_stroke = concat_stroke_image(gt_mask, gt_segs, split_line=split_line, vis=False)
+    hw_stroke = concat_stroke_image(hw_mask, hw_segs, split_line=split_line, texts=hw_texts, vis=False)
+    gt_stroke = concat_stroke_image(gt_mask, gt_segs, split_line=split_line, texts=gt_texts, vis=False)
     vis_image = image_utils.image_vstack([gt_stroke, hw_stroke], split_line=split_line)
     if vis:
         image_utils.cv_show_image("gt-pd-stroke", vis_image, use_rgb=False)
@@ -85,8 +86,11 @@ def show_hw_gt_word_info(word_info, vis=True):
         text = ["{}={}".format(key, hw_word[key]) for key in keys if key in hw_word]
         print("\t".join(text))
         if len(hw_word['stroke_segs']) == 0 or hw_word['mask'] is None: return
+        stroke_scores = hw_word['stroke_scores'] if 'stroke_scores' in hw_word else []
+        hw_texts = ["{:3.3f}".format(s) for s in stroke_scores]
         hw_gt_image = concat_hw_gt_stroke_image(hw_mask=hw_word['mask'], hw_segs=hw_word['stroke_segs'],
-                                                gt_mask=gt_word['mask'], gt_segs=gt_word['stroke_segs'], vis=vis)
+                                                gt_mask=gt_word['mask'], gt_segs=gt_word['stroke_segs'],
+                                                hw_texts=hw_texts, vis=vis)
         hw_gt_images.append({"image": hw_gt_image, "label": label})
         for i in range(len(hw_word['piece_segs'])):
             hw_stroke = hw_word['stroke_segs'][i]
