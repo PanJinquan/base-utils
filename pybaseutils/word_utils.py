@@ -21,6 +21,7 @@ def concat_stroke_image(mask, seg_list, split_line=False, texts=[], vis=False):
     :param vis: 是否可视化
     :return:返回水平拼接笔画图片
     """
+    seg_list = image_utils.resize_image_like(image_list=seg_list, dst_img=mask, is_rgb=False)
     if len(seg_list) > 0:
         seg_mask = np.max(seg_list, axis=0)
     else:

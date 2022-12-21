@@ -15,7 +15,7 @@ from pybaseutils.maker import maker_voc
 from pybaseutils import file_utils, image_utils, yaml_utils
 
 
-def get_objects_info(annotation):
+def parser_annotations(annotation):
     """
     [('name', 'O'), ('height', 'O'), ('width', 'O'), ('vehicles', 'O'), ('nVehicles', 'O')]
     解析标注信息
@@ -51,7 +51,7 @@ def converter_BSTLD2voc(image_dir, annot_file, out_voc, vis=True):
     annotations = yaml_utils.load_config(annot_file)
     for i in tqdm(range(len(annotations))):
         # i = 52
-        image_name, bboxes, labels = get_objects_info(annotations[i])
+        image_name, bboxes, labels = parser_annotations(annotations[i])
         print("i={},labels:{}".format(i, labels))
         if len(labels) == 0:
             continue

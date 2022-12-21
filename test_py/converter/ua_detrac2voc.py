@@ -24,7 +24,7 @@ def read_xml2json(xml_file):
     return content
 
 
-def get_objects_info(objects):
+def parser_annotations(objects):
     """
     解析标注信息
     """
@@ -83,7 +83,7 @@ def show_ua_detrac_dataset(image_dir, annot_dir, out_draw="", vis=False):
         # 遍一帧图像，获得车辆目标框
         frame_info = annotations['sequence']['frame']
         for i in range(len(frame_info)):
-            image_name, bboxes, labels = get_objects_info(frame_info[i])
+            image_name, bboxes, labels = parser_annotations(frame_info[i])
             image_id = image_name.split(".")[0]
             image_file = os.path.join(image_dir, subname, image_name)
             class_set = labels + class_set
@@ -130,7 +130,7 @@ def converter_ua_detrac2voc(image_dir, annot_dir, out_voc, vis=True):
         # 遍一帧图像，获得车辆目标框
         frame_info = annotations['sequence']['frame']
         for i in range(len(frame_info)):
-            image_name, bboxes, labels = get_objects_info(frame_info[i])
+            image_name, bboxes, labels = parser_annotations(frame_info[i])
             image_id = image_name.split(".")[0]
             image_file = os.path.join(image_dir, subname, image_name)
             class_set = labels + class_set

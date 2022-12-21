@@ -32,6 +32,8 @@ color_map = [(0, 0, 0), (255, 0, 0), (0, 255, 0), (0, 0, 255),
              (64, 0, 128), (192, 0, 128), (64, 128, 128), (192, 128, 128),
              (0, 64, 0), (128, 64, 0), (0, 192, 0), (128, 192, 0), (0, 64, 128)] * 10
 
+ROOT = os.path.dirname(__file__)
+
 
 def create_image(shape, color=(255, 255, 255), dtype=np.uint8, uas_rgb=False):
     """
@@ -1162,9 +1164,11 @@ def custom_bbox_line(image, bbox, color, name, thickness=2, fontScale=0.5, drawT
     :return:
     """
     # fontScale = 0.5
-    if not name:
-        drawType = "simple"
-    if drawType == "simple":
+    if not name:drawType = "simple"
+    if drawType == "chinese":
+        cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness, 8, 0)
+        cv2_putText(image, str(name), (bbox[0], bbox[3]), color=color, fontScale=fontScale, thickness=thickness)
+    elif drawType == "custom":
         cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness, 8, 0)
         cv2.putText(image, str(name), (bbox[0], bbox[1]), cv2.FONT_HERSHEY_SIMPLEX, fontScale, color, thickness)
     elif drawType == "custom":
@@ -1331,10 +1335,21 @@ def draw_text_pil(image, point, text, size=10, color_color=(255, 0, 0)):
     pilimg = Image.fromarray(image)  # Image.fromarray()将数组类型转成图片格式，与np.array()相反
     draw = ImageDraw.Draw(pilimg)  # PIL图片上打印汉字
     # 参数1：字体文件路径，参数2：字体大小；Windows系统“simhei.ttf”默认存储在路径：
-    font = ImageFont.truetype("./utils/simhei.ttf", size, encoding="utf-8")
+    font = ImageFont.truetype(os.path.join(ROOT, "font_style/simhei.ttf"), size, encoding="utf-8")
     draw.text(point, text, color_color, font)
     image = cv2.cvtColor(np.array(pilimg), cv2.COLOR_RGB2BGR)  # 将图片转成cv2.imshow()可以显示的数组格式
     return image
+
+
+def cv2_putText(img, text, point, fontFace=None, fontScale=0.8, color=(255, 0, 0), thickness=None):
+    # cv2.putText(img, str(text), point, fontFace, fontScale, color=color, thickness=thickness)
+    pilimg = Image.fromarray(img)  # Image.fromarray()将数组类型转成图片格式，与np.array()相反
+    draw = ImageDraw.Draw(pilimg)  # PIL图片上打印汉字
+    # 参数1：字体文件路径，参数2：字体大小；Windows系统“simhei.ttf”默认存储在路径：
+    size = int(fontScale * 10 * thickness)
+    font = ImageFont.truetype(os.path.join(ROOT, "font_style/simhei.ttf"), size, encoding="utf-8")
+    draw.text(point, text, color, font)
+    img[:] = np.asarray(pilimg)
 
 
 def draw_key_point_in_image(image,

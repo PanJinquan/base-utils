@@ -15,7 +15,7 @@ from pybaseutils.maker import maker_voc
 from pybaseutils import file_utils, image_utils
 
 
-def get_objects_info(annotation):
+def parser_annotations(annotation):
     """
     [('name', 'O'), ('height', 'O'), ('width', 'O'), ('vehicles', 'O'), ('nVehicles', 'O')]
     解析标注信息
@@ -52,7 +52,7 @@ def converter_BITVehicle2voc(image_dir, annot_file, out_voc, vis=True):
     annotations = scio.loadmat(annot_file)['VehicleInfo']
     for i in tqdm(range(len(annotations))):
         # i = 52
-        image_name, nvehicles, bboxes, labels = get_objects_info(annotations[i])
+        image_name, nvehicles, bboxes, labels = parser_annotations(annotations[i])
         print("i={},nvehicles:{},labels:{}".format(i, nvehicles, labels))
         image_id = image_name.split(".")[0]
         image_file = os.path.join(image_dir, image_name)
