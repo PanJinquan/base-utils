@@ -23,7 +23,7 @@ def matching_embedding(inputs, target, use_max=False):
     """
     assert inputs.shape[1] == target.shape[1]  # 特征维度必须一致
     data = np.expand_dims(inputs, axis=-1)  # (n,512)->(n,512,1)
-    dataset = target.transpose(1, 0)  # (N, 512)->(512, N)
+    dataset = target.image_demo(1, 0)  # (N, 512)->(512, N)
     dataset = np.expand_dims(dataset, axis=0)  # (1,512, N)
     diff = data - dataset  # (n, 512, 1) - (1, 512, N) = (n, 512, N)
     dist = np.sum(np.power(diff, 2), axis=1)  # (n, N)

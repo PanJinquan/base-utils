@@ -43,12 +43,12 @@ def get_plate_licenses(plate):
     return result
 
 
-def save_plate_licenses(image, bboxes, plates, out_dir):
+def save_plate_licenses(image, bboxes, plates, out_dir, name=""):
     crops = image_utils.get_bboxes_crop(image, bboxes)
     for i in range(len(crops)):
         label = plates[i]
-        image_id = file_utils.get_time(format="p")
-        file = os.path.join(out_dir, "{}_{}_{:0=3d}.jpg".format(label, image_id, i))
+        # image_id = file_utils.get_time(format="p")
+        file = os.path.join(out_dir, "{}_{}_{:0=3d}.jpg".format(label, name, i))
         file_utils.create_file_path(file)
         cv2.imwrite(file, crops[i])
 
@@ -71,6 +71,7 @@ def parser_annotations(image_file):
         point = [int(b) for b in point]
         point = np.asarray(point).reshape(-1, 2)
         bboxes = [box]
+        angles = [angle]
         points = [point]
         plates = [plate]
         labels = ["plate"] * len(bboxes)
@@ -79,7 +80,9 @@ def parser_annotations(image_file):
         points = []
         labels = []
         plates = []
-    info = {"filename": filename, "bboxes": bboxes, "points": points, "labels": labels, "plates": plates}
+        angles = []
+    info = {"filename": filename, "bboxes": bboxes, "points": points,
+            "labels": labels, "plates": plates, "angles": angles}
     return info
 
 
@@ -98,14 +101,15 @@ def converter_CCPD2voc(image_dir, out_voc, vis=True):
     out_crop_dir = file_utils.create_dir(out_voc, None, "plates")
     class_set = []
     image_list = file_utils.get_images_list(image_dir)
-    for image_file in tqdm(image_list):
+    for i, image_file in enumerate(tqdm(image_list)):
         info = parser_annotations(image_file)
         labels = info["labels"]
         bboxes = info["bboxes"]
         points = info["points"]
         plates = info["plates"]
+        angles = info["angles"]
         image_name = info["filename"]
-        print("i={},plates:{}".format(image_file, plates))
+        print("i={},plates:{},angles(水平,垂直角度):{}".format(os.path.basename(image_file), plates, angles))
         if len(labels) == 0:
             continue
         image_name = os.path.basename(image_name)
@@ -118,14 +122,15 @@ def converter_CCPD2voc(image_dir, out_voc, vis=True):
             print("not exist:{}".format(image_file))
             continue
         image = cv2.imread(image_file)
-        save_plate_licenses(image, bboxes, plates, out_dir=out_crop_dir)
+        name = "{:0=5d}".format(i)
+        save_plate_licenses(image, bboxes, plates, out_dir=out_crop_dir, name=name)
         image_shape = image.shape
         xml_path = file_utils.create_dir(out_xml_dir, None, "{}.xml".format(image_id))
         dst_file = file_utils.create_dir(out_image_dir, None, "{}.{}".format(image_id, img_postfix))
         objects = maker_voc.create_objects(bboxes, labels)
         maker_voc.write_voc_xml_objects(image_name, image_shape, objects, xml_path)
-        # file_utils.copy_file(image_file, dst_file)
-        # cv2.imwrite(dst_file, image)
+        file_utils.copy_file(image_file, dst_file)
+        cv2.imwrite(dst_file, image)
         if vis:
             image = image_utils.draw_image_bboxes_text(image, bboxes, plates, color=(255, 0, 0), thickness=2,
                                                        fontScale=0.8, drawType="chinese")
@@ -141,6 +146,10 @@ if __name__ == "__main__":
     将车辆检测数据集BIT-Vehicle Dataset转换为VOC数据格式
     pip install pybaseutils
     """
-    image_dir = "/home/dm/nasdata/dataset/csdn/车牌检测和识别/CCPD/CCPD2020/ccpd_green/test"
-    out_voc = os.path.join(os.path.dirname(image_dir), "VOC")
-    converter_CCPD2voc(image_dir, out_voc, vis=False)
+    dataset = "/home/dm/nasdata/dataset/csdn/车牌检测和识别/CCPD-dataset/CCPD2019"
+    output = "/home/dm/nasdata/dataset/csdn/车牌检测和识别/CCPD-dataset/CCPD2019-voc1"
+    sub_list = file_utils.get_sub_paths(dataset)
+    for sub in sub_list:
+        out_voc = os.path.join(output, sub)
+        image_dir = os.path.join(dataset, sub)
+        converter_CCPD2voc(image_dir, out_voc, vis=False)

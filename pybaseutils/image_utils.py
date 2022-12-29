@@ -111,7 +111,7 @@ def get_image_tensor(image_path, image_size, transpose=False):
     image = center_crop(image, crop_size=image_size)
     image_tensor = image_normalization(image, mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
     if transpose:
-        image_tensor = image_tensor.transpose(2, 0, 1)  # NHWC->NCHW
+        image_tensor = image_tensor.image_demo(2, 0, 1)  # NHWC->NCHW
     image_tensor = image_tensor[np.newaxis, :]
     # std = np.std(torch_image-image_tensor)
     return image_tensor
@@ -127,15 +127,15 @@ def image_clip(image):
 
 
 def transpose(data):
-    data = data.transpose(2, 0, 1)  # HWC->CHW
+    data = data.image_demo(2, 0, 1)  # HWC->CHW
     return data
 
 
 def untranspose(data):
     if len(data.shape) == 3:
-        data = data.transpose(1, 2, 0).copy()  # 通道由[c,h,w]->[h,w,c]
+        data = data.image_demo(1, 2, 0).copy()  # 通道由[c,h,w]->[h,w,c]
     else:
-        data = data.transpose(1, 0).copy()
+        data = data.image_demo(1, 0).copy()
     return data
 
 
@@ -360,31 +360,29 @@ def cv_image_normalization(image, min_val=0.0, max_val=1.0):
     return out
 
 
-def get_prewhiten_images(images_list, normalization=False):
+def get_prewhiten_images(images_list, norm=False):
     """
     批量白化图片处理
     :param images_list:
-    :param normalization:
+    :param norm:
     :return:
     """
     out_images = []
     for image in images_list:
-        if normalization:
-            image = image_normalization(image)
+        if norm: image = image_normalization(image)
         image = get_prewhiten_image(image)
         out_images.append(image)
     return out_images
 
 
-def read_image(filename, size=None, normalization=False, use_rgb=True):
+def read_image(filename, size=None, norm=False, use_rgb=True):
     """
     读取图片数据,默认返回的是uint8,[0,255]
     :param filename:
-    :param normalization:是否归一化到[0.,1.0]
+    :param norm:是否归一化到[0.,1.0]
     :param use_rgb 输出格式：RGB or BGR
     :return: 返回的图片数据
     """
-
     image = cv2.imread(filename)
     # bgr_image = cv2.imread(filename,cv2.IMREAD_IGNORE_ORIENTATION|cv2.IMREAD_UNCHANGED)
     # image = cv2.imdecode(np.fromfile(filename, dtype=np.uint8), cv2.IMREAD_COLOR) # 中文路径
@@ -394,61 +392,44 @@ def read_image(filename, size=None, normalization=False, use_rgb=True):
     if len(image.shape) == 2:  # 若是灰度图则转为三通道
         print("Warning:gray image", filename)
         image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
-
     if use_rgb:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # 将BGR转为RGB
-    # show_image(filename,image)
-    # image=Image.open(filename)
-    image = resize_image(image, size=size)
+    if size: image = resize_image(image, size=size)
     image = np.asanyarray(image)
-    if normalization:
-        image = image_normalization(image)
+    if norm: image = image_normalization(image)
     return image
 
 
-def read_image_pil(filename, size, normalization=False):
+def read_image_pil(filename, size, norm=False):
     """
     读取图片数据,默认返回的是uint8,[0,255]
     :param filename:
     :param size:
-    :param normalization:是否归一化到[0.,1.0]
+    :param norm:是否归一化到[0.,1.0]
     :return: 返回的图片数据
     """
-    rgb_image = Image.open(filename)
-    rgb_image = np.asarray(rgb_image)
-    if rgb_image is None:
+    image = Image.open(filename)
+    image = np.asarray(image)
+    if image is None:
         print("Warning: no image:{}".format(filename))
         return None
-    if len(rgb_image.shape) == 2:  # 若是灰度图则转为三通道
+    if len(image.shape) == 2:  # 若是灰度图则转为三通道
         print("Warning:gray image", filename)
-        rgb_image = cv2.cvtColor(rgb_image, cv2.COLOR_GRAY2BGR)
-
-    # show_image(filename,image)
-    # image=Image.open(filename)
-    image = resize_image(rgb_image, size=size)
-    if normalization:
-        image = image_normalization(image)
+        image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+    if size: image = resize_image(image, size=size)
+    if norm: image = image_normalization(image)
     return image
 
 
-def read_image_gbk(filename, size, normalization=False, use_rgb=True):
+def read_image_ch(filename, size=None, norm=False, use_rgb=True):
     """
-    解决imread不能读取中文路径的问题,读取图片数据,默认返回的是uint8,[0,255]
+    读取图片数据,默认返回的是uint8,[0,255]
     :param filename:
-    :param size:
-    :param normalization:是否归一化到[0.,1.0]
+    :param norm:是否归一化到[0.,1.0]
     :param use_rgb 输出格式：RGB or BGR
-    :return: 返回的RGB图片数据
+    :return: 返回的图片数据
     """
-    try:
-        with open(filename, 'rb') as f:
-            data = f.read()
-            data = np.asarray(bytearray(data), dtype="uint8")
-            image = cv2.imdecode(data, cv2.IMREAD_COLOR)
-    except Exception as e:
-        image = None
-    # 或者：
-    # bgr_image=cv2.imdecode(np.fromfile(filename,dtype=np.uint8),cv2.IMREAD_COLOR)
+    image = cv2.imdecode(np.fromfile(filename, dtype=np.uint8), cv2.IMREAD_COLOR)  # 中文路径
     if image is None:
         print("Warning: no image:{}".format(filename))
         return None
@@ -457,13 +438,9 @@ def read_image_gbk(filename, size, normalization=False, use_rgb=True):
         image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
     if use_rgb:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # 将BGR转为RGB
-    # show_image(filename,image)
-    # image=Image.open(filename)
-    image = resize_image(image, size=size)
+    if size: image = resize_image(image, size=size)
     image = np.asanyarray(image)
-    if normalization:
-        image = image_normalization(image)
-    # show_image("src resize image",image)
+    if norm: image = image_normalization(image)
     return image
 
 
@@ -483,12 +460,12 @@ def requests_url(url):
     return stream
 
 
-def read_images_url(url, size=None, normalization=False, use_rgb=True):
+def read_images_url(url, size=None, norm=False, use_rgb=True):
     """
     根据url或者图片路径，读取图片
     :param url:
     :param size:
-    :param normalization:
+    :param norm:
     :param use_rgb:
     :return:
     """
@@ -515,7 +492,7 @@ def read_images_url(url, size=None, normalization=False, use_rgb=True):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # 将BGR转为RGB
     image = resize_image(image, size=size)
     image = np.asanyarray(image)
-    if normalization:
+    if norm:
         image = image_normalization(image)
     return image
 
@@ -538,7 +515,7 @@ def read_image_batch(image_list):
     return image_batch, out_image_list
 
 
-def fast_read_image_roi(filename, orig_rect, ImreadModes=cv2.IMREAD_COLOR, normalization=False, use_rgb=True):
+def fast_read_image_roi(filename, orig_rect, ImreadModes=cv2.IMREAD_COLOR, norm=False, use_rgb=True):
     """
     快速读取图片的方法
     :param filename: 图片路径
@@ -556,7 +533,7 @@ def fast_read_image_roi(filename, orig_rect, ImreadModes=cv2.IMREAD_COLOR, norma
                         IMREAD_REDUCED_GRAYSCALE_8
                         IMREAD_REDUCED_COLOR_8
                         IMREAD_IGNORE_ORIENTATION
-    :param normalization: 是否归一化
+    :param norm: 是否归一化
     :param use_rgb 输出格式：RGB or BGR
     :return: 返回感兴趣区域ROI
     """
@@ -581,8 +558,7 @@ def fast_read_image_roi(filename, orig_rect, ImreadModes=cv2.IMREAD_COLOR, norma
     if use_rgb:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # 将BGR转为RGB
     image = np.asanyarray(image)
-    if normalization:
-        image = image_normalization(image)
+    if norm: image = image_normalization(image)
     roi_image = get_rect_image(image, rect)
     return roi_image
 
@@ -1164,11 +1140,11 @@ def custom_bbox_line(image, bbox, color, name, thickness=2, fontScale=0.5, drawT
     :return:
     """
     # fontScale = 0.5
-    if not name:drawType = "simple"
+    if not name: drawType = "simple"
     if drawType == "chinese":
         cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness, 8, 0)
         cv2_putText(image, str(name), (bbox[0], bbox[3]), color=color, fontScale=fontScale, thickness=thickness)
-    elif drawType == "custom":
+    elif drawType == "simple":
         cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness, 8, 0)
         cv2.putText(image, str(name), (bbox[0], bbox[1]), cv2.FONT_HERSHEY_SIMPLEX, fontScale, color, thickness)
     elif drawType == "custom":
@@ -1787,18 +1763,14 @@ def read_image_base64(image_path, size=None):
     return image_base64
 
 
-def bin2image(bin_data, size, normalization=False, use_rgb=True):
+def bin2image(bin_data, size, norm=False, use_rgb=True):
     data = np.asarray(bytearray(bin_data), dtype="uint8")
     image = cv2.imdecode(data, cv2.IMREAD_COLOR)
     if use_rgb:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # 将BGR转为RGB
-    # show_image(filename,image)
-    # image=Image.open(filename)
     image = resize_image(image, size=size)
     image = np.asanyarray(image)
-    if normalization:
-        image = image_normalization(image)
-    # show_image("src resize image",image)
+    if norm: image = image_normalization(image)
     return image
 
 

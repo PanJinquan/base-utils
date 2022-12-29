@@ -18,14 +18,14 @@ def crop_fun(frame):
 
 def resize_fun(frame):
     h, w = frame.shape[:2]
-    frame = image_utils.resize_image(frame, size=(256, None))
+    frame = image_utils.resize_image(frame, size=(None, 400))
     return frame
 
 
 if __name__ == "__main__":
-    video_file = "/home/dm/nasdata/dataset/csdn/traffic light/demo/test-video-result.mp4"
+    video_file = "/home/dm/nasdata/release/CSDN/PyTorch-Classification-Trainer/output/result.avi"
     # video_utils.video2frames(video_file, interval=5, func=crop_fun, vis=True)
-    video_utils.video2gif(video_file, interval=7, func=resize_fun, fps=5, use_pil=False, vis=True)
+    video_utils.video2gif(video_file, interval=8, func=resize_fun, fps=5, use_pil=False, vis=True)
     # video2video(video_file, dst_file, vis=True)
 
     # image_dir = "/home/dm/nasdata/Detector/YOLO/yolov5/data/test_image"
