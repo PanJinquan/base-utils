@@ -244,8 +244,8 @@ class VOCDataset(Dataset):
             width = int(annotation["size"]["width"])
             height = int(annotation["size"]["height"])
             depth = int(annotation["size"]["depth"])
-            filename = annotation["filename"]
             objects = annotation["object"]
+            # filename = annotation["filename"]
         except Exception as e:
             print("illegal annotation:{}".format(xml_file))
             objects = []

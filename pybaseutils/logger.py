@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 # --------------------------------------------------------
-# @Project: torch-Face-Recognize-Pipeline
 # @Author : panjq
 # @Date   : 2019-9-20 13:18:34
 # --------------------------------------------------------
@@ -13,8 +12,9 @@ import threading
 import re
 import time
 from logging.handlers import TimedRotatingFileHandler
+
+
 # from memory_profiler import profile
-import threading
 
 
 def singleton(cls):
@@ -30,7 +30,7 @@ def singleton(cls):
     return _singleton
 
 
-# @singleton # 使用singleton，会出现loger的level失效的问题
+@singleton  # 使用singleton，会出现loger的level失效的问题
 class CustomLogger(logging.Logger):
     def __init__(self, name="LOG", level="debug"):
         """
@@ -43,26 +43,28 @@ class CustomLogger(logging.Logger):
         # super(CustomLogger, self).__init__(name)
         self.setLevel(level=level)
 
+    @staticmethod
+    def levels(level):
+        if level == 'debug':
+            return logging.DEBUG
+        if level == 'info':
+            return logging.INFO
+        if level == 'warning':
+            return logging.WARN
+        if level == 'critical':
+            return logging.CRITICAL
+        if level == 'fatal':
+            return logging.FATAL
+        return logging.DEBUG
+
     def setLevel(self, level):
         """
         Args:
             level: debug,info,warning,critical,fatal
-
         Returns:
-
         """
-        # set initial log level
-        if level == 'debug':
-            super().setLevel(logging.DEBUG)
-        if level == 'info':
-            super().setLevel(logging.INFO)
-        if level == 'warning':
-            super().setLevel(logging.WARN)
-        if level == 'critical':
-            super().setLevel(logging.CRITICAL)
-        if level == 'fatal':
-            super().setLevel(logging.FATAL)
-        # logger.info("Init log in %s level", level)
+        level = self.levels(level)
+        super().setLevel(level)
 
     @staticmethod
     def set_format(handler, format):
@@ -73,6 +75,9 @@ class CustomLogger(logging.Logger):
         else:
             logFormatter = logging.Formatter("%(levelname)s: %(message)s")
         handler.setFormatter(logFormatter)
+
+    def show_batch_tensor(self, title, batch_imgs, index=0):
+        pass
 
 
 class FileHandler(TimedRotatingFileHandler):
@@ -127,15 +132,19 @@ class FileHandler(TimedRotatingFileHandler):
         self.rolloverAt = self.computeRollover(t)
 
 
-def set_logger(name="LOG", level="debug", logfile=None, format=False):
+def set_logger(name="LOG", level="debug", logfile=None, format=False, is_main_process=True):
     """
     logger = set_logging(name="LOG", level="debug", logfile="log.txt", format=False)
     url:https://cuiqingcai.com/6080.html
     level级别：debug>info>warning>error>critical
     :param level: 设置log输出级别
     :param logfile: log保存路径，如果为None，则在控制台打印log
+    :param is_main_process: 是否是主进程
     :return:
     """
+    if not is_main_process:
+        level = "fatal"
+        logfile = None
     # logger = logging.getLogger(name)
     logger = CustomLogger(name, level=level)
     if logfile and os.path.exists(logfile):
@@ -155,11 +164,6 @@ def set_logger(name="LOG", level="debug", logfile=None, format=False):
     return logger
 
 
-def get_logger(name="LOG"):
-    logger = CustomLogger(name)
-    return logger
-
-
 def print_args(args):
     logger = get_logger()
     logger.info("---" * 10)
@@ -170,67 +174,18 @@ def print_args(args):
     logger.info("---" * 10)
 
 
-def RUN_TIME(deta_time):
-    """获得时间差"""
-    return deta_time * 1000
-
-
-def TIME():
-    """ 获得当前时间"""
-    return time.time()
-
-
-def run_time_decorator(title=""):
-    def decorator(func):
-        def wrapper(*args, **kwargs):
-            # torch.cuda.synchronize()
-            t0 = time.time()
-            result = func(*args, **kwargs)
-            # torch.cuda.synchronize()
-            t1 = time.time()
-            print("{} call {} elapsed: {}ms ".format(title, func.__name__, (t1 - t0) * 1000))
-            # logger.debug("{}-- function : {}-- rum time : {}s ".format(title, func.__name__, RUN_TIME(T1 - T0)/1000.0))
-            return result
-
-        return wrapper
-
-    return decorator
-
-
-# @profile(precision=4)
-def memory_test():
-    """
-    1.先导入：
-    > from memory_profiler import profile
-    2.函数前加装饰器：
-    > @profile(precision=4,stream=open('memory_profiler.log','w+'))
-　　　参数含义：precision:精确到小数点后几位
-　　　stream:此模块分析结果保存到 'memory_profiler.log' 日志文件。如果没有此参数，分析结果会在控制台输出
-    :return:
-    """
-    c = 0
-    for item in range(10):
-        c += 1
-        # logger.error("c:{}".format(c))
-    # print(c)
+def get_logger(name="LOG", level="debug"):
+    logger = CustomLogger(name)
+    # if logger.isEnabledFor(CustomLogger.levels(level)):
+    #     logger = CustomLogger(name, level=level)
+    return logger
 
 
 if __name__ == '__main__':
-    # logger = set_logger(name="LOG", level="warning", logfile="log.txt", format=False)
-    # T0 = TIME()
-    # do something
-    # T1 = TIME()
-    # print("rum time:{}ms".format(RUN_TIME(T1 - T0)))
-    # t_logger = set_logging(name=__name__, level="info", logfile=None)
-    # t_logger.debug('debug')
-    # t_logger.info('info')
-    # t_logger.warning('Warning exists')
-    # t_logger.error('Finish')
-    # memory_test()
-    # logger1 = set_logger(name="LOG", level="debug", logfile="log.txt", format=False)
-    logger1 = set_logger(logfile=None, level="fatal")
+    logger = set_logger(logfile=None, level="debug")
+    logger1 = get_logger()
     logger1.info("---" * 20)
-    logger1.info("work_space:{}".format("work_dir"))
+    logger1.debug("work_space:{}".format("work_dir"))
     logger1.info("work_space:{}".format("work_dir"))
     logger1.error("work_space:{}".format("work_dir"))
     logger1.fatal("work_space:{}".format("work_dir"))

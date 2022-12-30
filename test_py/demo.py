@@ -6,34 +6,24 @@
     @Brief  :
 """
 import time
+import xmltodict
 from pybaseutils import time_utils
 
 
-@time_utils.performance("demo_map")
-def demo_map(inp):
-    data = list(map(int, inp))
-    # data = list(map(lambda x: int(x), inp))
-    return data
-
-
-@time_utils.performance("demo_for1")
-def demo_for1(inp):
-    data = []
-    for d in inp:
-        data.append(int(d))
-    return data
-
-
-@time_utils.performance("demo_for2")
-def demo_for2(inp):
-    data = [int(d) for d in inp]
-    return data
+def read_xml2json(xml_file):
+    """
+    import xmltodict
+    :param xml_file:
+    :return:
+    """
+    with open(xml_file, encoding='utf-8') as fd:  # 将XML文件装载到dict里面
+        content = xmltodict.parse(fd.read())
+    return content
 
 
 if __name__ == "__main__":
-    inp = "123456789" * 10000
-    data0 = demo_map(inp)
-    data1 = demo_for1(inp)
-    data2 = demo_for2(inp)
-    print(len(data1))
-    print(len(data2))
+    data = [[1, 2], [3, 4, 5]]
+    out = []
+    for d in data:
+        out += d
+    print(list(out))

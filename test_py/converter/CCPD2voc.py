@@ -128,7 +128,8 @@ def converter_CCPD2voc(image_dir, out_voc, vis=True):
         xml_path = file_utils.create_dir(out_xml_dir, None, "{}.xml".format(image_id))
         dst_file = file_utils.create_dir(out_image_dir, None, "{}.{}".format(image_id, img_postfix))
         objects = maker_voc.create_objects(bboxes, labels)
-        maker_voc.write_voc_xml_objects(image_name, image_shape, objects, xml_path)
+        # XML不支持&的文件明，需要将&替换为#
+        maker_voc.write_voc_xml_objects(image_name.replace("&", "#"), image_shape, objects, xml_path)
         file_utils.copy_file(image_file, dst_file)
         cv2.imwrite(dst_file, image)
         if vis:
@@ -146,8 +147,8 @@ if __name__ == "__main__":
     将车辆检测数据集BIT-Vehicle Dataset转换为VOC数据格式
     pip install pybaseutils
     """
-    dataset = "/home/dm/nasdata/dataset/csdn/车牌检测和识别/CCPD-dataset/CCPD2019"
-    output = "/home/dm/nasdata/dataset/csdn/车牌检测和识别/CCPD-dataset/CCPD2019-voc1"
+    dataset = "/home/dm/nasdata/dataset/csdn/plate/dataset/CCPD2019"
+    output = "/home/dm/nasdata/dataset/csdn/plate/dataset/CCPD2019-voc"
     sub_list = file_utils.get_sub_paths(dataset)
     for sub in sub_list:
         out_voc = os.path.join(output, sub)
