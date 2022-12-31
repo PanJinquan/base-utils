@@ -105,7 +105,9 @@ class WriterTXT(object):
 
 def parser_classes(class_name):
     """
-    :return:
+    class_dict = {class_name: i for i, class_name in enumerate(class_name)}
+    :param class_name: filename,or list,dict
+    :return: class_name,class_dict
     """
     if isinstance(class_name, str):
         class_name = read_data(class_name, split=None)

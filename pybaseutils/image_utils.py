@@ -16,6 +16,7 @@ import matplotlib
 import numbers
 import base64
 import math
+import platform
 import PIL.Image as Image
 from typing import List, Dict, Tuple
 from PIL import ImageDraw, ImageFont
@@ -375,17 +376,17 @@ def get_prewhiten_images(images_list, norm=False):
     return out_images
 
 
-def read_image(filename, size=None, norm=False, use_rgb=True):
+def read_image(filename, size=None, norm=False, use_rgb=False):
     """
     读取图片数据,默认返回的是uint8,[0,255]
     :param filename:
+    :param size: (W,H)
     :param norm:是否归一化到[0.,1.0]
-    :param use_rgb 输出格式：RGB or BGR
+    :param use_rgb 输出格式：RGB(True) or BGR(False)
     :return: 返回的图片数据
     """
     image = cv2.imread(filename)
-    # bgr_image = cv2.imread(filename,cv2.IMREAD_IGNORE_ORIENTATION|cv2.IMREAD_UNCHANGED)
-    # image = cv2.imdecode(np.fromfile(filename, dtype=np.uint8), cv2.IMREAD_COLOR) # 中文路径
+    # image = cv2.imread(filename, cv2.IMREAD_IGNORE_ORIENTATION | cv2.IMREAD_UNCHANGED)
     if image is None:
         print("Warning: no image:{}".format(filename))
         return None
@@ -400,31 +401,11 @@ def read_image(filename, size=None, norm=False, use_rgb=True):
     return image
 
 
-def read_image_pil(filename, size, norm=False):
+def read_image_ch(filename, size=None, norm=False, use_rgb=False):
     """
     读取图片数据,默认返回的是uint8,[0,255]
     :param filename:
-    :param size:
-    :param norm:是否归一化到[0.,1.0]
-    :return: 返回的图片数据
-    """
-    image = Image.open(filename)
-    image = np.asarray(image)
-    if image is None:
-        print("Warning: no image:{}".format(filename))
-        return None
-    if len(image.shape) == 2:  # 若是灰度图则转为三通道
-        print("Warning:gray image", filename)
-        image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
-    if size: image = resize_image(image, size=size)
-    if norm: image = image_normalization(image)
-    return image
-
-
-def read_image_ch(filename, size=None, norm=False, use_rgb=True):
-    """
-    读取图片数据,默认返回的是uint8,[0,255]
-    :param filename:
+    :param size: (W,H)
     :param norm:是否归一化到[0.,1.0]
     :param use_rgb 输出格式：RGB or BGR
     :return: 返回的图片数据
@@ -438,6 +419,28 @@ def read_image_ch(filename, size=None, norm=False, use_rgb=True):
         image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
     if use_rgb:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # 将BGR转为RGB
+    if size: image = resize_image(image, size=size)
+    image = np.asanyarray(image)
+    if norm: image = image_normalization(image)
+    return image
+
+
+def read_image_pil(filename, size=None, norm=False, use_rgb=False):
+    """
+    读取图片数据,默认返回的是uint8,[0,255]
+    :param filename:
+    :param size: (W,H)
+    :param norm:是否归一化到[0.,1.0]
+    :param use_rgb 输出格式：RGB or BGR
+    :return: 返回的图片数据
+    """
+    image = Image.open(filename)  # is RGB
+    image = np.asarray(image)
+    if len(image.shape) == 2:  # 若是灰度图则转为三通道
+        print("Warning:gray image", filename)
+        image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+    if not use_rgb:
+        image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)  # 将BGR转为RGB
     if size: image = resize_image(image, size=size)
     image = np.asanyarray(image)
     if norm: image = image_normalization(image)
@@ -469,11 +472,10 @@ def read_images_url(url, size=None, norm=False, use_rgb=True):
     :param use_rgb:
     :return:
     """
+    image = None
     if re.match(r'^https?:/{2}\w.+$', url):
         stream = requests_url(url)
-        if stream is None:
-            image = None
-        else:
+        if stream is not None:
             content = np.asarray(bytearray(stream), dtype="uint8")
             image = cv2.imdecode(content, cv2.IMREAD_COLOR)
             # pil_image = PIL.Image.open(BytesIO(stream))
@@ -481,19 +483,16 @@ def read_images_url(url, size=None, norm=False, use_rgb=True):
             # bgr_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR)
     else:
         image = cv2.imread(url)
-
     if image is None:
         print("Warning: no image:{}".format(url))
         return None
     if len(image.shape) == 2:  # 若是灰度图则转为三通道
-        print("Warning:gray image", url)
         image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
     if use_rgb:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # 将BGR转为RGB
-    image = resize_image(image, size=size)
+    if size: image = resize_image(image, size=size)
     image = np.asanyarray(image)
-    if norm:
-        image = image_normalization(image)
+    if norm: image = image_normalization(image)
     return image
 
 
@@ -1143,7 +1142,7 @@ def custom_bbox_line(image, bbox, color, name, thickness=2, fontScale=0.5, drawT
     if not name: drawType = "simple"
     if drawType == "chinese":
         cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness, 8, 0)
-        cv2_putText(image, str(name), (bbox[0], bbox[3]), color=color, fontScale=fontScale, thickness=thickness)
+        cv2_putText(image, str(name), (bbox[0], bbox[1]), color=color, fontScale=fontScale, thickness=thickness)
     elif drawType == "simple":
         cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness, 8, 0)
         cv2.putText(image, str(name), (bbox[0], bbox[1]), cv2.FONT_HERSHEY_SIMPLEX, fontScale, color, thickness)
@@ -1323,7 +1322,14 @@ def cv2_putText(img, text, point, fontFace=None, fontScale=0.8, color=(255, 0, 0
     draw = ImageDraw.Draw(pilimg)  # PIL图片上打印汉字
     # 参数1：字体文件路径，参数2：字体大小；Windows系统“simhei.ttf”默认存储在路径：
     size = int(fontScale * 10 * thickness)
-    font = ImageFont.truetype(os.path.join(ROOT, "font_style/simhei.ttf"), size, encoding="utf-8")
+    point = (point[0], point[1] - size)
+    if platform.system().lower() == 'windows':
+        font = ImageFont.truetype("宋体.ttc", size, encoding="utf-8")
+    elif platform.system().lower() == 'linux':
+        font = ImageFont.truetype("uming.ttc", size, encoding="utf-8")
+    else:
+        font = ImageFont.truetype(os.path.join(ROOT, "font_style/simhei.ttf"), size, encoding="utf-8")
+    font = ImageFont.truetype("uming.ttc", size, encoding="utf-8")
     draw.text(point, text, color, font)
     img[:] = np.asarray(pilimg)
 

@@ -2,28 +2,17 @@
 """
     @Author : PKing
     @E-mail : 390737991@qq.com
-    @Date   : 2022-12-21 17:34:38
+    @Date   : 2022-12-31 11:37:30
     @Brief  :
 """
-import time
-import xmltodict
-from pybaseutils import time_utils
-
-
-def read_xml2json(xml_file):
-    """
-    import xmltodict
-    :param xml_file:
-    :return:
-    """
-    with open(xml_file, encoding='utf-8') as fd:  # 将XML文件装载到dict里面
-        content = xmltodict.parse(fd.read())
-    return content
-
+import cv2
+from pybaseutils import image_utils, file_utils
 
 if __name__ == "__main__":
-    data = [[1, 2], [3, 4, 5]]
-    out = []
-    for d in data:
-        out += d
-    print(list(out))
+    image_file = "test.png"
+    image = image_utils.read_image(image_file)
+    boxes = [[10, 50, 200, 200]]
+    boxes_name = ["好的haode"]
+    image = image_utils.draw_image_bboxes_text(image, boxes, boxes_name, drawType="chinese",thickness=2, fontScale=1.0)
+    # image = image_utils.draw_image_bboxes_text(image, boxes, boxes_name, drawType="simple")
+    image_utils.cv_show_image("image", image)
