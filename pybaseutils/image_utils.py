@@ -36,6 +36,25 @@ color_map = [(0, 0, 0), (255, 0, 0), (0, 255, 0), (0, 0, 255),
 ROOT = os.path.dirname(__file__)
 
 
+def get_font_type(size, font=""):
+    """
+    获得字体
+    :param size: 字体大小
+    :param font:  simsun.ttc 宋体
+    :return:
+    """
+    # 参数1：字体文件路径，参数2：字体大小；Windows系统“simhei.ttf”默认存储在路径：
+    if font:
+        font = ImageFont.truetype(font, size, encoding="utf-8")
+    elif platform.system().lower() == 'windows':
+        font = ImageFont.truetype("simsun.ttc", size, encoding="utf-8")  # simsun.ttc 宋体
+    elif platform.system().lower() == 'linux':
+        font = ImageFont.truetype("uming.ttc", size, encoding="utf-8")
+    else:
+        font = ImageFont.truetype(os.path.join(ROOT, "font_style/simhei.ttf"), size, encoding="utf-8")
+    return font
+
+
 def create_image(shape, color=(255, 255, 255), dtype=np.uint8, uas_rgb=False):
     """
     生成一张图片
@@ -936,10 +955,6 @@ def draw_image_bboxes_text(rgb_image, boxes, boxes_name, color=(255, 0, 0), thic
         boxes_name = boxes_name.reshape(-1).tolist()
     for name, box in zip(boxes_name, boxes):
         box = [int(b) for b in box]
-        # cv2.rectangle(bgr_image, (crop_type[0], crop_type[1]), (crop_type[2], crop_type[3]), (0, 255, 0), 2, 8, 0)
-        # cv2.putText(bgr_image, name, (crop_type[0], crop_type[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), thickness=2)
-        # cv2.rectangle(bgr_image, (crop_type[0], crop_type[1]), (crop_type[2], crop_type[3]), color, 2, 8, 0)
-        # cv2.putText(bgr_image, str(name), (crop_type[0], crop_type[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, thickness=2)
         custom_bbox_line(rgb_image, box, color, name, thickness, fontScale, drawType, top)
     return rgb_image
 
@@ -1320,16 +1335,9 @@ def cv2_putText(img, text, point, fontFace=None, fontScale=0.8, color=(255, 0, 0
     # cv2.putText(img, str(text), point, fontFace, fontScale, color=color, thickness=thickness)
     pilimg = Image.fromarray(img)  # Image.fromarray()将数组类型转成图片格式，与np.array()相反
     draw = ImageDraw.Draw(pilimg)  # PIL图片上打印汉字
-    # 参数1：字体文件路径，参数2：字体大小；Windows系统“simhei.ttf”默认存储在路径：
     size = int(fontScale * 10 * thickness)
     point = (point[0], point[1] - size)
-    if platform.system().lower() == 'windows':
-        font = ImageFont.truetype("宋体.ttc", size, encoding="utf-8")
-    elif platform.system().lower() == 'linux':
-        font = ImageFont.truetype("uming.ttc", size, encoding="utf-8")
-    else:
-        font = ImageFont.truetype(os.path.join(ROOT, "font_style/simhei.ttf"), size, encoding="utf-8")
-    font = ImageFont.truetype("uming.ttc", size, encoding="utf-8")
+    font = get_font_type(size=size)
     draw.text(point, text, color, font)
     img[:] = np.asarray(pilimg)
 
