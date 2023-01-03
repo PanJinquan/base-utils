@@ -1881,7 +1881,7 @@ def get_bbox_crop(image, bbox):
     :return:
     """
     h, w = image.shape[:2]
-    xmin, ymin, xmax, ymax = bbox
+    xmin, ymin, xmax, ymax = bbox[:4]
     xmin, ymin = max(0, int(xmin)), max(0, int(ymin))
     xmax, ymax = min(w, int(xmax)), min(h, int(ymax))
     roi = image[ymin:ymax, xmin:xmax]
