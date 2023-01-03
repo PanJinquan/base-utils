@@ -13,8 +13,8 @@ if __name__ == "__main__":
     # from models.transforms import data_transforms
     # filename = "/home/dm/nasdata/dataset/csdn/traffic light/VOC/train.txt"
     # class_name = "/home/dm/nasdata/dataset/csdn/traffic light/VOC/class_name.txt"
-    filename = "/home/dm/nasdata/dataset/csdn/plate/dataset/CCPD2019-voc/ccpd_base/val.txt"
-    class_name=["plate"]
+    filename = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/word-v1/train.txt"
+    class_name=None
     dataset = parser_voc.VOCDataset(filename=filename,
                                     data_root=None,
                                     anno_dir=None,

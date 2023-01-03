@@ -330,8 +330,8 @@ class VOCDataset(Dataset):
         :param use_rgb:
         :return:
         """
-        # image = cv2.imread(image_file)
-        image = cv2.imread(image_file, cv2.IMREAD_UNCHANGED)
+        image = cv2.imread(image_file)
+        # image = cv2.imread(image_file, cv2.IMREAD_UNCHANGED)
         # image = cv2.imread(image_file, cv2.IMREAD_IGNORE_ORIENTATION | cv2.IMREAD_UNCHANGED)
         if use_rgb:
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)

@@ -1335,7 +1335,7 @@ def cv2_putText(img, text, point, fontFace=None, fontScale=0.8, color=(255, 0, 0
     # cv2.putText(img, str(text), point, fontFace, fontScale, color=color, thickness=thickness)
     pilimg = Image.fromarray(img)  # Image.fromarray()将数组类型转成图片格式，与np.array()相反
     draw = ImageDraw.Draw(pilimg)  # PIL图片上打印汉字
-    size = int(fontScale * 10 * thickness)
+    size = int(fontScale * 15 * thickness)
     point = (point[0], point[1] - size)
     font = get_font_type(size=size)
     draw.text(point, text, color, font)
