@@ -38,7 +38,8 @@ ROOT = os.path.dirname(__file__)
 
 def get_font_type(size, font=""):
     """
-    获得字体
+    Windows字体路径      : /usr/share/fonts/楷体.ttf
+    Linux(Ubuntu)字体路径：/usr/share/fonts/楷体.ttf
      >> fc-list             查看所有的字体
      >> fc-list :lang=zh    查看所有的中文字体
     :param size: 字体大小
