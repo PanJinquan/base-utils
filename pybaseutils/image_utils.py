@@ -1728,7 +1728,6 @@ def bin2image(bin_data, size, norm=False, use_rgb=True):
     if use_rgb:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # 将BGR转为RGB
     image = resize_image(image, size=size)
-    image = np.asanyarray(image)
     if norm: image = image_normalization(image)
     return image
 
