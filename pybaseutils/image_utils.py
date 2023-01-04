@@ -2110,7 +2110,7 @@ def get_contours_iou(contour1, contour2, image_size: Tuple = None, plot=False):
     return contours, iou
 
 
-def get_image_mask(image: np.ndarray, inv):
+def get_image_mask(image: np.ndarray, inv=False):
     """获得图像的mask"""
     if image.ndim == 3:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -2279,10 +2279,36 @@ def get_mask_boundrect(mask, binarize=False, shift=0):
         ret, mask = cv2.threshold(mask, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
     y = np.sum(mask, axis=1)  # 将图像往Y轴累加投影
     x = np.sum(mask, axis=0)  # 将图像往X轴累加投影
+    if np.sum(y) == 0 or np.sum(x) == 0: return []
     y = y > 0
     x = x > 0
     ymin, ymax = get_argminmax(y)
     xmin, xmax = get_argminmax(x)
+    xmin = max(0, int(xmin - shift))
+    ymin = max(0, int(ymin - shift))
+    xmax = min(w, int(xmax + shift))
+    ymax = min(h, int(ymax + shift))
+    return [xmin, ymin, xmax, ymax]
+
+
+def get_mask_boundrect_low(mask, binarize=False, shift=0):
+    """
+    获得mask的最大外接矩形框(比较慢)
+    :param mask:
+    :param binarize: 是否对mask进行二值化
+    :param shift: 矩形框偏移量,shift>0表示扩大shift个像素，shift<0表示缩小shift个像素，默认为0不偏移
+    :return: box=[xmin,ymin,xmax,ymax]
+    """
+
+    h, w = mask.shape[:2]
+    if binarize:
+        ret, mask = cv2.threshold(mask, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+    y_idxes, x_idxes = mask.nonzero()
+    if len(y_idxes) == 0 or len(x_idxes) == 0: return []
+    xmin = x_idxes.min()
+    xmax = x_idxes.max()
+    ymin = y_idxes.min()
+    ymax = y_idxes.max()
     xmin = max(0, int(xmin - shift))
     ymin = max(0, int(ymin - shift))
     xmax = min(w, int(xmax + shift))
