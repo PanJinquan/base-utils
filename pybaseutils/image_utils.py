@@ -40,14 +40,14 @@ def get_font_type(size, font=""):
     """
     获得字体
     :param size: 字体大小
-    :param font:  simsun.ttc 宋体
+    :param font:  simsun.ttc 宋体;simhei.ttf 黑体
     :return:
     """
     # 参数1：字体文件路径，参数2：字体大小；Windows系统“simhei.ttf”默认存储在路径：
     if font:
         font = ImageFont.truetype(font, size, encoding="utf-8")
     elif platform.system().lower() == 'windows':
-        font = ImageFont.truetype("simsun.ttc", size, encoding="utf-8")  # simsun.ttc 宋体
+        font = ImageFont.truetype("simhei.ttf", size, encoding="utf-8")  # simsun.ttc 宋体
     elif platform.system().lower() == 'linux':
         font = ImageFont.truetype("uming.ttc", size, encoding="utf-8")
     else:
