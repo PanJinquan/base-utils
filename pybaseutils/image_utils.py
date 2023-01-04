@@ -59,22 +59,20 @@ def get_font_type(size, font=""):
     return font
 
 
-def create_image(shape, color=(255, 255, 255), dtype=np.uint8, uas_rgb=False):
+def create_image(shape, color=(255, 255, 255), dtype=np.uint8, use_rgb=False):
     """
     生成一张图片
     :param shape:
     :param color: (b,g,r)
     :param dtype:
-    :param uas_rgb:
+    :param use_rgb:
     :return:
     """
     image = np.zeros(shape, dtype=np.uint8)
-    ndim = image.ndim
-    if ndim == 2: return np.asarray(image + max(color), dtype=dtype)
+    if image.ndim == 2: return np.asarray(image + color[0], dtype=dtype)
     for i in range(len(color)):
         image[:, :, i] = color[i]
-    if uas_rgb:
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    if use_rgb: image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     return image
 
 
@@ -419,7 +417,6 @@ def read_image(filename, size=None, norm=False, use_rgb=False):
     if use_rgb:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # 将BGR转为RGB
     if size: image = resize_image(image, size=size)
-    image = np.asanyarray(image)
     if norm: image = image_normalization(image)
     return image
 
@@ -443,7 +440,6 @@ def read_image_ch(filename, size=None, norm=False, use_rgb=False):
     if use_rgb:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # 将BGR转为RGB
     if size: image = resize_image(image, size=size)
-    image = np.asanyarray(image)
     if norm: image = image_normalization(image)
     return image
 
@@ -465,7 +461,6 @@ def read_image_pil(filename, size=None, norm=False, use_rgb=False):
     if not use_rgb:
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)  # 将BGR转为RGB
     if size: image = resize_image(image, size=size)
-    image = np.asanyarray(image)
     if norm: image = image_normalization(image)
     return image
 
@@ -514,7 +509,6 @@ def read_images_url(url, size=None, norm=False, use_rgb=True):
     if use_rgb:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # 将BGR转为RGB
     if size: image = resize_image(image, size=size)
-    image = np.asanyarray(image)
     if norm: image = image_normalization(image)
     return image
 
@@ -570,7 +564,6 @@ def fast_read_image_roi(filename, orig_rect, ImreadModes=cv2.IMREAD_COLOR, norm=
     rect = np.array(orig_rect) * scale
     rect = rect.astype(int).tolist()
     image = cv2.imread(filename, flags=ImreadModes)
-
     if image is None:
         print("Warning: no image:{}".format(filename))
         return None
@@ -579,7 +572,6 @@ def fast_read_image_roi(filename, orig_rect, ImreadModes=cv2.IMREAD_COLOR, norm=
         image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
     if use_rgb:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # 将BGR转为RGB
-    image = np.asanyarray(image)
     if norm: image = image_normalization(image)
     roi_image = get_rect_image(image, rect)
     return roi_image
@@ -1605,71 +1597,20 @@ def image_points_rotation(image, points, angle, center=None, scale=1.0, borderVa
     return image, points
 
 
-def rgb_to_gray(image):
-    """
-    RGB to Gray image
-    :param image:
-    :return:
-    """
-    image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-    return image
-
-
-def save_image(image_path, rgb_image, toUINT8=False):
+def save_image(image_file, image, uint8=False, use_rgb=False):
     """
     保存图片
-    :param image_path:
-    :param rgb_image:
-    :param toUINT8:
+    :param image_file: 保存图片文件
+    :param image: BGR Image
+    :param uint8: 乘以255并转换为INT8类型
+    :param use_rgb: 是否将输入image(BGR)转换为RGB
     :return:
     """
-    save_dir = os.path.dirname(image_path)
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
-    if toUINT8:
-        rgb_image = np.asanyarray(rgb_image * 255, dtype=np.uint8)
-    if len(rgb_image.shape) == 2:  # 若是灰度图则转为三通道
-        bgr_image = cv2.cvtColor(rgb_image, cv2.COLOR_GRAY2BGR)
-    else:
-        bgr_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR)
-    cv2.imwrite(image_path, bgr_image)
-
-
-def save_image_lable_dir(save_root, image_list, image_ids, index):
-    for i, (image, id) in enumerate(zip(image_list, image_ids)):
-        image_path = os.path.join(save_root, str(id))
-        if not os.path.exists(image_path):
-            os.makedirs(image_path)
-        image_path = os.path.join(image_path, str(index) + "_" + str(i) + ".jpg")
-        save_image(image_path, image, toUINT8=False)
-
-
-def combime_save_image(orig_image, dest_image, out_dir, name, prefix):
-    """
-    命名标准：out_dir/name_prefix.jpg
-    :param orig_image:
-    :param dest_image:
-    :param image_path:
-    :param out_dir:
-    :param prefix:
-    :return:
-    """
-    dest_path = os.path.join(out_dir, name + "_" + prefix + ".jpg")
-    save_image(dest_path, dest_image)
-
-    dest_image = np.hstack((orig_image, dest_image))
-    save_image(os.path.join(out_dir, "{}_src_{}.jpg".format(name, prefix)), dest_image)
-
-
-def combile_label_prob(label_list, prob_list):
-    """
-    将label_list和prob_list拼接在一起，以便显示
-    :param label_list:
-    :param prob_list:
-    :return:
-    """
-    info = [str(l) + ":" + str(p)[:5] for l, p in zip(label_list, prob_list)]
-    return info
+    save_dir = os.path.dirname(image_file)
+    if not os.path.exists(save_dir): os.makedirs(save_dir)
+    if uint8: image = np.asarray(image * 255, dtype=np.uint8)
+    if use_rgb: image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+    cv2.imwrite(image_file, image)
 
 
 def nms_bboxes_cv2(bboxes_list, scores_list, labels_list, width=None, height=None, score_threshold=0.5,
@@ -1790,19 +1731,6 @@ def bin2image(bin_data, size, norm=False, use_rgb=True):
     image = np.asanyarray(image)
     if norm: image = image_normalization(image)
     return image
-
-
-def post_process(input, axis=1):
-    """
-    l2_norm
-    :param input:
-    :param axis:
-    :return:
-    """
-    # norm = torch.norm(input, 2, axis, True)
-    # output = torch.div(input, norm)
-    output = input / np.linalg.norm(input, axis=1, keepdims=True)
-    return output
 
 
 def softmax(x, axis=1):
