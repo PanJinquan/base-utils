@@ -39,6 +39,8 @@ ROOT = os.path.dirname(__file__)
 def get_font_type(size, font=""):
     """
     获得字体
+     >> fc-list             查看所有的字体
+     >> fc-list :lang=zh    查看所有的中文字体
     :param size: 字体大小
     :param font:  simsun.ttc 宋体;simhei.ttf 黑体
     :return:
@@ -49,7 +51,8 @@ def get_font_type(size, font=""):
     elif platform.system().lower() == 'windows':
         font = ImageFont.truetype("simhei.ttf", size, encoding="utf-8")  # simsun.ttc 宋体
     elif platform.system().lower() == 'linux':
-        font = ImageFont.truetype("uming.ttc", size, encoding="utf-8")
+        # font = ImageFont.truetype("uming.ttc", size, encoding="utf-8")
+        font = ImageFont.truetype("NotoSansCJK-Regular.ttc", size, encoding="utf-8")
     else:
         font = ImageFont.truetype(os.path.join(ROOT, "font_style/simhei.ttf"), size, encoding="utf-8")
     return font
@@ -1335,8 +1338,8 @@ def cv2_putText(img, text, point, fontFace=None, fontScale=0.8, color=(255, 0, 0
     # cv2.putText(img, str(text), point, fontFace, fontScale, color=color, thickness=thickness)
     pilimg = Image.fromarray(img)  # Image.fromarray()将数组类型转成图片格式，与np.array()相反
     draw = ImageDraw.Draw(pilimg)  # PIL图片上打印汉字
-    size = int(fontScale * 15 * thickness)
-    point = (point[0], point[1] - size)
+    size = int(fontScale * 10 * thickness)
+    point = (point[0], point[1] - int(size * 1.3))
     font = get_font_type(size=size)
     draw.text(point, text, color, font)
     img[:] = np.asarray(pilimg)
