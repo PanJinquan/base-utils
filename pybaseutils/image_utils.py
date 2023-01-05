@@ -2066,6 +2066,51 @@ def boxes2polygons(boxes: np.ndarray or List[np.ndarray]):
     return polygons
 
 
+def get_mask_iou(mask1, mask2, binarize=True):
+    """
+    计算两个Mask的IOU
+    h, w = mask1.shape[:2]
+    mask2 = cv2.resize(mask2, dsize=(w, h), interpolation=cv2.INTER_NEAREST)
+    :param mask1:
+    :param mask2:
+    :param binarize:
+    :return:
+    """
+    if binarize:
+        ret, mask1 = cv2.threshold(mask1, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+        ret, mask2 = cv2.threshold(mask2, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+    inter = cv2.bitwise_and(mask1, mask2)  # 交集
+    union = cv2.bitwise_or(mask1, mask2)  # 并集
+    # 测试发现np.float32会比np.int32快
+    # inter_area = np.sum(inter > 0)  # inter>0
+    # union_area = np.sum(union > 0)  # union>0
+    inter_area = np.sum(np.float32(np.greater(inter, 0)))
+    union_area = np.sum(np.float32(np.greater(union, 0)))
+    iou = inter_area / max(union_area, 1e-8)
+    return iou
+
+
+def get_mask_iou1(mask1, mask2, binarize=True):
+    """
+    比get_mask_iou慢一点
+    :param mask1:
+    :param mask2:
+    :param binarize:
+    :return:
+    """
+    if binarize:
+        ret, mask1 = cv2.threshold(mask1, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+        ret, mask2 = cv2.threshold(mask2, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+    mask1 = mask1 >= 255
+    mask2 = mask2 >= 255
+    area1 = mask1.sum()
+    area2 = mask2.sum()
+    inter = mask1 * mask2
+    inter_ = (inter == 1).sum()  # 交集
+    iou = inter_ / max((area1 + area2 - inter_), 1e-8)
+    return iou
+
+
 def get_contours_iou(contour1, contour2, image_size: Tuple = None, plot=False):
     """
     计算两个轮廓(多边形)交并比(Intersection-over-Union,IoU)
@@ -2119,29 +2164,6 @@ def get_image_mask(image: np.ndarray, inv=False):
     else:
         ret, mask = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
     return mask
-
-
-def get_mask_iou(mask1, mask2, binarize=True):
-    """
-    计算两个Mask的IOU
-    :param mask1:
-    :param mask2:
-    :param binarize:
-    :return:
-    """
-    if binarize:
-        ret, mask1 = cv2.threshold(mask1, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
-        ret, mask2 = cv2.threshold(mask2, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
-    h, w = mask1.shape[:2]
-    mask2 = cv2.resize(mask2, dsize=(w, h), interpolation=cv2.INTER_NEAREST)
-    mask1 = mask1 >= 255
-    mask2 = mask2 >= 255
-    area1 = mask1.sum()
-    area2 = mask2.sum()
-    inter = mask1 * mask2
-    inter_ = (inter == 1).sum()  # 交集
-    iou = inter_ / (area1 + area2 - inter_)
-    return iou
 
 
 def get_scale_image(image, scale=0.85, offset=(0, 0), color=(0, 0, 0), interpolation=cv2.INTER_NEAREST):

@@ -5,14 +5,37 @@
     @Date   : 2022-12-31 11:37:30
     @Brief  :
 """
-import cv2
-from pybaseutils import image_utils, file_utils
+import threading
+import time
+from typing import List, Callable
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from multiprocessing import Pool
 
-if __name__ == "__main__":
-    image_file = "test.png"
-    image = image_utils.read_image(image_file)
-    boxes = [[10, 50, 200, 200]]
-    boxes_name = ["好的abcd"]
-    image = image_utils.draw_image_bboxes_text(image, boxes, boxes_name, drawType="chinese", thickness=5, fontScale=0.8)
-    # image = image_utils.draw_image_bboxes_text(image, boxes, boxes_name, drawType="simple", thickness=3, fontScale=1.0)
-    image_utils.cv_show_image("image", image)
+class ProcessPool(object):
+    def __init__(self):
+        self.pool = Pool(4)
+
+    def worker(self, x):
+        print(x) # Should be printing "testing123"
+
+    def run(self):
+        res = self.pool.apply_async(self.worker, ("testing123",))
+        print(res.get()) # NotImplementedError
+        self.pool.close()
+        self.pool.join()
+
+    def __getstate__(self):
+        self_dict = self.__dict__.copy()
+        del self_dict['pool']
+        return self_dict
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+
+
+sandbox = ProcessPool()
+sandbox.run()
+
+
+sandbox = ProcessPool()
+sandbox.run()
