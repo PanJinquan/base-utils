@@ -7,35 +7,31 @@
 """
 import threading
 import time
+import torch
 from typing import List, Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from multiprocessing import Pool
 
-class ProcessPool(object):
-    def __init__(self):
-        self.pool = Pool(4)
 
-    def worker(self, x):
-        print(x) # Should be printing "testing123"
-
-    def run(self):
-        res = self.pool.apply_async(self.worker, ("testing123",))
-        print(res.get()) # NotImplementedError
-        self.pool.close()
-        self.pool.join()
-
-    def __getstate__(self):
-        self_dict = self.__dict__.copy()
-        del self_dict['pool']
-        return self_dict
-
-    def __setstate__(self, state):
-        self.__dict__.update(state)
+def torch_version_id(v: str):
+    vid = v.split(".")
+    vid = float("{}.{:0=2d}".format(vid[0], int(vid[1])))
+    return vid
 
 
-sandbox = ProcessPool()
-sandbox.run()
+def get_torch_version():
+    try:
+        v = torch.__version__
+        print("torch.version:{}".format(v))
+        vid = torch_version_id(v)
+    except Exception as e:
+        vid = None
+    return vid
 
 
-sandbox = ProcessPool()
-sandbox.run()
+if __name__ == "__main__":
+    print(torch_version_id("1.10.1+cu110"))
+    print(torch_version_id("1.1"))
+    print(torch_version_id("1.10"))
+    print(torch_version_id("1.01"))
+    print(torch_version_id("1.11"))

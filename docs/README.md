@@ -48,14 +48,12 @@ fusermount -u /path/to/local/data # 解绑
 ln -s source dist
 ```
 
-## 中文解压乱码
+## 文件解压和解压
 
-- zip
 
-```bash 
-unzip -O CP936 xxx.zip # unzip -n test.zip -d /tmp
-tar -zxvf xxx.tar.gz
-```
-- sudo apt-get install unar
-> unar *.zip得到的文件
+- zip test/ test.zip      # 压缩test文件夹
+- unzip -O CP936 xxx.zip  # 解压test压缩文件(-O CP936可解决中文乱码问题)
+- tar -zxvf xxx.tar.gz    # 解压xxx.tar.gz文件
+- unar *.zip得到的文件     # 解决中文乱码(安装：sudo apt-get install unar)
+
 
