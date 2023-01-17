@@ -30,8 +30,4 @@ def get_torch_version():
 
 
 if __name__ == "__main__":
-    print(torch_version_id("1.10.1+cu110"))
-    print(torch_version_id("1.1"))
-    print(torch_version_id("1.10"))
-    print(torch_version_id("1.01"))
-    print(torch_version_id("1.11"))
+    print(320 * 78 + 3600.00 * 46 + 120.00 * 12)

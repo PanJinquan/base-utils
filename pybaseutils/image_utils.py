@@ -1057,54 +1057,51 @@ def draw_image_rects_labels(rgb_image, rects, labels, class_name=None, color=Non
     return rgb_image
 
 
-def draw_image_detection_rects(rgb_image, rects, probs, labels, class_name=None, thickness=2, fontScale=0.5):
-    bboxes = rects2bboxes(rects)
-    rgb_image = draw_image_detection_bboxes(rgb_image, bboxes, probs, labels, class_name,
-                                            thickness=thickness, fontScale=fontScale)
-    return rgb_image
-
-
-def show_image_detection_rects(title, rgb_image, rects, probs, lables, color=None, delay=0):
+def draw_image_detection_rects(image, rects, probs, labels, class_name=None, thickness=2, fontScale=0.5,
+                               drawType="custom"):
     """
-    :param title:
-    :param rgb_image:
-    :param rects: [[x1,y1,w,h],[x1,y1,w,h]]
-    :param probs:
-    :param lables:
-    :return:
-    """
-    bboxes = rects2bboxes(rects)
-    rgb_image = show_image_detection_bboxes(title, rgb_image, bboxes, probs, lables, color, delay)
-    return rgb_image
-
-
-def draw_image_detection_bboxes(rgb_image, bboxes, probs, labels, class_name=None, thickness=2, fontScale=0.5):
-    """
-    :param title:
-    :param rgb_image:
-    :param bboxes:  [[x1,y1,x2,y2],[x1,y1,x2,y2]]
+    :param image:
+    :param rects:
     :param probs:
     :param labels:
+    :param class_name:
+    :param thickness:
+    :param fontScale:
+    :param drawType:
     :return:
     """
-    labels = np.asarray(labels, dtype=np.int32).reshape(-1)
+    boxes = rects2bboxes(rects)
+    image = draw_image_detection_boxes(image, boxes, probs, labels, class_name,
+                                       thickness=thickness, fontScale=fontScale, drawType=drawType)
+    return image
+
+
+def draw_image_detection_boxes(image, boxes, probs, labels, class_name=None, thickness=2, fontScale=0.5,
+                               drawType="custom"):
+    """
+    :param image:
+    :param boxes:
+    :param probs:
+    :param labels:
+    :param class_name:
+    :param thickness:
+    :param fontScale:
+    :param drawType:
+    :return:
+    """
+    labels = labels if isinstance(labels, list) else np.asarray(labels, dtype=np.int32).reshape(-1)
     probs = np.asarray(probs).reshape(-1)
-    for label, box, prob in zip(labels, bboxes, probs):
-        color = color_map[int(label) + 1]
+    for label, box, prob in zip(labels, boxes, probs):
+        color = color_map[1] if isinstance(label, str) else color_map[int(label) + 1]
         box = [int(b) for b in box]
         if class_name:
             label = class_name[int(label)]
         boxes_name = "{}:{:3.3f}".format(label, prob)
-        custom_bbox_line(rgb_image, box, color, boxes_name, thickness=thickness, fontScale=fontScale, drawType="custom")
-    return rgb_image
+        custom_bbox_line(image, box, color, boxes_name, thickness=thickness, fontScale=fontScale, drawType=drawType)
+    return image
 
 
-def show_image_detection_bboxes(title, rgb_image, bboxes, probs, labels, class_name=None, thickness=2, fontScale=0.5,
-                                delay=0):
-    rgb_image = draw_image_detection_bboxes(rgb_image, bboxes, probs, labels, class_name,
-                                            thickness=thickness, fontScale=fontScale)
-    cv_show_image(title, rgb_image, delay=delay)
-    return rgb_image
+draw_image_detection_bboxes = draw_image_detection_boxes
 
 
 def draw_dt_gt_dets(image, dt_boxes, dt_label, gt_boxes, gt_label, vis_diff=False):

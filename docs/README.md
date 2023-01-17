@@ -57,3 +57,11 @@ ln -s source dist
 - unar *.zip得到的文件     # 解决中文乱码(安装：sudo apt-get install unar)
 
 
+
+## 查看所有进程的命令ps aux
+
+```bash
+ps aux|grep python|grep -v grep
+```
+- grep python”的输出结果是，所有含有关键字“python”的进程，这是python程序
+- grep -v grep”是在列出的进程中去除含有关键字“grep”的进程。

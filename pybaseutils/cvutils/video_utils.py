@@ -142,6 +142,7 @@ def video2frames(video_file, out_dir=None, func=None, interval=1, vis=True):
             cv2.imwrite(frame_file, frame)
         count += 1
     video_cap.release()
+    cv2.destroyAllWindows()
 
 
 def frames2video(image_dir, video_file=None, func=None, size=None, postfix=["*.png", "*.jpg"], interval=1, fps=30,
@@ -181,6 +182,7 @@ def frames2video(image_dir, video_file=None, func=None, size=None, postfix=["*.p
                 image_utils.cv_show_image("frame", frame, use_rgb=False, delay=30)
             video_writer.write(frame)
     video_writer.release()
+    cv2.destroyAllWindows()
 
 
 def convert_video_format(video_file, save_video, interval=1):

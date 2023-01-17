@@ -6,10 +6,41 @@
     @E-mail : pan_jinquan@163.com
     @Date   : 2019-07-13 16:30:10
 """
-# 导入需要用到的库
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 import PIL.Image as Image
+import platform
+from matplotlib.font_manager import FontProperties
+
+ROOT = os.path.dirname(__file__)
+
+
+def get_font_type(size=14, font=""):
+    """
+    Windows字体路径      : /usr/share/fonts/楷体.ttf
+    Linux(Ubuntu)字体路径：/usr/share/fonts/楷体.ttf
+     >> fc-list             查看所有的字体
+     >> fc-list :lang=zh    查看所有的中文字体
+    :param size: 字体大小
+    :param font:  simsun.ttc 宋体;simhei.ttf 黑体
+    :return:
+    """
+    # 参数1：字体文件路径，参数2：字体大小；Windows系统“simhei.ttf”默认存储在路径：
+    if font:
+        font = FontProperties(fname=font, size=size)
+    elif platform.system().lower() == 'windows':
+        # font = ImageFont.truetype("simhei.ttf", size, encoding="utf-8")  # simsun.ttc 宋体
+        font = FontProperties(fname="simhei.ttf", size=size)
+    elif platform.system().lower() == 'linux':
+        # font = ImageFont.truetype("uming.ttc", size, encoding="utf-8")
+        # font = ImageFont.truetype("NotoSansCJK-Regular.ttc", size, encoding="utf-8")
+        # font = FontProperties(fname="NotoSansCJK-Regular.ttc", size=size)
+        font = FontProperties(fname=os.path.join(ROOT, "font_style/simhei.ttf"), size=size)
+    else:
+        # font = ImageFont.truetype(os.path.join(ROOT, "font_style/simhei.ttf"), size, encoding="utf-8")
+        font = FontProperties(fname=os.path.join(ROOT, "font_style/simhei.ttf"), size=size)
+    return font
 
 
 def count_bin(x, bin_ranges, num_bin=10, norm=True):
@@ -40,7 +71,7 @@ def count_bin(x, bin_ranges, num_bin=10, norm=True):
     return count
 
 
-def plot_bar_text(x, y, xlabel="X", ylabel="Y", title="bar", bin_width=0.1):
+def plot_bar_text(x, y, xlabel="X", ylabel="Y", title="bar", bin_width=0.1, vis=True, save=True):
     """绘制条形直方图"""
     rects = plt.bar(x=x, height=y, width=bin_width, align="center", yerr=0.000001)
     for rect in rects:
@@ -52,31 +83,27 @@ def plot_bar_text(x, y, xlabel="X", ylabel="Y", title="bar", bin_width=0.1):
     plt.legend(loc="lower right")  # "upper right"
     # plt.legend(loc="upper right")#"upper right"
     plt.grid(True)  # 显示网格;
-    plt.savefig('out.png')
-    plt.show()
+    if save: plt.show()
+    if vis: plt.savefig('out.png')
 
 
-def plot_bar(x_data, y_data, title, xlabel, ylabel, isshow=False):
+def plot_bar(x, y, xlabel="X", ylabel="Y", title="bar", bin_width=1, vis=True, save=True):
+    font = get_font_type(size=14)
     # 准备数据
     # 用 Matplotlib 画条形图
-    plt.bar(x_data, y_data)
+    plt.bar(x=x, height=y, width=bin_width, align="center", yerr=0.000001,fontproperties=font)
     # plt.xlim([0.0, 1.0])
     # plt.ylim([0.0, 1.05])
     # 设置横纵坐标的名称以及对应字体格式
-    font = {'family': 'Times New Roman',
-            'weight': 'normal',
-            'size': 10,
-            }
-    plt.xlabel(xlabel, font)
-    plt.ylabel(ylabel, font)
+    plt.xlabel(xlabel, fontproperties=font)
+    plt.ylabel(ylabel, fontproperties=font)
 
     plt.title(title)
     plt.legend(loc="lower right")  # "upper right"
     # plt.legend(loc="upper right")#"upper right"
     plt.grid(True)  # 显示网格;
-    plt.savefig('out.png')
-    if isshow:
-        plt.show()
+    if save: plt.show()
+    if vis: plt.savefig('out.png')
 
 
 def plot_multi_line(x_data_list, y_data_list, line_names=None, title="", xlabel="", ylabel=""):
