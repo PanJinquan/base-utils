@@ -49,14 +49,40 @@ ln -s source dist
 ```
 
 ## 文件解压和解压
+```bash
+zip fold/ fold.zip       # 压缩fold文件夹
+unzip -O CP936 fold.zip  # 解压fold.zip压缩文件(-O CP936可解决中文乱码问题)
+tar -zxvf fold.tar.gz    # 解压fold.tar.gz文件
+unar fold.zip            # 解压fold.zip压缩文件,解决中文乱码(安装：sudo apt-get install unar)
+```
 
+- zip分卷压缩文件 
+```bash
+zip -r -s 20m fold.split.zip fold/
+# -s 1g(或m)代表分卷大小GB,MB
+# fold.split.zip为压缩包名
+# fold/为待压缩的目录
+```
 
-- zip test/ test.zip      # 压缩test文件夹
-- unzip -O CP936 xxx.zip  # 解压test压缩文件(-O CP936可解决中文乱码问题)
-- tar -zxvf xxx.tar.gz    # 解压xxx.tar.gz文件
-- unar *.zip得到的文件     # 解决中文乱码(安装：sudo apt-get install unar)
+- zip解压分卷文件
+```bash
+zip -s 0 fold.split.zip --out fold.zip
+unzip fold.zip
+```
 
-
+- tar分卷压缩文件 
+  
+```bash
+tar cvzpf - fold | split -d -b 3078m - fold.tar.gz
+# 其中 - myfile :输入文件夹名字; -b 2048m :每卷为2048m; - newfile :输出文件名
+# 压缩完的文件命名为：fold.tar.gz00,fold.tar.gz01,fold.tar.gz03...
+```
+ 
+- tar解压分卷文件
+```bash
+cat fold*>fold.tar.gz   # 将分卷文件合并成一个压缩文件
+tar xzvf fold.tar.gz    # 解压 
+```
 
 ## 查看所有进程的命令ps aux
 

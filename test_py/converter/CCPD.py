@@ -3,15 +3,13 @@
     @Author : PKing
     @E-mail : 390737991@qq.com
     @Date   : 2022-11-29 18:49:56
-    @Brief  : https://blog.csdn.net/qq_38253797/article/details/125042833
 """
 
 import os
 import cv2
 import numpy as np
 from tqdm import tqdm
-from pybaseutils.maker import maker_voc
-from pybaseutils import file_utils, image_utils, yaml_utils
+from pybaseutils import file_utils, image_utils
 
 
 def get_plate_licenses(plate):
@@ -85,7 +83,7 @@ def save_plate_licenses(image, bboxes, plates, out_dir, name=""):
         cv2.imwrite(file, crops[i])
 
 
-def converter_CCPD2voc(image_dir, out_voc, vis=True):
+def converter_CCPD2voc(image_dir, vis=True):
     """
     将CCPD数据集转换为VOC数据格式(xmin,ymin,xmax,ymax)
     :param image_dir: BITVehicle数据集图片(*.jpg)根目录
@@ -94,10 +92,6 @@ def converter_CCPD2voc(image_dir, out_voc, vis=True):
     :param vis: 是否可视化效果
     """
     print("image_dir :{}".format(image_dir))
-    print("out_voc   :{}".format(out_voc))
-    out_image_dir = file_utils.create_dir(out_voc, None, "JPEGImages")
-    out_xml_dir = file_utils.create_dir(out_voc, None, "Annotations")
-    out_crop_dir = file_utils.create_dir(out_voc, None, "plates")
     class_set = []
     image_list = file_utils.get_images_list(image_dir)
     for i, image_file in enumerate(tqdm(image_list)):
@@ -114,38 +108,20 @@ def converter_CCPD2voc(image_dir, out_voc, vis=True):
         image_name = os.path.basename(image_name)
         img_postfix = image_name.split(".")[-1]
         image_id = image_name[:-len(img_postfix) - 1]
-
         class_set = labels + class_set
         class_set = list(set(class_set))
         if not os.path.exists(image_file):
             print("not exist:{}".format(image_file))
             continue
         image = cv2.imread(image_file)
-        name = "{:0=5d}".format(i)
-        save_plate_licenses(image, bboxes, plates, out_dir=out_crop_dir, name=name)
-        image_shape = image.shape
-        xml_path = file_utils.create_dir(out_xml_dir, None, "{}.xml".format(image_id))
-        dst_file = file_utils.create_dir(out_image_dir, None, "{}.{}".format(image_id, img_postfix))
-        objects = maker_voc.create_objects(bboxes, labels)
-        # XML不支持&的文件明，需要将&替换为#
-        maker_voc.write_voc_xml_objects(image_name.replace("&", "#"), image_shape, objects, xml_path)
-        file_utils.copy_file(image_file, dst_file)
-        cv2.imwrite(dst_file, image)
         if vis:
-            image = image_utils.draw_image_bboxes_text(image, bboxes, plates, color=(255, 0, 0), thickness=2,
-                                                       fontScale=0.8, drawType="chinese")
+            image = image_utils.draw_image_bboxes_text(image, bboxes, plates, color=(255, 0, 0), thickness=3,
+                                                       fontScale=1.2, drawType="chinese")
             # image = image_utils.draw_image_points_lines(image, points=points[0], line_color=(0, 0, 255))
             image_utils.cv_show_image("det", image, use_rgb=False, delay=0)
-    file_utils.save_file_list(out_image_dir, filename=None, prefix="", postfix=file_utils.IMG_POSTFIX,
-                              only_id=False, shuffle=False, max_num=None)
     print("class_set:{}".format(class_set))
 
 
 if __name__ == "__main__":
-    dataset = "/home/dm/nasdata/dataset/csdn/plate/dataset/CCPD2019"
-    output = "/home/dm/nasdata/dataset/csdn/plate/dataset/CCPD2019-voc"
-    sub_list = file_utils.get_sub_paths(dataset)
-    for sub in sub_list:
-        out_voc = os.path.join(output, sub)
-        image_dir = os.path.join(dataset, sub)
-        converter_CCPD2voc(image_dir, out_voc, vis=False)
+    image_dir = "/home/dm/nasdata/dataset/csdn/plate/dataset/CCPD2020/ccpd_green/train"
+    converter_CCPD2voc(image_dir, vis=True)
