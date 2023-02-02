@@ -28,6 +28,8 @@ disable-pip-version-check = true
 timeout = 120
 ```
 
+- pip install --no-cache-dir opencv-python -i https://pypi.tuna.tsinghua.edu.cn/simple
+
 ## 远程挂载
 
 - 挂载
@@ -49,6 +51,7 @@ ln -s source dist
 ```
 
 ## 文件解压和解压
+
 ```bash
 zip fold/ fold.zip       # 压缩fold文件夹
 unzip -O CP936 fold.zip  # 解压fold.zip压缩文件(-O CP936可解决中文乱码问题)
@@ -56,7 +59,8 @@ tar -zxvf fold.tar.gz    # 解压fold.tar.gz文件
 unar fold.zip            # 解压fold.zip压缩文件,解决中文乱码(安装：sudo apt-get install unar)
 ```
 
-- zip分卷压缩文件 
+- zip分卷压缩文件
+
 ```bash
 zip -r -s 20m fold.split.zip fold/
 # -s 1g(或m)代表分卷大小GB,MB
@@ -65,20 +69,22 @@ zip -r -s 20m fold.split.zip fold/
 ```
 
 - zip解压分卷文件
+
 ```bash
 zip -s 0 fold.split.zip --out fold.zip
 unzip fold.zip
 ```
 
-- tar分卷压缩文件 
-  
+- tar分卷压缩文件
+
 ```bash
 tar cvzpf - fold | split -d -b 3078m - fold.tar.gz
 # 其中 - myfile :输入文件夹名字; -b 2048m :每卷为2048m; - newfile :输出文件名
 # 压缩完的文件命名为：fold.tar.gz00,fold.tar.gz01,fold.tar.gz03...
 ```
- 
+
 - tar解压分卷文件
+
 ```bash
 cat fold*>fold.tar.gz   # 将分卷文件合并成一个压缩文件
 tar xzvf fold.tar.gz    # 解压 
@@ -89,5 +95,6 @@ tar xzvf fold.tar.gz    # 解压
 ```bash
 ps aux|grep python|grep -v grep
 ```
+
 - grep python”的输出结果是，所有含有关键字“python”的进程，这是python程序
 - grep -v grep”是在列出的进程中去除含有关键字“grep”的进程。

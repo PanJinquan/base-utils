@@ -86,13 +86,18 @@ def show_hw_gt_word_info(word_info, vis=True):
         # print(json_utils.formatting(gt_info['content'] if 'content' in gt_info else ""))
         text = ["{}={}".format(key, hw_word[key]) for key in keys if key in hw_word]
         print("\t".join(text))
-        if len(hw_word['stroke_segs']) == 0 or hw_word['mask'] is None: continue
+        if hw_word['mask'] is None:
+            continue
+        if gt_word['mask'] is None:
+            hw_gt_images.append({"image": hw_word['mask'], "label": label})
+            continue
         stroke_scores = hw_word['stroke_scores'] if 'stroke_scores' in hw_word else []
         hw_texts = ["{:3.3f}".format(s) for s in stroke_scores]
         hw_gt_image = concat_hw_gt_stroke_image(hw_mask=hw_word['mask'], hw_segs=hw_word['stroke_segs'],
                                                 gt_mask=gt_word['mask'], gt_segs=gt_word['stroke_segs'],
                                                 hw_texts=hw_texts, vis=vis)
         hw_gt_images.append({"image": hw_gt_image, "label": label})
+
         for i in range(len(hw_word['piece_segs'])):
             hw_stroke = hw_word['stroke_segs'][i]
             hw_piece = hw_word['piece_segs'][i]

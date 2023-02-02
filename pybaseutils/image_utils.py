@@ -205,10 +205,11 @@ def show_image(title, rgb_image):
 
 def cv_show_image(title, image, use_rgb=False, delay=0):
     """
-    调用OpenCV显示RGB图片
+    调用OpenCV显示图片
     :param title: 图像标题
     :param image: 输入是否是RGB图像
     :param use_rgb: True:输入image是RGB的图像, False:返输入image是BGR格式的图像
+    :param delay: delay=0表示暂停，delay>0表示延时delay毫米
     :return:
     """
     img = image.copy()
@@ -1610,65 +1611,30 @@ def save_image(image_file, image, uint8=False, use_rgb=False):
     cv2.imwrite(image_file, image)
 
 
-def nms_bboxes_cv2(bboxes_list, scores_list, labels_list, width=None, height=None, score_threshold=0.5,
-                   nms_threshold=0.45):
+def nms_boxes_cv2(bboxes: np.ndarray, scores: np.ndarray, labels: np.ndarray, image_size=(),
+                  score_threshold=0.5, nms_threshold=0.45, eta=None, top_k=None):
     """
     NMS
     fix a bug: cv2.dnn.NMSBoxe bboxes, scores params must be list and float data,can not be float32 or int
-    :param bboxes_list: [list[xmin,ymin,xmax,ymax],[],,,]
-    :param scores_list: [float,...]
-    :param labels_list: [int,...]
-    :param width:
-    :param height:
+    :param bboxes: List or np.ndarray,shape is（nums-boxes,4）is (x,y,w,h)
+    :param scores: List or np.ndarray,shape is（nums-boxes,）
+    :param labels: List or np.ndarray,shape is（nums-boxes,）
+    :param image_size: (width,height)
     :param score_threshold:
     :param nms_threshold:
     :return:
     """
-    assert isinstance(scores_list, list), "scores_list must be list"
-    assert isinstance(bboxes_list, list), "bboxes_list must be list"
-    assert isinstance(labels_list, list), "labels_list must be list"
-
-    dest_bboxes_list = []
-    dest_scores_list = []
-    dest_labels_list = []
-    # bboxes_list,scores_list, labels_list=filtering_scores(bboxes_list, scores_list, labels_list, score_threshold=score_threshold)
-    if width is not None and height is not None:
-        for i, box in enumerate(bboxes_list):
-            x1 = box[0] * width
-            y1 = box[1] * height
-            x2 = box[2] * width
-            y2 = box[3] * height
-            bboxes_list[i] = [x1, y1, x2, y2]
-    scores_list = np.asarray(scores_list, dtype=np.float).tolist()
-    # fix a bug: cv2.dnn.NMSBoxe bboxes, scores params must be list and float data,can not be float32 or int
-    indices = cv2.dnn.NMSBoxes(bboxes_list, scores_list, score_threshold, nms_threshold)
-    for i in indices:
-        i = i[0]
-        dest_bboxes_list.append(bboxes_list[i])
-        dest_scores_list.append(scores_list[i])
-        dest_labels_list.append(labels_list[i])
-    return dest_bboxes_list, dest_scores_list, dest_labels_list
-
-
-def filtering_scores(bboxes_list, scores_list, labels_list, score_threshold=0.0):
-    """
-    filtering low score bbox
-    :param bboxes_list:
-    :param scores_list:
-    :param labels_list:
-    :param score_threshold:
-    :return:
-    """
-    dest_scores_list = []
-    dest_labels_list = []
-    dest_bboxes_list = []
-    for i, score in enumerate(scores_list):
-        if score < score_threshold:
-            continue
-        dest_scores_list.append(scores_list[i])
-        dest_labels_list.append(labels_list[i])
-        dest_bboxes_list.append(bboxes_list[i])
-    return dest_bboxes_list, dest_scores_list, dest_labels_list
+    if isinstance(bboxes, np.ndarray): bboxes = bboxes.tolist()
+    if isinstance(scores, np.ndarray): scores = scores.tolist()
+    indices = cv2.dnn.NMSBoxes(bboxes, scores, score_threshold=score_threshold, nms_threshold=nms_threshold,
+                               eta=eta, top_k=top_k)
+    if isinstance(bboxes, list): bboxes = np.asarray(bboxes)
+    if isinstance(scores, list): scores = np.asarray(scores)
+    if isinstance(labels, list): labels = np.asarray(labels)
+    dest_bboxes = bboxes[indices]
+    dest_scores = scores[indices]
+    dest_labels = labels[indices]
+    return dest_bboxes, dest_scores, dest_labels
 
 
 def file2base64(file):
