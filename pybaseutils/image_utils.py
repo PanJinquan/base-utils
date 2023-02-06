@@ -133,7 +133,7 @@ def get_image_tensor(image_path, image_size, transpose=False):
     image = center_crop(image, crop_size=image_size)
     image_tensor = image_normalization(image, mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
     if transpose:
-        image_tensor = image_tensor.image_demo(2, 0, 1)  # NHWC->NCHW
+        image_tensor = image_tensor.transpose(2, 0, 1)  # NHWC->NCHW
     image_tensor = image_tensor[np.newaxis, :]
     # std = np.std(torch_image-image_tensor)
     return image_tensor
@@ -149,15 +149,15 @@ def image_clip(image):
 
 
 def transpose(data):
-    data = data.image_demo(2, 0, 1)  # HWC->CHW
+    data = data.transpose(2, 0, 1)  # HWC->CHW
     return data
 
 
 def untranspose(data):
     if len(data.shape) == 3:
-        data = data.image_demo(1, 2, 0).copy()  # 通道由[c,h,w]->[h,w,c]
+        data = data.transpose(1, 2, 0).copy()  # 通道由[c,h,w]->[h,w,c]
     else:
-        data = data.image_demo(1, 0).copy()
+        data = data.transpose(1, 0).copy()
     return data
 
 

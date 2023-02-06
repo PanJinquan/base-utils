@@ -62,7 +62,7 @@ unar fold.zip            # 解压fold.zip压缩文件,解决中文乱码(安装�
 - zip分卷压缩文件
 
 ```bash
-zip -r -s 20m fold.split.zip fold/
+zip -r -s 3g fold.split.zip fold/
 # -s 1g(或m)代表分卷大小GB,MB
 # fold.split.zip为压缩包名
 # fold/为待压缩的目录
