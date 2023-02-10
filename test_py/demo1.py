@@ -45,10 +45,6 @@ def task_for_performance(image, max_iter=50):
 
 
 if __name__ == "__main__":
-    image_file = "/home/dm/nasdata/release/handwriting/daip-calligraphy-hard/calligraphy-hard-detector/test/performance/test1.jpg"
-    image = cv2.imread(image_file)
-    dsize = (2000, 2000)
-    r = 1.0
-    dsize = (int(dsize[0] * r), int(dsize[1] * r))
-    image = cv2.resize(image, dsize=tuple(dsize))
-    # task_for_performance(image)
+    data = ... # 支持Dict,List,Tupe,Numpy等数据
+    data = base64_utils.serialization(data)  # 序列化
+    data = base64_utils.deserialization(data)  # 反序列

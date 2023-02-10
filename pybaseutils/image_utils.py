@@ -26,7 +26,7 @@ from pybaseutils.coords_utils import *
 from pybaseutils.transforms import affine_transform
 
 IMG_POSTFIX = ['*.jpg', '*.jpeg', '*.png', '*.tif']
-color_map = [(0, 0, 0), (255, 0, 0), (0, 255, 0), (0, 0, 255),
+color_map = [(0, 0, 0), (0, 0, 255), (0, 255, 0), (255, 0, 0),
              (128, 0, 0), (0, 128, 0), (128, 128, 0),
              (0, 0, 128), (128, 0, 128), (0, 128, 128), (128, 128, 128),
              (64, 0, 0), (192, 0, 0), (64, 128, 0), (192, 128, 0),
@@ -609,6 +609,23 @@ def resize_image_padding(image, size: Tuple, use_length=True, color=(0, 0, 0), i
     return image
 
 
+def resize_image_clip(image, clip_max=1920, interpolation=cv2.INTER_LINEAR):
+    """
+    限制图像最大分辨率
+    :param image:
+    :param clip_max:
+    :param interpolation:
+    :return:
+    """
+    height, width = image.shape[:2]
+    if height > width:
+        width, height = None, min(height, clip_max)
+    else:
+        width, height = min(width, clip_max), None
+    image = resize_image(image, size=(width, height), interpolation=interpolation)
+    return image
+
+
 def resize_image(image, size: Tuple, interpolation=cv2.INTER_LINEAR):
     """
     tf.image.resize_images(images,size),images=[batch, height, width, channels],size=(new_height, new_width)
@@ -938,7 +955,7 @@ def show_image_boxes(title, image, boxes_list, color=(0, 0, 255), delay=0, use_r
     return image
 
 
-def draw_image_bboxes_text(rgb_image, boxes, boxes_name, color=(255, 0, 0), thickness=2, fontScale=0.5,
+def draw_image_bboxes_text(rgb_image, boxes, boxes_name, color=(255, 0, 0), thickness=2, fontScale=0.8,
                            drawType="custom", top=True):
     """
     :param boxes_name:
@@ -956,7 +973,7 @@ def draw_image_bboxes_text(rgb_image, boxes, boxes_name, color=(255, 0, 0), thic
     return rgb_image
 
 
-def draw_image_bboxes_labels_text(rgb_image, boxes, labels, boxes_name=None, color=None, thickness=2, fontScale=0.5,
+def draw_image_bboxes_labels_text(rgb_image, boxes, labels, boxes_name=None, color=None, thickness=2, fontScale=0.8,
                                   drawType="custom", top=True):
     """
     :param rgb_image:
@@ -1045,7 +1062,7 @@ def draw_image_bboxes_labels(rgb_image, bboxes, labels, class_name=None, color=N
     return rgb_image
 
 
-def draw_image_rects_labels(rgb_image, rects, labels, class_name=None, color=None, thickness=2, fontScale=0.5):
+def draw_image_rects_labels(rgb_image, rects, labels, class_name=None, color=None, thickness=2, fontScale=0.8):
     """
     :param rgb_image:
     :param rects:
@@ -1058,7 +1075,7 @@ def draw_image_rects_labels(rgb_image, rects, labels, class_name=None, color=Non
     return rgb_image
 
 
-def draw_image_detection_rects(image, rects, probs, labels, class_name=None, thickness=2, fontScale=0.5,
+def draw_image_detection_rects(image, rects, probs, labels, class_name=None, thickness=2, fontScale=0.8,
                                drawType="custom"):
     """
     :param image:
@@ -1077,7 +1094,7 @@ def draw_image_detection_rects(image, rects, probs, labels, class_name=None, thi
     return image
 
 
-def draw_image_detection_boxes(image, boxes, probs, labels, class_name=None, thickness=2, fontScale=0.5,
+def draw_image_detection_boxes(image, boxes, probs, labels, class_name=None, thickness=2, fontScale=0.8,
                                drawType="custom"):
     """
     :param image:
@@ -1137,7 +1154,7 @@ def draw_dt_gt_dets(image, dt_boxes, dt_label, gt_boxes, gt_label, vis_diff=Fals
     return image
 
 
-def custom_bbox_line(image, bbox, color, name, thickness=2, fontScale=0.5, drawType="custom", top=True):
+def custom_bbox_line(image, bbox, color, name, thickness=2, fontScale=0.8, drawType="custom", top=True):
     """
     :param image:
     :param bbox:
@@ -1243,7 +1260,7 @@ def show_landmark(title, image, landmarks_list, vis_id=False, delay=0):
     return image
 
 
-def draw_points_text(image, points, texts=None, color=(255, 0, 0), fontScale=0.5, thickness=1, drawType="simple"):
+def draw_points_text(image, points, texts=None, color=(255, 0, 0), fontScale=0.8, thickness=1, drawType="simple"):
     """
     :param image:
     :param points:
@@ -1261,7 +1278,7 @@ def draw_points_text(image, points, texts=None, color=(255, 0, 0), fontScale=0.5
     return image
 
 
-def draw_text(image, point, text, color=(255, 0, 0), fontScale=0.5, thickness=5, drawType="custom"):
+def draw_text(image, point, text, color=(255, 0, 0), fontScale=0.8, thickness=5, drawType="custom"):
     """
     :param image:
     :param point:
@@ -1385,7 +1402,7 @@ def draw_image_points_lines(image,
                             points,
                             pointline=[],
                             texts=None,
-                            fontScale=0.5,
+                            fontScale=0.8,
                             circle_color=(255, 0, 0),
                             line_color=(0, 0, 255),
                             thickness=2):
