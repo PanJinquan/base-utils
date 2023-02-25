@@ -19,22 +19,23 @@ import numbers
 import pickle
 from datetime import datetime
 
-IMG_POSTFIX = ['*.jpg', '*.jpeg', '*.png', '*.tif']
+IMG_POSTFIX = ['*.jpg', '*.jpeg', '*.png', '*.tif', "*.JPG"]
+VIDEO_POSTFIX = ['*.mp4', '*.avi']
 
 
 def str2bool(v):
     return v.lower() in ('yes', 'true', 't', 'y', '1')
 
 
-def get_time(format="S"):
+def get_time(format="p"):
     """
     :param format:
     :return:
     """
-    if format in ["S", "s"]:
+    if format.lower() == "s":
         # time = datetime.strftime(datetime.now(), '%Y%m%d_%H%M%S')
         time = datetime.strftime(datetime.now(), '%Y%m%d%H%M%S')
-    elif format in ["P", "p"]:
+    elif format.lower() == "p":
         # 20200508_143059_379116
         time = datetime.strftime(datetime.now(), '%Y%m%d_%H%M%S_%f')
         time = time[:-2]

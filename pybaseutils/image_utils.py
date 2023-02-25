@@ -25,13 +25,12 @@ from pybaseutils import file_utils
 from pybaseutils.coords_utils import *
 from pybaseutils.transforms import affine_transform
 
-IMG_POSTFIX = ['*.jpg', '*.jpeg', '*.png', '*.tif']
 color_map = [(0, 0, 0), (0, 0, 255), (0, 255, 0), (255, 0, 0),
              (128, 0, 0), (0, 128, 0), (128, 128, 0),
              (0, 0, 128), (128, 0, 128), (0, 128, 128), (128, 128, 128),
              (64, 0, 0), (192, 0, 0), (64, 128, 0), (192, 128, 0),
              (64, 0, 128), (192, 0, 128), (64, 128, 128), (192, 128, 128),
-             (0, 64, 0), (128, 64, 0), (0, 192, 0), (128, 192, 0), (0, 64, 128)] * 10
+             (0, 64, 0), (128, 64, 0), (0, 192, 0), (128, 192, 0), (0, 64, 128)] * 100
 
 ROOT = os.path.dirname(__file__)
 
@@ -146,6 +145,14 @@ def image_clip(image):
     """
     image = np.clip(image, 0, 1)
     return image
+
+
+def check_point(point):
+    """检测点知否在图像内"""
+    if point is None: return False
+    if len(point) == 0: return False
+    r = point[0] > 0 and point[1] > 0
+    return r
 
 
 def transpose(data):
@@ -1045,7 +1052,8 @@ def show_image_rects_text(title, rgb_image, rects, rects_name, color=None, drawT
     return rgb_image
 
 
-def draw_image_bboxes_labels(rgb_image, bboxes, labels, class_name=None, color=None, thickness=2, fontScale=0.8):
+def draw_image_bboxes_labels(rgb_image, bboxes, labels, class_name=None, color=None,
+                             thickness=2, fontScale=0.8, drawType="custom"):
     """
     :param rgb_image:
     :param bboxes:  [[x1,y1,x2,y2],[x1,y1,x2,y2]]
@@ -1058,7 +1066,7 @@ def draw_image_bboxes_labels(rgb_image, bboxes, labels, class_name=None, color=N
         box = [int(b) for b in box]
         if class_name: label = class_name[int(label)]
         rgb_image = custom_bbox_line(rgb_image, box, color_, str(label), thickness=thickness,
-                                     fontScale=fontScale, drawType="custom")
+                                     fontScale=fontScale, drawType=drawType)
     return rgb_image
 
 
@@ -1272,6 +1280,7 @@ def draw_points_text(image, points, texts=None, color=(255, 0, 0), fontScale=0.8
     if texts is None:
         texts = [""] * len(points)
     for point, text in zip(points, texts):
+        if not check_point(point): continue
         point = (int(point[0]), int(point[1]))
         cv2.circle(image, point, thickness * 2, color, -1)
         draw_text(image, point, text, color=color, fontScale=fontScale, thickness=thickness, drawType=drawType)
@@ -1456,18 +1465,15 @@ def draw_image_points_arrowed_lines(image, points,
     return image
 
 
-def draw_image_lines(image, points, pointline=[], color=(0, 0, 255), thickness=2, check=True):
-    points = np.asarray(points, dtype=np.int32)
+def draw_image_lines(image, points, pointline=[], color=(0, 0, 255), thickness=2):
+    # points = np.asarray(points, dtype=np.int32)
     if pointline == "auto" or pointline == []:
         pointline = circle_line(len(points), iscircle=True)
     for point_index in pointline:
         point1 = tuple(points[point_index[0]])
         point2 = tuple(points[point_index[1]])
-        if check:
-            if point1 is None or point2 is None:
-                continue
-            if sum(point1) <= 0 or sum(point2) <= 0:
-                continue
+        if (not check_point(point1)) or (not check_point(point2)):
+            continue
         cv2.line(image, point1, point2, color, thickness)  # 绿色，3个像素宽度
     return image
 
@@ -1477,7 +1483,6 @@ def draw_image_arrowed_lines(image,
                              pointline=[],
                              color=(0, 0, 255),
                              thickness=2,
-                             check=True,
                              reverse=False):
     points = np.asarray(points, dtype=np.int32)
     if pointline == "auto":
@@ -1485,11 +1490,8 @@ def draw_image_arrowed_lines(image,
     for point_index in pointline:
         point1 = tuple(points[point_index[0]])
         point2 = tuple(points[point_index[1]])
-        if check:
-            if point1 is None or point2 is None:
-                continue
-            if sum(point1) <= 0 or sum(point2) <= 0:
-                continue
+        if (not check_point(point1)) or (not check_point(point2)):
+            continue
         if reverse:
             cv2.arrowedLine(image, point1, point2, color, thickness=thickness)
         else:
@@ -2125,7 +2127,7 @@ def get_contours_iou(contour1, contour2, image_size: Tuple = None, plot=False):
     area = sum([cv2.contourArea(c) for c in contours])
     contours = [c.reshape(-1, 2) + (xmin, ymin) for c in contours]
     # area = np.sum(mask > 0)
-    iou = area / (area1 + area2 - area)
+    iou = area / max((area1 + area2 - area), 1e-8)
     if plot:
         print("U(mask1,mask2)={}".format(iou))
         cv_show_image("mask1", mask1, delay=1)
@@ -2609,92 +2611,6 @@ def image_file2gif(file_list, size=None, gif_file="test.gif", interval=1, fps=4,
         frames2gif_by_pil(frames, gif_file, fps=fps, loop=loop)
     else:
         frames2gif_by_imageio(frames, gif_file, fps=fps, loop=loop)
-
-
-def get_video_capture(video_path, width=None, height=None, fps=None):
-    """
-     --   7W   Pix--> width=320,height=240
-     --   30W  Pix--> width=640,height=480
-     720P,100W Pix--> width=1280,height=720
-     960P,130W Pix--> width=1280,height=1024
-    1080P,200W Pix--> width=1920,height=1080
-    :param video_path:
-    :param width:
-    :param height:
-    :return:
-    """
-    video_cap = cv2.VideoCapture(video_path)
-    # 设置分辨率
-    if width:
-        video_cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-    if height:
-        video_cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-    if fps:
-        video_cap.set(cv2.CAP_PROP_FPS, 15)
-    return video_cap
-
-
-def get_video_info(video_cap):
-    width = int(video_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    height = int(video_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    numFrames = int(video_cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    fps = int(video_cap.get(cv2.CAP_PROP_FPS))
-    print("video:width:{},height:{},fps:{},numFrames:{}".format(width, height, fps, numFrames))
-    return width, height, numFrames, fps
-
-
-def get_video_writer(save_path, width, height, fps):
-    if not os.path.exists(os.path.dirname(save_path)):
-        os.makedirs(os.path.dirname(save_path))
-    fourcc = cv2.VideoWriter_fourcc(*'XVID')
-    frameSize = (int(width), int(height))
-    video_writer = cv2.VideoWriter(save_path, fourcc, fps, frameSize)
-    print("video:width:{},height:{},fps:{}".format(width, height, fps))
-    return video_writer
-
-
-class CVVideo():
-    def __init__(self):
-        pass
-
-    def start_capture(self, video_file, save_video=None, detect_freq=1):
-        """
-        start capture video
-        :param video_file: *.avi,*.mp4,...or camera id
-        :param save_video: *.avi
-        :param detect_freq:
-        :return:
-        """
-        # cv2.moveWindow("test", 1000, 100)
-        video_cap = get_video_capture(video_file)
-        width, height, numFrames, fps = get_video_info(video_cap)
-        if save_video:
-            self.video_writer = get_video_writer(save_video, width, height, fps)
-        # freq = int(fps / detect_freq)
-        count = 0
-        while True:
-            if count % detect_freq == 0:
-                # 设置抽帧的位置
-                if isinstance(video_file, str): video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
-                isSuccess, frame = video_cap.read()
-                if not isSuccess:
-                    break
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                frame = self.task(frame)
-            if save_video:
-                self.write_video(frame)
-            count += 1
-        video_cap.release()
-
-    def write_video(self, frame):
-        self.video_writer.write(frame)
-
-    def task(self, frame):
-        # TODO
-        cv2.imshow("image", frame)
-        cv2.moveWindow("image", 0, 0)
-        cv2.waitKey(10)
-        return frame
 
 
 if __name__ == "__main__":

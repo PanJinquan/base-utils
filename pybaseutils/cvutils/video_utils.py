@@ -11,6 +11,8 @@ import numpy as np
 from tqdm import tqdm
 from pybaseutils import image_utils, file_utils
 
+VIDEO_POSTFIX = ['*.mp4', '*.avi']
+
 
 def get_video_capture(video, width=None, height=None, fps=None):
     """
@@ -234,8 +236,8 @@ class CVVideo():
         # cv2.moveWindow("test", 1000, 100)
         video_cap = get_video_capture(video_file)
         width, height, num_frames, fps = get_video_info(video_cap)
-        if save_video:
-            self.video_writer = get_video_writer(save_video, width, height, fps)
+        video_writer = None
+        if save_video: video_writer = get_video_writer(save_video, width, height, fps)
         # freq = int(fps / detect_freq)
         count = 0
         while True:
@@ -247,13 +249,10 @@ class CVVideo():
                     break
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 frame = self.task(frame)
-            if save_video:
-                self.write_video(frame)
+                if save_video:
+                    video_writer.write(frame)
             count += 1
         video_cap.release()
-
-    def write_video(self, frame):
-        self.video_writer.write(frame)
 
     def task(self, frame):
         # TODO

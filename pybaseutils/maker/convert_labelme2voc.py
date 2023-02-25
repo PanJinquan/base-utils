@@ -25,6 +25,7 @@ class LabelMeDemo(object):
         :param json_dir:
         :param image_dir:
         """
+        self.image_dir = image_dir
         self.dataset = parser_labelme.LabelMeDataset(filename=None,
                                                      data_root=None,
                                                      anno_dir=json_dir,
@@ -49,6 +50,7 @@ class LabelMeDemo(object):
         out_crop_dir = os.path.join(out_root, "crops")
         for i in tqdm(range(len(self.dataset))):
             data = self.dataset.__getitem__(i)
+            # data = self.dataset.__getitem__(307)
             image, points, bboxes, labels = data["image"], data["point"], data["box"], data["label"]
             image_file = data["image_file"]
             image_shape = image.shape
@@ -72,6 +74,7 @@ class LabelMeDemo(object):
                 # cv2.imwrite(dst_file, image)
             if vis:
                 self.show_object_image(image, objects)
+        if not out_image_dir: out_image_dir =self.image_dir
         file_utils.save_file_list(out_image_dir, filename=None, prefix="", postfix=file_utils.IMG_POSTFIX,
                                   only_id=False, shuffle=False, max_num=None)
 
@@ -93,9 +96,9 @@ class LabelMeDemo(object):
 
 
 if __name__ == "__main__":
-    json_dir = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/zip/json"
-    image_dir = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/zip/JPEGImages"
+    json_dir = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/competition-v2/json"
     out_root = os.path.dirname(json_dir)
+    image_dir = os.path.join(out_root, "JPEGImages")
     class_name = None
     lm = LabelMeDemo(json_dir, image_dir)
-    lm.convert_dataset2voc(out_root, class_name=class_name, vis=False)
+    lm.convert_dataset2voc(out_root, class_name=class_name, vis=False, crop=False)

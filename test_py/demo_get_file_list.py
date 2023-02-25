@@ -67,6 +67,6 @@ def save_file_list(file_dir, prefix="", postfix=image_utils.IMG_POSTFIX, only_id
 
 
 if __name__ == "__main__":
-    annotations_dir = "/home/dm/nasdata/dataset-dmai/handwriting/grid-det/grid_cross_points_images/grid_cross_points_soft_v1/images"
-    save_file_list(annotations_dir, prefix="", postfix=image_utils.IMG_POSTFIX, only_id=False, shuffle=True,
+    file_dir = "/home/dm/nasdata/dataset/csdn/Eyeglasses/dataset/face-eyeglasses/JPEGImages"
+    save_file_list(file_dir, prefix="", postfix=file_utils.IMG_POSTFIX + ["*.JPG"], only_id=False, shuffle=True,
                    max_num=None)

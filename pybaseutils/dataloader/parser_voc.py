@@ -472,7 +472,7 @@ def show_target_image(image, bboxes, labels, normal=False, transpose=False, clas
     # image = image_processing.untranspose(image)
     # image = image_processing.convert_color_space(image, colorSpace="RGB")
     image = image_utils.draw_image_bboxes_labels(image, bboxes, labels, class_name=class_name,
-                                                 thickness=thickness, fontScale=1.5)
+                                                 thickness=thickness, fontScale=0.8, drawType="custom")
     image_utils.cv_show_image("image", image, delay=0, use_rgb=use_rgb)
     print("===" * 10)
 

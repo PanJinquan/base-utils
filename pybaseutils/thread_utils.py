@@ -14,7 +14,7 @@
 
 import threading
 import time
-from typing import List, Callable
+from typing import List, Tuple, Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from multiprocessing import Pool
 
@@ -56,6 +56,18 @@ def consumer(image_path: str):
     return image_path
 
 
+def consumer_multi(image_path: str, data):
+    """
+    :param image_path:
+    :return:
+    """
+    t = int(image_path.split(".")[0])
+    time.sleep(t)
+    # with thread_lock:
+    print("正在处理数据：{},{}  ".format(image_path, data))
+    return image_path, data
+
+
 class ProcessPool(object):
     """进程池"""
 
@@ -72,10 +84,10 @@ class ProcessPool(object):
             result.append(r)
         return result
 
-    def task_apply_async(self, func: Callable, inputs: List):
+    def task_apply_async(self, func: Callable, inputs: List, timeout=None):
         """进程任务，返回结果有序"""
         result = [self.pool.apply_async(func, args=(i,)) for i in inputs]
-        result = [r.get() for r in result]
+        result = [r.get(timeout=timeout) for r in result]
         return result
 
     def close(self):
@@ -105,23 +117,44 @@ class ThreadPool(object):
         t = self.pool.submit(func, *args, **kwargs)
         return t
 
-    def task_map(self, func: Callable, inputs: List):
+    def task_map(self, func: Callable, inputs: List, timeout=None):
         """线程任务，返回结果有序(map与submit的性能基本一致)"""
         # 通过executor的 map 获取已经完成的task的值
         result = []
-        for r in self.pool.map(func, inputs):
-            result.append(r)
+        try:
+            for r in self.pool.map(func, inputs, timeout=timeout):
+                result.append(r)
+        except Exception as e:
+            result = []
+            print("Error:{}".format(e))
         return result
 
-    def task_submit(self, func: Callable, inputs: List):
+    def task_maps(self, func: Callable, inputs: List[List] or List[Tuple], timeout=None):
+        """线程任务，返回结果有序(map与submit的性能基本一致)"""
+        # 通过executor的 map 获取已经完成的task的值
+        inputs = [args for args in zip(*inputs)]
+        result = []
+        try:
+            for r in self.pool.map(func, *inputs, timeout=timeout):
+                result.append(r)
+        except Exception as e:
+            result = []  # 超时异常时，输出列表可能缺失部分值
+            print("Error:{}".format(e))
+        return result
+
+    def task_submit(self, func: Callable, inputs: List, timeout=None):
         """线程任务，返回结果无序(map与submit的性能基本一致)"""
         task_list = [self.pool.submit(func, p) for p in inputs]
         result = []
-        for task in as_completed(task_list):
-            result.append(task.result())
+        try:
+            for task in as_completed(task_list, timeout=timeout):
+                result.append(task.result(timeout=timeout))
+        except Exception as e:
+            result = []
+            print("Error:{}".format(e))
         return result
 
-    def task_submit_v1(self, func: Callable, inputs: List):
+    def task_submit_v1(self, func: Callable, inputs: List, timeout=None):
         """线程任务，返回结果无序"""
         task_list = [self.pool.submit(func, p) for p in inputs]
         result = []
@@ -129,7 +162,7 @@ class ThreadPool(object):
             index = []
             for i, task in enumerate(task_list):
                 if task.done():
-                    result.append(task.result())
+                    result.append(task.result(timeout=timeout))
                 else:
                     index.append(i)
             task_list = [task_list[i] for i in index]
@@ -153,15 +186,16 @@ def thread_lock_decorator():
 
 def performanceThreadPool():
     from pybaseutils import time_utils
-    tp = ThreadPool(max_workers=4)
-    contents = ["1.jpg", "4.jpg", "4.jpg", "4.jpg", "2.jpg"]
-    print(contents)
+    tp = ThreadPool(max_workers=2)
+    contents1 = ["4.jpg", "1.jpg", "4.jpg", "4.jpg", "2.jpg"]
+    contents2 = [["0.jpg", "a"], ["4.jpg", "b"], ["2.jpg", "c"]]
     with time_utils.Performance("task_map") as p:
-        result1 = tp.task_map(func=consumer, inputs=contents)
-    with time_utils.Performance("task_submit") as p:
-        result2 = tp.task_submit(func=consumer, inputs=contents)
-    print(result1)
-    print(result2)
+        #     result1 = tp.task_map(func=consumer, inputs=contents1)
+        result2 = tp.task_maps(func=consumer_multi, inputs=contents2, timeout=1)
+    # with time_utils.Performance("task_submit") as p:
+    #     result2 = tp.task_submit(func=consumer, inputs=contents1)
+    # print("result1:{}".format(result1))
+    print("result2:{}".format(result2))
 
 
 def performanceProcessPool():
@@ -179,5 +213,5 @@ def performanceProcessPool():
 
 
 if __name__ == "__main__":
-    # performanceThreadPool()
-    performanceProcessPool()
+    performanceThreadPool()
+    # performanceProcessPool()

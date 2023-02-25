@@ -17,6 +17,11 @@ mprof plot mprofile_20200329173152.dat # 指定绘制文件
 mprof plot --flame mprofile_20200329173152.dat # 查看火焰图
 ```
 
+## Ubuntu中监控CPU和GPU
+
+- https://blog.csdn.net/qq_40078905/article/details/123087635
+- pip install sysmon
+
 ## pip安装慢的问题
 
 - 新建/修改: vim ~/.pip/pip.conf:
@@ -98,3 +103,14 @@ ps aux|grep python|grep -v grep
 
 - grep python”的输出结果是，所有含有关键字“python”的进程，这是python程序
 - grep -v grep”是在列出的进程中去除含有关键字“grep”的进程。
+
+## 文件信息统计
+
+```
+# 统计当前文件夹下文件的个数，包括子文件夹里的
+ls -lR|grep "^-"|wc -l
+# 统计文件夹下目录的个数，包括子文件夹里的
+ls -lR|grep "^d"|wc -l
+# 查看当前文件夹大小
+du -ah --max-depth=1/
+```

@@ -13,6 +13,7 @@ from pybaseutils import file_utils, image_utils
 
 def image_clip_demo(image_dir, out_dir):
     """
+    显示图片大小
     pip install pybaseutils==0.7.3
     :param image_dir: 输入图片文件夹
     :param out_dir:保存图片文件夹
@@ -24,6 +25,22 @@ def image_clip_demo(image_dir, out_dir):
         # 限制图像最大分辨率,不超过1920
         out_image = image_utils.resize_image_clip(image, clip_max=1920)
         print(image.shape, out_image.shape)
+        if out_dir:
+            out_file = file_utils.create_dir(out_dir, None, os.path.basename(image_file))
+            cv2.imwrite(out_file, out_image)
+
+
+def image_rename_demo(image_dir, out_dir=None):
+    """
+    显示图片大小
+    pip install pybaseutils==0.7.3
+    :param image_dir: 输入图片文件夹
+    :param out_dir:保存图片文件夹
+    :return:
+    """
+    image_list = file_utils.get_images_list(image_dir)
+    for image_file in image_list:
+        image_id
         if out_dir:
             out_file = file_utils.create_dir(out_dir, None, os.path.basename(image_file))
             cv2.imwrite(out_file, out_image)
