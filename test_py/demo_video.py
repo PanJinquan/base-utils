@@ -18,14 +18,14 @@ def crop_fun(frame):
 
 def resize_fun(frame):
     h, w = frame.shape[:2]
-    frame = image_utils.resize_image(frame, size=(256,None))
+    frame = image_utils.resize_image(frame, size=(320, None))
     return frame
 
 
 if __name__ == "__main__":
-    video_file = "/home/dm/nasdata/dataset/csdn/face_person/demo/android-demo1.mp4"
+    video_file = "/home/dm/nasdata/dataset/csdn/Eyeglasses/dataset/video/result.avi"
     # video_utils.video2frames(video_file, interval=2, func=None, vis=True)
-    video_utils.video2gif(video_file, interval=6, func=resize_fun, fps=5, use_pil=False, vis=True)
+    video_utils.video2gif(video_file, interval=3, func=resize_fun, fps=7, use_pil=False, vis=True)
     # video_utils.video2gif(video_file, interval=4, func=None, fps=5, use_pil=True, vis=True)
     # video2video(video_file, dst_file, vis=True)
 

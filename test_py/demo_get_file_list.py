@@ -49,7 +49,7 @@ def save_file_list_labels(image_dir, class_file="", out_path=None, shuffle=False
     return content_list
 
 
-def save_file_list(file_dir, prefix="", postfix=image_utils.IMG_POSTFIX, only_id=True, shuffle=False, max_num=None):
+def save_file_list(file_dir, prefix="", postfix=file_utils.IMG_POSTFIX, only_id=True, shuffle=False, max_num=None):
     """保存文件列表"""
     filename = os.path.join(os.path.dirname(file_dir), "file_list.txt")
     file_list = file_utils.get_files_list(file_dir, prefix=prefix, postfix=postfix, basename=False)
@@ -67,6 +67,6 @@ def save_file_list(file_dir, prefix="", postfix=image_utils.IMG_POSTFIX, only_id
 
 
 if __name__ == "__main__":
-    file_dir = "/home/dm/nasdata/dataset/csdn/Eyeglasses/dataset/face-eyeglasses/JPEGImages"
+    file_dir = "/home/dm/nasdata/dataset/csdn/Eyeglasses/dataset/eyeglasses-v2/face-eyeglasses/JPEGImages"
     save_file_list(file_dir, prefix="", postfix=file_utils.IMG_POSTFIX + ["*.JPG"], only_id=False, shuffle=True,
                    max_num=None)

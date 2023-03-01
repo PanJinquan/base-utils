@@ -19,7 +19,7 @@ import numbers
 import pickle
 from datetime import datetime
 
-IMG_POSTFIX = ['*.jpg', '*.jpeg', '*.png', '*.tif', "*.JPG"]
+IMG_POSTFIX = ['*.jpg', '*.jpeg', '*.png', '*.tif', "*.JPG", "*.bmp"]
 VIDEO_POSTFIX = ['*.mp4', '*.avi']
 
 

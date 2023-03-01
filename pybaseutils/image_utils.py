@@ -1053,7 +1053,7 @@ def show_image_rects_text(title, rgb_image, rects, rects_name, color=None, drawT
 
 
 def draw_image_bboxes_labels(rgb_image, bboxes, labels, class_name=None, color=None,
-                             thickness=2, fontScale=0.8, drawType="custom"):
+                             thickness=-1, fontScale=-1.0, drawType="custom"):
     """
     :param rgb_image:
     :param bboxes:  [[x1,y1,x2,y2],[x1,y1,x2,y2]]
@@ -1070,7 +1070,7 @@ def draw_image_bboxes_labels(rgb_image, bboxes, labels, class_name=None, color=N
     return rgb_image
 
 
-def draw_image_rects_labels(rgb_image, rects, labels, class_name=None, color=None, thickness=2, fontScale=0.8):
+def draw_image_rects_labels(rgb_image, rects, labels, class_name=None, color=None, thickness=-1, fontScale=-1.0):
     """
     :param rgb_image:
     :param rects:
@@ -1083,7 +1083,7 @@ def draw_image_rects_labels(rgb_image, rects, labels, class_name=None, color=Non
     return rgb_image
 
 
-def draw_image_detection_rects(image, rects, probs, labels, class_name=None, thickness=2, fontScale=0.8,
+def draw_image_detection_rects(image, rects, probs, labels, class_name=None, thickness=-1, fontScale=-1.0,
                                drawType="custom"):
     """
     :param image:
@@ -1102,7 +1102,7 @@ def draw_image_detection_rects(image, rects, probs, labels, class_name=None, thi
     return image
 
 
-def draw_image_detection_boxes(image, boxes, probs, labels, class_name=None, thickness=2, fontScale=0.8,
+def draw_image_detection_boxes(image, boxes, probs, labels, class_name=None, thickness=-1, fontScale=-1.0,
                                drawType="custom"):
     """
     :param image:
@@ -1115,6 +1115,7 @@ def draw_image_detection_boxes(image, boxes, probs, labels, class_name=None, thi
     :param drawType:
     :return:
     """
+    thickness, fontScale = get_linesize(max(image.shape), thickness=thickness, fontScale=fontScale)
     labels = labels if isinstance(labels, list) else np.asarray(labels, dtype=np.int32).reshape(-1)
     probs = np.asarray(probs).reshape(-1)
     for label, box, prob in zip(labels, boxes, probs):
@@ -1128,6 +1129,13 @@ def draw_image_detection_boxes(image, boxes, probs, labels, class_name=None, thi
 
 
 draw_image_detection_bboxes = draw_image_detection_boxes
+
+
+def get_linesize(length, thickness=-1, fontScale=-1.0):
+    """自动计算绘图的大小thickness，fontScale"""
+    if fontScale <= 0: fontScale = max(2.0 * length / 800.0, 0.6)
+    if thickness <= 0: thickness = int(2.0 * fontScale + 1)
+    return thickness, fontScale
 
 
 def draw_dt_gt_dets(image, dt_boxes, dt_label, gt_boxes, gt_label, vis_diff=False):
@@ -1172,7 +1180,7 @@ def custom_bbox_line(image, bbox, color, name, thickness=2, fontScale=0.8, drawT
     :param top:
     :return:
     """
-    # fontScale = 0.5
+    thickness, fontScale = get_linesize(max(image.shape), thickness=thickness, fontScale=fontScale)
     if not name: drawType = "simple"
     if drawType == "chinese":
         cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness, 8, 0)
@@ -1198,34 +1206,6 @@ def custom_bbox_line(image, bbox, color, name, thickness=2, fontScale=0.8, drawT
         cv2.putText(image, str(name), (text_loc[0], text_loc[1] + baseline), cv2.FONT_HERSHEY_SIMPLEX, fontScale,
                     (255, 255, 255), thickness)
     return image
-
-
-def show_boxList(title, boxList, rgb_image, delay=0):
-    """
-    [xmin,ymin,xmax,ymax]
-    :param title:
-    :param boxList:
-    :param rgb_image:
-    :return:
-    """
-    bgr_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR)
-    for item in boxList:
-        name = item["label"]
-        xmin = item["xtl"]
-        xmax = item["xbr"]
-        ymin = item["ytl"]
-        ymax = item["ybr"]
-        # crop_type=[xbr,ybr,xtl,ytl]
-        box = [xmin, ymin, xmax, ymax]
-        box = [int(float(b)) for b in box]
-        cv2.rectangle(bgr_image, (box[0], box[1]), (box[2], box[3]), (0, 255, 0), 2, 8, 0)
-        cv2.putText(bgr_image, name, (box[0], box[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), thickness=2)
-    # cv2.imshow(title, bgr_image)
-    # cv2.delay(0)
-    rgb_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2RGB)
-    if title:
-        cv_show_image(title, rgb_image, delay=delay)
-    return rgb_image
 
 
 def draw_landmark(image, landmarks_list, radius=1, thickness=2, color=(0, 0, 255), vis_id=False):
@@ -1268,7 +1248,7 @@ def show_landmark(title, image, landmarks_list, vis_id=False, delay=0):
     return image
 
 
-def draw_points_text(image, points, texts=None, color=(255, 0, 0), fontScale=0.8, thickness=1, drawType="simple"):
+def draw_points_text(image, points, texts=None, color=(255, 0, 0), thickness=-1, fontScale=-1.0, drawType="simple"):
     """
     :param image:
     :param points:
@@ -1277,6 +1257,7 @@ def draw_points_text(image, points, texts=None, color=(255, 0, 0), fontScale=0.8
     :param drawType: custom or simple
     :return:
     """
+    thickness, fontScale = get_linesize(max(image.shape), thickness=thickness, fontScale=fontScale)
     if texts is None:
         texts = [""] * len(points)
     for point, text in zip(points, texts):
@@ -1287,7 +1268,7 @@ def draw_points_text(image, points, texts=None, color=(255, 0, 0), fontScale=0.8
     return image
 
 
-def draw_text(image, point, text, color=(255, 0, 0), fontScale=0.8, thickness=5, drawType="custom"):
+def draw_text(image, point, text, color=(255, 0, 0), fontScale=-1, thickness=-1, drawType="custom"):
     """
     :param image:
     :param point:
@@ -1295,6 +1276,7 @@ def draw_text(image, point, text, color=(255, 0, 0), fontScale=0.8, thickness=5,
     :param drawType: custom or simple
     :return:
     """
+    thickness, fontScale = get_linesize(max(image.shape), thickness=thickness, fontScale=fontScale)
     text_thickness = 1
     fontFace = cv2.FONT_HERSHEY_SIMPLEX
     # fontFace=cv2.FONT_HERSHEY_SIMPLEX
@@ -1311,7 +1293,7 @@ def draw_text(image, point, text, color=(255, 0, 0), fontScale=0.8, thickness=5,
     return image
 
 
-def draw_text_line(image, point, text_line: str, bg_color=(255, 0, 0), thickness=1, drawType="custom"):
+def draw_text_line(image, point, text_line: str, bg_color=(255, 0, 0), thickness=-1, fontScale=-1.0, drawType="custom"):
     """
     :param image:
     :param point:
@@ -1319,7 +1301,7 @@ def draw_text_line(image, point, text_line: str, bg_color=(255, 0, 0), thickness
     :param drawType: custom or custom
     :return:
     """
-    fontScale = 0.4
+    thickness, fontScale = get_linesize(max(image.shape), thickness=thickness, fontScale=fontScale)
     fontFace = cv2.FONT_HERSHEY_SIMPLEX
     # fontFace=cv2.FONT_HERSHEY_SIMPLEX
     text_line = text_line.split("\n")
@@ -1472,6 +1454,8 @@ def draw_image_lines(image, points, pointline=[], color=(0, 0, 255), thickness=2
     for point_index in pointline:
         point1 = tuple(points[point_index[0]])
         point2 = tuple(points[point_index[1]])
+        point1 = (int(point1[0]), int(point1[1]))
+        point2 = (int(point2[0]), int(point2[1]))
         if (not check_point(point1)) or (not check_point(point2)):
             continue
         cv2.line(image, point1, point2, color, thickness)  # 绿色，3个像素宽度
@@ -2611,6 +2595,63 @@ def image_file2gif(file_list, size=None, gif_file="test.gif", interval=1, fps=4,
         frames2gif_by_pil(frames, gif_file, fps=fps, loop=loop)
     else:
         frames2gif_by_imageio(frames, gif_file, fps=fps, loop=loop)
+
+
+def get_video_capture(video, width=None, height=None, fps=None):
+    """
+     获得视频读取对象
+     --   7W   Pix--> width=320,height=240
+     --   30W  Pix--> width=640,height=480
+     720P,100W Pix--> width=1280,height=720
+     960P,130W Pix--> width=1280,height=1024
+    1080P,200W Pix--> width=1920,height=1080
+    :param video: video file or Camera ID
+    :param width:   图像分辨率width
+    :param height:  图像分辨率height
+    :param fps:  设置视频播放帧率
+    :return:
+    """
+    video_cap = cv2.VideoCapture(video)
+    # 设置分辨率
+    if width:
+        video_cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+    if height:
+        video_cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+    if fps:
+        video_cap.set(cv2.CAP_PROP_FPS, fps)
+    return video_cap
+
+
+def get_video_info(video_cap: cv2.VideoCapture):
+    """
+    获得视频的基础信息
+    :param video_cap:视频对象
+    :return:
+    """
+    width = int(video_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(video_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    num_frames = int(video_cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    fps = int(video_cap.get(cv2.CAP_PROP_FPS))
+    print("video:width:{},height:{},fps:{},num_frames:{}".format(width, height, fps, num_frames))
+    return width, height, num_frames, fps
+
+
+def get_video_writer(video_file, width, height, fps):
+    """
+    获得视频存储对象
+    :param video_file: 输出保存视频的文件路径
+    :param width:   图像分辨率width
+    :param height:  图像分辨率height
+    :param fps:  设置视频播放帧率
+    :return:
+    """
+    if not os.path.exists(os.path.dirname(video_file)):
+        os.makedirs(os.path.dirname(video_file))
+    fourcc = cv2.VideoWriter_fourcc(*'XVID')
+    frameSize = (int(width), int(height))
+    video_writer = cv2.VideoWriter(video_file, fourcc, fps, frameSize)
+    print("video:width:{},height:{},fps:{}".format(width, height, fps))
+    return video_writer
 
 
 if __name__ == "__main__":

@@ -13,62 +13,9 @@ from pybaseutils import image_utils, file_utils
 
 VIDEO_POSTFIX = ['*.mp4', '*.avi']
 
-
-def get_video_capture(video, width=None, height=None, fps=None):
-    """
-     获得视频读取对象
-     --   7W   Pix--> width=320,height=240
-     --   30W  Pix--> width=640,height=480
-     720P,100W Pix--> width=1280,height=720
-     960P,130W Pix--> width=1280,height=1024
-    1080P,200W Pix--> width=1920,height=1080
-    :param video: video file or Camera ID
-    :param width:   图像分辨率width
-    :param height:  图像分辨率height
-    :param fps:  设置视频播放帧率
-    :return:
-    """
-    video_cap = cv2.VideoCapture(video)
-    # 设置分辨率
-    if width:
-        video_cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-    if height:
-        video_cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-    if fps:
-        video_cap.set(cv2.CAP_PROP_FPS, fps)
-    return video_cap
-
-
-def get_video_info(video_cap: cv2.VideoCapture):
-    """
-    获得视频的基础信息
-    :param video_cap:视频对象
-    :return:
-    """
-    width = int(video_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    height = int(video_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    num_frames = int(video_cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    fps = int(video_cap.get(cv2.CAP_PROP_FPS))
-    print("video:width:{},height:{},fps:{},num_frames:{}".format(width, height, fps, num_frames))
-    return width, height, num_frames, fps
-
-
-def get_video_writer(video_file, width, height, fps):
-    """
-    获得视频存储对象
-    :param video_file: 输出保存视频的文件路径
-    :param width:   图像分辨率width
-    :param height:  图像分辨率height
-    :param fps:  设置视频播放帧率
-    :return:
-    """
-    if not os.path.exists(os.path.dirname(video_file)):
-        os.makedirs(os.path.dirname(video_file))
-    fourcc = cv2.VideoWriter_fourcc(*'XVID')
-    frameSize = (int(width), int(height))
-    video_writer = cv2.VideoWriter(video_file, fourcc, fps, frameSize)
-    print("video:width:{},height:{},fps:{}".format(width, height, fps))
-    return video_writer
+get_video_capture = image_utils.get_video_capture
+get_video_info = image_utils.get_video_info
+get_video_writer = image_utils.get_video_writer
 
 
 def video2gif(video_file, gif_file=None, func=None, interval=1, use_pil=False, fps=-1, vis=True):
@@ -92,7 +39,7 @@ def video2gif(video_file, gif_file=None, func=None, interval=1, use_pil=False, f
     count = 0
     frames = []
     while True:
-        if count % interval == 0:
+        if count % interval == 0 and count > 0:
             # 设置抽帧的位置
             video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
             isSuccess, frame = video_cap.read()

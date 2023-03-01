@@ -13,7 +13,8 @@ if __name__ == "__main__":
     # class_name = "/home/dm/nasdata/dataset/csdn/traffic light/VOC/class_name.txt"
     # filename = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/word-v1/train.txt"
     # filename = "/home/dm/nasdata/dataset/csdn/face_person/MPII/test.txt"
-    filename = "/home/dm/nasdata/dataset/csdn/Eyeglasses/dataset/face-eyeglasses/trainval.txt"
+    # filename = "/home/dm/nasdata/dataset/csdn/Eyeglasses/dataset/face-eyeglasses/trainval.txt"
+    filename = "/home/dm/nasdata/dataset/csdn/Eyeglasses/dataset/eyeglasses-v2/face-eyeglasses/train.txt"
     # filename = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/word-old/train.txt"
     # class_name = ["face", "person"]
     class_name =["unique"]
