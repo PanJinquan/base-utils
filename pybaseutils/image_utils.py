@@ -253,39 +253,43 @@ def resize_image_like(image_list, dst_img, is_rgb=False):
     return image_list
 
 
-def image_hstack(images, split_line=False, is_rgb=False, texts=[]):
+def image_hstack(images, split_line=False, is_rgb=False, texts=[], fontScale=-1.0, thickness=-1):
     """图像左右拼接"""
+    if len(images) == 0: return images
     dst_images = resize_image_like(image_list=images, dst_img=images[0], is_rgb=is_rgb)
+    thickness, fontScale = get_linesize(max(images[0].shape), thickness=thickness, fontScale=fontScale)
     dst_images = np.hstack(dst_images)
     if len(dst_images.shape) == 2:
         dst_images = cv2.cvtColor(dst_images, cv2.COLOR_GRAY2BGR)
-    if split_line:
+    if split_line or texts:
         h, w = dst_images.shape[:2]
         x = w // len(images)
         y = h
         for i in range(len(images)):
             p1 = (i * x, 0)
             p2 = (i * x, y)
-            dst_images = cv2.line(dst_images, p1, p2, color=(255, 0, 0), thickness=2)
-            if texts: dst_images = draw_text(dst_images, point=(i * x + 10, 30), color=(0, 0, 255),
-                                             fontScale=1.0, thickness=2, text=texts[i], drawType="simple")
+            if split_line: dst_images = cv2.line(dst_images, p1, p2, color=(255, 0, 0), thickness=thickness)
+            if texts: dst_images = draw_text(dst_images, point=(i * x + 10, 20 * thickness), color=(0, 0, 255),
+                                             fontScale=fontScale, thickness=thickness, text=texts[i], drawType="simple")
     return dst_images
 
 
-def image_vstack(images, split_line=False, is_rgb=False, texts=[]):
+def image_vstack(images, split_line=False, is_rgb=False, texts=[], fontScale=-1.0, thickness=-1):
     """图像上下拼接"""
+    if len(images) == 0: return images
     dst_images = resize_image_like(image_list=images, dst_img=images[0], is_rgb=is_rgb)
+    thickness, fontScale = get_linesize(max(images[0].shape), thickness=thickness, fontScale=fontScale)
     dst_images = np.vstack(dst_images)
     if len(dst_images.shape) == 2:
         dst_images = cv2.cvtColor(dst_images, cv2.COLOR_GRAY2BGR)
-    if split_line:
+    if split_line or texts:
         h, w = dst_images.shape[:2]
         x = w
         y = h // len(images)
         for i in range(len(images)):
             p1 = (0, i * y)
             p2 = (x, i * y)
-            dst_images = cv2.line(dst_images, p1, p2, color=(255, 0, 0), thickness=2)
+            if split_line: dst_images = cv2.line(dst_images, p1, p2, color=(255, 0, 0), thickness=2)
             if texts: dst_images = draw_text(dst_images, point=(10, i * y + 30),
                                              fontScale=1.0, thickness=2, text=texts[i], drawType="simple")
     return dst_images
@@ -1132,7 +1136,10 @@ draw_image_detection_bboxes = draw_image_detection_boxes
 
 
 def get_linesize(length, thickness=-1, fontScale=-1.0):
-    """自动计算绘图的大小thickness，fontScale"""
+    """
+    自动计算绘图的大小thickness，fontScale
+    thickness, fontScale = get_linesize(max(image.shape), thickness=thickness, fontScale=fontScale)
+    """
     if fontScale <= 0: fontScale = max(2.0 * length / 800.0, 0.6)
     if thickness <= 0: thickness = int(2.0 * fontScale + 1)
     return thickness, fontScale
@@ -1268,7 +1275,7 @@ def draw_points_text(image, points, texts=None, color=(255, 0, 0), thickness=-1,
     return image
 
 
-def draw_text(image, point, text, color=(255, 0, 0), fontScale=-1, thickness=-1, drawType="custom"):
+def draw_text(image, point, text, color=(255, 0, 0), fontScale=-1.0, thickness=-1, drawType="custom"):
     """
     :param image:
     :param point:

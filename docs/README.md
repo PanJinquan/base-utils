@@ -106,11 +106,14 @@ ps aux|grep python|grep -v grep
 
 ## 文件信息统计
 
-```
+```bash
+# 查找某文件的位置使用whereis，例如：
+whereis cuda # 查找cuda路径
+whereis whereis cudnn_version # 查找cudnn路径
+# 查看当前文件夹大小
+du -ah --max-depth=1/
 # 统计当前文件夹下文件的个数，包括子文件夹里的
 ls -lR|grep "^-"|wc -l
 # 统计文件夹下目录的个数，包括子文件夹里的
 ls -lR|grep "^d"|wc -l
-# 查看当前文件夹大小
-du -ah --max-depth=1/
 ```

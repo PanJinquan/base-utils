@@ -14,10 +14,10 @@ if __name__ == "__main__":
     # filename = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/word-v1/train.txt"
     # filename = "/home/dm/nasdata/dataset/csdn/face_person/MPII/test.txt"
     # filename = "/home/dm/nasdata/dataset/csdn/Eyeglasses/dataset/face-eyeglasses/trainval.txt"
-    filename = "/home/dm/nasdata/dataset/csdn/Eyeglasses/dataset/eyeglasses-v2/face-eyeglasses/train.txt"
+    filename = "/home/dm/nasdata/dataset/csdn/Eyeglasses/dataset/eyeglasses-test/face/test.txt"
     # filename = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/word-old/train.txt"
-    # class_name = ["face", "person"]
-    class_name =["unique"]
+    class_name = ["face", "face-eyeglasses"]
+    # class_name = ["unique"]
     # class_name =None
     use_rgb = False
     dataset = parser_voc.VOCDataset(filename=filename,
@@ -37,6 +37,6 @@ if __name__ == "__main__":
         image, targets, image_id = data["image"], data["target"], data["image_id"]
         print(image_id)
         bboxes, labels = targets[:, 0:4], targets[:, 4:5]
-        parser_voc.show_target_image(image, bboxes, labels, normal=False, transpose=False,
-                                     class_name=class_name, use_rgb=use_rgb, thickness=2)
-        # show_boxes_image(image, Dataset.cxcywh2xyxy(bboxes, 0, 0), labels, normal=False, transpose=True)
+        image = parser_voc.show_target_image(image, bboxes, labels, normal=False, transpose=False,
+                                             class_name=class_name, use_rgb=use_rgb)
+        # image = show_boxes_image(image, Dataset.cxcywh2xyxy(bboxes, 0, 0), labels, normal=False, transpose=True)

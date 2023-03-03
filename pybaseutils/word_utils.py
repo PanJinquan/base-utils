@@ -251,17 +251,21 @@ def save_packer_images(packer, keys=["crop"], dsize=None, out_dir="./output"):
             cv2.imwrite(file, img)
 
 
-def show_word_grid(packer, image, radius=2, thickness=5, vis_id=False, vis=True, delay=0):
+def show_word_grid(packer, image, radius=-1, thickness=-1, vis_id=False, vis=True, delay=0):
+    thickness, radius = image_utils.get_linesize(max(image.shape), thickness=thickness, fontScale=radius)
     for i, word in enumerate(packer):
         color = image_utils.color_map[i + 1]
         boxes = [word['box']]
         grid_point = word['grid_point']
-        thickness_ = max(int(thickness * 0.5), 1)
+        grid_score = word["grid_score"] if 'grid_score' in word else []
+        thickness_ = max(int(thickness * 0.4), 1)
+        print(f"i={i},\tgrid_score={grid_score},\tgrid_point={grid_point}")
         image = image_utils.draw_image_boxes(image, boxes, color=color, thickness=thickness_)
         image = image_utils.draw_image_lines(image, grid_point, thickness=thickness, color=color)
         # image = image_utils.draw_landmark(image, [grid_point], radius=radius, thickness=thickness,
         #                                   color=color, vis_id=vis_id)
         if vis: image_utils.cv_show_image("image", image, use_rgb=False, delay=delay)
+    return image
 
 
 def get_grid_range(mask, word_box, grid_box):
