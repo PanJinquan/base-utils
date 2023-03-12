@@ -145,7 +145,7 @@ def write_json_path(out_json_path, json_data):
         json.dump(json_data, f, indent=4, ensure_ascii=False)
 
 
-def write_data(filename, content_list, split=" ", mode='w'):
+def write_data(filename, content_list, split=",", mode='w'):
     """保存list[list[]]的数据到txt文件
     :param filename:文件名
     :param content_list:需要保存的数据,type->list

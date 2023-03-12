@@ -249,6 +249,8 @@ class VOCDataset(Dataset):
         except Exception as e:
             print("illegal annotation:{}".format(xml_file))
             objects = []
+            width = None
+            height = None
         objects_list = []
         if not isinstance(objects, list):
             objects = [objects]

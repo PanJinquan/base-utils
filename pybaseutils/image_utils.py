@@ -924,49 +924,51 @@ def get_bbox_intersection(box1, box2):
     return (x1, y1, x2, y2)
 
 
-def draw_image_rects(bgr_image, rect_list, color=(0, 0, 255), thickness=2):
-    for rect in rect_list:
+def draw_image_rects(image, rects, color=(0, 0, 255), thickness=-1):
+    thickness, fontScale = get_linesize(max(image.shape), thickness=thickness, fontScale=-1.0)
+    for rect in rects:
         x, y, w, h = rect
         point1 = (int(x), int(y))
         point2 = (int(x + w), int(y + h))
-        cv2.rectangle(bgr_image, point1, point2, color, thickness=thickness)
-    return bgr_image
+        cv2.rectangle(image, point1, point2, color, thickness=thickness)
+    return image
 
 
-def draw_image_boxes(bgr_image, boxes_list, color=(0, 0, 255), thickness=1):
-    for box in boxes_list:
+def draw_image_boxes(image, boxes, color=(0, 0, 255), thickness=-1):
+    thickness, fontScale = get_linesize(max(image.shape), thickness=thickness, fontScale=-1.0)
+    for box in boxes:
         x1, y1, x2, y2 = box[:4]
         point1 = (int(x1), int(y1))
         point2 = (int(x2), int(y2))
-        cv2.rectangle(bgr_image, point1, point2, color, thickness=thickness)
-    return bgr_image
+        cv2.rectangle(image, point1, point2, color, thickness=thickness)
+    return image
 
 
-def show_image_rects(title, image, rect_list, color=(0, 0, 255), delay=0, use_rgb=False):
+def show_image_rects(title, image, rects, color=(0, 0, 255), delay=0, use_rgb=False):
     """
     :param title:
     :param image:
-    :param rect_list:[[ x, y, w, h],[ x, y, w, h]]
+    :param rects:[[ x, y, w, h],[ x, y, w, h]]
     :return:
     """
-    image = draw_image_rects(image.copy(), rect_list, color)
+    image = draw_image_rects(image.copy(), rects, color)
     cv_show_image(title, image, delay=delay, use_rgb=use_rgb)
     return image
 
 
-def show_image_boxes(title, image, boxes_list, color=(0, 0, 255), delay=0, use_rgb=False):
+def show_image_boxes(title, image, boxes, color=(0, 0, 255), delay=0, use_rgb=False):
     """
     :param title:
     :param image:
-    :param boxes_list:[[ x1, y1, x2, y2],[ x1, y1, x2, y2]]
+    :param boxes:[[ x1, y1, x2, y2],[ x1, y1, x2, y2]]
     :return:
     """
-    image = draw_image_boxes(image, boxes_list, color)
+    image = draw_image_boxes(image, boxes, color)
     cv_show_image(title, image, delay=delay, use_rgb=use_rgb)
     return image
 
 
-def draw_image_bboxes_text(rgb_image, boxes, boxes_name, color=(255, 0, 0), thickness=2, fontScale=0.8,
+def draw_image_bboxes_text(rgb_image, boxes, boxes_name, color=(255, 0, 0), thickness=-1, fontScale=-1.0,
                            drawType="custom", top=True):
     """
     :param boxes_name:
@@ -1127,7 +1129,7 @@ def draw_image_detection_boxes(image, boxes, probs, labels, class_name=None, thi
         box = [int(b) for b in box]
         if class_name:
             label = class_name[int(label)]
-        boxes_name = "{}:{:3.3f}".format(label, prob)
+        boxes_name = "{}:{:3.2f}".format(label, prob)
         custom_bbox_line(image, box, color, boxes_name, thickness=thickness, fontScale=fontScale, drawType=drawType)
     return image
 
@@ -1140,7 +1142,7 @@ def get_linesize(length, thickness=-1, fontScale=-1.0):
     自动计算绘图的大小thickness，fontScale
     thickness, fontScale = get_linesize(max(image.shape), thickness=thickness, fontScale=fontScale)
     """
-    if fontScale <= 0: fontScale = max(2.0 * length / 800.0, 0.6)
+    if fontScale <= 0: fontScale = max(2.0 * length / 850.0, 0.6)
     if thickness <= 0: thickness = int(2.0 * fontScale + 1)
     return thickness, fontScale
 
@@ -1272,6 +1274,12 @@ def draw_points_text(image, points, texts=None, color=(255, 0, 0), thickness=-1,
         point = (int(point[0]), int(point[1]))
         cv2.circle(image, point, thickness * 2, color, -1)
         draw_text(image, point, text, color=color, fontScale=fontScale, thickness=thickness, drawType=drawType)
+    return image
+
+
+def draw_texts(image, points, texts, color=(255, 0, 0), fontScale=-1.0, thickness=-1, drawType="simple"):
+    for point, text in zip(points, texts):
+        image = draw_text(image, point, text, color=color, fontScale=fontScale, thickness=thickness, drawType=drawType)
     return image
 
 

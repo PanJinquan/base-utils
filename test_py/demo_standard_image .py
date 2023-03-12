@@ -40,7 +40,6 @@ def image_rename_demo(image_dir, out_dir=None):
     """
     image_list = file_utils.get_images_list(image_dir)
     for image_file in image_list:
-        image_id
         if out_dir:
             out_file = file_utils.create_dir(out_dir, None, os.path.basename(image_file))
             cv2.imwrite(out_file, out_image)
