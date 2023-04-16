@@ -39,6 +39,12 @@ chmod a+r /usr/local/cuda/lib64/libcudnn*
 sudo ldconfig
 ```
 
+## 安装torch
+```bash
+pip install --default-timeout=1000000 torch==1.8.0+cu111 torchvision==0.9.0+cu111 torchaudio==0.8.0 -f https://download.pytorch.org/whl/torch_stable.html
+pip install  --no-cache-dir torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
+```
+
 ## 安装TensorRT
 - 下载：TensorRT-8.4.1.5.Linux.x86_64-gnu.cuda-11.6.cudnn8.4，然后进入文件进行拷贝
 
@@ -62,3 +68,4 @@ pip install tensorrt
 pip install nvidia-pyindex
 pip install nvidia-tensorrt==8.4.1.5 (版本與TensorRT-8.4.1.5.Linux.x86_64-gnu.cuda-11.6.cudnn8.4匹配即可)
 ```
+

@@ -91,8 +91,8 @@ def show_hw_gt_word_info(word_info, vis=True):
         if gt_word['mask'] is None:
             hw_gt_images.append({"image": hw_word['mask'], "label": label})
             continue
-        stroke_scores = hw_word['stroke_scores'] if 'stroke_scores' in hw_word else []
-        hw_texts = ["{:3.3f}".format(s) for s in stroke_scores]
+        stroke_score = hw_word['stroke_score'] if 'stroke_score' in hw_word else []
+        hw_texts = ["{:3.3f}".format(s) for s in stroke_score]
         hw_gt_image = concat_hw_gt_stroke_image(hw_mask=hw_word['mask'], hw_segs=hw_word['stroke_segs'],
                                                 gt_mask=gt_word['mask'], gt_segs=gt_word['stroke_segs'],
                                                 hw_texts=hw_texts, vis=vis)

@@ -31,6 +31,7 @@ docker push image_id:tag
 
 ```bash
 pip install --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple opencv-python
+pip install --default-timeout=1000000 --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple opencv-python
 ```
 
 ## docker清除垃圾

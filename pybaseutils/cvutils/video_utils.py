@@ -39,7 +39,7 @@ def video2gif(video_file, gif_file=None, func=None, interval=1, use_pil=False, f
     count = 0
     frames = []
     while True:
-        if count % interval == 0 and count > 0:
+        if count % interval == 0 and count >= 0:
             # 设置抽帧的位置
             video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
             isSuccess, frame = video_cap.read()
@@ -152,7 +152,8 @@ def video2video(video_file, save_video, interval=1, vis=True, delay=20):
     # freq = int(fps / detect_freq)
     count = 0
     while True:
-        if count % interval == 0:
+        # if count % interval == 0:
+        if count % interval == 0 and count > 0:
             # 设置抽帧的位置
             video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
             isSuccess, frame = video_cap.read()

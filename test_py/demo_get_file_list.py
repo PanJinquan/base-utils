@@ -67,6 +67,6 @@ def save_file_list(file_dir, prefix="", postfix=file_utils.IMG_POSTFIX, only_id=
 
 
 if __name__ == "__main__":
-    file_dir = "/home/dm/nasdata/dataset/csdn/Eyeglasses/dataset/eyeglasses-v2/face-eyeglasses/JPEGImages"
+    file_dir = "/home/dm/nasdata/dataset/tmp/fall/mixed_fall/JPEGImages"
     save_file_list(file_dir, prefix="", postfix=file_utils.IMG_POSTFIX + ["*.JPG"], only_id=False, shuffle=True,
                    max_num=None)

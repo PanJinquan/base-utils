@@ -15,14 +15,22 @@ from pybaseutils import file_utils, image_utils, base64_utils, time_utils, font_
 
 
 def read_word_file(file):
-    words = file_utils.read_data(file, split=None)
-    words_ = []
-    for ws in words:
-        ws = font_utils.get_string_chinese(ws)
-        ws = [w for w in ws]
-        words_ += ws
-    words_ = list(set(words_))
-    return words_
+    words_list = file_utils.read_data(file, split=None)
+    words_dict = {}
+    count = 0
+    for ws in words_list:
+        # ws = font_utils.get_string_chinese(ws)
+        for w in ws:
+            assert w not in words_dict, Exception(f"Error:该组:[{ws}]的字:[{w}],在其他组中存在了,请合并")
+            words_dict[w] = count
+            count += 1
+    words = list(words_dict.keys())
+    print(words_dict)
+    print("have:{}".format(len(words_dict)))
+    filename = file_utils.create_dir(os.path.dirname(file), None, "word.txt")
+    file_utils.write_list_data(filename, words)
+    print("num files:{},out_path:{}".format(len(words), filename))
+    return words_dict
 
 
 def filter_words(classes, target):
@@ -31,13 +39,5 @@ def filter_words(classes, target):
 
 
 if __name__ == "__main__":
-    file = "/home/dm/nasdata/dataset-dmai/handwriting/word-class/trainval/class_name3594.txt"
-    file1 = "/home/dm/nasdata/dataset-dmai/handwriting/word-class/word-similar/【DMICE0084】书法评测研发项目-字库v4形近字表梳理_第二批_1135字.txt"
-    file2 = "/home/dm/nasdata/dataset-dmai/handwriting/word-class/word-similar/【DMICE0084】书法评测研发项目-字库v4形近字表梳理_第一批_2459字.txt"
-    target = read_word_file(file)
-    class1 = read_word_file(file1)
-    class2 = read_word_file(file2)
-    classes = list(set(class1 + class2))
-    classes = filter_words(classes, target)
-    print(len(classes))
-    print(classes)
+    file = "/home/dm/cv/panjinquan/dataset-dmai/handwriting/word-class/trainval/similar/形近字表v2.txt"
+    classes = read_word_file(file)

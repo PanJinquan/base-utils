@@ -91,7 +91,7 @@ def plot_bar(x, y, xlabel="X", ylabel="Y", title="bar", bin_width=1, vis=True, s
     font = get_font_type(size=14)
     # 准备数据
     # 用 Matplotlib 画条形图
-    plt.bar(x=x, height=y, width=bin_width, align="center", yerr=0.000001,fontproperties=font)
+    plt.bar(x=x, height=y, width=bin_width, align="center", yerr=0.000001, fontproperties=font)
     # plt.xlim([0.0, 1.0])
     # plt.ylim([0.0, 1.05])
     # 设置横纵坐标的名称以及对应字体格式
@@ -169,6 +169,26 @@ def plot_skew_kurt(data, name="Title"):
     plt.show()
 
 
+def plot_features(features, labels, num_classes):
+    """Plot features on 2D plane.
+    url : https://github.com/KaiyangZhou/pytorch-center-loss
+    Args:
+        features: (num_instances, num_features).
+        labels: (num_instances).
+    """
+    colors = [f'C{i}' for i in range(num_classes)]
+    num_classes = list(range(num_classes))
+    for label_idx in num_classes:
+        plt.scatter(
+            features[labels == label_idx, 0],
+            features[labels == label_idx, 1],
+            c=colors[label_idx],
+            s=1,
+        )
+    plt.legend([str(i) for i in num_classes], loc='upper right')
+    plt.show()
+
+
 def demo(image1, image2):
     fig = plt.figure(2)  # 新开一个窗口
     # fig1
@@ -195,10 +215,9 @@ def demo_for_skew_kurt():
 
 
 if __name__ == "__main__":
-    import cv2
-
-    # image_path="/media/dm/dm1/git/python-learning-notes/dataset/test_image/1.jpg"
-    # image=cv2.imread(image_path)
-    # image1=cv2.resize(image,dsize=(100,100))
-    # demo(image, image1)
-    demo_for_skew_kurt()
+    # demo_for_skew_kurt()
+    num_classes = 5
+    features = np.random.uniform(0, 1, size=(100, 512))
+    labels = np.random.uniform(0, num_classes, size=(100,))
+    labels = np.asarray(labels, dtype=np.int32)
+    plot_features(features, labels, num_classes)

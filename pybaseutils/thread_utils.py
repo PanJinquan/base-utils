@@ -3,7 +3,8 @@
     @Author : panjq
     @E-mail : pan_jinquan@163.com
     @Date   : 2022-05-01 16:36:18
-    @Url    : https://blog.csdn.net/xiaoyu_wu/article/details/102820384
+    @Url    : 官方API说明：https://docs.python.org/zh-tw/3.6/library/threading.html
+            https://blog.csdn.net/xiaoyu_wu/article/details/102820384
             python多进程&多线程
             由于多线程受GIL全局解释器锁的影响，多进程比多线程性能好，
             python多线程采用GIL(全局解释器锁)加锁机制，线程在执行代码时，必须先获得这把锁，才获得CPU执行代码指令。

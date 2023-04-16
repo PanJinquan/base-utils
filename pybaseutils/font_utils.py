@@ -10,11 +10,14 @@ import os
 import cv2
 import re
 import PIL
+import platform
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 from pybaseutils import image_utils, file_utils
 from pybaseutils.font_style import FONT_TYPE, FONT_ROOT
 from fontTools.ttLib import TTFont
+
+ROOT = os.path.dirname(__file__)
 
 
 class FontType(object):
@@ -51,6 +54,29 @@ class FontType(object):
 
 
 font_type = FontType()
+
+
+def get_font_type(size, font=""):
+    """
+    Windows字体路径      : /usr/share/fonts/楷体.ttf
+    Linux(Ubuntu)字体路径：/usr/share/fonts/楷体.ttf
+     >> fc-list             查看所有的字体
+     >> fc-list :lang=zh    查看所有的中文字体
+    :param size: 字体大小
+    :param font:  simsun.ttc 宋体;simhei.ttf 黑体
+    :return:
+    """
+    # 参数1：字体文件路径，参数2：字体大小；Windows系统“simhei.ttf”默认存储在路径：
+    if font:
+        font = ImageFont.truetype(font, size, encoding="utf-8")
+    elif platform.system().lower() == 'windows':
+        font = ImageFont.truetype("simhei.ttf", size, encoding="utf-8")  # simsun.ttc 宋体
+    elif platform.system().lower() == 'linux':
+        # font = ImageFont.truetype("uming.ttc", size, encoding="utf-8")
+        font = ImageFont.truetype("NotoSansCJK-Regular.ttc", size, encoding="utf-8")
+    else:
+        font = ImageFont.truetype(os.path.join(ROOT, "font_style/simhei.ttf"), size, encoding="utf-8")
+    return font
 
 
 def draw_image_text(image, point, text, style="楷体", size=20, color=(255, 255, 255)):
@@ -158,7 +184,7 @@ def remove_string_special_characters(string, repl=""):
     :return:
     """
     # new = re.sub(r"[^\w]", repl, string)  # 删除特殊字符，数字除外
-    new = re.sub('[0-9’!"#$%&\'()（）*+,-./:;<=>?@，。?★、…【】《》？“”‘’！[\\]^_`{|}~\s]+', repl, string) # 删除特殊字符，数字也删除
+    new = re.sub('[0-9’!"#$%&\'()（）*+,-./:;<=>?@，。?★、…【】《》？“”‘’！[\\]^_`{|}~\s]+', repl, string)  # 删除特殊字符，数字也删除
     return new
 
 

@@ -30,22 +30,7 @@ def image_clip_demo(image_dir, out_dir):
             cv2.imwrite(out_file, out_image)
 
 
-def image_rename_demo(image_dir, out_dir=None):
-    """
-    显示图片大小
-    pip install pybaseutils==0.7.3
-    :param image_dir: 输入图片文件夹
-    :param out_dir:保存图片文件夹
-    :return:
-    """
-    image_list = file_utils.get_images_list(image_dir)
-    for image_file in image_list:
-        if out_dir:
-            out_file = file_utils.create_dir(out_dir, None, os.path.basename(image_file))
-            cv2.imwrite(out_file, out_image)
-
-
 if __name__ == "__main__":
-    image_dir = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/soft-v2/JPEGImages"
-    out_dir = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/soft-v2/image"
+    image_dir = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/word-v6/zip/test1"
+    out_dir = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/word-v6/zip/test"
     image_clip_demo(image_dir, out_dir)

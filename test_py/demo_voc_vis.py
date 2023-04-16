@@ -14,12 +14,16 @@ if __name__ == "__main__":
     # filename = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/word-v1/train.txt"
     # filename = "/home/dm/nasdata/dataset/csdn/face_person/MPII/test.txt"
     # filename = "/home/dm/nasdata/dataset/csdn/Eyeglasses/dataset/face-eyeglasses/trainval.txt"
-    filename = "/home/dm/nasdata/dataset/csdn/Eyeglasses/dataset/eyeglasses-test/face/test.txt"
+    # filename = "/home/dm/nasdata/dataset/tmp/insects/VOC2/VOC/VOCdevkit/trainval.txt"
+    filename = "/home/dm/nasdata/dataset/tmp/fall/fall-v2/train.txt"
     # filename = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/word-old/train.txt"
-    class_name = ["face", "face-eyeglasses"]
+    # class_name = ["face", "face-eyeglasses"]
+    # class_name = "/home/dm/nasdata/dataset/tmp/traffic-sign/TT100K/VOC/train/class_name.txt"
     # class_name = ["unique"]
     # class_name =None
+    # class_name =['10+', 'dog', 'down', 'person']
     use_rgb = False
+    class_name = None
     dataset = parser_voc.VOCDataset(filename=filename,
                                     data_root=None,
                                     anno_dir=None,
@@ -28,7 +32,7 @@ if __name__ == "__main__":
                                     transform=None,
                                     use_rgb=use_rgb,
                                     check=False,
-                                    shuffle=True)
+                                    shuffle=False)
     print("have num:{}".format(len(dataset)))
     class_name = dataset.class_name
     for i in range(len(dataset)):
@@ -38,5 +42,5 @@ if __name__ == "__main__":
         print(image_id)
         bboxes, labels = targets[:, 0:4], targets[:, 4:5]
         image = parser_voc.show_target_image(image, bboxes, labels, normal=False, transpose=False,
-                                             class_name=class_name, use_rgb=use_rgb)
+                                             class_name=class_name, use_rgb=use_rgb,thickness=3, fontScale=1.5)
         # image = show_boxes_image(image, Dataset.cxcywh2xyxy(bboxes, 0, 0), labels, normal=False, transpose=True)

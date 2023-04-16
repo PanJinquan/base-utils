@@ -96,9 +96,9 @@ class LabelMeDemo(object):
 
 
 if __name__ == "__main__":
-    json_dir = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/competition-v2/json"
+    json_dir = "/home/dm/cv/panjinquan/dataset-dmai/handwriting/word-det/word-v6/test/json"
     out_root = os.path.dirname(json_dir)
     image_dir = os.path.join(out_root, "JPEGImages")
     class_name = None
     lm = LabelMeDemo(json_dir, image_dir)
-    lm.convert_dataset2voc(out_root, class_name=class_name, vis=False, crop=False)
+    lm.convert_dataset2voc(out_root, class_name=class_name, vis=False, crop=True)

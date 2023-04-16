@@ -493,7 +493,7 @@ def requests_url(url):
     return stream
 
 
-def read_images_url(url, size=None, norm=False, use_rgb=True):
+def read_images_url(url, size=None, norm=False, use_rgb=False):
     """
     根据url或者图片路径，读取图片
     :param url:
@@ -1305,6 +1305,8 @@ def draw_text(image, point, text, color=(255, 0, 0), fontScale=-1.0, thickness=-
                     (255, 255, 255), text_thickness, 2)
     elif drawType == "simple":
         cv2.putText(image, str(text), point, fontFace, fontScale, color=color, thickness=thickness)
+    if drawType == "chinese":
+        cv2_putText(image, str(text), point, fontFace, fontScale, color=color, thickness=thickness)
     return image
 
 
@@ -1810,35 +1812,37 @@ def get_bboxes_crop(image, bboxes):
     return crops
 
 
-def get_bboxes_crop_padding(image, bboxes, size, color=(0, 0, 0)):
+def get_bboxes_crop_padding(image, bboxes, size=(), color=(0, 0, 0)):
     """
     :param image:
     :param bboxes:
     :param size:
+    :param color:
     :return:
     """
     rects = bboxes2rects(bboxes)
-    roi_images = []
+    crops = []
     for rect in rects:
-        roi_image = get_rect_crop_padding(image, rect, color=color)
-        roi_image = resize_image(roi_image, size=size)
-        roi_images.append(roi_image)
-    return roi_images
+        roi = get_rect_crop_padding(image, rect, color=color)
+        if size: roi = resize_image(roi, size=size)
+        crops.append(roi)
+    return crops
 
 
-def get_rects_crop_padding(image, rects, size, color=(0, 0, 0)):
+def get_rects_crop_padding(image, rects, size=(), color=(0, 0, 0)):
     """
     :param image:
     :param rects:
-    :param resize:
+    :param size:
+    :param color:
     :return:
     """
-    roi_images = []
+    crops = []
     for rect in rects:
-        roi_image = get_rect_crop_padding(image, rect, color=color)
-        roi_image = resize_image(roi_image, size=size)
-        roi_images.append(roi_image)
-    return roi_images
+        roi = get_rect_crop_padding(image, rect, color=color)
+        if size: roi = resize_image(roi, size=size)
+        crops.append(roi)
+    return crops
 
 
 def center_crop(image, crop_size=[112, 112]):

@@ -14,14 +14,27 @@ import numpy as np
 from pybaseutils import file_utils, image_utils, base64_utils, time_utils
 
 
-def image_dir_mask(image_dir):
-    images = file_utils.get_images_list(image_dir)
-    item_list = file_utils.get_sub_list(images, image_dir)
-    # item_list = [[path, os.path.dirname(path)] for path in images]
-    filename = file_utils.create_dir(image_dir, None, "data.txt")
-    file_utils.write_list_data(filename, item_list)
+def image_dir_mask(image_dir, info_file):
+    names = file_utils.read_json_data(info_file)
+    sub_list = file_utils.get_sub_paths(image_dir)
+    others = []
+    class_dict = names.copy()
+    for sub in sub_list:
+        old = sub.strip().lower()
+        if old in names:
+            new = names[old]["name"]
+            old = os.path.join(image_dir, old)
+            new = os.path.join(image_dir, new)
+            if os.path.exists(old):
+                os.rename(old, new)
+        else:
+            # class_dict[old] = {"name": ""}
+            others.append(old)
+    print(others)
+
 
 
 if __name__ == "__main__":
-    image_dir = "/home/dm/nasdata/dataset/csdn/emotion-dataset/MMA FACIAL EXPRESSION/MMAFEDB/valid"
-    image_dir_mask(image_dir)
+    image_dir = "/home/dm/nasdata/dataset/tmp/Medicine/dataset/train"
+    info_file = "/home/dm/nasdata/dataset/tmp/Medicine/dataset/file.json"
+    image_dir_mask(image_dir, info_file)

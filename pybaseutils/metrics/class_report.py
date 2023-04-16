@@ -1,7 +1,5 @@
 # -*-coding: utf-8 -*-
 """
-    @Project: python-learning-notes
-    @File   : classification_report.py
     @Author : panjq
     @E-mail : pan_jinquan@163.com
     @Date   : 2019-07-13 13:23:05
@@ -12,6 +10,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn import metrics
 from pybaseutils import pandas_utils
+
 
 def plot_confusion_matrix(conf_matrix, labels_name, title, normalization=True):
     if normalization:
@@ -29,7 +28,13 @@ def plot_confusion_matrix(conf_matrix, labels_name, title, normalization=True):
 
 def get_confusion_matrix(true_labels, pred_labels, target_names=None, filename=None, normalization=True, plot=False,
                          title="Confusion Matrix"):
-    '''
+    """
+    混淆矩阵说明：(./docs/confusion_matrix.png)
+    （0）表行表示pred_labels，表列表示true_labels
+    （1）每一行之和表示该类别的真实样本数量
+    （2）每一列之和表示被预测为该类别的样本数量
+    （3）对角线每个元素表示该类别预测正确的样本数
+    （4）每列非对角线的数值，表示预测样本被识别错误的个数
     :param true_labels: Y-ylabel
     :param pred_labels: X-xlabel
     :param target_names: 如果输入的true_labels和pred_labels都是Int类型的label,
@@ -39,7 +44,7 @@ def get_confusion_matrix(true_labels, pred_labels, target_names=None, filename=N
     :param plot: 是否绘制混淆矩阵
     :param title:
     :return:
-    '''
+    """
     if target_names is None:
         target_names = list(set(pred_labels) | set(true_labels))
         target_names.sort()
@@ -111,7 +116,7 @@ def create_dir(parent_dir, dir1=None, filename=None):
     out_path = parent_dir
     if dir1:
         out_path = os.path.join(parent_dir, dir1)
-    if not os.path.exists(out_path):
+    if out_path and (not os.path.exists(out_path)):
         os.makedirs(out_path)
     if filename:
         out_path = os.path.join(out_path, filename)
@@ -132,10 +137,12 @@ def create_file_path(filename):
 
 if __name__ == "__main__":
     true_labels = [0, 1, 2, 3, 3, 1, 1]  # Y
-    pred_labels = [0, 1, 2, 2, 2, 1, 0]  # X
+    pred_labels = [1, 1, 2, 2, 2, 1, 0]  # X
     # true_labels = [0, 1, 1, 2, 2]
     # pred_labels = [0, 1, 1, 2, 2]
-    target_names = ["A", "B", "C", "D"]
+    target_names = ["A0", "B1", "C2", "D3"]
+    confuse_file = "confuse.csv"
     out_result = get_classification_report(true_labels, pred_labels, target_names=target_names, output_dict=False)
     print(out_result)
-    get_confusion_matrix(true_labels, pred_labels, target_names=target_names, normalization=False,plot=True, title="NVR Confusion Matrix")
+    get_confusion_matrix(true_labels, pred_labels, target_names=target_names,
+                         normalization=False, filename=confuse_file, plot=True, title="Confusion Matrix")

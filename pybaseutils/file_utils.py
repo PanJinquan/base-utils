@@ -18,6 +18,7 @@ import concurrent.futures
 import numbers
 import pickle
 from datetime import datetime
+from tqdm import tqdm
 
 IMG_POSTFIX = ['*.jpg', '*.jpeg', '*.png', '*.tif', "*.JPG", "*.bmp"]
 VIDEO_POSTFIX = ['*.mp4', '*.avi']
@@ -209,11 +210,11 @@ def read_data(filename, split=" ", convertNum=True):
 
 
 def read_line_image_label(line_image_label):
-    '''
+    """
     line_image_label:[image_id,boxes_nums,x1, y1, w, h, label_id,x1, y1, w, h, label_id,...]
     :param line_image_label:
     :return:
-    '''
+    """
     line_image_label = line_image_label.strip().split()
     image_id = line_image_label[0]
     boxes_nums = int(line_image_label[1])
@@ -324,6 +325,19 @@ def remove_dir(dir):
     """
     if os.path.exists(dir):
         shutil.rmtree(dir)
+
+
+def get_config_file(file_dir, prefix="*.yaml"):
+    """
+    获得config.yaml文件
+    :param file_dir:
+    :param prefix:
+    :return:
+    """
+    if os.path.isfile(file_dir): file_dir = os.path.dirname(file_dir)
+    files = get_prefix_files(file_dir, prefix)
+    file = files[0] if len(files) > 0 else ""
+    return file
 
 
 def get_prefix_files(file_dir, prefix):
@@ -462,6 +476,23 @@ def copy_dir(src, dst, sub=False):
             )
 
 
+def move_dir(src, dst, sub=False):
+    """ copy src-directory to dst-directory, will cover the same files"""
+    if not os.path.exists(src):
+        print("\nno src path:{}".format(src))
+        return
+    if sub: dst = os.path.join(dst, os.path.basename(src))
+    for root, dirs, files in os.walk(src, topdown=False):
+        dest_path = os.path.join(dst, os.path.relpath(root, src))
+        if not os.path.exists(dest_path):
+            os.makedirs(dest_path)
+        for filename in files:
+            move_file(
+                os.path.join(root, filename),
+                os.path.join(dest_path, filename)
+            )
+
+
 def move_file(srcfile, dstfile):
     """ 移动文件或重命名"""
     if not os.path.isfile(srcfile):
@@ -516,6 +547,13 @@ def move_file_to_dir(srcfile, des_dir):
         move_file(srcfile, dstfile)  # 复制文件
 
 
+def copy_file_list(file_list, dst_dir):
+    [copy_file_to_dir(file, dst_dir) for file in file_list]
+
+
+def move_file_list(file_list, dst_dir):
+    [move_file_to_dir(file, dst_dir) for file in file_list]
+
 def merge_dir(src, dst, sub, merge_same):
     src_dir = os.path.join(src, sub)
     dst_dir = os.path.join(dst, sub)
@@ -563,11 +601,11 @@ def create_file_path(filename):
 
 
 def get_sub_paths(input_dir):
-    '''
+    """
     当前路径下所有子目录
     :param input_dir:
     :return:
-    '''
+    """
     sub_list = []
     for root, dirs, files in os.walk(input_dir):
         sub_list = dirs
@@ -821,12 +859,13 @@ def read_pair_data(filename, split=True):
 
 
 def check_files(files_list, sizeTh=1 * 1024, isRemove=False):
-    ''' 去除不存的文件和文件过小的文件列表
+    """
+    去除不存的文件和文件过小的文件列表
     :param files_list:
     :param sizeTh: 文件大小阈值,单位：字节B，默认1000B ,33049513/1024/1024=33.0MB
     :param isRemove: 是否在硬盘上删除被损坏的原文件
     :return:
-    '''
+    """
     i = 0
     while i < len(files_list):
         path = files_list[i]
@@ -973,6 +1012,65 @@ def save_pickle(obj, file):
 def load_pickle(file):
     with open(file, 'rb') as f: obj = pickle.load(f)
     return obj
+
+
+def copy_move_file_dir(src, dst, postfix=None, sub_names=None, max_nums=None, shuffle=True, move=False):
+    """
+    复制/移动文件夹
+    :param src: 原始目录
+    :param dst: 输出目录
+    :param sub_names: 需要复制/移动的子文件夹名称，默认全部
+    :param max_nums: 最大移动数量，默认不限制
+    :param shuffle:
+    :param move: True表示移动，False表示复制
+    :return: out_list 返回复制/移动后，out_dir的文件列表
+    """
+    file_list = get_files_list(src, prefix="", postfix=postfix, basename=False)
+    file_list = get_sub_list(file_list, src)
+    if shuffle:
+        random.seed(100)
+        random.shuffle(file_list)
+        random.shuffle(file_list)
+    if max_nums: file_list = file_list[:min(max_nums, len(file_list))]
+    for file_name in tqdm(file_list):
+        sub = os.path.dirname(file_name)
+        if sub_names and (sub not in sub_names): continue
+        src_file = os.path.join(src, file_name)
+        out_file = os.path.join(dst, file_name)
+        if move:
+            move_file(src_file, out_file)
+        else:
+            copy_file(src_file, out_file)
+    out_list = get_files_list(dst, prefix="", postfix=postfix, basename=False)
+    return out_list
+
+
+def copy_move_dir_dir(src, dst, postfix=None, sub_names=None, per_nums=None, shuffle=True, move=False):
+    """
+    复制/移动文件夹
+    :param src: 原始目录
+    :param out_dir_: 输出目录
+    :param sub_names: 需要复制/移动的子文件夹名称，默认全部
+    :param per_nums: 每个子文件夹最大移动数量，默认全部
+    :param shuffle:
+    :param move: True表示移动，False表示复制
+    :return: out_list 返回复制/移动后，out_dir的文件列表
+    """
+    sub_list = get_sub_paths(src)
+    for sub in tqdm(sub_list):
+        if sub_names and (sub not in sub_names): continue
+        src_dir_ = os.path.join(src, sub)
+        out_dir_ = os.path.join(dst, sub)
+        if per_nums is None:
+            if move:
+                move_dir(src_dir_, out_dir_)
+            else:
+                copy_dir(src_dir_, out_dir_)
+        else:
+            copy_move_file_dir(src_dir_, out_dir_, postfix=postfix, sub_names=postfix,
+                               max_nums=per_nums, shuffle=shuffle, move=move)
+    out_list = get_files_list(dst, prefix="", postfix=postfix, basename=False)
+    return out_list
 
 
 if __name__ == '__main__':
