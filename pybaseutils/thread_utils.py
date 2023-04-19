@@ -1,7 +1,7 @@
 # -*-coding: utf-8 -*-
 """
-    @Author : panjq
-    @E-mail : pan_jinquan@163.com
+    @Author : Pan
+    @E-mail : 390737991@qq.com
     @Date   : 2022-05-01 16:36:18
     @Url    : 官方API说明：https://docs.python.org/zh-tw/3.6/library/threading.html
             https://blog.csdn.net/xiaoyu_wu/article/details/102820384

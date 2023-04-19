@@ -2,8 +2,8 @@
 """
 # --------------------------------------------------------
 # @Project: python-learning-notes
-# @Author : panjq
-# @E-mail : pan_jinquan@163.com
+# @Author : Pan
+# @E-mail : 390737991@qq.com
 # @Date   : 2020-06-18 21:53:04
 # --------------------------------------------------------
 """
@@ -67,6 +67,6 @@ def save_file_list(file_dir, prefix="", postfix=file_utils.IMG_POSTFIX, only_id=
 
 
 if __name__ == "__main__":
-    file_dir = "/home/dm/nasdata/dataset/tmp/fall/mixed_fall/JPEGImages"
-    save_file_list(file_dir, prefix="", postfix=file_utils.IMG_POSTFIX + ["*.JPG"], only_id=False, shuffle=True,
+    file_dir = "/home/dm/nasdata/dataset/tmp/fall/Fall-Down-Det-v3/JPEGImages"
+    save_file_list(file_dir, prefix="", postfix=file_utils.IMG_POSTFIX + ["*.JPG"], only_id=False, shuffle=False,
                    max_num=None)

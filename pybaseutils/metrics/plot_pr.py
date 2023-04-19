@@ -1,7 +1,7 @@
 # -*-coding: utf-8 -*-
 """
-    @Author : panjq
-    @E-mail : pan_jinquan@163.com
+    @Author : Pan
+    @E-mail : 390737991@qq.com
     @Date   : 2022-08-11 16:11:13
     @Brief  : https://www.cnblogs.com/volcao/p/9401304.html
     @Brief  : https://blog.csdn.net/u012370185/article/details/98244530

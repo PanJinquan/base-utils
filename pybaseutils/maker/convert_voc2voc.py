@@ -1,7 +1,7 @@
 # -*-coding: utf-8 -*-
 """
-    @Author : panjq
-    @E-mail : pan_jinquan@163.com
+    @Author : Pan
+    @E-mail : 390737991@qq.com
     @Date   : 2022-10-12 16:21:55
     @Brief  :
 """
@@ -93,32 +93,10 @@ def convert_voc2voc(filename, out_xml_dir=None, out_image_dir=None, class_dict=N
 
 
 if __name__ == "__main__":
-    filename = "/home/dm/nasdata/dataset/csdn/traffic light/Traffic-Lights-Dataset-v3/train/train.txt"
+    filename = "/home/dm/nasdata/dataset/tmp/fall/fall-v1/train.txt"
     out_xml_dir = os.path.join(os.path.dirname(filename), "VOC/Annotations")
-    class_name = ["Red",
-                  "Green",
-                  "Yellow",
-                  "off",
-                  "GreenLeft",
-                  "GreenRight",
-                  "GreenStraight",
-                  "GreenStraightLeft",
-                  "GreenStraightRight",
-                  "RedLeft",
-                  "RedRight",
-                  "RedStraight",
-                  "RedStraightLeft"]
-    class_dict = {"Red": "red", "Green": "green", "Yellow": "yellow", "off": "off",
-                  "GreenLeft": "green",
-                  "GreenRight": "green",
-                  "GreenStraight": "green",
-                  "GreenStraightLeft": "green",
-                  "GreenStraightRight": "green",
-                  "RedLeft": "red",
-                  "RedRight": "red",
-                  "RedStraight": "red",
-                  "RedStraightLeft": "red"
-                  }
+    class_name = ['fall', 'falling', 'normal']
+    class_dict = {'fall': "down", 'falling': "bending", 'normal': "up"}
 
     convert_voc2voc(filename, out_xml_dir, out_image_dir=None, class_name=class_name, class_dict=class_dict, rename="",
                     vis=False)

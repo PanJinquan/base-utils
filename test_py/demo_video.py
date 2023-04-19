@@ -1,7 +1,7 @@
 # -*-coding: utf-8 -*-
 """
-    @Author : panjq
-    @E-mail : pan_jinquan@163.com
+    @Author : Pan
+    @E-mail : 390737991@qq.com
     @Date   : 2022-11-24 14:03:56
     @Brief  :
 """

@@ -2,8 +2,8 @@
 """
 # --------------------------------------------------------
 # @Project: AlphaPose
-# @Author : panjq
-# @E-mail : pan_jinquan@163.com
+# @Author : Pan
+# @E-mail : 390737991@qq.com
 # @Date   : 2020-02-14 09:15:52
 # --------------------------------------------------------
 """
@@ -36,10 +36,10 @@ class LabelMeDemo(object):
                                                      phase="val",
                                                      shuffle=False)
 
-    def convert_dataset2voc(self, out_root, class_name=None, out_image_dir=None, crop=True, rename=False, vis=True):
+    def convert_dataset2voc(self, out_root, class_dict={}, out_image_dir=None, crop=False, rename=False, vis=True):
         """
         :param out_root: VOC输出根目录
-        :param class_name: label映射 list或dict
+        :param class_dict: label映射 list或dict
         :param out_image_dir: 保存 JPEGImages
         :param crop: 是否进行目标裁剪
         :param rename: 是否重命名
@@ -64,7 +64,7 @@ class LabelMeDemo(object):
                 format = "jpg"
             newname = "{}.{}".format(image_id, format)
             xml_path = file_utils.create_dir(out_xml_dir, None, "{}.xml".format(image_id))
-            objects = maker_voc.create_objects(bboxes, labels, keypoints=None, class_name=class_name)
+            objects = maker_voc.create_objects(bboxes, labels, keypoints=None, class_name=class_dict)
             maker_voc.write_voc_xml_objects(newname, image_shape, objects, xml_path)
             if crop and out_crop_dir:
                 self.save_object_crops(objects, image, out_crop_dir, image_id)
@@ -74,7 +74,7 @@ class LabelMeDemo(object):
                 # cv2.imwrite(dst_file, image)
             if vis:
                 self.show_object_image(image, objects)
-        if not out_image_dir: out_image_dir =self.image_dir
+        if not out_image_dir: out_image_dir = self.image_dir
         file_utils.save_file_list(out_image_dir, filename=None, prefix="", postfix=file_utils.IMG_POSTFIX,
                                   only_id=False, shuffle=False, max_num=None)
 
@@ -96,9 +96,10 @@ class LabelMeDemo(object):
 
 
 if __name__ == "__main__":
-    json_dir = "/home/dm/cv/panjinquan/dataset-dmai/handwriting/word-det/word-v6/test/json"
+    json_dir = "/home/dm/nasdata/dataset/tmp/fall/fall-v3/json"
     out_root = os.path.dirname(json_dir)
     image_dir = os.path.join(out_root, "JPEGImages")
-    class_name = None
+    class_dict = None
+    # class_dict = {"person": "up", "squat": "bending", "fall": "down"}
     lm = LabelMeDemo(json_dir, image_dir)
-    lm.convert_dataset2voc(out_root, class_name=class_name, vis=False, crop=True)
+    lm.convert_dataset2voc(out_root, class_dict=class_dict, vis=False, crop=False)

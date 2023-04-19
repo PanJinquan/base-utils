@@ -2,8 +2,8 @@
 """
     @Project: IntelligentManufacture
     @File   : maxmin_distance.py
-    @Author : panjq
-    @E-mail : pan_jinquan@163.com
+    @Author : Pan
+    @E-mail : 390737991@qq.com
     @Date   : 2019-02-14 18:41:30
 """
 import math

@@ -1,7 +1,7 @@
 # -*-coding: utf-8 -*-
 """
-    @Author : panjq
-    @E-mail : pan_jinquan@163.com
+    @Author : Pan
+    @E-mail : 390737991@qq.com
     @Date   : 2019-06-12 20:13:04
 """
 import os
@@ -17,7 +17,7 @@ setup(name='pybaseutils',
       long_description=long_description,
       url='https://github.com/PanJinquan/base-utils',
       author='PanJinquan',
-      author_email='pan_jinquan@163.com',
+      author_email='390737991@qq.com',
       license='MIT',
       packages=find_packages(where=".",
                              exclude=["build", "configs", "data", "dist", "basetrainer.egg-info", "test",

@@ -2,8 +2,8 @@
 """
     @Project: python-learning-notes
     @File   : pandas_tools.py
-    @Author : panjq
-    @E-mail : pan_jinquan@163.com
+    @Author : Pan
+    @E-mail : 390737991@qq.com
     @Date   : 2019-07-30 20:13:59
 """
 import numpy as np

@@ -1,7 +1,7 @@
 # -*-coding: utf-8 -*-
 """
-    @Author : panjq
-    @E-mail : pan_jinquan@163.com
+    @Author : Pan
+    @E-mail : 390737991@qq.com
     @Date   : 2022-05-25 18:19:34
     @Brief  : https://zhuanlan.zhihu.com/p/494763838
     @Brief  : https://zhuanlan.zhihu.com/p/38600861(不要在Python 3中缓存Exception对象)

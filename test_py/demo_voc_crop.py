@@ -13,7 +13,7 @@ from pybaseutils import image_utils, file_utils
 
 
 def save_object_crops(image, out_dir, bboxes, labels, image_id, class_name=None,
-                      scale=[], square=False, padding=False, vis=False):
+                      scale=[], square=False, padding=False, flag="", vis=False):
     image_id = image_id.split(".")[0]
     if square:
         bboxes = image_utils.get_square_bboxes(bboxes, use_max=True, baseline=-1)
@@ -30,7 +30,8 @@ def save_object_crops(image, out_dir, bboxes, labels, image_id, class_name=None,
     for i, img in enumerate(crops):
         name = class_name[int(labels[i])] if class_name else labels[i]
         if out_dir:
-            img_file = file_utils.create_dir(out_dir, name, "{}_{:0=3d}.jpg".format(image_id, i))
+            file_name = "{}_{:0=3d}_{}.jpg".format(image_id, i, flag) if flag else "{}_{:0=3d}.jpg".format(image_id, i)
+            img_file = file_utils.create_dir(out_dir, name, file_name)
             cv2.imwrite(img_file, img)
         if vis: image_utils.cv_show_image("crop", img, use_rgb=False, delay=0)
 
@@ -39,14 +40,14 @@ if __name__ == "__main__":
     """
     """
     # data_root = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/word-v3"
-    filename = "/home/dm/nasdata/dataset/tmp/fall/mixed_fall/file_list.txt"
+    filename = "/home/dm/nasdata/dataset/tmp/face_person/MPII/train5000.txt"
     # filename = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/word-old/train.txt"
     # class_name = ["face", "face-eyeglasses"]
     # class_name = "/home/dm/nasdata/dataset/tmp/traffic-sign/TT100K/VOC/train/class_name.txt"
     # class_name = ["unique"]
-    class_name =None
-    # class_name = ['down', 'person']
-    out_dir = os.path.join(os.path.dirname(filename), "crops")
+    # class_name = None
+    class_name = ['person']
+    out_dir = os.path.join(os.path.dirname(filename), "crops-train5000")
     dataset = parser_voc.VOCDataset(filename=filename,
                                     data_root=None,
                                     anno_dir=None,
@@ -58,13 +59,17 @@ if __name__ == "__main__":
                                     shuffle=False)
     print("have num:{}".format(len(dataset)))
     class_name = dataset.class_name
-    extend = [1.1, 1.1]
+    scale = [1.1, 1.1]
+    flag = str(scale[0]).replace(".", "p")
+    flag = None
+    # scale = None
     for i in tqdm(range(len(dataset))):
         try:
             data = dataset.__getitem__(i)
             image, targets, image_id = data["image"], data["target"], data["image_id"]
             bboxes, labels = targets[:, 0:4], targets[:, 4:5]
-            save_object_crops(image, out_dir, bboxes, labels, image_id, class_name=class_name, vis=False)
+            save_object_crops(image, out_dir, bboxes, labels, image_id, class_name=class_name, scale=scale,
+                              flag=flag, vis=False)
         except Exception as e:
             print("error:{}".format(dataset.index2id(i)))
             print(e)

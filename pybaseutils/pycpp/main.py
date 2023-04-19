@@ -1,7 +1,7 @@
 # -*-coding: utf-8 -*-
 """
-    @Author : panjq
-    @E-mail : pan_jinquan@163.com
+    @Author : Pan
+    @E-mail : 390737991@qq.com
     @Date   : 2022-10-25 16:39:57
     @Brief  : ctypes例子：https://blog.csdn.net/milkhoko/article/details/119326249
               ctypes例子：https://blog.csdn.net/u012819437/article/details/89642312

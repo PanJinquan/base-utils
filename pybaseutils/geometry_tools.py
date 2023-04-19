@@ -2,8 +2,8 @@
 """
     @Project: PyKinect2-OpenCV
     @File   : geometry_tools.py
-    @Author : panjq
-    @E-mail : pan_jinquan@163.com
+    @Author : Pan
+    @E-mail : 390737991@qq.com
     @Date   : 2019-10-11 09:23:21
 """
 # -*- coding: utf-8 -*-

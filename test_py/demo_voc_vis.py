@@ -15,7 +15,7 @@ if __name__ == "__main__":
     # filename = "/home/dm/nasdata/dataset/csdn/face_person/MPII/test.txt"
     # filename = "/home/dm/nasdata/dataset/csdn/Eyeglasses/dataset/face-eyeglasses/trainval.txt"
     # filename = "/home/dm/nasdata/dataset/tmp/insects/VOC2/VOC/VOCdevkit/trainval.txt"
-    filename = "/home/dm/nasdata/dataset/tmp/fall/fall-v2/train.txt"
+    filename = "/home/dm/cv/panjinquan/dataset/tmp/fall/Fall-Down-Det-v2/train.txt"
     # filename = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/word-old/train.txt"
     # class_name = ["face", "face-eyeglasses"]
     # class_name = "/home/dm/nasdata/dataset/tmp/traffic-sign/TT100K/VOC/train/class_name.txt"
@@ -36,11 +36,12 @@ if __name__ == "__main__":
     print("have num:{}".format(len(dataset)))
     class_name = dataset.class_name
     for i in range(len(dataset)):
+        i=113
         print(i)
         data = dataset.__getitem__(i)
         image, targets, image_id = data["image"], data["target"], data["image_id"]
         print(image_id)
         bboxes, labels = targets[:, 0:4], targets[:, 4:5]
         image = parser_voc.show_target_image(image, bboxes, labels, normal=False, transpose=False,
-                                             class_name=class_name, use_rgb=use_rgb,thickness=3, fontScale=1.5)
+                                             class_name=class_name, use_rgb=use_rgb,thickness=2, fontScale=1)
         # image = show_boxes_image(image, Dataset.cxcywh2xyxy(bboxes, 0, 0), labels, normal=False, transpose=True)
