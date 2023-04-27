@@ -226,9 +226,9 @@ void draw_point_text(cv::Mat &image, cv::Point2f points, string text, cv::Scalar
     if (text != "") {
         cv::putText(image,
                     text,
-                    cv::Point(points.x + 5, points.y),
+                    cv::Point(points.x + 5, points.y+20),
                     cv::FONT_HERSHEY_COMPLEX,
-                    0.5,
+                    0.8,
                     color);
     }
 }

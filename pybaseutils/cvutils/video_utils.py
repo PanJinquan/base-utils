@@ -76,7 +76,7 @@ def video2frames(video_file, out_dir=None, func=None, interval=1, vis=True):
     width, height, num_frames, fps = get_video_info(video_cap)
     if not os.path.exists(out_dir): os.makedirs(out_dir)
     count = 0
-    while True:
+    while count < num_frames:
         if count % interval == 0:
             # 设置抽帧的位置
             video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)

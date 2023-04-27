@@ -2151,6 +2151,24 @@ def get_image_mask(image: np.ndarray, inv=False):
     return mask
 
 
+def get_mask_erode_dilate(mask, ksize, binarize=False):
+    """
+    获得膨胀和腐蚀的mask
+    :param mask:
+    :param ksize:
+    :param binarize:
+    :return:
+    """
+    if binarize: mask = get_image_mask(mask, inv=False)
+    if ksize > 0:
+        k = np.ones((5, 5), np.uint8)  # 设置kenenel大小
+        mask = cv2.erode(mask, k)  # 腐蚀去除白点
+    if ksize < 0:
+        k = np.ones((5, 5), np.uint8)  # 设置kenenel大小
+        mask = cv2.dilate(mask, k)  # 膨胀增大白点
+    return mask
+
+
 def get_scale_image(image, scale=0.85, offset=(0, 0), color=(0, 0, 0), interpolation=cv2.INTER_NEAREST):
     """
     同比居中缩小image，以便居中显示
