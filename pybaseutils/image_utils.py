@@ -1192,23 +1192,20 @@ def custom_bbox_line(image, bbox, color, name, thickness=2, fontScale=0.8, drawT
     thickness, fontScale = get_linesize(max(image.shape), thickness=thickness, fontScale=fontScale)
     if not name: drawType = "simple"
     if drawType == "chinese":
-        cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness, 8, 0)
+        cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness)
         cv2_putText(image, str(name), (bbox[0], bbox[1]), color=color, fontScale=fontScale, thickness=thickness)
     elif drawType == "simple":
         cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness, 8, 0)
         cv2.putText(image, str(name), (bbox[0], bbox[1]), cv2.FONT_HERSHEY_SIMPLEX, fontScale, color, thickness)
     elif drawType == "custom":
         cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness)
-        # draw score roi
-        # fontScale = 0.4
         text_size, baseline = cv2.getTextSize(str(name), cv2.FONT_HERSHEY_SIMPLEX, fontScale, thickness)
         if top:
             text_loc = (bbox[0], bbox[1] - text_size[1])
         else:
-            # text_loc = (bbox[0], bbox[3])
-            # text_loc = (bbox[2], bbox[3] - text_size[1])
-            text_loc = (bbox[2], bbox[1] + text_size[1])
-
+            # text_loc = (bbox[0], bbox[1])
+            text_loc = (bbox[0], bbox[3])
+            # text_loc = (bbox[2], bbox[1] + text_size[1])
         cv2.rectangle(image, (text_loc[0] - 2 // 2, text_loc[1] - 2 - baseline),
                       (text_loc[0] + text_size[0], text_loc[1] + text_size[1]), color, -1)
         # draw score value
@@ -1217,42 +1214,52 @@ def custom_bbox_line(image, bbox, color, name, thickness=2, fontScale=0.8, drawT
     return image
 
 
-def draw_landmark(image, landmarks_list, radius=1, thickness=2, color=(0, 0, 255), vis_id=False):
+def draw_landmark(image, landmarks, radius=2, fontScale=1.0, color=(0, 0, 255), vis_id=False):
+    """
+    :param image:
+    :param landmarks:
+    :param radius:
+    :param thickness:
+    :param fontScale:
+    :param color:
+    :param vis_id:
+    :return:
+    """
     image = copy.copy(image)
-    for landmarks in landmarks_list:
-        for i, landmark in enumerate(landmarks):
+    for lm in landmarks:
+        for i, landmark in enumerate(lm):
             # 要画的点的坐标
             point = (int(landmark[0]), int(landmark[1]))
-            cv2.circle(image, point, radius, color, thickness)
+            cv2.circle(image, point, radius, color, thickness=-1)
             if vis_id:
-                image = draw_points_text(image, [point], texts=[str(i)],
-                                         color=color, thickness=thickness, drawType="simple")
+                image = draw_points_text(image, [point], texts=[str(i)], color=color, thickness=radius,
+                                         fontScale=fontScale, drawType="simple")
     return image
 
 
-def show_landmark_boxes(title, image, landmarks_list, boxes):
+def show_landmark_boxes(title, image, landmarks, boxes):
     """
     显示landmark和boxex
     :param title:
     :param image:
-    :param landmarks_list: [[x1, y1], [x2, y2]]
+    :param landmarks: [[x1, y1], [x2, y2]]
     :param boxes:     [[ x1, y1, x2, y2],[ x1, y1, x2, y2]]
     :return:
     """
-    image = draw_landmark(image, landmarks_list)
+    image = draw_landmark(image, landmarks)
     image = show_image_boxes(title, image, boxes)
     return image
 
 
-def show_landmark(title, image, landmarks_list, vis_id=False, delay=0):
+def show_landmark(title, image, landmarks, vis_id=False, delay=0):
     """
     显示landmark和boxex
     :param title:
     :param image:
-    :param landmarks_list: [[x1, y1], [x2, y2]]
+    :param landmarks: [[x1, y1], [x2, y2]]
     :return:
     """
-    image = draw_landmark(image, landmarks_list, vis_id=vis_id)
+    image = draw_landmark(image, landmarks, vis_id=vis_id)
     cv_show_image(title, image, delay=delay)
     return image
 

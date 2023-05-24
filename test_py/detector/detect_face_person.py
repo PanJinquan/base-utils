@@ -154,8 +154,8 @@ def demo_for_image_dir(image_dir="", out_dir=""):
 
 
 def demo_for_image_root():
-    root = "/home/dm/nasdata/dataset/tmp/smoking-calling/smoking and calling image_datasets/train"
-    out_root = "/home/dm/nasdata/dataset/tmp/smoking/smoking-person/dataset-v2/train"
+    root = "/home/dm/nasdata/dataset/tmp/smoking-calling/train"
+    out_root = "/home/dm/nasdata/dataset/tmp/smoking/smoking-person/dataset-v4/train"
     subs = file_utils.get_sub_paths(root)
     for sub in subs:
         image_dir = os.path.join(root, sub)

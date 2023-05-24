@@ -199,7 +199,7 @@ cv::Mat image_center_crop(cv::Mat &image, int crop_width, int crop_height) {
 
 void image_show(string name, cv::Mat &image, int waitKey) {
 #ifndef PLATFORM_ANDROID
-    cv::namedWindow(name, cv::WINDOW_AUTOSIZE);
+    cv::namedWindow(name, cv::WINDOW_NORMAL);
     cv::Mat img_show = image.clone();
     if (img_show.channels() == 1)
         cvtColor(img_show, img_show, cv::COLOR_GRAY2BGR);
@@ -247,14 +247,14 @@ void draw_points_texts(cv::Mat &image, vector<cv::Point2f> points, vector<string
 }
 
 
-void draw_rect_text(cv::Mat &image, cv::Rect rect, string text, cv::Scalar color, int thickness) {
+void draw_rect_text(cv::Mat &image, cv::Rect rect, string text, cv::Scalar color, int thickness,double fontScale) {
     cv::rectangle(image, rect, color, thickness);
     if (text != "") {
         cv::putText(image,
                     text,
-                    cv::Point(rect.x + 5, rect.y),
+                    cv::Point(rect.x + 5, rect.y - 5),
                     cv::FONT_HERSHEY_COMPLEX,
-                    0.5,
+                    fontScale,
                     color, thickness);
     }
 }
@@ -263,7 +263,8 @@ void draw_rects_texts(cv::Mat &image,
                       vector<cv::Rect> rects,
                       vector<string> texts,
                       cv::Scalar color,
-                      int thickness) {
+                      int thickness,
+                      double fontScale) {
     int num = rects.size();
     if (texts.size() != num && texts.size() == 0) {
         for (int i = 0; i < num; ++i) {
@@ -271,7 +272,7 @@ void draw_rects_texts(cv::Mat &image,
         }
     }
     for (int i = 0; i < num; ++i) {
-        draw_rect_text(image, rects[i], texts[i], color, thickness);
+        draw_rect_text(image, rects[i], texts[i], color, thickness,fontScale);
     }
 }
 

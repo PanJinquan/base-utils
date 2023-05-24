@@ -3,6 +3,8 @@
 //
 
 #include "file_utils.h"
+#include<cstdio>
+#include "debug.h"
 
 
 void write_datatxt(string path, string data, bool bCover) {
@@ -46,7 +48,7 @@ vector<string> read_contents(string path) {
             contents.push_back(line);
         }
     } else {
-        printf("Failed to open file:%s", path.c_str());
+        LOGD("Failed to open file:%s", path.c_str());
     }
     infile.close();  //关闭文件输入流
     return contents;
@@ -79,7 +81,7 @@ std::string load_file(string path) {
         file.close();
         return fileContent;
     } else {
-        printf("Failed to open file:%s", path.c_str());
+        LOGD("Failed to open file:%s", path.c_str());
         return "";
     }
 }
@@ -108,7 +110,7 @@ int load_file(const char *path, std::string &file_string) {
         delete[] pStr;
         return 0;
     }
-    printf("Failed to open file:%s", path);
+    LOGD("Failed to open file:%s", path);
     return -1;
 }
 
@@ -151,7 +153,13 @@ string path_joint(string path1, string path2) {
     return path1 + separator + path2;
 }
 
-
+bool remove_file(string file) {
+    if (remove(file.c_str()) == 0) {
+        return true;
+    } else {
+        return false;
+    }
+}
 //#ifdef _LINUX
 #ifdef PLATFORM_LINUX
 
@@ -162,7 +170,7 @@ vector<string> get_files_list(string dirpath) {
     vector<string> allPath;
     DIR *dir = opendir(dirpath.c_str());
     if (dir == NULL) {
-        cout << "opendir error" << endl;
+        LOGD("opendir error");
         return allPath;
     }
     struct dirent *entry;
@@ -178,7 +186,7 @@ vector<string> get_files_list(string dirpath) {
             //cout << "name = " << entry->d_name << ", len = " << entry->d_reclen << ", entry->d_type = " << (int)entry->d_type << endl;
             string name = entry->d_name;
             string imgdir = dirpath + separator + name;
-            //sprintf("%s",imgdir.c_str());
+            //LOGD("%s",imgdir.c_str());
             allPath.push_back(imgdir);
         }
 

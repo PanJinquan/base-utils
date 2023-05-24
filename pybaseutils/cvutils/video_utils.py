@@ -43,8 +43,7 @@ def video2gif(video_file, gif_file=None, func=None, interval=1, use_pil=False, f
             # 设置抽帧的位置
             video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
             isSuccess, frame = video_cap.read()
-            if not isSuccess:
-                break
+            if not isSuccess or count > num_frames: break
             if func:
                 frame = func(frame)
             if vis:

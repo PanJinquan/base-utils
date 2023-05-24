@@ -29,7 +29,7 @@ using namespace std;
 /***
  * 其他宏定义
  */
-#define LOG_TAG    "dm-jni-log"
+#define LOG_TAG    "cv-jni-log"
 #define millisecond 1000000
 #define DEBUG_TIME_ON         //run times test on/off
 #define FILE_INFO printf("[%s line%d] [tag:%s] ",__FILE__,__LINE__,LOG_TAG);
@@ -102,20 +102,20 @@ using namespace std;
 
 template<typename TYPE>
 void PRINT_1D(string name, TYPE *p1, int len) {
-    printf("%s", name.c_str());
+    LOGD("%s", name.c_str());
     for (int i = 0; i < len; i++) {
-        printf("%f,", p1[i]);
+        LOGD("%f,", p1[i]);
     }
     cout << endl;
 }
 
 template<typename TYPE>
 void PRINT_VECTOR(string tag, vector<TYPE> v) {
-    printf("%s", tag.c_str());
-    //for (const auto &c : v) cout << c << endl;
-    for (const auto &c : v) cout << c << " ";
-    printf("\n");
+    LOGD("%s", tag.c_str());
+    for (int i = 0; i < v.size(); ++i) {
+        LOGD("i=%d,%f,", i, v[i]);
+    }
+    LOGD("\n");
 
 };
-
 #endif

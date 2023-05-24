@@ -160,6 +160,13 @@ string get_postfix(string path, bool tolower = true);
 string path_joint(string path1, string path2);
 
 /***
+ * 删除文件
+ * @param file
+ * @return
+ */
+bool remove_file(string file);
+
+/***
  * 获得directory目录下的所有文件
  * @param dir
  * @return
