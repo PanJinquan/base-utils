@@ -107,7 +107,7 @@ class Worker(Base):
                 index = []
                 for i, task in enumerate(self.task_list):
                     if task.done():
-                        self.output.put(task.result(), block=True, timeout=None)
+                        self.output.put(task.r(), block=True, timeout=None)
                     else:
                         index.append(i)
                 self.task_list = [self.task_list[i] for i in index]
