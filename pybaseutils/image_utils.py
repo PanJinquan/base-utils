@@ -25,14 +25,23 @@ from pybaseutils import file_utils
 from pybaseutils.coords_utils import *
 from pybaseutils.transforms import affine_transform
 
-color_map = [(0, 0, 0), (0, 0, 255), (0, 255, 0), (255, 0, 0),
-             (128, 0, 0), (0, 128, 0), (128, 128, 0),
-             (0, 0, 128), (128, 0, 128), (0, 128, 128), (128, 128, 128),
-             (64, 0, 0), (192, 0, 0), (64, 128, 0), (192, 128, 0),
-             (64, 0, 128), (192, 0, 128), (64, 128, 128), (192, 128, 128),
-             (0, 64, 0), (128, 64, 0), (0, 192, 0), (128, 192, 0), (0, 64, 128)] * 100
+color_map2 = [(0, 0, 0), (0, 0, 255), (0, 255, 0), (255, 0, 0),
+              (128, 0, 0), (0, 128, 0), (128, 128, 0),
+              (0, 0, 128), (128, 0, 128), (0, 128, 128), (128, 128, 128),
+              (64, 0, 0), (192, 0, 0), (64, 128, 0), (192, 128, 0),
+              (64, 0, 128), (192, 0, 128), (64, 128, 128), (192, 128, 128),
+              (0, 64, 0), (128, 64, 0), (0, 192, 0), (128, 192, 0), (0, 64, 128)] * 100
 
-ROOT = os.path.dirname(__file__)
+color_map = [(0, 0, 0), (56, 56, 255), (151, 157, 255), (31, 112, 255), (29, 178, 255), (49, 210, 207),
+             (10, 249, 72), (23, 204, 146), (134, 219, 61), (52, 147, 26), (187, 212, 0),
+             (168, 153, 44), (255, 194, 0), (147, 69, 52), (255, 115, 100),
+             (236, 24, 0), (255, 56, 132), (133, 0, 82), (255, 56, 203), (200, 149, 255), (199, 55, 255)] * 100
+
+root = os.path.dirname(__file__)
+coco_skeleton = [[1, 3], [1, 0], [2, 4], [2, 0], [0, 5], [0, 6], [5, 7], [7, 9], [6, 8],
+                 [8, 10], [5, 11], [6, 12], [11, 12], [11, 13], [13, 15], [12, 14], [14, 16]]
+mpii_skeleton = [[0, 1], [1, 2], [3, 4], [4, 5], [2, 6], [6, 3], [12, 11], [7, 12],
+                 [11, 10], [13, 14], [14, 15], [8, 9], [8, 7], [6, 7], [7, 13]]
 
 
 def get_font_type(size, font=""):
@@ -54,7 +63,7 @@ def get_font_type(size, font=""):
         # font = ImageFont.truetype("uming.ttc", size, encoding="utf-8")
         font = ImageFont.truetype("NotoSansCJK-Regular.ttc", size, encoding="utf-8")
     else:
-        font = ImageFont.truetype(os.path.join(ROOT, "font_style/simhei.ttf"), size, encoding="utf-8")
+        font = ImageFont.truetype(os.path.join(root, "font_style/simhei.ttf"), size, encoding="utf-8")
     return font
 
 
@@ -1279,7 +1288,7 @@ def draw_points_text(image, points, texts=None, color=(255, 0, 0), thickness=-1,
     for point, text in zip(points, texts):
         if not check_point(point): continue
         point = (int(point[0]), int(point[1]))
-        cv2.circle(image, point, thickness * 2, color, -1)
+        cv2.circle(image, point, thickness * 3, color, -1)
         draw_text(image, point, text, color=color, fontScale=fontScale, thickness=thickness, drawType=drawType)
     return image
 
@@ -1351,7 +1360,7 @@ def draw_text_pil(image, point, text, size=10, color_color=(255, 0, 0)):
     pilimg = Image.fromarray(image)  # Image.fromarray()将数组类型转成图片格式，与np.array()相反
     draw = ImageDraw.Draw(pilimg)  # PIL图片上打印汉字
     # 参数1：字体文件路径，参数2：字体大小；Windows系统“simhei.ttf”默认存储在路径：
-    font = ImageFont.truetype(os.path.join(ROOT, "font_style/simhei.ttf"), size, encoding="utf-8")
+    font = ImageFont.truetype(os.path.join(root, "font_style/simhei.ttf"), size, encoding="utf-8")
     draw.text(point, text, color_color, font)
     image = cv2.cvtColor(np.array(pilimg), cv2.COLOR_RGB2BGR)  # 将图片转成cv2.imshow()可以显示的数组格式
     return image
@@ -1368,32 +1377,24 @@ def cv2_putText(img, text, point, fontFace=None, fontScale=0.8, color=(255, 0, 0
     img[:] = np.asarray(pilimg)
 
 
-def draw_key_point_in_image(image,
-                            key_points,
-                            pointline=[],
-                            vis_id=False,
-                            circle_color=(0, 255, 0),
-                            line_color=(0, 0, 255),
-                            thickness=2):
+def draw_key_point_in_image(image, key_points, pointline=[], boxes=[], vis_id=False, thickness=2):
     """
     :param key_points: list(ndarray(19,2)) or ndarray(n_person,19,2)
     :param image:
     :param pointline: `auto`->pointline = circle_line(len(points), iscircle=True)
     :return:
     """
-    image = copy.deepcopy(image)
-    for person_id, points in enumerate(key_points):
-        if points is None:
-            continue
-        if vis_id:
-            text = None
-        else:
-            text = [""] * len(points)
-        image = draw_image_points_lines(image, points, pointline,
-                                        circle_color=circle_color,
-                                        line_color=line_color,
-                                        texts=text,
-                                        thickness=thickness)
+    nums = max(len(key_points), len(boxes))
+    for p in range(nums):
+        color = color_map[p + 1]
+        if len(key_points) > 0:
+            points = key_points[p]
+            if points is None or len(points) == 0: continue
+            text = list(range(len(points))) if vis_id else [""] * len(points)
+            image = draw_image_points_lines(image, points, pointline, circle_color=color, line_color=color,
+                                            texts=text, thickness=thickness)
+        if len(boxes) > 0:
+            image = draw_image_boxes(image, boxes=[boxes[p]], color=color, thickness=thickness)
     return image
 
 
@@ -1404,11 +1405,8 @@ def draw_key_point_arrowed_in_image(image, key_points, pointline=[], color=None)
     :param pointline:[[start-->end]]
     :return:
     """
-    image = copy.deepcopy(image)
-    person_nums = len(key_points)
     for person_id, points in enumerate(key_points):
-        if points is None:
-            continue
+        if points is None or len(points) == 0: continue
         image = draw_image_points_arrowed_lines(image, points, pointline)
     return image
 
@@ -1669,31 +1667,44 @@ def file2base64(file):
     return image_base64
 
 
-def bgr_image2image_base64(bgr_image):
+def image2base64(image: np.ndarray, prefix="", use_rgb=False) -> str:
     """
-    image = cv2.imencode('.jpeg', bgr_image)[1]
-    image_base64 = base64.b64encode(image).decode()
-    image_base64 = str(base64.b64encode(image), encoding='utf-8')
+    将图像编码为二进制字符串
+    ``` python
+        from io import BytesIO
+        bgr_img = Image.fromarray(image)
+        buff = BytesIO()
+        mg.save(buff, format="PNG")
+        image_base64 = base64.b64encode(buff.getvalue()).decode("utf-8")
+        image_base64 = str(base64.b64encode(image), encoding='utf-8')
+    ```
+    :param image: 图像
+    :param prefix: base64字符串前缀,用于表识字符串的类型
+    :param use_rgb: True:输入image是RGB的图像, False:输入image是BGR格式的图像
+    :return: 返回图像
     """
-    from io import BytesIO
-    if len(bgr_image.shape) == 3:
-        bgr_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2RGB)
-    image = Image.fromarray(bgr_image)
-    buff = BytesIO()
-    image.save(buff, format="PNG")
-    image_base64 = base64.b64encode(buff.getvalue()).decode("utf-8")
-    return image_base64
+    # image = cv2.imencode('.jpeg', bgr_image)[1]
+    # image_base64 = base64.b64encode(image).decode()
+    # image_base64 = str(base64.b64encode(image), encoding='utf-8')
+    img = image.copy()
+    if len(img.shape) == 3 and use_rgb:
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+    ext = prefix.split("/")
+    ext = "." + ext[1] if len(ext) == 2 else ".png"
+    img = cv2.imencode(ext, img)[1]
+    bs64 = prefix + base64.b64encode(img).decode()
+    return bs64
 
 
-def image_base642rgb_image(image_base64, use_rgb=False) -> np.ndarray:
+def base642image(image_bs64, use_rgb=False) -> np.ndarray:
     """
     將二进制字符串图像image_base64解码为正常形式
-    :param image_base64: 二进制字符串图像
+    :param image_bs64: 二进制字符串图像
     :param use_rgb: True:返回RGB的图像, False:返回BGR格式的图像
     :return: 返回图像矩阵
     """
-    image_base64 = bytes(image_base64, 'utf-8')
-    image = base64.b64decode(image_base64)
+    image_bs64 = bytes(image_bs64, 'utf-8')
+    image = base64.b64decode(image_bs64)
     image = np.fromstring(image, np.uint8)
     image = cv2.imdecode(image, cv2.IMREAD_COLOR)
     if use_rgb:
@@ -1701,14 +1712,14 @@ def image_base642rgb_image(image_base64, use_rgb=False) -> np.ndarray:
     return image
 
 
-def read_image_base64(image_path, size=None):
+def read_image_base64(image_file, size=None):
     if not size:
-        with open(image_path, 'rb') as f_in:
+        with open(image_file, 'rb') as f_in:
             image_base64 = base64.b64encode(f_in.read())
             image_base64 = str(image_base64, encoding='utf-8')
     else:
-        bgr_image = read_image(image_path, size=size, use_rgb=False)
-        image_base64 = bgr_image2image_base64(bgr_image)
+        bgr_image = read_image(image_file, size=size, use_rgb=False)
+        image_base64 = image2base64(bgr_image)
     return image_base64
 
 

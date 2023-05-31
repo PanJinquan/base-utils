@@ -14,27 +14,26 @@ import numpy as np
 from pybaseutils import file_utils, image_utils, base64_utils, time_utils
 
 
-def image_dir_mask(image_dir, info_file):
-    names = file_utils.read_json_data(info_file)
-    sub_list = file_utils.get_sub_paths(image_dir)
-    others = []
-    class_dict = names.copy()
-    for sub in sub_list:
-        old = sub.strip().lower()
-        if old in names:
-            new = names[old]["name"]
-            old = os.path.join(image_dir, old)
-            new = os.path.join(image_dir, new)
-            if os.path.exists(old):
-                os.rename(old, new)
-        else:
-            # class_dict[old] = {"name": ""}
-            others.append(old)
-    print(others)
+class Colors:
+    # Ultralytics color palette https://ultralytics.com/
+    def __init__(self):
+        # hex = matplotlib.colors.TABLEAU_COLORS.values()
+        hexs = ('FF3838', 'FF9D97', 'FF701F', 'FFB21D', 'CFD231', '48F90A', '92CC17', '3DDB86', '1A9334', '00D4BB',
+                '2C99A8', '00C2FF', '344593', '6473FF', '0018EC', '8438FF', '520085', 'CB38FF', 'FF95C8', 'FF37C7')
+        self.rgb_table = [self.hex2rgb(f'#{c}') for c in hexs]
+        self.bgr_table = [(c[2], c[1], c[0]) for c in self.rgb_table]
+        self.n = len(self.rgb_table)
 
+    def __call__(self, i, bgr=False):
+        c = self.rgb_table[int(i) % self.n]
+        return (c[2], c[1], c[0]) if bgr else c
+
+    @staticmethod
+    def hex2rgb(h):  # rgb order (PIL)
+        return tuple(int(h[1 + i:1 + i + 2], 16) for i in (0, 2, 4))
 
 
 if __name__ == "__main__":
-    image_dir = "/home/dm/nasdata/dataset/tmp/Medicine/dataset/train"
-    info_file = "/home/dm/nasdata/dataset/tmp/Medicine/dataset/file.json"
-    image_dir_mask(image_dir, info_file)
+    c = Colors()
+    print(c)
+    

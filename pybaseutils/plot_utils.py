@@ -38,7 +38,7 @@ def get_font_type(size=14, font=""):
         # font = FontProperties(fname="NotoSansCJK-Regular.ttc", size=size)
         font = FontProperties(fname=os.path.join(ROOT, "font_style/simhei.ttf"), size=size)
     else:
-        # font = ImageFont.truetype(os.path.join(ROOT, "font_style/simhei.ttf"), size, encoding="utf-8")
+        # font = ImageFont.truetype(os.path.join(root, "font_style/simhei.ttf"), size, encoding="utf-8")
         font = FontProperties(fname=os.path.join(ROOT, "font_style/simhei.ttf"), size=size)
     return font
 

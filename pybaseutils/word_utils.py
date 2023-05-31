@@ -131,6 +131,7 @@ def concat_packer(packers: List[List[Dict]]):
 def word_packer(unpacker: Dict, keys):
     packer = []
     for key in keys:
+        if key not in unpacker: continue
         if not packer:
             packer = [{key: v} for v in unpacker[key]]
         else:
