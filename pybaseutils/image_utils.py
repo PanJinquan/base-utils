@@ -25,12 +25,12 @@ from pybaseutils import file_utils
 from pybaseutils.coords_utils import *
 from pybaseutils.transforms import affine_transform
 
-color_map2 = [(0, 0, 0), (0, 0, 255), (0, 255, 0), (255, 0, 0),
-              (128, 0, 0), (0, 128, 0), (128, 128, 0),
-              (0, 0, 128), (128, 0, 128), (0, 128, 128), (128, 128, 128),
-              (64, 0, 0), (192, 0, 0), (64, 128, 0), (192, 128, 0),
-              (64, 0, 128), (192, 0, 128), (64, 128, 128), (192, 128, 128),
-              (0, 64, 0), (128, 64, 0), (0, 192, 0), (128, 192, 0), (0, 64, 128)] * 100
+color_table = [(0, 0, 0), (0, 0, 255), (0, 255, 0), (255, 0, 0),
+               (128, 0, 0), (0, 128, 0), (128, 128, 0),
+               (0, 0, 128), (128, 0, 128), (0, 128, 128), (128, 128, 128),
+               (64, 0, 0), (192, 0, 0), (64, 128, 0), (192, 128, 0),
+               (64, 0, 128), (192, 0, 128), (64, 128, 128), (192, 128, 128),
+               (0, 64, 0), (128, 64, 0), (0, 192, 0), (128, 192, 0), (0, 64, 128)] * 100
 
 color_map = [(0, 0, 0), (56, 56, 255), (151, 157, 255), (31, 112, 255), (29, 178, 255), (49, 210, 207),
              (10, 249, 72), (23, 204, 146), (134, 219, 61), (52, 147, 26), (187, 212, 0),
@@ -1311,7 +1311,7 @@ def draw_text(image, point, text, color=(255, 0, 0), fontScale=-1.0, thickness=-
     text_thickness = 1
     fontFace = cv2.FONT_HERSHEY_SIMPLEX
     # fontFace=cv2.FONT_HERSHEY_SIMPLEX
-    if drawType == "custom":
+    if drawType == "custom" or drawType == "en":
         text_size, baseline = cv2.getTextSize(str(text), fontFace, fontScale, thickness)
         text_loc = (point[0], point[1] + text_size[1])
         cv2.rectangle(image, (text_loc[0] - 2 // 2, text_loc[1] - 2 - baseline),
@@ -1321,7 +1321,7 @@ def draw_text(image, point, text, color=(255, 0, 0), fontScale=-1.0, thickness=-
                     (255, 255, 255), text_thickness, 2)
     elif drawType == "simple":
         cv2.putText(image, str(text), point, fontFace, fontScale, color=color, thickness=thickness)
-    if drawType == "chinese":
+    if drawType == "chinese" or drawType == "ch":
         cv2_putText(image, str(text), point, fontFace, fontScale, color=color, thickness=thickness)
     return image
 
