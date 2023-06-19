@@ -206,6 +206,7 @@ def video2video(video_file, save_video, interval=1, vis=True, delay=20):
             video_writer.write(frame)
         count += 1
     video_cap.release()
+    video_writer.release()
 
 
 def write_video(self, frame):

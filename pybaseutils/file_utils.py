@@ -130,7 +130,7 @@ def read_json_data(json_path):
     :param json_path:
     :return:
     """
-    with open(json_path, 'r') as f:
+    with open(json_path, 'rb') as f:
         json_data = json.load(f)
     return json_data
 
@@ -188,7 +188,7 @@ def read_data(filename, split=" ", convertNum=True):
     rstrip：用来去除结尾字符、空白符(包括\n、\r、\t、' '，即：换行、回车、制表符、空格)
     注意：这些函数都只会删除头和尾的字符，中间的不会删除。
     """
-    with open(filename, mode="r", encoding='utf-8') as f:
+    with open(filename, mode="rb", encoding='utf-8') as f:
         content_list = f.readlines()
         if split is None:
             content_list = [content.rstrip() for content in content_list]
@@ -911,7 +911,7 @@ def get_loacl_eth2():
     eth_list = []
     os.system("ls -l /sys/class/net/ | grep -v virtual | sed '1d' | awk 'BEGIN {FS=\"/\"} {print $NF}' > eth.yaml")
     try:
-        with open('./eth.yaml', "r") as f:
+        with open('./eth.yaml', "rb") as f:
             for line in f.readlines():
                 line = line.strip()
                 eth_list.append(line.lower())

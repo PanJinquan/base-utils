@@ -1476,10 +1476,10 @@ def draw_image_lines(image, points, pointline=[], color=(0, 0, 255), thickness=2
     for point_index in pointline:
         point1 = tuple(points[point_index[0]])
         point2 = tuple(points[point_index[1]])
-        point1 = (int(point1[0]), int(point1[1]))
-        point2 = (int(point2[0]), int(point2[1]))
         if (not check_point(point1)) or (not check_point(point2)):
             continue
+        point1 = (int(point1[0]), int(point1[1]))
+        point2 = (int(point2[0]), int(point2[1]))
         cv2.line(image, point1, point2, color, thickness)  # 绿色，3个像素宽度
     return image
 

@@ -16,7 +16,7 @@ def video2frames_demo(root, out):
     files = file_utils.get_files_list(root, postfix=["*.avi", "*.mp4"])
     for video_file in files:
         print(video_file)
-        video_utils.video2frames_similarity(video_file, out_dir=out, func=None, interval=50, vis=True)
+        video_utils.video2frames_similarity(video_file, out_dir=out, func=None, interval=100, vis=True)
         # video_utils.video2frames(video_file, out_dir=out, func=None, interval=50, vis=True)
 
 

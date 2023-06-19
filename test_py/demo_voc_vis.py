@@ -15,7 +15,7 @@ if __name__ == "__main__":
     # filename = "/home/dm/nasdata/dataset/csdn/face_person/MPII/test.txt"
     # filename = "/home/dm/nasdata/dataset/csdn/Eyeglasses/dataset/face-eyeglasses/trainval.txt"
     # filename = "/home/dm/nasdata/dataset/tmp/insects/VOC2/VOC/VOCdevkit/trainval.txt"
-    filename = "/home/dm/cv/panjinquan/dataset/tmp/fall/Fall-Down-Det-v2/train.txt"
+    filename = "/home/PKing/nasdata/dataset-dmai/AIJE/岗评项目数据/标注数据/岗评项目_室内电力操作检测-22labels/file_list.txt"
     # filename = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/word-old/train.txt"
     # class_name = ["face", "face-eyeglasses"]
     # class_name = "/home/dm/nasdata/dataset/tmp/traffic-sign/TT100K/VOC/train/class_name.txt"
@@ -36,7 +36,7 @@ if __name__ == "__main__":
     print("have num:{}".format(len(dataset)))
     class_name = dataset.class_name
     for i in range(len(dataset)):
-        i=113
+        # i=113
         print(i)
         data = dataset.__getitem__(i)
         image, targets, image_id = data["image"], data["target"], data["image_id"]
