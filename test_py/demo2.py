@@ -34,6 +34,6 @@ class Colors:
 
 
 if __name__ == "__main__":
-    c = Colors()
-    print(c)
-    
+    image_file = "test.png"
+    image = cv2.imread(image_file)
+    image_utils.cv_show_image("image",image)

@@ -44,7 +44,7 @@ def video2gif(video_file, gif_file=None, func=None, interval=1, use_pil=False, f
             # 设置抽帧的位置
             video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
             isSuccess, frame = video_cap.read()
-            if not isSuccess or count > num_frames: break
+            if not isSuccess or 0 < num_frames < count: break
             if func:
                 frame = func(frame)
             if vis:
@@ -76,13 +76,12 @@ def video2frames(video_file, out_dir=None, func=None, interval=1, vis=True):
     width, height, num_frames, fps = get_video_info(video_cap)
     if not os.path.exists(out_dir): os.makedirs(out_dir)
     count = 0
-    while count < num_frames:
+    while True:
         if count % interval == 0:
             # 设置抽帧的位置
             video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
             isSuccess, frame = video_cap.read()
-            if not isSuccess:
-                break
+            if not isSuccess or 0 < num_frames < count: break
             if func:
                 frame = func(frame)
             if vis:
@@ -112,13 +111,12 @@ def video2frames_similarity(video_file, out_dir=None, func=None, interval=1, thr
     if not os.path.exists(out_dir): os.makedirs(out_dir)
     count = 0
     last_frame = None
-    while count < num_frames:
+    while True:
         if count % interval == 0:
             # 设置抽帧的位置
             video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
             isSuccess, curr_frame = video_cap.read()
-            if not isSuccess:
-                break
+            if not isSuccess or 0 < num_frames < count: break
             if func: curr_frame = func(curr_frame)
             if last_frame is None:
                 last_frame = curr_frame.copy()
@@ -200,8 +198,7 @@ def video2video(video_file, save_video, interval=1, vis=True, delay=20):
             # 设置抽帧的位置
             video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
             isSuccess, frame = video_cap.read()
-            if not isSuccess:
-                break
+            if not isSuccess or 0 < num_frames < count: break
             if vis: image_utils.cv_show_image("frame", frame, use_rgb=False, delay=delay)
             video_writer.write(frame)
         count += 1
@@ -237,8 +234,7 @@ class CVVideo():
                 # 设置抽帧的位置
                 video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
                 isSuccess, frame = video_cap.read()
-                if not isSuccess:
-                    break
+                if not isSuccess or 0 < num_frames < count: break
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 frame = self.task(frame)
                 if save_video:

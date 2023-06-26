@@ -118,3 +118,20 @@ ls -lR|grep "^-"|wc -l
 # 统计文件夹下目录的个数，包括子文件夹里的
 ls -lR|grep "^d"|wc -l
 ```
+
+## 安装opencv-python常见的错误
+
+- OpenCV+PyQT5兼容问题：https://www.sohu.com/a/602131072_121124366
+- opencv-python4.2.0以上的版本，使用了qt库
+
+```bash
+sudo apt-get install libopencv-dev python-opencv
+```
+
+## 解决git pull/push需要输入密码的问题
+
+- https://zhuanlan.zhihu.com/p/537646478
+
+```bash
+git config --global credential.helper store
+```

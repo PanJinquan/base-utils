@@ -95,7 +95,7 @@ class StatusMonitor():
         dist = np.sum(diff) / tok  # 计算平均绝对误差作为相似度(距离)
         return dist
 
-    def get_frame_similarity(self, frame1, frame2, measurement="l1", size=(), vis=False):
+    def get_frame_similarity(self, frame1, frame2, measurement="l1", size=(), blur=True, vis=False):
         """
         比较两帧图像的相似度(距离)
         :param frame1: 输入frame1图像
@@ -107,6 +107,9 @@ class StatusMonitor():
         if size:
             frame1 = cv2.resize(frame1, dsize=size)
             frame2 = cv2.resize(frame2, dsize=size)
+        if blur:
+            frame1 = cv2.blur(frame1, ksize=(5, 5))
+            frame2 = cv2.blur(frame2, ksize=(5, 5))
         frame1 = np.asarray(frame1, dtype=np.float32) / 255.0
         frame2 = np.asarray(frame2, dtype=np.float32) / 255.0
         diff_map = self.get_diff_map(frame1, frame2)

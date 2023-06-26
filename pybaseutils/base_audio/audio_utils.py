@@ -5,6 +5,7 @@
     @Date   : 2023-05-11 10:36:28
     @Brief  : pip install ffmpy -i https://pypi.douban.com/simple
               https://blog.csdn.net/zhiweihongyan1/article/details/121735158
+              安装依赖项:见install.sh
 """
 import os
 import base64
@@ -143,8 +144,8 @@ if __name__ == '__main__':
     # video_file = "../data/video/kunkun_cut.mp4"
     # audio_file = "../data/video/kunkun_cut.mp3"
     # extract_video_audio(video_file, audio_file)
-
-    video_file = "../data/video/test-video.mp4"
-    audio_file = "../data/video/kunkun_cut.mp3"
-    video_out = "../data/video/test-video-result.mp4"
+    video_file = "../../data/video/test-video.mp4"
+    audio_file = "../../data/video/kunkun_cut.mp3"
+    video_out = "../../data/video/test-video-result.mp4"
+    playsound(audio_file)
     merge_video_audio(video_file, audio_file, video_out)
