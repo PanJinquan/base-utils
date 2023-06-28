@@ -6,8 +6,8 @@ from socket import *
 
 
 s = socket(AF_INET, SOCK_DGRAM)
-# addr = ('192.168.64.1', 8080)
-addr = ('127.0.0.1', 8080)          # 127.0.0.1表示本机的IP，相当于我和“自己”的关系
+# addr = ('192.168.2.1', 8080)
+addr = ('127.0.0.1', 40000)          # 127.0.0.1表示本机的IP，相当于我和“自己”的关系
 s.bind(addr)
 while True:
     data, _ = s.recvfrom(921600)
