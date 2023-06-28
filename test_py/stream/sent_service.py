@@ -11,8 +11,8 @@ import cv2, threading, time
 import socket
 
 
-class MediaClient(object):
-    """流媒体客户端"""
+class MediaService(object):
+    """流媒体发生数据服务"""
 
     def __init__(self, service, port=8080, size=(640, 480)):
         """
@@ -49,5 +49,5 @@ class MediaClient(object):
 
 if __name__ == "__main__":
     service = "192.168.2.219"
-    c = MediaClient(service=service, size=(640, 480))
+    c = MediaService(service=service, size=(640, 480))
     c.read()

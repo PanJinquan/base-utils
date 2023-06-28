@@ -11,7 +11,7 @@ import socket
 
 
 class MediaService(object):
-    """流媒体客户端"""
+    """流媒体接收数据服务"""
 
     def __init__(self, service, port=8080, size=(640, 480)):
         """
