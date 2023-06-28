@@ -10,7 +10,7 @@ import pypandoc
 from setuptools import setup, find_packages
 
 root = os.path.dirname(__file__)
-long_description = pypandoc.convert('README.md', 'rst')
+long_description = pypandoc.convert_file('README.md', 'rst')
 setup(name='pybaseutils',
       version=pybaseutils.__version__,
       description='pybaseutils',
@@ -50,7 +50,7 @@ def readme2rst(in_file='README.md'):
         outputfile：目标文件，比如test.html（注意outputfile的后缀要和to一致）
     """
     # 修复中文乱码问题： <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    pypandoc.convert(in_file, 'html', format='md', outputfile="README.html", encoding='utf-8')
-    pypandoc.convert(in_file, 'rst', format='md', outputfile="README.rst", encoding='utf-8')
+    pypandoc.convert_file(in_file, 'html', format='md', outputfile="README.html", encoding='utf-8')
+    pypandoc.convert_file(in_file, 'rst', format='md', outputfile="README.rst", encoding='utf-8')
 
 # readme2rst()

@@ -130,7 +130,7 @@ def read_json_data(json_path):
     :param json_path:
     :return:
     """
-    with open(json_path, 'r') as f:
+    with open(json_path, 'rb') as f:
         json_data = json.load(f)
     return json_data
 
@@ -911,7 +911,7 @@ def get_loacl_eth2():
     eth_list = []
     os.system("ls -l /sys/class/net/ | grep -v virtual | sed '1d' | awk 'BEGIN {FS=\"/\"} {print $NF}' > eth.yaml")
     try:
-        with open('./eth.yaml', "r") as f:
+        with open('./eth.yaml', "rb") as f:
             for line in f.readlines():
                 line = line.strip()
                 eth_list.append(line.lower())

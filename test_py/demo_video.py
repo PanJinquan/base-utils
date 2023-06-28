@@ -13,13 +13,14 @@ from pybaseutils.cvutils import video_utils
 
 
 def video2frames_demo(root, out):
-    files = file_utils.get_files_list(root, postfix=["*.avi", "*.mp4"])
+    files = file_utils.get_files_list(root, postfix=["*.avi", "*.mp4", "*.flv"])
     for video_file in files:
         print(video_file)
-        video_utils.video2frames(video_file, out_dir=out, func=None, interval=20, vis=True)
+        # video_utils.video2frames_similarity(video_file, out_dir=out, func=None, interval=100, vis=True)
+        # video_utils.video2frames(video_file, out_dir=out, func=None, interval=50, vis=True)
 
 
 if __name__ == "__main__":
-    root = "/home/dm/nasdata/dataset/tmp/smoking/videos/video1"
+    root = "/home/PKing/nasdata/dataset-dmai/AIJE/岗评项目数据/开发数据/室内作业视频_0624-0712"
     out = root + "-frame"
     video2frames_demo(root, out)

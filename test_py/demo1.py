@@ -16,34 +16,54 @@ import numpy as np
 from pybaseutils import file_utils, image_utils, base64_utils, time_utils, json_utils
 
 
-def image_rotation(image, angle, center=None, scale=1.0, borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0)):
-    """
-    图像旋转
-    :param image:
-    :param angle:
-    :param center:
-    :param scale:
-    :param borderMode : 旋转边界填充方法
-    :param borderValue: 旋转边界填充像素值
-    :return:
-    """
-    h, w = image.shape[:2]
-    if not center:
-        # center = (w // 2, h // 2)
-        center = (w / 2., h / 2.)
-    mat = cv2.getRotationMatrix2D(center, angle, scale)
-    rotated = cv2.warpAffine(image, mat, dsize=(w, h), borderMode=borderMode, borderValue=borderValue)
-    return rotated
+# -*- coding:utf-8 -*-
+"""
+入口函数
+"""
+import os
+import sys
+
+"""PyAudio Example: Play a WAVE file."""
+
+import pyaudio
+import wave
+from tqdm import tqdm
 
 
-if __name__ == "__main__":
-    image_file = "/home/dm/nasdata/dataset-dmai/handwriting/grid-det/test.jpg"
-    image = image_utils.read_image(image_file)
-    image_utils.cv_show_image("image", image, delay=1)
-    angle = -5
-    image0 = image_rotation(image, angle=angle, borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0))
-    image128 = image_rotation(image, angle=angle, borderMode=cv2.BORDER_CONSTANT, borderValue=(128, 128, 128))
-    image3 = image_rotation(image, angle=angle, borderMode=cv2.BORDER_REPLICATE, borderValue=(128, 128, 128))
-    image_utils.cv_show_image("BORDER_CONSTANT0", image0, delay=1)
-    image_utils.cv_show_image("BORDER_CONSTANT128", image128, delay=1)
-    image_utils.cv_show_image("BORDER_REPLICATE", image3, delay=0)
+
+def play_audio(wave_path):
+
+    CHUNK = 1024
+
+    wf = wave.open(wave_path, 'rb')
+
+    # instantiate PyAudio (1)
+    p = pyaudio.PyAudio()
+
+    # open stream (2)
+    stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
+                    channels=wf.getnchannels(),
+                    rate=wf.getframerate(),
+                    output=True)
+
+    # read data
+    data = wf.readframes(CHUNK)
+
+    # play stream (3)
+    datas = []
+    while len(data) > 0:
+        data = wf.readframes(CHUNK)
+        datas.append(data)
+
+    for d in tqdm(datas):
+        stream.write(d)
+
+    # stop stream (4)
+    stream.stop_stream()
+    stream.close()
+
+    # close PyAudio (5)
+    p.terminate()
+
+file="../data/video/kunkun_cut.mp3"
+play_audio(file)

@@ -67,6 +67,6 @@ def save_file_list(file_dir, prefix="", postfix=file_utils.IMG_POSTFIX, only_id=
 
 
 if __name__ == "__main__":
-    file_dir = "/home/dm/nasdata/dataset/tmp/fall/Fall-Down-Det-v3/JPEGImages"
+    file_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/岗评项目数据/标注数据/岗评项目_室内电力操作检测-22labels/JPEGImages"
     save_file_list(file_dir, prefix="", postfix=file_utils.IMG_POSTFIX + ["*.JPG"], only_id=False, shuffle=False,
                    max_num=None)

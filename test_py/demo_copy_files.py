@@ -60,9 +60,9 @@ def demo_copy_move_by_sub_names_v3():
 
 
 def demo_copy_move():
-    image_dir = "/home/dm/nasdata/dataset/tmp/Medicine/dataset1/train"
-    out_dir = "/home/dm/nasdata/dataset/tmp/Medicine/dataset1/test"
-    file_utils.copy_move_file_dir(image_dir, out_dir, sub_names=None, max_nums=7000, move=True, shuffle=True)
+    image_dir = "/home/dm/nasdata/dataset-dmai/handwriting/grid-det/grid_cross_points_images/grid_cross_points_v7/儿童C组"
+    out_dir = "/home/dm/nasdata/dataset-dmai/handwriting/grid-det/grid_cross_points_images/grid_cross_points_v7/images"
+    file_utils.copy_move_file_dir(image_dir, out_dir, sub_names=None, max_nums=1000, move=False, shuffle=True)
 
 
 def copy_files(shuffle=False):
@@ -99,4 +99,5 @@ if __name__ == "__main__":
     # demo_copy_move_by_sub_names_v2()
     # demo_copy_move_by_sub_names_v2()
     # demo_copy_move_by_sub_names_v3()
-    copy_files()
+    # copy_files()
+    demo_copy_move()
