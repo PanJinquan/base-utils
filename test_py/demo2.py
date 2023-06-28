@@ -13,27 +13,51 @@ from multiprocessing import Pool
 import numpy as np
 from pybaseutils import file_utils, image_utils, base64_utils, time_utils
 
+import socket
+import cv2
+import numpy
+from time import sleep
 
-class Colors:
-    # Ultralytics color palette https://ultralytics.com/
-    def __init__(self):
-        # hex = matplotlib.colors.TABLEAU_COLORS.values()
-        hexs = ('FF3838', 'FF9D97', 'FF701F', 'FFB21D', 'CFD231', '48F90A', '92CC17', '3DDB86', '1A9334', '00D4BB',
-                '2C99A8', '00C2FF', '344593', '6473FF', '0018EC', '8438FF', '520085', 'CB38FF', 'FF95C8', 'FF37C7')
-        self.rgb_table = [self.hex2rgb(f'#{c}') for c in hexs]
-        self.bgr_table = [(c[2], c[1], c[0]) for c in self.rgb_table]
-        self.n = len(self.rgb_table)
+# socket.AF_INET 用于服务器与服务器之间的网络通信
+# socket.SOCK_STREAM 代表基于TCP的流式socket通信
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# 连接服务端
+address_server = ('172.17.76.32', 8888)
+sock.connect(address_server)
 
-    def __call__(self, i, bgr=False):
-        c = self.rgb_table[int(i) % self.n]
-        return (c[2], c[1], c[0]) if bgr else c
-
-    @staticmethod
-    def hex2rgb(h):  # rgb order (PIL)
-        return tuple(int(h[1 + i:1 + i + 2], 16) for i in (0, 2, 4))
-
+# 从摄像头采集图像
+# 参数是0,表示打开笔记本的内置摄像头,参数是视频文件路径则打开视频
+capture = cv2.VideoCapture(0)
+# capture.read() 按帧读取视频
+# ret,frame 是capture.read()方法的返回值q
+# 其中ret是布尔值，如果读取帧正确，返回True;如果文件读到末尾，返回False。
+# frame 就是每一帧图像，是个三维矩阵
+ret, frame = capture.read()
+encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 50]
+while ret:
+    # 首先对图片进行编码，因为socket不支持直接发送图片
+    # '.jpg'表示把当前图片frame按照jpg格式编码
+    # result, img_encode = cv2.imencode('.jpg', frame)
+    img_encode = cv2.imencode('.jpg', frame, encode_param)[1]
+    # result, img_encode = cv2.imencode('.jpg', frame)
+    data = numpy.array(img_encode)
+    stringData = data.tostring()
+    # stringData = img_encode.tobytes()
+    # 首先发送图片编码后的长度
+    sock.send(str(len(stringData)).ljust(16).encode())
+    # 然后一个字节一个字节发送编码的内容
+    # 如果是python对python那么可以一次性发送，如果发给c++的server则必须分开发因为编码里面有字符串结束标志位，c++会截断
+    # for i in range(0, len(stringData)):
+    #     sock.send(stringData[i])
+    sock.send(stringData)
+    # sleep(1)
+    print(str(len(stringData)).ljust(16).encode() + (stringData))
+    ret, frame = capture.read()
+    cv2.resize(frame, (640, 480))
+sock.close()
+cv2.destroyAllWindows()
 
 if __name__ == "__main__":
-    c = Colors()
-    print(c)
-    
+    image_file = "test.png"
+    image = cv2.imread(image_file)
+    image_utils.cv_show_image("image",image)
