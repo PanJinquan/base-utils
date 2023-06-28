@@ -9,7 +9,7 @@ def send_img():
     s.close()
     t1 = time.time()
     elapsed = (t1 - t0) * 1000
-    print('已发送{}Bytes的数据,elapsed:{:3.3f}ms'.format(img.size, elapsed))
+    print('image shape={},buff size {} Bytes的数据,elapsed:{:3.3f}ms'.format(img.shape,img.size, elapsed))
 
 
 addr = ('192.168.2.219', 8080)
