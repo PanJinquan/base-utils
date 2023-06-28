@@ -4,10 +4,12 @@ from socket import *
 
 
 def send_img():
+    t0 = time.time()
     s.sendto(send_data, addr)
-    print(f'已发送{img.size}Bytes的数据')
     s.close()
-    # input('>>')
+    t1 = time.time()
+    elapsed = (t1 - t0) * 1000
+    print('已发送{}Bytes的数据,elapsed:{:3.3f}ms'.format(img.size, elapsed))
 
 
 addr = ('192.168.2.219', 8080)
