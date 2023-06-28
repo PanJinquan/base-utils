@@ -1,33 +1,53 @@
+# -*-coding: utf-8 -*-
+"""
+    @Author : PKing
+    @E-mail : 390737991@qq.com
+    @Date   : 2022-12-31 11:37:30
+    @Brief  :
+"""
+import sys, os
 import numpy as np
 import cv2, threading, time
-from socket import *
+import socket
 
 
-def send_img():
-    t0 = time.time()
-    s.sendto(send_data, addr)
-    s.close()
-    t1 = time.time()
-    elapsed = (t1 - t0) * 1000
-    print('image shape={},buff size {} Bytes的数据,elapsed:{:3.3f}ms'.format(img.shape,img.size, elapsed))
+class MediaClient(object):
+    """流媒体客户端"""
+
+    def __init__(self, service, port=8080, size=(640, 480)):
+        """
+        :param service: 流媒体服务地址
+        :param port:端口
+        :param size: 图像大小(H,W)
+        """
+        self.address = (service, port)
+        self.size = size
+        self.bufsize = self.size[0] * self.size[1] * 3
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket.bind(self.address)
+        print("start socket service:{}，size={}".format(self.address, self.size))
+
+    def read(self):
+        """
+        一般情况下，send()/recv()用于TCP协议下网络I/O操作;
+        sendto()/recvfrom()用于UDP协议下网络I/O操作，
+        但是如果在TCP中connect函数调用后，它们也可用于TCP传输。
+        :return:
+        """
+        while True:
+            buffer, _ = self.socket.recvfrom(self.bufsize)
+            data = np.frombuffer(buffer, dtype=np.uint8)
+            image = cv2.imdecode(data, cv2.IMREAD_COLOR)
+            image = self.task(image)
+            cv2.imshow('Client', image)
+            if cv2.waitKey(1) & 0xFF == ord('q'): break
+        cv2.destroyAllWindows()
+
+    def task(self, image):
+        return image
 
 
-addr = ('192.168.2.219', 8080)
-# addr = ('127.0.0.1', 8080)          # 127.0.0.1表示本机的IP，相当于我和“自己”的关系
-cap = cv2.VideoCapture(0)
-while True:
-    _, img = cap.read()
-    img = cv2.flip(img, 1)
-
-    s = socket(AF_INET, SOCK_DGRAM)
-    th = threading.Thread(target=send_img)
-    th.setDaemon(True)
-
-    _, send_data = cv2.imencode('.jpg', img, [cv2.IMWRITE_JPEG_QUALITY, 50])
-    th.start()
-    cv2.putText(img, "client", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
-    cv2.imshow('client_frame', img)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
-
-cv2.destroyAllWindows()
+if __name__ == "__main__":
+    service = "192.168.2.219"
+    c = MediaClient(service=service, size=(640, 480))
+    c.read()
