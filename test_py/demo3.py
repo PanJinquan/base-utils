@@ -10,9 +10,10 @@ import numpy as np
 from pybaseutils import image_utils
 import cv2
 
-def get_boxes_up(xyxy, scale=(), cut=0.3):
+
+def get_smoking_roi(xyxy, scale=(), cut=0.3):
     """
-    获得boxes上半部分
+    获得吸烟检测区
     :param xyxy: shape is (num-boxes,4),box is (xmin,ymin,xmax,ymax)
     :param scale: boxes缩放大小
     :param cut: 裁剪比例
@@ -31,10 +32,10 @@ def get_boxes_up(xyxy, scale=(), cut=0.3):
 
 if __name__ == '__main__':
     image_file = "/home/PKing/nasdata/dataset/tmp/smoking/sample.png"
-    boxes = [[47, 52, 255, 420]]
+    boxes = [[47, 52, 255, 420]]  # 人体检测框
     boxes = np.asarray(boxes)
     image = cv2.imread(image_file)
-    up = get_boxes_up(xyxy=boxes, scale=(), cut=0.3)
+    up = get_smoking_roi(xyxy=boxes, scale=(), cut=0.3)  # 获得吸烟检测区
     image = image_utils.draw_image_boxes(image, boxes=boxes, color=(255, 0, 0))
     image = image_utils.draw_image_boxes(image, boxes=up, color=(0, 255, 0))
     image_utils.cv_show_image("image", image)

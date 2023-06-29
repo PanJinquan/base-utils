@@ -257,13 +257,16 @@ class LabelMeDataset(Dataset):
         :param use_rgb:
         :return:
         """
-        image = cv2.imread(image_file, cv2.IMREAD_COLOR)
-        if len(image.shape) == 2:
-            image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
-        elif image.shape[2] == 4:
-            image = image[:, :, 0:3]
-        if use_rgb:
-            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        try:
+            image = cv2.imread(image_file, cv2.IMREAD_COLOR)
+            if len(image.shape) == 2:
+                image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+            elif image.shape[2] == 4:
+                image = image[:, :, 0:3]
+            if use_rgb:
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        except Exception as e:
+            raise Exception("empty image:{}".format(image_file))
         return image
 
     @staticmethod

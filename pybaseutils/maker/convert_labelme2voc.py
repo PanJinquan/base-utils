@@ -39,7 +39,7 @@ class LabelMeDemo(object):
     def convert_dataset2voc(self, out_root, class_dict={}, out_image_dir=None, crop=False, rename=False, vis=True):
         """
         :param out_root: VOC输出根目录
-        :param class_dict: label映射 list或dict
+        :param class_dict: label映射 list或dict，如果label不在class_dict中，则使用原始label
         :param out_image_dir: 保存 JPEGImages
         :param crop: 是否进行目标裁剪
         :param rename: 是否重命名
@@ -48,6 +48,7 @@ class LabelMeDemo(object):
         """
         out_xml_dir = os.path.join(out_root, "Annotations")
         out_crop_dir = os.path.join(out_root, "crops")
+        class_set = []
         for i in tqdm(range(len(self.dataset))):
             data = self.dataset.__getitem__(i)
             # data = self.dataset.__getitem__(307)
@@ -64,6 +65,7 @@ class LabelMeDemo(object):
                 format = "jpg"
             newname = "{}.{}".format(image_id, format)
             xml_path = file_utils.create_dir(out_xml_dir, None, "{}.xml".format(image_id))
+            class_set = list(set(class_set + labels))
             objects = maker_voc.create_objects(bboxes, labels, keypoints=None, class_name=class_dict)
             maker_voc.write_voc_xml_objects(newname, image_shape, objects, xml_path)
             if crop and out_crop_dir:
@@ -77,6 +79,7 @@ class LabelMeDemo(object):
         if not out_image_dir: out_image_dir = self.image_dir
         file_utils.save_file_list(out_image_dir, filename=None, prefix="", postfix=file_utils.IMG_POSTFIX,
                                   only_id=False, shuffle=False, max_num=None)
+        print("have class_set:{}\n{}".format(len(class_set), class_set))
 
     def save_object_crops(self, objects, image, out_dir, image_id):
         for i, item in enumerate(objects):
@@ -91,7 +94,8 @@ class LabelMeDemo(object):
         for item in objects:
             label = item["name"]
             box = item["bndbox"]
-            image = image_utils.draw_image_bboxes_text(image, [box], [label])
+            image = image_utils.draw_image_bboxes_text(image, [box], [label], thickness=2, fontScale=1.0,
+                                                       drawType="chinese")
         image_utils.cv_show_image("image", image, use_rgb=False, delay=0)
 
 
