@@ -66,7 +66,42 @@ def save_file_list(file_dir, prefix="", postfix=file_utils.IMG_POSTFIX, only_id=
     print("num files:{},out_path:{}".format(len(file_list), filename))
 
 
+def get_voc_file_list(voc_root, prefix="", postfix=file_utils.IMG_POSTFIX, only_id=True, check=True, shuffle=False,
+                      max_num=None):
+    """
+    蝴蝶VOC数据集的文件列表
+    :param voc_root:
+    :param prefix:
+    :param postfix:
+    :param only_id:
+    :param check: 检测xml和图片是否存在
+    :param shuffle:
+    :param max_num:
+    :return:
+    """
+    image_dir = os.path.join(voc_root, "JPEGImages")
+    annos_dir = os.path.join(voc_root, "Annotations")
+    filename = os.path.join(os.path.dirname(image_dir), "file_list.txt")
+    file_list = file_utils.get_files_list(image_dir, prefix=prefix, postfix=postfix, basename=False)
+    file_list = file_utils.get_sub_list(file_list, dirname=image_dir)
+    if check:
+        xmls_list = file_utils.get_files_list(annos_dir, postfix=["*.xml"], basename=True)
+        xmls_ids = [str(f).split(".")[0] for f in xmls_list]
+        file_list = [f for f in file_list if str(f).split(".")[0] in xmls_ids]
+    if only_id:
+        file_list = [str(f).split(".")[0] for f in file_list]
+    if shuffle:
+        random.seed(100)
+        random.shuffle(file_list)
+    if max_num:
+        max_num = min(max_num, len(file_list))
+        file_list = file_list[0:max_num]
+    file_utils.write_list_data(filename, file_list)
+    print("num files:{},out_path:{}".format(len(file_list), filename))
+
+
 if __name__ == "__main__":
-    file_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/岗评项目数据/标注数据/岗评项目_室内电力操作检测-22labels/JPEGImages"
-    save_file_list(file_dir, prefix="", postfix=file_utils.IMG_POSTFIX + ["*.JPG"], only_id=False, shuffle=False,
-                   max_num=None)
+    # file_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/岗评项目数据/标注数据/岗评项目_室内电力操作检测-22labels/JPEGImages"
+    # save_file_list(file_dir, postfix=file_utils.IMG_POSTFIX + ["*.JPG"], only_id=False, shuffle=False, max_num=None)
+    voc_root = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/equipment/dataset-v1"
+    get_voc_file_list(voc_root, postfix=file_utils.IMG_POSTFIX + ["*.JPG"], only_id=False, shuffle=True, max_num=None)

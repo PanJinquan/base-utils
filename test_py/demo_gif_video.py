@@ -36,8 +36,8 @@ def android_gif():
 
 
 def python_gif():
-    video_file = "/media/dm/新加卷/SDK/face-recognition/Face-Recognition/Face-Recognition-Python/docs/result2.avi"
-    video_utils.video2gif(video_file, interval=7, func=resize_fun, fps=6, use_pil=False, vis=True)
+    video_file = "/home/PKing/nasdata/dataset/tmp/smoking/demo/python-demo/smoking-result2.avi"
+    video_utils.video2gif(video_file, interval=9, func=resize_fun, fps=6, use_pil=False, vis=True)
 
 
 def image_gif():
@@ -50,5 +50,5 @@ def image_gif():
 
 if __name__ == "__main__":
     # image_gif()
-    android_gif()
-    # python_gif()
+    # android_gif()
+    python_gif()

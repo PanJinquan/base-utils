@@ -55,13 +55,14 @@ if __name__ == "__main__":
     """
     对VOC的数据目标进行裁剪
     """
-    filename = "/home/PKing/nasdata/dataset/tmp/face_person/MPII/train5000.txt"
+    # filename = "/home/PKing/nasdata/dataset/tmp/face_person/MPII/train5000.txt"
+    filename = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/equipment/dataset-v1/file_list.txt"
     # class_name = ["face", "face-eyeglasses"]
     # class_name = "/home/dm/nasdata/dataset/tmp/traffic-sign/TT100K/VOC/train/class_name.txt"
     # class_name = ["unique"]
-    # class_name = None
-    class_name = ['person']
-    out_dir = os.path.join(os.path.dirname(filename), "crops-train5000")
+    class_name = ['身穿工作服', '未穿工作服', '表箱关', '表箱开', '其他鞋', '绝缘鞋']
+    # class_name = ['person']
+    out_dir = os.path.join(os.path.dirname(filename), "crops")
     dataset = parser_voc.VOCDataset(filename=filename,
                                     data_root=None,
                                     anno_dir=None,

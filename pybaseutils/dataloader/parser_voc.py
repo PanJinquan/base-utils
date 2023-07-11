@@ -450,7 +450,7 @@ def VOCDatasets(filename=None,
 
 
 def show_target_image(image, bboxes, labels, normal=False, transpose=False, class_name=None, use_rgb=True,
-                      thickness=-1, fontScale=-1.0):
+                      thickness=2, fontScale=1.0):
     """
     :param image:
     :param targets_t:
@@ -477,7 +477,7 @@ def show_target_image(image, bboxes, labels, normal=False, transpose=False, clas
     # image = image_processing.untranspose(image)
     # image = image_processing.convert_color_space(image, colorSpace="RGB")
     image = image_utils.draw_image_bboxes_labels(image, bboxes, labels, class_name=class_name,
-                                                 thickness=thickness, fontScale=fontScale, drawType="custom")
+                                                 thickness=thickness, fontScale=fontScale, drawType="chinese")
     image_utils.cv_show_image("image", image, delay=0, use_rgb=use_rgb)
     print("===" * 10)
     return image

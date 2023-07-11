@@ -1134,7 +1134,7 @@ def draw_image_detection_boxes(image, boxes, probs, labels, class_name=None, thi
     labels = labels if isinstance(labels, list) else np.asarray(labels, dtype=np.int32).reshape(-1)
     probs = np.asarray(probs).reshape(-1)
     for label, box, prob in zip(labels, boxes, probs):
-        color = color_map[1] if isinstance(label, str) else color_map[int(label) + 1]
+        color = color_table[1] if isinstance(label, str) else color_table[int(label) + 1]
         box = [int(b) for b in box]
         if class_name:
             label = class_name[int(label)]
@@ -1210,15 +1210,17 @@ def custom_bbox_line(image, bbox, color, name, thickness=2, fontScale=0.8, drawT
         cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness)
         text_size, baseline = cv2.getTextSize(str(name), cv2.FONT_HERSHEY_SIMPLEX, fontScale, thickness)
         if top:
-            text_loc = (bbox[0], bbox[1] - text_size[1])
+            text_loc = (bbox[0], bbox[1] + text_size[1])  # 在左上角下方绘制文字
+            # text_loc = (bbox[0], bbox[1] - baseline // 2)# 在左上角上方绘制文字
         else:
-            # text_loc = (bbox[0], bbox[1])
             text_loc = (bbox[0], bbox[3])
-            # text_loc = (bbox[2], bbox[1] + text_size[1])
-        cv2.rectangle(image, (text_loc[0] - 2 // 2, text_loc[1] - 2 - baseline),
-                      (text_loc[0] + text_size[0], text_loc[1] + text_size[1]), color, -1)
+        bg1 = (text_loc[0], text_loc[1] - text_size[1])
+        bg2 = (text_loc[0] + text_size[0], text_loc[1] + baseline // 2)  # 底纹等于字体的宽度
+        # bg2 = (max(bbox[2], text_loc[0] + text_size[0]), text_loc[1] + baseline // 2) # 底纹等于box的宽度
+        cv2.rectangle(image, bg1, bg2, color, thickness)  # 先绘制框，再填充
+        cv2.rectangle(image, bg1, bg2, color, -1)
         # draw score value
-        cv2.putText(image, str(name), (text_loc[0], text_loc[1] + baseline), cv2.FONT_HERSHEY_SIMPLEX, fontScale,
+        cv2.putText(image, str(name), (text_loc[0], text_loc[1]), cv2.FONT_HERSHEY_SIMPLEX, fontScale,
                     (255, 255, 255), thickness)
     return image
 
@@ -1890,6 +1892,48 @@ def center_crop_padding(image, crop_size, color=(0, 0, 0)):
     rect = [x, y, crop_size[0], crop_size[1]]
     roi_image = get_rect_crop_padding(image, rect, color=color)
     return roi_image
+
+
+def center_crop_padding_mask_shift(mask, size=(256, 256), center=True, scale=1.0, color=(0, 0, 0)):
+    """
+    实现将白色区域平移到中心，居中显示(区域相对大小不会变化)
+    :param mask:
+    :param size: [crop_w,crop_h]
+    :param center: 是否居中
+    :param scale: 是否缩放
+    :param color: padding的颜色
+    :return:
+    """
+    mask = center_crop_padding(mask, crop_size=size, color=color)
+    if center:
+        box = get_mask_boundrect_cv(mask, binarize=False, shift=0)
+        if len(box) > 0:
+            cx, cy = (box[0] + box[2]) / 2, (box[1] + box[3]) / 2
+            new = (cx - size[0] / 2, cy - size[1] / 2,
+                   cx + size[0] / 2, cy + size[1] / 2)
+            mask = get_bbox_crop_padding(mask, new, color=color)
+    if scale < 1.0:
+        mask = get_scale_image(mask, scale=scale, color=color)
+    return mask
+
+
+def center_crop_padding_mask_resize(mask, size=(256, 256), center=True, scale=1.0, color=(0, 0, 0)):
+    """
+    实现将白色区域调整到中心，居中显示(区域相对大小会变化)
+    :param mask:
+    :param size: [crop_w,crop_h]
+    :param center: 是否居中
+    :param scale: 是否缩放
+    :param color: padding的颜色
+    :return:
+    """
+    if center:
+        box = get_mask_boundrect_cv(mask, binarize=False, shift=0)
+        if box: mask = get_bbox_crop(mask, box)
+    mask = resize_image_padding(mask, size=size, color=color, interpolation=cv2.INTER_LINEAR)
+    if scale < 1.0:
+        mask = get_scale_image(mask, scale=scale, color=color)
+    return mask
 
 
 def points2bbox(keypoints):
@@ -2580,7 +2624,10 @@ def frames2gif_by_imageio(frames, gif_file="test.gif", fps=2, loop=0, use_rgb=Fa
     :return:
     """
     import imageio
-    writer = imageio.get_writer(uri=gif_file, mode='I', fps=fps, loop=loop)
+    "(in ms) instead, e.g. `fps=50` == `duration=20` (1000 * 1/50)."
+    duration = 1000 * 1 / fps
+    # writer = imageio.get_writer(uri=gif_file, mode='I', fps=fps, loop=loop)
+    writer = imageio.get_writer(uri=gif_file, mode='I', duration=duration, loop=loop)
     for image in frames:
         if use_rgb: image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         writer.append_data(image)

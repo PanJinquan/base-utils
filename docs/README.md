@@ -119,6 +119,26 @@ ls -lR|grep "^-"|wc -l
 ls -lR|grep "^d"|wc -l
 ```
 
+## 一些个性化别名
+
+- 编辑：`vim ~/.bashrc`或`deepin-editor ~/.bashrc`
+- 激活：`source ~/.bashrc`
+
+```bash
+# 服务路径
+alias nasdata='echo /nasdata/atp/data/panjinquan'
+# pip 镜像源码(pip mirror=pipm)
+alias pipm="echo -e 'https://pypi.tuna.tsinghua.edu.cn/simple\nhttps://pypi.org/simple'"
+# 查看文件列表
+alias ll='ls -l'
+# 查看当前文件夹大小
+alias dirsize='du -ah --max-depth=1/'
+# 统计当前文件夹下文件的个数，包括子文件夹里的
+alias countfile='ls -lR|grep "^-"|wc -l'
+# 统计文件夹下目录的个数，包括子文件夹里的
+alias countdir='ls -lR|grep "^d"|wc -l'
+```
+
 ## 安装opencv-python常见的错误
 
 - OpenCV+PyQT5兼容问题：https://www.sohu.com/a/602131072_121124366

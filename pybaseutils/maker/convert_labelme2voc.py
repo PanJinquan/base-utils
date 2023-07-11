@@ -53,9 +53,12 @@ class LabelMeDemo(object):
             data = self.dataset.__getitem__(i)
             # data = self.dataset.__getitem__(307)
             image, points, bboxes, labels = data["image"], data["point"], data["box"], data["label"]
+            anno_file = data["anno_file"]
             image_file = data["image_file"]
             image_shape = image.shape
             if len(labels) == 0:
+                # file_utils.remove_file(anno_file)
+                # file_utils.remove_file(image_file)
                 print("empty dst_result:{}".format(image_file))
                 continue
             format = os.path.basename(image_file).split(".")[-1]
@@ -79,6 +82,7 @@ class LabelMeDemo(object):
         if not out_image_dir: out_image_dir = self.image_dir
         file_utils.save_file_list(out_image_dir, filename=None, prefix="", postfix=file_utils.IMG_POSTFIX,
                                   only_id=False, shuffle=False, max_num=None)
+        class_set = sorted(class_set)
         print("have class_set:{}\n{}".format(len(class_set), class_set))
 
     def save_object_crops(self, objects, image, out_dir, image_id):

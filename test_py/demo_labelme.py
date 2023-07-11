@@ -17,7 +17,7 @@ from pybaseutils.maker import maker_voc, convert_labelme2voc
 from pybaseutils.dataloader import parser_labelme
 
 if __name__ == "__main__":
-    json_dir = "/home/PKing/nasdata/dataset-dmai/handwriting/word-det/bk/json"
+    json_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/equipment/dataset-v1/json"
     out_root = os.path.dirname(json_dir)
     image_dir = os.path.join(out_root, "JPEGImages")
     class_dict = None
