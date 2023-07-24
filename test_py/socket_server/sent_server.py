@@ -11,16 +11,16 @@ import cv2, threading, time
 import socket
 
 
-class MediaService(object):
+class MediaServer(object):
     """流媒体发生数据服务"""
 
-    def __init__(self, service, port=8080, size=(640, 480)):
+    def __init__(self, server, port=8080, size=(640, 480)):
         """
-        :param service: 流媒体服务地址
+        :param server: 流媒体服务地址
         :param port:端口
         :param size: 图像大小(H,W)
         """
-        self.address = (service, port)
+        self.address = (server, port)
         self.size = size
         self.bufsize = self.size[0] * self.size[1] * 3
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -49,5 +49,5 @@ class MediaService(object):
 
 if __name__ == "__main__":
     service = "192.168.2.219"
-    c = MediaService(service=service, size=(640, 480))
+    c = MediaServer(server=service, size=(640, 480))
     c.read()

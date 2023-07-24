@@ -86,6 +86,7 @@ def get_voc_file_list(voc_root, prefix="", postfix=file_utils.IMG_POSTFIX, only_
     file_list = file_utils.get_sub_list(file_list, dirname=image_dir)
     if check:
         xmls_list = file_utils.get_files_list(annos_dir, postfix=["*.xml"], basename=True)
+        print("xml file:{},image file:{}".format(len(xmls_list), len(file_list)))
         xmls_ids = [str(f).split(".")[0] for f in xmls_list]
         file_list = [f for f in file_list if str(f).split(".")[0] in xmls_ids]
     if only_id:
@@ -103,5 +104,5 @@ def get_voc_file_list(voc_root, prefix="", postfix=file_utils.IMG_POSTFIX, only_
 if __name__ == "__main__":
     # file_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/岗评项目数据/标注数据/岗评项目_室内电力操作检测-22labels/JPEGImages"
     # save_file_list(file_dir, postfix=file_utils.IMG_POSTFIX + ["*.JPG"], only_id=False, shuffle=False, max_num=None)
-    voc_root = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/equipment/dataset-v1"
+    voc_root = "/home/PKing/nasdata/dataset/tmp/drowsy-driving/drowsy-driving/Drowsy-Driving-Det1/test"
     get_voc_file_list(voc_root, postfix=file_utils.IMG_POSTFIX + ["*.JPG"], only_id=False, shuffle=True, max_num=None)

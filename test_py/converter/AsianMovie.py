@@ -91,9 +91,9 @@ class ParseAsian(object):
 
 
 def main():
-    file = "/home/dm/nasdata/dataset/emotion/Asian_Facial_Expression/AsianMovie_0725_0730/list/total.txt"
-    image_dir = "/home/dm/nasdata/dataset/emotion/Asian_Facial_Expression/AsianMovie_0725_0730/images"
-    out_dir = "/home/dm/nasdata/dataset/csdn/emotion/emotion-domestic1"
+    file = "/home/PKing/nasdata/dataset/emotion/Asian_Facial_Expression/AsianMovie_0725_0730/list/total.txt"
+    image_dir = "/home/PKing/nasdata/dataset/emotion/Asian_Facial_Expression/AsianMovie_0725_0730/images"
+    out_dir = "/home/PKing/nasdata/dataset/emotion/Asian_Facial_Expression/dataset-pjq"
     wid = ParseAsian(file, image_dir)
     data_info = wid.parse_data(out_dir=out_dir, max_num=None, vis=False)
 

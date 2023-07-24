@@ -126,7 +126,9 @@ ls -lR|grep "^d"|wc -l
 
 ```bash
 # 服务路径
+#alias ps -aux|grep redis
 alias nasdata='echo /nasdata/atp/data/panjinquan'
+alias cv='echo /atpcephdata/cv/panjinquan'
 # pip 镜像源码(pip mirror=pipm)
 alias pipm="echo -e 'https://pypi.tuna.tsinghua.edu.cn/simple\nhttps://pypi.org/simple'"
 # 查看文件列表
@@ -146,6 +148,8 @@ alias countdir='ls -lR|grep "^d"|wc -l'
 
 ```bash
 sudo apt-get install libopencv-dev python-opencv
+sudo apt-get install '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev    
+apt-get install '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev
 ```
 
 ## 解决git pull/push需要输入密码的问题
@@ -154,4 +158,5 @@ sudo apt-get install libopencv-dev python-opencv
 
 ```bash
 git config --global credential.helper store
+
 ```

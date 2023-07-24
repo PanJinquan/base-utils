@@ -13,7 +13,7 @@ from tqdm import tqdm
 from pybaseutils import file_utils, image_utils
 
 
-def image_dir_move_file(voc_root, out_dir, max_nums=5000, move=True, shuffle=True):
+def image_dir_move_file(voc_root, out_dir, max_nums=500, move=True, shuffle=True):
     image_dir = os.path.join(voc_root, "JPEGImages")
     annos_dir = os.path.join(voc_root, "Annotations")
     json_dir = os.path.join(voc_root, "json")
@@ -43,6 +43,6 @@ def image_dir_move_file(voc_root, out_dir, max_nums=5000, move=True, shuffle=Tru
 
 
 if __name__ == "__main__":
-    voc_root = "/home/dm/nasdata/dataset/csdn/Eyeglasses/dataset/eyeglasses-v1/face1"
-    out_dir = "/home/dm/nasdata/dataset/csdn/Eyeglasses/dataset/eyeglasses-test/face1"
+    voc_root = "/home/PKing/nasdata/dataset/tmp/drowsy-driving/drowsy-driving/Drowsy-Driving-Det1/trainval"
+    out_dir = "/home/PKing/nasdata/dataset/tmp/drowsy-driving/drowsy-driving/Drowsy-Driving-Det1/test"
     image_dir_move_file(voc_root, out_dir, max_nums=500, shuffle=True)

@@ -21,12 +21,29 @@ namespace cv {
 
 // cv::Scalar c = COLOR_TABLE[obj.label%COLOR_TABLE.size()];
 static vector<cv::Scalar> COLOR_TABLE = {
-        (0, 0, 255), (0, 255, 0), (255, 0, 0),
-        (128, 0, 0), (0, 128, 0), (128, 128, 0),
-        (0, 0, 128), (128, 0, 128), (0, 128, 128), (128, 128, 128),
-        (64, 0, 0), (192, 0, 0), (64, 128, 0), (192, 128, 0),
-        (64, 0, 128), (192, 0, 128), (64, 128, 128), (192, 128, 128),
-        (0, 64, 0), (128, 64, 0), (0, 192, 0), (128, 192, 0), (0, 64, 128)
+        {0,   0,   255},
+        {0,   255, 0},
+        {255, 0,   0},
+        {128, 0,   0},
+        {0,   128, 0},
+        {128, 128, 0},
+        {0,   0,   128},
+        {128, 0,   128},
+        {0,   128, 128},
+        {128, 128, 128},
+        {64,  0,   0},
+        {192, 0,   0},
+        {64,  128, 0},
+        {192, 128, 0},
+        {64,  0,   128},
+        {192, 0,   128},
+        {64,  128, 128},
+        {192, 128, 128},
+        {0,   64,  0},
+        {128, 64,  0},
+        {0,   192, 0},
+        {128, 192, 0},
+        {0,   64,  128}
 };
 
 
@@ -219,7 +236,7 @@ void draw_points_texts(cv::Mat &image, vector<cv::Point2f> points, vector<string
  * @param text
  */
 void draw_rect_text(cv::Mat &image, cv::Rect rect, string text = "",
-                    cv::Scalar color = cv::Scalar(255, 0, 0), int thickness = 2,double fontScale=0.8);
+                    cv::Scalar color = cv::Scalar(255, 0, 0), int thickness = 2, double fontScale = 0.8);
 
 
 /***
@@ -229,7 +246,7 @@ void draw_rect_text(cv::Mat &image, cv::Rect rect, string text = "",
  * @param texts
  */
 void draw_rects_texts(cv::Mat &image, vector<cv::Rect> rects, vector<string> texts = {},
-                      cv::Scalar color = cv::Scalar(255, 0, 0), int thickness = 2,double fontScale=0.8);
+                      cv::Scalar color = cv::Scalar(255, 0, 0), int thickness = 2, double fontScale = 0.8);
 
 
 /***

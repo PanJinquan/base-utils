@@ -74,6 +74,7 @@ def video2frames(video_file, out_dir=None, func=None, interval=1, vis=True):
     if not out_dir:  out_dir = os.path.join(os.path.dirname(video_file), name)
     video_cap = get_video_capture(video_file)
     width, height, num_frames, fps = get_video_info(video_cap)
+    if not interval: interval = fps
     if not os.path.exists(out_dir): os.makedirs(out_dir)
     count = 0
     while True:

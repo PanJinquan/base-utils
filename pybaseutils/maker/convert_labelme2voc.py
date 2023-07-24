@@ -98,8 +98,8 @@ class LabelMeDemo(object):
         for item in objects:
             label = item["name"]
             box = item["bndbox"]
-            image = image_utils.draw_image_bboxes_text(image, [box], [label], thickness=2, fontScale=1.0,
-                                                       drawType="chinese")
+            image = image_utils.draw_image_bboxes_text(image, [box], [label], thickness=3, fontScale=1.2,
+                                                       color=(0, 255, 0), drawType="chinese")
         image_utils.cv_show_image("image", image, use_rgb=False, delay=0)
 
 

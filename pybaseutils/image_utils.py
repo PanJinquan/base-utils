@@ -1077,7 +1077,7 @@ def draw_image_bboxes_labels(rgb_image, bboxes, labels, class_name=None, color=N
     """
     if isinstance(labels, np.ndarray): labels = labels.astype(np.int32).reshape(-1).tolist()
     for label, box in zip(labels, bboxes):
-        color_ = color if color else color_map[int(label) + 1]
+        color_ = color if color else color_table[int(label) + 1]
         box = [int(b) for b in box]
         if class_name: label = class_name[int(label)]
         rgb_image = custom_bbox_line(rgb_image, box, color_, str(label), thickness=thickness,
@@ -1188,43 +1188,6 @@ def draw_dt_gt_dets(image, dt_boxes, dt_label, gt_boxes, gt_label, vis_diff=Fals
     return image
 
 
-def custom_bbox_line(image, bbox, color, name, thickness=2, fontScale=0.8, drawType="custom", top=True):
-    """
-    :param image:
-    :param bbox:
-    :param color:
-    :param name:
-    :param drawType:
-    :param top:
-    :return:
-    """
-    thickness, fontScale = get_linesize(max(image.shape), thickness=thickness, fontScale=fontScale)
-    if not name: drawType = "simple"
-    if drawType == "chinese":
-        cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness)
-        cv2_putText(image, str(name), (bbox[0], bbox[1]), color=color, fontScale=fontScale, thickness=thickness)
-    elif drawType == "simple":
-        cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness, 8, 0)
-        cv2.putText(image, str(name), (bbox[0], bbox[1]), cv2.FONT_HERSHEY_SIMPLEX, fontScale, color, thickness)
-    elif drawType == "custom":
-        cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness)
-        text_size, baseline = cv2.getTextSize(str(name), cv2.FONT_HERSHEY_SIMPLEX, fontScale, thickness)
-        if top:
-            text_loc = (bbox[0], bbox[1] + text_size[1])  # 在左上角下方绘制文字
-            # text_loc = (bbox[0], bbox[1] - baseline // 2)# 在左上角上方绘制文字
-        else:
-            text_loc = (bbox[0], bbox[3])
-        bg1 = (text_loc[0], text_loc[1] - text_size[1])
-        bg2 = (text_loc[0] + text_size[0], text_loc[1] + baseline // 2)  # 底纹等于字体的宽度
-        # bg2 = (max(bbox[2], text_loc[0] + text_size[0]), text_loc[1] + baseline // 2) # 底纹等于box的宽度
-        cv2.rectangle(image, bg1, bg2, color, thickness)  # 先绘制框，再填充
-        cv2.rectangle(image, bg1, bg2, color, -1)
-        # draw score value
-        cv2.putText(image, str(name), (text_loc[0], text_loc[1]), cv2.FONT_HERSHEY_SIMPLEX, fontScale,
-                    (255, 255, 255), thickness)
-    return image
-
-
 def draw_landmark(image, landmarks, radius=2, fontScale=1.0, color=(0, 0, 255), vis_id=False):
     """
     :param image:
@@ -1310,21 +1273,57 @@ def draw_text(image, point, text, color=(255, 0, 0), fontScale=-1.0, thickness=-
     :return:
     """
     thickness, fontScale = get_linesize(max(image.shape), thickness=thickness, fontScale=fontScale)
-    text_thickness = 1
     fontFace = cv2.FONT_HERSHEY_SIMPLEX
     # fontFace=cv2.FONT_HERSHEY_SIMPLEX
     if drawType == "custom" or drawType == "en":
         text_size, baseline = cv2.getTextSize(str(text), fontFace, fontScale, thickness)
         text_loc = (point[0], point[1] + text_size[1])
         cv2.rectangle(image, (text_loc[0] - 2 // 2, text_loc[1] - 2 - baseline),
-                      (text_loc[0] + text_size[0], text_loc[1] + text_size[1]), color=color, thickness=thickness)
+                      (text_loc[0] + text_size[0], text_loc[1] + text_size[1]), color=color, thickness=-1)
         # draw score value
-        cv2.putText(image, str(text), (text_loc[0], text_loc[1] + baseline), fontFace, fontScale,
-                    (255, 255, 255), text_thickness, 2)
+        cv2.putText(image, str(text), (text_loc[0], text_loc[1] + baseline), fontFace, fontScale, (255, 255, 255),
+                    thickness, 2)
     elif drawType == "simple":
-        cv2.putText(image, str(text), point, fontFace, fontScale, color=color, thickness=thickness)
+        cv2.putText(image, str(text),  (point[0], point[1]), fontFace, fontScale, color=color, thickness=thickness)
     if drawType == "chinese" or drawType == "ch":
-        cv2_putText(image, str(text), point, fontFace, fontScale, color=color, thickness=thickness)
+        cv2_putText(image, str(text),  (point[0], point[1]), fontFace, fontScale, color=color, thickness=thickness)
+    return image
+
+
+def custom_bbox_line(image, bbox, color, name, thickness=2, fontScale=0.8, drawType="custom", top=True):
+    """
+    :param image:
+    :param bbox:
+    :param color:
+    :param name:
+    :param drawType:
+    :param top:
+    :return:
+    """
+    thickness, fontScale = get_linesize(max(image.shape), thickness=thickness, fontScale=fontScale)
+    if not name: drawType = "simple"
+    if drawType == "chinese":
+        cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness)
+        cv2_putText(image, str(name), (bbox[0], bbox[1]), color=color, fontScale=fontScale, thickness=thickness)
+    elif drawType == "simple":
+        cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness, 8, 0)
+        cv2.putText(image, str(name), (bbox[0], bbox[1]), cv2.FONT_HERSHEY_SIMPLEX, fontScale, color, thickness)
+    elif drawType == "custom":
+        cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness)
+        text_size, baseline = cv2.getTextSize(str(name), cv2.FONT_HERSHEY_SIMPLEX, fontScale, thickness)
+        if top:
+            text_loc = (bbox[0], bbox[1] + text_size[1])  # 在左上角下方绘制文字
+            # text_loc = (bbox[0], bbox[1] - baseline // 2)# 在左上角上方绘制文字
+        else:
+            text_loc = (bbox[0], bbox[3])
+        bg1 = (text_loc[0], text_loc[1] - text_size[1])
+        bg2 = (text_loc[0] + text_size[0], text_loc[1] + baseline // 2)  # 底纹等于字体的宽度
+        # bg2 = (max(bbox[2], text_loc[0] + text_size[0]), text_loc[1] + baseline // 2) # 底纹等于box的宽度
+        cv2.rectangle(image, bg1, bg2, color, thickness)  # 先绘制框，再填充
+        cv2.rectangle(image, bg1, bg2, color, -1)
+        # draw score value
+        cv2.putText(image, str(name), (text_loc[0], text_loc[1]), cv2.FONT_HERSHEY_SIMPLEX, fontScale,
+                    (255, 255, 255), thickness)
     return image
 
 

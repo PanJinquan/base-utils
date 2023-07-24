@@ -20,7 +20,7 @@ if __name__ == "__main__":
     # filename = "/home/dm/nasdata/dataset/csdn/face_person/MPII/test.txt"
     # filename = "/home/dm/nasdata/dataset/csdn/Eyeglasses/dataset/face-eyeglasses/trainval.txt"
     # filename = "/home/dm/nasdata/dataset/tmp/insects/VOC2/VOC/VOCdevkit/trainval.txt"
-    filename = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/equipment/dataset-v1/trainval.txt"
+    filename = "/home/PKing/nasdata/dataset/tmp/drowsy-driving/drowsy-driving/Drowsy-Driving-Det1/test.txt"
     # filename = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/word-old/train.txt"
     # class_name = ["face", "face-eyeglasses"]
     # class_name = "/home/dm/nasdata/dataset/tmp/traffic-sign/TT100K/VOC/train/class_name.txt"
@@ -48,5 +48,5 @@ if __name__ == "__main__":
         print(image_id)
         bboxes, labels = targets[:, 0:4], targets[:, 4:5]
         image = parser_voc.show_target_image(image, bboxes, labels, normal=False, transpose=False,
-                                             class_name=class_name, use_rgb=use_rgb, thickness=2, fontScale=1)
+                                             class_name=class_name, use_rgb=use_rgb, thickness=4, fontScale=1.5)
         # image = show_boxes_image(image, Dataset.cxcywh2xyxy(bboxes, 0, 0), labels, normal=False, transpose=True)

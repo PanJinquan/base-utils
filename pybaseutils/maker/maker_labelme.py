@@ -15,7 +15,7 @@ def maker_labelme(json_file, points, labels, image_name, image_size, image_bs64=
     """
     制作label数据格式
     :param json_file: 保存json文件路径
-    :param points: (num_labels,num_points,2)
+    :param points: (num_labels,num_points,2), points = image_utils.boxes2polygons(boxes)
     :param labels: (num_labels,)
     :param image_name: 图片名称，如果存在则进行拷贝到json_file同一级目录
     :param image_size: (W,H)

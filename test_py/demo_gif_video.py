@@ -36,8 +36,8 @@ def android_gif():
 
 
 def python_gif():
-    video_file = "/home/PKing/nasdata/dataset/tmp/smoking/demo/python-demo/smoking-result2.avi"
-    video_utils.video2gif(video_file, interval=9, func=resize_fun, fps=6, use_pil=False, vis=True)
+    video_file = "/home/PKing/nasdata/dataset/tmp/Drowsy-Driving/demo/python-demo-dd2.avi"
+    video_utils.video2gif(video_file, interval=6, func=resize_fun, fps=6, use_pil=False, vis=True)
 
 
 def image_gif():
