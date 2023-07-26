@@ -100,6 +100,7 @@ class LabelMeDataset(Dataset):
             postfix = ""
         else:
             image_list = glob.glob(os.path.join(image_dir, "*"))
+            image_list = [file for file in image_list if not file.endswith("json")]
             postfix = os.path.basename(image_list[0]).split(".")[1]
         return postfix
 

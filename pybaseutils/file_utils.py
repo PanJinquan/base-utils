@@ -581,6 +581,7 @@ def create_dir(parent_dir, dir1=None, filename=None):
     out_path = parent_dir
     if dir1:
         out_path = os.path.join(parent_dir, dir1)
+    if not out_path: return out_path
     if not os.path.exists(out_path):
         os.makedirs(out_path)
     if filename:

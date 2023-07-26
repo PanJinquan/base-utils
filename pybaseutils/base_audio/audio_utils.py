@@ -70,7 +70,7 @@ def audio_bytes2array(bin_data):
     return data, sample_rate
 
 
-def audio_write(audio_file, audio_data: np.ndarray, samplerate, format="wav", buffer=False):
+def audio_write(audio_file, audio_data: np.ndarray, samplerate=16000, format="wav", buffer=False):
     """
     保存音频
     :param audio_file: 音频文件,或者
@@ -147,5 +147,6 @@ if __name__ == '__main__':
     video_file = "../../data/video/test-video.mp4"
     audio_file = "../../data/video/kunkun_cut.mp3"
     video_out = "../../data/video/test-video-result.mp4"
+    audio_file = "../../data/audio/bus_chinese.wav"
     playsound(audio_file)
-    merge_video_audio(video_file, audio_file, video_out)
+    # merge_video_audio(video_file, audio_file, video_out)

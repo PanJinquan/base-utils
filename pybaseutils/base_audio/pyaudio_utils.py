@@ -12,13 +12,14 @@ import wave
 from tqdm import tqdm
 
 
-def play_audio(wave_path):
+def play_audio(wave_file):
     """
-    :param wave_path:
+    播放音频
+    :param wave_file:
     :return:
     """
     CHUNK = 1024
-    wf = wave.open(wave_path, 'rb')
+    wf = wave.open(wave_file, 'rb')
     # instantiate PyAudio (1)
     p = pyaudio.PyAudio()
     # open stream (2)
@@ -43,9 +44,10 @@ def play_audio(wave_path):
     p.terminate()
 
 
-def record_audio(wave_out_path, time):
+def record_audio(wave_file, time):
     """
-    :param wave_out_path:
+    录音
+    :param wave_file:
     :param time:
     :return:
     """
@@ -60,7 +62,7 @@ def record_audio(wave_out_path, time):
                     input=True,
                     frames_per_buffer=CHUNK)
 
-    wf = wave.open(wave_out_path, 'wb')
+    wf = wave.open(wave_file, 'wb')
     wf.setnchannels(CHANNELS)
     wf.setsampwidth(p.get_sample_size(FORMAT))
     wf.setframerate(RATE)

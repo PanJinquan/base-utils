@@ -31,8 +31,8 @@ def resize_fun(frame):
 
 def android_gif():
     # video_file = "/media/dm/新加卷/SDK/CSDN/双目测距/demo/image-nouse-wls.mp4"
-    video_file = "/home/dm/nasdata/dataset/tmp/Face-Recognition/demo/android-demo/android-人脸识别视频demo2.mp4"
-    video_utils.video2gif(video_file, interval=12, func=resize_android, fps=4, use_pil=False, vis=True)
+    video_file = "/home/PKing/nasdata/dataset/tmp/Drowsy-Driving/demo/android-demo-dd1.mp4"
+    video_utils.video2gif(video_file, interval=8, func=resize_android, fps=4, use_pil=False, vis=True)
 
 
 def python_gif():
@@ -50,5 +50,5 @@ def image_gif():
 
 if __name__ == "__main__":
     # image_gif()
-    # android_gif()
-    python_gif()
+    android_gif()
+    # python_gif()
