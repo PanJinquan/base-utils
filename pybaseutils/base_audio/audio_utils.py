@@ -13,10 +13,54 @@ import io
 import soundfile
 import numpy as np
 import copy
+import librosa
 import numpy as np
 from ffmpy import FFmpeg
+import matplotlib.pyplot as plt
+from scipy.fft import fft
 from IPython.display import Audio, display
 from playsound import playsound
+
+
+def read_audio(audio_file, sr=16000):
+    """
+    Load an audio file as a floating point time series
+    :param audio_file:
+    :param sr: sampling rate
+    :return:
+    """
+    audio_data, sr = librosa.load(audio_file, sr=sr)
+    return audio_data, sr
+
+
+def save_audio(audio_file, audio_data, sr=16000):
+    """
+    save audio file
+    :param audio_file:
+    :param audio_data:
+    :param sr: sampling rate
+    :return:
+    """
+    soundfile.write(audio_file, audio_data, samplerate=sr)
+
+
+def audio_write(audio_file, audio_data: np.ndarray, sr=16000, format="wav", buffer=False):
+    """
+    保存音频
+    :param audio_file: 音频文件,或者
+    :param audio_data: 音频数据,shape is (Nums,)
+    :param sr: 音频采样率
+    :param format:     音频格式
+    :return:
+    """
+
+    if buffer:
+        audio_buffer = io.BytesIO()
+        soundfile.write(audio_buffer, audio_data, samplerate=sr, format=format)
+        return audio_buffer
+    else:
+        soundfile.write(audio_file, audio_data, samplerate=sr, format=format)
+        return audio_file
 
 
 def sound_audio(audio_file):
@@ -51,11 +95,11 @@ def sound_audio_buffer(audio_buffer, tmp_audio="./tmp.wav"):
     """
 
     if isinstance(audio_buffer, bytes):
-        audio_data, samplerate = audio_bytes2array(audio_buffer)
+        audio_data, sr = audio_bytes2array(audio_buffer)
     elif isinstance(audio_buffer, io.BytesIO):
         audio_buffer_ = copy.deepcopy(audio_buffer)
-        audio_data, samplerate = soundfile.read(audio_buffer_)
-    tmp_audio = audio_write(tmp_audio, audio_data, samplerate=samplerate)
+        audio_data, sr = soundfile.read(audio_buffer_)
+    tmp_audio = audio_write(tmp_audio, audio_data, sr=sr)
     sound_audio_file(tmp_audio)
 
 
@@ -68,25 +112,6 @@ def audio_bytes2array(bin_data):
     b = io.BytesIO(bin_data)
     data, sample_rate = soundfile.read(b)  # 使用soundfile库读二进制音频文件，data为音频数据，sr为采样率
     return data, sample_rate
-
-
-def audio_write(audio_file, audio_data: np.ndarray, samplerate=16000, format="wav", buffer=False):
-    """
-    保存音频
-    :param audio_file: 音频文件,或者
-    :param audio_data: 音频数据,shape is (Nums,)
-    :param samplerate: 音频采样率
-    :param format:     音频格式
-    :return:
-    """
-
-    if buffer:
-        audio_buffer = io.BytesIO()
-        soundfile.write(audio_buffer, audio_data, samplerate=samplerate, format=format)
-        return audio_buffer
-    else:
-        soundfile.write(audio_file, audio_data, samplerate=samplerate, format=format)
-        return audio_file
 
 
 def write_bin_file(file, bin_data):
@@ -140,6 +165,52 @@ def merge_video_audio(video_file: str, audio_file: str, video_out: str):
     return video_out
 
 
+def display_time_domain(audio, sr=16000):
+    """
+    显示语音时域波形
+    https://zhuanlan.zhihu.com/p/371394137
+    :param audio:  audio file or audio data
+    :param sr : sampling rate
+    :return:
+    """
+    if isinstance(audio, str) and os.path.isfile(audio):
+        samples, sr = read_audio(audio, sr=sr)
+    else:
+        samples = audio
+    time = np.arange(0, len(samples)) * (1.0 / sr)
+    plt.plot(time, samples)
+    plt.title("Time Domain Waveform(sr={})".format(sr))
+    plt.xlabel("Time/s")
+    plt.ylabel("Amplitude")
+    plt.show()
+
+
+def display_freq_domain(audio, sr=16000):
+    """
+    显示语音频域波形
+    https://zhuanlan.zhihu.com/p/371394137
+    :param audio:  audio file or audio data
+    :param sr : sampling rate
+    :return:
+    """
+    if isinstance(audio, str) and os.path.isfile(audio):
+        samples, sr = read_audio(audio, sr=sr)
+    else:
+        samples = audio
+    # ft = librosa.stft(x)
+    # magnitude = np.abs(ft)  # 对fft的结果直接取模（取绝对值），得到幅度magnitude
+    # frequency = np.angle(ft)  # (0, 16000, 121632)
+    ft = fft(samples)
+    magnitude = np.absolute(ft)  # 对fft的结果直接取模（取绝对值），得到幅度magnitude
+    frequency = np.linspace(0, sr, len(magnitude))  # (0, 16000, 121632)
+    # plot spectrum，限定[:40000]
+    plt.plot(frequency[:40000], magnitude[:40000])  # magnitude spectrum
+    plt.title("Freq Domain Waveform(sr={})".format(sr))
+    plt.xlabel("Freq/Hz")
+    plt.ylabel("Amplitude")
+    plt.show()
+
+
 if __name__ == '__main__':
     # video_file = "../data/video/kunkun_cut.mp4"
     # audio_file = "../data/video/kunkun_cut.mp3"
@@ -148,5 +219,8 @@ if __name__ == '__main__':
     audio_file = "../../data/video/kunkun_cut.mp3"
     video_out = "../../data/video/test-video-result.mp4"
     audio_file = "../../data/audio/bus_chinese.wav"
-    playsound(audio_file)
+    # playsound(audio_file)
+    # playsound(audio_file)
+    display_time_domain(audio_file)
+    display_freq_domain(audio_file)
     # merge_video_audio(video_file, audio_file, video_out)
