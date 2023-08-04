@@ -502,7 +502,7 @@ def requests_url(url):
     return stream
 
 
-def read_images_url(url, size=None, norm=False, use_rgb=False):
+def read_images_url(url: str, size=None, norm=False, use_rgb=False):
     """
     根据url或者图片路径，读取图片
     :param url:
@@ -512,7 +512,8 @@ def read_images_url(url, size=None, norm=False, use_rgb=False):
     :return:
     """
     image = None
-    if re.match(r'^https?:/{2}\w.+$', url):
+    # if re.match(r'^https?:/{2}\w.+$', url):
+    if url.startswith("http"):
         stream = requests_url(url)
         if stream is not None:
             content = np.asarray(bytearray(stream), dtype="uint8")
@@ -1284,9 +1285,9 @@ def draw_text(image, point, text, color=(255, 0, 0), fontScale=-1.0, thickness=-
         cv2.putText(image, str(text), (text_loc[0], text_loc[1] + baseline), fontFace, fontScale, (255, 255, 255),
                     thickness, 2)
     elif drawType == "simple":
-        cv2.putText(image, str(text),  (point[0], point[1]), fontFace, fontScale, color=color, thickness=thickness)
+        cv2.putText(image, str(text), (point[0], point[1]), fontFace, fontScale, color=color, thickness=thickness)
     if drawType == "chinese" or drawType == "ch":
-        cv2_putText(image, str(text),  (point[0], point[1]), fontFace, fontScale, color=color, thickness=thickness)
+        cv2_putText(image, str(text), (point[0], point[1]), fontFace, fontScale, color=color, thickness=thickness)
     return image
 
 

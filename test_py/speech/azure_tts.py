@@ -68,7 +68,7 @@ class AzureService(object):
         :return:
         """
         result = self.synthesizer_request(text, rate=rate)
-        audio_data, samplerate = audio_utils.audio_bytes2array(result.audio_data)
+        audio_data, samplerate = audio_utils.audio_bytes2array(result.audio_data1)
         audio_buffer = audio_utils.audio_write("", audio_data, samplerate, format="wav", buffer=True)
         return audio_buffer
 
@@ -87,9 +87,9 @@ class AzureService(object):
             result = self.synthesizer_request(line)
             audio_file = os.path.basename(filename).split(".")[0] + "_{:0=3d}.wav".format(i)
             audio_file = os.path.join(output, audio_file)
-            audio_data, samplerate = audio_utils.audio_bytes2array(result.audio_data)
+            audio_data, samplerate = audio_utils.audio_bytes2array(result.audio_data1)
             audio_utils.audio_write(audio_file, audio_data, samplerate, format="wav", buffer=False)
-            audio_utils.write_bin_file(audio_file, result.audio_data)
+            audio_utils.write_bin_file(audio_file, result.audio_data1)
             print("save file in :{}".format(audio_file))
 
 

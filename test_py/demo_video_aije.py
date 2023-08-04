@@ -26,6 +26,7 @@ def video2frames_similarity(video_file, out_dir=None, func=None, interval=1, thr
     :param out_dir: 保存抽帧图像的目录
     :param func: 回调函数，对每一帧图像进行处理
     :param interval: 保存间隔
+    :param thresh: 相似度阈值
     :param vis: 是否可视化显示
     :return:
     """
@@ -72,5 +73,5 @@ def video2frames_demo(root, out):
 if __name__ == "__main__":
     root = "/home/PKing/nasdata/dataset-dmai/AIJE/岗评项目数据/开发数据/室内作业视频_0624-0712/20220704室内作业1"
     # root = "/home/PKing/nasdata/release/AIJE/岗评视频数据v1/videos"
-    out = root + "-frame"
+    out = root + "-frame-bk"
     video2frames_demo(root, out)

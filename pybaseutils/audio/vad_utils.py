@@ -203,7 +203,7 @@ class AudioProcess:
 
 def example1():
     """暂时不支持单音道"""
-    from pybaseutils.base_audio import audio_utils
+    from pybaseutils.audio import audio_utils
     audio_file = "../../data/audio/bus_chinese.wav"
     # audio_file = "/home/PKing/nasdata/release/handwriting/daip-calligraphy-hard/calligraphy-hard-maker/modules/tts/data/轮-test.wav"
     mode = 0  # "aggressiveness"
@@ -225,7 +225,7 @@ def example1():
 
 def example2():
     """暂时不支持单音道"""
-    from pybaseutils.base_audio import audio_utils
+    from pybaseutils.audio import audio_utils
 
     audio_file = "../../data/audio/bus_chinese.wav"
     # audio_file = "/home/PKing/nasdata/release/handwriting/daip-calligraphy-hard/calligraphy-hard-maker/modules/tts/data/轮-test.wav"

@@ -86,18 +86,15 @@ class WriterTXT(object):
         if filename:
             self.f = open(filename, mode=mode)
 
-    def write_line_str(self, line_str, endline="\n"):
+    def write_line(self, line, end='\n'):
         if self.f:
-            line_str = line_str + endline
-            self.f.write(line_str)
+            self.f.write(line + end)
             self.f.flush()
 
-    def write_line_list(self, line_list, endline="\n"):
+    def write_line_list(self, line_list, end='\n'):
         if self.f:
-            for line_list in line_list:
-                # 将list转为string
-                line_str = " ".join('%s' % id for id in line_list)
-                self.write_line_str(line_str, endline=endline)
+            for line in line_list:
+                self.write_line(line, end=end)
             self.f.flush()
 
     def close(self):
@@ -175,7 +172,7 @@ def write_list_data(filename, list_data, mode='w'):
         f.flush()
 
 
-def read_data(filename, split=" ", convertNum=True):
+def read_data(filename, split=",", convertNum=True):
     """
     读取txt数据函数
     :param filename:文件名
@@ -554,6 +551,7 @@ def copy_file_list(file_list, dst_dir):
 def move_file_list(file_list, dst_dir):
     [move_file_to_dir(file, dst_dir) for file in file_list]
 
+
 def merge_dir(src, dst, sub, merge_same):
     src_dir = os.path.join(src, sub)
     dst_dir = os.path.join(dst, sub)
@@ -661,7 +659,8 @@ def get_files_lists(file_dir, postfix=IMG_POSTFIX, subname="", shuffle=False):
     elif os.path.isfile(file_dir):
         image_list = [file_dir]
     else:
-        raise Exception("Error:{}".format(file_dir))
+        image_list = [file_dir]
+        # raise Exception("Error:{}".format(file_dir))
     if shuffle:
         random.seed(100)
         random.shuffle(image_list)
