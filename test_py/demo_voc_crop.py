@@ -56,7 +56,7 @@ if __name__ == "__main__":
     对VOC的数据目标进行裁剪
     """
     # filename = "/home/PKing/nasdata/dataset/tmp/face_person/MPII/train5000.txt"
-    filename = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/equipment/dataset-v1/file_list.txt"
+    filename = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/equipment/dataset-v3/file_list.txt"
     # class_name = ["face", "face-eyeglasses"]
     # class_name = "/home/dm/nasdata/dataset/tmp/traffic-sign/TT100K/VOC/train/class_name.txt"
     # class_name = ["unique"]
