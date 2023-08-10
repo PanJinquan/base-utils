@@ -9,12 +9,9 @@
 import collections
 import contextlib
 import io
-import sys
 import wave
 import webrtcvad
 from pybaseutils.audio import audio_utils
-
-AGGRESSIVENESS = 3
 
 
 def read_wave(path):

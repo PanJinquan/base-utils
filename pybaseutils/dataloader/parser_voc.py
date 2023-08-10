@@ -475,8 +475,6 @@ def show_target_image(image, bboxes, labels, normal=False, transpose=False, clas
     bboxes_scale = np.asarray([w, h] * 2)
     if normal:
         bboxes = bboxes * bboxes_scale
-    # image = image_processing.untranspose(image)
-    # image = image_processing.convert_color_space(image, colorSpace="RGB")
     image = image_utils.draw_image_bboxes_labels(image, bboxes, labels, class_name=class_name,
                                                  thickness=thickness, fontScale=fontScale, drawType="chinese")
     image_utils.cv_show_image("image", image, delay=0, use_rgb=use_rgb)

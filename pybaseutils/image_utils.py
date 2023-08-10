@@ -40,6 +40,8 @@ color_map = [(0, 0, 0), (56, 56, 255), (151, 157, 255), (31, 112, 255), (29, 178
 root = os.path.dirname(__file__)
 coco_skeleton = [[1, 3], [1, 0], [2, 4], [2, 0], [0, 5], [0, 6], [5, 7], [7, 9], [6, 8],
                  [8, 10], [5, 11], [6, 12], [11, 12], [11, 13], [13, 15], [12, 14], [14, 16]]
+coco_skeleton_v2 = [[15, 13], [13, 11], [16, 14], [14, 12], [11, 12], [5, 11], [6, 12], [5, 6], [5, 7],
+                    [6, 8], [7, 9], [8, 10], [1, 2], [0, 1], [0, 2], [1, 3], [2, 4], [3, 5], [4, 6]]
 mpii_skeleton = [[0, 1], [1, 2], [3, 4], [4, 5], [2, 6], [6, 3], [12, 11], [7, 12],
                  [11, 10], [13, 14], [14, 15], [8, 9], [8, 7], [6, 7], [7, 13]]
 
@@ -996,10 +998,10 @@ def draw_image_bboxes_text(rgb_image, boxes, boxes_name, color=(255, 0, 0), thic
     return rgb_image
 
 
-def draw_image_bboxes_labels_text(rgb_image, boxes, labels, boxes_name=None, color=None, thickness=2, fontScale=0.8,
+def draw_image_bboxes_labels_text(image, boxes, labels, boxes_name=None, color=None, thickness=2, fontScale=0.8,
                                   drawType="custom", top=True):
     """
-    :param rgb_image:
+    :param image:
     :param boxes:
     :param labels:
     :param boxes_name:
@@ -1008,15 +1010,15 @@ def draw_image_bboxes_labels_text(rgb_image, boxes, labels, boxes_name=None, col
     :param top:
     :return:
     """
-    rgb_image = rgb_image.copy()
+    image = image.copy()
     if isinstance(labels, np.ndarray):
         labels = labels.reshape(-1).tolist()
     boxes_name = boxes_name if boxes_name else labels
     for label, box, name in zip(labels, boxes, boxes_name):
         box = [int(b) for b in box]
         color_ = color if color else color_map[int(label) + 1]
-        custom_bbox_line(rgb_image, box, color_, str(name), thickness, fontScale, drawType, top)
-    return rgb_image
+        image = custom_bbox_line(image, box, color_, str(name), thickness, fontScale, drawType, top)
+    return image
 
 
 def draw_image_rects_labels_text(rgb_image, rects, labels, boxes_name=None, color=None, drawType="custom", top=True):

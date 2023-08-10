@@ -21,7 +21,8 @@ class SpeechBrain(object):
                  hparams_file="hyperparams.yaml",
                  pymodule_file="custom.py",
                  savedir="./savedir",
-                 use_ctc=False):
+                 use_ctc=False,
+                 device="cpu"):
         """
         :param source:
         :param hparams_file:
@@ -36,14 +37,15 @@ class SpeechBrain(object):
                                                       hparams_file=hparams_file,
                                                       pymodule_file=pymodule_file,
                                                       savedir=savedir,
-                                                      classname="CustomEncoderDecoderASR")
+                                                      classname="CustomEncoderDecoderASR",
+                                                      run_opts={"device": "cuda"})
         else:
             # "speechbrain/pretrained/interfaces.py"
             self.asr_model = EncoderDecoderASR.from_hparams(source=source,
                                                             hparams_file=hparams_file,
                                                             pymodule_file=pymodule_file,
                                                             savedir=savedir,
-                                                            run_opts={'device': 0})
+                                                            run_opts={"device": "cuda"})
 
     def inference(self, waveform: np.ndarray, sample_rate=16000):
         """Run inference w/ ASR model
