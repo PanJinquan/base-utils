@@ -11,7 +11,7 @@ import cv2
 import tt100k_utils
 from tqdm import tqdm
 from pybaseutils import image_utils, file_utils
-from pybaseutils.maker import maker_voc
+from pybaseutils.converter import build_voc
 
 
 def parser_dataset(image_dir, anno_file, out_voc, vis=True):

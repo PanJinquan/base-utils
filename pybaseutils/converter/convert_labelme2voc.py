@@ -15,7 +15,7 @@ import cv2
 import numpy as np
 from tqdm import tqdm
 from pybaseutils import file_utils, image_utils
-from pybaseutils.maker import maker_voc
+from pybaseutils.converter import build_voc
 from pybaseutils.dataloader import parser_labelme
 
 
@@ -69,8 +69,8 @@ class LabelMeDemo(object):
             newname = "{}.{}".format(image_id, format)
             xml_path = file_utils.create_dir(out_xml_dir, None, "{}.xml".format(image_id))
             class_set = list(set(class_set + labels))
-            objects = maker_voc.create_objects(bboxes, labels, keypoints=None, class_name=class_dict)
-            maker_voc.write_voc_xml_objects(newname, image_shape, objects, xml_path)
+            objects = build_voc.create_objects(bboxes, labels, keypoints=None, class_name=class_dict)
+            build_voc.write_voc_xml_objects(newname, image_shape, objects, xml_path)
             if crop and out_crop_dir:
                 self.save_object_crops(objects, image, out_crop_dir, image_id)
             if out_image_dir:

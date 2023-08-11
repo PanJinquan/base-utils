@@ -9,10 +9,10 @@
 import os
 import numpy as np
 from pybaseutils import image_utils, file_utils, color_utils
-from pybaseutils.dataloader import custom_coco
+from pybaseutils.dataloader import base_coco
 
 
-class CocoKeypoints(custom_coco.CocoDataset):
+class CocoKeypoints(base_coco.CocoDataset):
     def __init__(self, anno_file, image_dir="", class_name=[], num_joints=-1, **kwargs):
         """
         :param anno_file:
@@ -83,13 +83,16 @@ if __name__ == "__main__":
     coco_root = "/home/PKing/nasdata/dataset/face_person/COCO/"
     image_dir = coco_root + 'val2017/images'
     anno_file = coco_root + 'annotations/person_keypoints_val2017.json'
+
+    anno_file = "/media/PKing/新加卷1/SDK/base-utils/data/person.json"
+    image_dir = "/media/PKing/新加卷1/SDK/base-utils/data/person"
+
     dataset = CocoKeypoints(anno_file, image_dir, class_name=class_name)
     skeleton = dataset.skeleton
     for i in range(len(dataset)):
-        i = 10
         data = dataset.__getitem__(i)
         # data = {"segs": segs, "image": image, "boxes": boxes, "label": labels, "image_id": image_id}
         image, boxes, labels, keypoints = data['image'], data["boxes"], data["label"], data["keypoints"]
         print("i={},image_id={}".format(i, data["image_id"]))
-        # dataset.showAnns(image, data['annotations'])
+        dataset.showAnns(image, data['annotations'])
         show_target_image(image, keypoints, boxes, labels, skeleton=skeleton)

@@ -9,7 +9,7 @@ import os
 import numpy as np
 import cv2
 from pybaseutils import pandas_utils, image_utils, file_utils
-from pybaseutils.maker import maker_voc
+from pybaseutils.converter import build_voc
 
 if __name__ == "__main__":
     image_dir = "/home/dm/nasdata/dataset/csdn/helmet/Helmet_Dataset(kaggle)/helmet_dataset/JPEGImages"
@@ -40,8 +40,8 @@ if __name__ == "__main__":
         image = cv2.imread(image_file)
         image_shape = image.shape
         xml_path = file_utils.create_dir(out_xml_dir, None, "{}.xml".format(image_id))
-        objects = maker_voc.create_objects(bboxes, labels, keypoints=None, class_name=None)
-        maker_voc.write_voc_xml_objects(image_name, image_shape, objects, xml_path)
+        objects = build_voc.create_objects(bboxes, labels, keypoints=None, class_name=None)
+        build_voc.write_voc_xml_objects(image_name, image_shape, objects, xml_path)
         if vis:
             labels = [class_name[l] for l in labels]
             image = image_utils.draw_image_bboxes_labels(image, bboxes, labels, thickness=2, fontScale=0.5)

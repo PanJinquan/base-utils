@@ -13,7 +13,7 @@ import cv2
 import numpy as np
 from tqdm import tqdm
 from pybaseutils import file_utils, image_utils
-from pybaseutils.maker import maker_voc, convert_labelme2voc
+from pybaseutils.converter import build_voc, convert_labelme2voc
 from pybaseutils.dataloader import parser_labelme
 
 if __name__ == "__main__":

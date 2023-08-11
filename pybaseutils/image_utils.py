@@ -1070,10 +1070,10 @@ def show_image_rects_text(title, rgb_image, rects, rects_name, color=None, drawT
     return rgb_image
 
 
-def draw_image_bboxes_labels(rgb_image, bboxes, labels, class_name=None, color=None,
+def draw_image_bboxes_labels(image, bboxes, labels, class_name=None, color=None,
                              thickness=-1, fontScale=-1.0, drawType="custom"):
     """
-    :param rgb_image:
+    :param image:
     :param bboxes:  [[x1,y1,x2,y2],[x1,y1,x2,y2]]
     :param labels:
     :return:
@@ -1083,9 +1083,9 @@ def draw_image_bboxes_labels(rgb_image, bboxes, labels, class_name=None, color=N
         color_ = color if color else color_table[int(label) + 1]
         box = [int(b) for b in box]
         if class_name: label = class_name[int(label)]
-        rgb_image = custom_bbox_line(rgb_image, box, color_, str(label), thickness=thickness,
-                                     fontScale=fontScale, drawType=drawType)
-    return rgb_image
+        image = custom_bbox_line(image, box, color_, str(label), thickness=thickness,
+                                 fontScale=fontScale, drawType=drawType)
+    return image
 
 
 def draw_image_rects_labels(rgb_image, rects, labels, class_name=None, color=None, thickness=-1, fontScale=-1.0):

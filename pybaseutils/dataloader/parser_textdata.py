@@ -15,7 +15,7 @@ import torch
 import json
 from tqdm import tqdm
 from pybaseutils import image_utils, file_utils, coords_utils
-from pybaseutils.dataloader.dataset import Dataset
+from pybaseutils.dataloader.base_dataset import Dataset
 
 
 class TextDataset(Dataset):
@@ -91,9 +91,9 @@ class TextDataset(Dataset):
             class_name = [str(i) for i in range(int(class_name))]
         elif isinstance(class_name, list) and "unique" in class_name:
             self.unique = True
-        if isinstance(class_name, list):
+        if isinstance(class_name, list) and len(class_name) > 0:
             class_dict = {str(class_name): i for i, class_name in enumerate(class_name)}
-        elif isinstance(class_name, dict):
+        elif isinstance(class_name, dict) and len(class_name) > 0:
             class_dict = class_name
             class_name = list(class_dict.keys())
         else:

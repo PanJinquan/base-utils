@@ -129,7 +129,7 @@ def convert_voc2yolo(data_root, out_text_dir, out_image_dir=None, class_name=Non
 
 
 if __name__ == "__main__":
-    from pybaseutils.maker import convert_voc2yolo
+    from pybaseutils.converter import convert_voc2yolo
 
     # 定义类别数
     class_name = ['green', "red", 'yellow', "none"]

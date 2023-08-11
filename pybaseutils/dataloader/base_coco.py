@@ -14,8 +14,8 @@ import matplotlib.pyplot as plt
 from collections import defaultdict
 from torch.utils.data.dataset import ConcatDataset
 from pycocotools.coco import COCO
-from pybaseutils.dataloader.dataset import Dataset
-from pybaseutils import image_utils, file_utils
+from pybaseutils.dataloader.base_dataset import Dataset
+from pybaseutils import image_utils, file_utils, json_utils
 
 
 class COCORebuild(COCO):
@@ -117,7 +117,7 @@ class CocoDataset(Dataset):
         self.coco = load_coco(anno_file, class_name)
         self.category2id = self.load_categories()  # 获得COCO所有种类(类别)category
         self.id2category = {i: c for c, i in self.category2id.items()}
-        if class_name is None or isinstance(class_name, dict):
+        if not class_name:
             class_name = list(self.category2id.keys())
             class_name = ["BACKGROUND"] + class_name
         self.class_name, self.class_dict = self.parser_classes(class_name)
@@ -132,6 +132,8 @@ class CocoDataset(Dataset):
         self.num_images = len(self.image_id)
         self.classes = list(self.class_dict.values()) if self.class_dict else None
         self.num_classes = max(list(self.class_dict.values())) + 1 if self.class_dict else None
+        print("CocoDataset anno_file  :{}".format(anno_file))
+        print("CocoDataset image_dir  :{}".format(image_dir))
         print("CocoDataset class_count:{}".format(self.class_count))
         print("CocoDataset class_name :{}".format(self.class_name))
         print("CocoDataset class_dict :{}".format(self.class_dict))
@@ -189,9 +191,9 @@ class CocoDataset(Dataset):
             class_name = super().read_files(class_name)
         elif isinstance(class_name, list) and "unique" in class_name:
             self.unique = True
-        if isinstance(class_name, list):
+        if isinstance(class_name, list) and len(class_name) > 0:
             class_dict = {class_name: i for i, class_name in enumerate(class_name)}
-        elif isinstance(class_name, dict):
+        elif isinstance(class_name, dict) and len(class_name) > 0:
             class_dict = class_name
             class_name = list(class_dict.keys())
         else:
@@ -376,5 +378,6 @@ class CocoDataset(Dataset):
         :param annotations:
         :return:
         """
+        if len(annotations) == 0: return
         plt.imshow(image), plt.axis('off')
         self.coco.showAnns(annotations), plt.show()

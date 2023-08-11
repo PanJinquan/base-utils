@@ -9,7 +9,7 @@ import os
 import cv2
 import xmltodict
 from tqdm import tqdm
-from pybaseutils.maker import maker_voc
+from pybaseutils.converter import build_voc
 from pybaseutils import file_utils, image_utils
 
 
@@ -143,8 +143,8 @@ def converter_ua_detrac2voc(image_dir, annot_dir, out_voc, vis=True):
             new_image_id = "{}_{}".format(subname, image_id)
             new_name = "{}.jpg".format(new_image_id)
             xml_path = file_utils.create_dir(out_xml_dir, None, "{}.xml".format(new_image_id))
-            objects = maker_voc.create_objects(bboxes, labels)
-            maker_voc.write_voc_xml_objects(new_name, image_shape, objects, xml_path)
+            objects = build_voc.create_objects(bboxes, labels)
+            build_voc.write_voc_xml_objects(new_name, image_shape, objects, xml_path)
             dst_file = file_utils.create_dir(out_image_dir, None, new_name)
             file_utils.copy_file(image_file, dst_file)
             # cv2.imwrite(dst_file, image)

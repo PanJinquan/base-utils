@@ -1,68 +1,68 @@
 <annotation>
 	<folder>VOC2007</folder>
-	<filename>000009.jpg</filename>
+	<filename>000032.jpg</filename>
 	<source>
 		<database>The VOC2007 Database</database>
 		<annotation>PASCAL VOC2007</annotation>
 		<image>flickr</image>
-		<flickrid>325443404</flickrid>
+		<flickrid>311023000</flickrid>
 	</source>
 	<owner>
-		<flickrid>autox4u</flickrid>
-		<name>Perry Aidelbaum</name>
+		<flickrid>-hi-no-to-ri-mo-rt-al-</flickrid>
+		<name>?</name>
 	</owner>
 	<size>
 		<width>500</width>
-		<height>375</height>
+		<height>281</height>
 		<depth>3</depth>
 	</size>
-	<segmented>0</segmented>
+	<segmented>1</segmented>
 	<object>
-		<name>horse</name>
-		<pose>Right</pose>
+		<name>aeroplane</name>
+		<pose>Frontal</pose>
 		<truncated>0</truncated>
 		<difficult>0</difficult>
 		<bndbox>
-			<xmin>69</xmin>
-			<ymin>172</ymin>
-			<xmax>270</xmax>
-			<ymax>330</ymax>
+			<xmin>104</xmin>
+			<ymin>78</ymin>
+			<xmax>375</xmax>
+			<ymax>183</ymax>
 		</bndbox>
 	</object>
 	<object>
-		<name>person</name>
-		<pose>Right</pose>
-		<truncated>0</truncated>
-		<difficult>0</difficult>
-		<bndbox>
-			<xmin>150</xmin>
-			<ymin>141</ymin>
-			<xmax>229</xmax>
-			<ymax>284</ymax>
-		</bndbox>
-	</object>
-	<object>
-		<name>person</name>
-		<pose>Right</pose>
-		<truncated>0</truncated>
-		<difficult>0</difficult>
-		<bndbox>
-			<xmin>285</xmin>
-			<ymin>201</ymin>
-			<xmax>327</xmax>
-			<ymax>331</ymax>
-		</bndbox>
-	</object>
-	<object>
-		<name>person</name>
+		<name>aeroplane</name>
 		<pose>Left</pose>
 		<truncated>0</truncated>
 		<difficult>0</difficult>
 		<bndbox>
-			<xmin>258</xmin>
-			<ymin>198</ymin>
-			<xmax>297</xmax>
-			<ymax>329</ymax>
+			<xmin>133</xmin>
+			<ymin>88</ymin>
+			<xmax>197</xmax>
+			<ymax>123</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>person</name>
+		<pose>Rear</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>195</xmin>
+			<ymin>180</ymin>
+			<xmax>213</xmax>
+			<ymax>229</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>person</name>
+		<pose>Rear</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>26</xmin>
+			<ymin>189</ymin>
+			<xmax>44</xmax>
+			<ymax>238</ymax>
 		</bndbox>
 	</object>
 </annotation>

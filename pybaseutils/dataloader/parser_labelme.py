@@ -15,7 +15,7 @@ import torch
 import json
 from tqdm import tqdm
 from pybaseutils import image_utils, file_utils, coords_utils
-from pybaseutils.dataloader.dataset import Dataset
+from pybaseutils.dataloader.base_dataset import Dataset
 
 
 class LabelMeDataset(Dataset):
@@ -45,7 +45,6 @@ class LabelMeDataset(Dataset):
         self.class_name, self.class_dict = self.parser_classes(class_name)
         parser = self.parser_paths(filename, data_root, anno_dir, image_dir)
         self.data_root, self.anno_dir, self.image_dir, self.image_id = parser
-        self.postfix = self.get_image_postfix(self.image_dir, self.image_id)
         self.classes = list(self.class_dict.values()) if self.class_dict else None
         self.num_classes = max(list(self.class_dict.values())) + 1 if self.class_dict else None
         self.class_weights = None
@@ -90,20 +89,6 @@ class LabelMeDataset(Dataset):
             class_dict = None
         return class_name, class_dict
 
-    def get_image_postfix(self, image_dir, image_id):
-        """
-        获得图像文件后缀名
-        :param image_dir:
-        :return:
-        """
-        if "." in image_id[0]:
-            postfix = ""
-        else:
-            image_list = glob.glob(os.path.join(image_dir, "*"))
-            image_list = [file for file in image_list if not file.endswith("json")]
-            postfix = os.path.basename(image_list[0]).split(".")[1]
-        return postfix
-
     def get_image_anno_file(self, index):
         """
         :param index:
@@ -112,24 +97,22 @@ class LabelMeDataset(Dataset):
         image_id = self.index2id(index)
         image_file, annotation_file, image_id = self.__get_image_anno_file(self.image_dir,
                                                                            self.anno_dir,
-                                                                           image_id,
-                                                                           self.postfix)
+                                                                           image_id)
         return image_file, annotation_file, image_id
 
-    def __get_image_anno_file(self, image_dir, anno_dir, image_id: str, img_postfix):
+    def __get_image_anno_file(self, image_dir, anno_dir, image_name: str):
         """
         :param image_dir:
         :param anno_dir:
-        :param image_id:
+        :param image_name:
         :param img_postfix:
         :return:
         """
-        if not img_postfix and "." in image_id:
-            img_postfix = image_id.split(".")[-1]
-            image_id = image_id[:-len(img_postfix) - 1]
-        image_file = os.path.join(image_dir, "{}.{}".format(image_id, img_postfix))
+        image_file = os.path.join(image_dir, image_name)
+        img_postfix = image_name.split(".")[-1]
+        image_id = image_name[:-len(img_postfix) - 1]
         annotation_file = os.path.join(anno_dir, "{}.json".format(image_id))
-        return image_file, annotation_file, image_id
+        return image_file, annotation_file, image_name
 
     def checking(self, image_ids: list, ignore_empty=True):
         """
@@ -147,8 +130,8 @@ class LabelMeDataset(Dataset):
                 continue
             if not os.path.exists(image_file):
                 continue
-            annotation = self.load_annotations(annotation_file)
-            box, label, point = self.parser_annotation(annotation, self.class_dict, None)
+            annotation, width, height = self.load_annotations(annotation_file)
+            box, label, point, group = self.parser_annotation(annotation, self.class_dict, None)
             if len(label) == 0:
                 continue
             dst_ids.append(image_id)
@@ -175,10 +158,12 @@ class LabelMeDataset(Dataset):
             anno_dir = self.search_path(data_root, image_sub)
         if not image_dir:
             image_dir = self.search_path(data_root, ["JPEGImages", "images"])
-        if anno_dir and not image_id:
-            image_id = self.get_file_list(anno_dir, postfix=["*.json"], basename=True)
-        elif image_dir and not image_id:
-            image_id = self.get_file_list(anno_dir, postfix=image_utils.IMG_POSTFIX, basename=True)
+        if image_dir and not image_id:
+            image_id = self.get_file_list(image_dir, postfix=file_utils.IMG_POSTFIX, basename=False)
+            image_id = [os.path.basename(f) for f in image_id]
+        elif anno_dir and not image_id:
+            image_id = self.get_file_list(anno_dir, postfix=["*.json"], basename=False)
+            image_id = [os.path.basename(f) for f in image_id]
         # assert os.path.exists(image_dir), Exception("no directory:{}".format(image_dir))
         # assert os.path.exists(anno_dir), Exception("no directory:{}".format(anno_dir))
         return data_root, anno_dir, image_dir, image_id
@@ -190,12 +175,12 @@ class LabelMeDataset(Dataset):
         """
         image_id = self.index2id(index)
         image_file, anno_file, image_id = self.get_image_anno_file(image_id)
+        annotation, width, height = self.load_annotations(anno_file)
         image = self.read_image(image_file, use_rgb=self.use_rgb)
         shape = image.shape
-        annotation = self.load_annotations(anno_file)
-        box, label, point = self.parser_annotation(annotation, self.class_dict, shape)
-        data = {"image": image, "point": point, "box": box, "label": label,
-                "image_file": image_file, "anno_file": anno_file}
+        box, label, point, groups = self.parser_annotation(annotation, self.class_dict, shape)
+        data = {"image": image, "point": point, "box": box, "label": label, "groups": groups,
+                "image_file": image_file, "anno_file": anno_file, "width": width, "height": height}
         return data
 
     @staticmethod
@@ -206,7 +191,7 @@ class LabelMeDataset(Dataset):
         :param shape: 图片shape(H,W,C),可进行坐标点的维度检查，避免越界
         :return:
         """
-        bboxes, labels, points = [], [], []
+        bboxes, labels, points, groups = [], [], [], []
         for anno in annotation:
             label = anno["label"].lower()
             if class_dict:
@@ -215,6 +200,7 @@ class LabelMeDataset(Dataset):
                 if isinstance(class_dict, dict):
                     label = class_dict[label]
             pts = np.asarray(anno["points"], dtype=np.int32)
+            group_id = anno["group_id"] if anno["group_id"] else 0
             if shape:
                 h, w = shape[:2]
                 pts[:, 0] = np.clip(pts[:, 0], 0, w - 1)
@@ -223,7 +209,8 @@ class LabelMeDataset(Dataset):
             labels.append(label)
             bboxes.append(box)
             points.append(pts)
-        return bboxes, labels, points
+            groups.append(group_id)
+        return bboxes, labels, points, groups
 
     def index2id(self, index):
         """
@@ -272,9 +259,18 @@ class LabelMeDataset(Dataset):
 
     @staticmethod
     def load_annotations(ann_file: str):
-        with open(ann_file, "r") as f: annotation = json.load(f)
-        annos = annotation["shapes"]
-        return annos
+        try:
+            with open(ann_file, "r") as f:
+                annotation = json.load(f)
+            annos = annotation["shapes"]
+            width = annotation['imageWidth']
+            height = annotation['imageHeight']
+        except:
+            print("illegal annotation:{}".format(ann_file))
+            annos = []
+            width = -1
+            height = -1
+        return annos, width, height
 
 
 def parser_labelme(anno_file, class_dict={}, shape=None):
@@ -284,29 +280,26 @@ def parser_labelme(anno_file, class_dict={}, shape=None):
     :param shape: 图片shape(H,W,C),可进行坐标点的维度检查，避免越界
     :return:
     """
-    annotation = LabelMeDataset.load_annotations(anno_file)
-    bboxes, labels, points = LabelMeDataset.parser_annotation(annotation, class_dict, shape)
-    return bboxes, labels, points
+    annotation, width, height = LabelMeDataset.load_annotations(anno_file)
+    bboxes, labels, points, groups = LabelMeDataset.parser_annotation(annotation, class_dict, shape)
+    return bboxes, labels, points, groups
 
 
 def show_target_image(image, bboxes, labels, points):
     image = image_utils.draw_image_bboxes_text(image, bboxes, labels, color=(255, 0, 0))
-    image = image_utils.draw_landmark(image, points, color=(0, 255, 0))
+    # image = image_utils.draw_landmark(image, points, color=(0, 255, 0))
+    image = image_utils.draw_key_point_in_image(image, points)
     image_utils.cv_show_image("det", image)
 
 
 if __name__ == "__main__":
-    from pybaseutils.maker import maker_labelme
+    from pybaseutils.converter import build_labelme
 
-    filename = "/home/dm/nasdata/dataset-dmai/handwriting/grid-det/grid_cross_points_v3/trainval.txt"
-    # filename = None
-    # anno_dir = "/media/dm/新加卷/SDK/base-utils/data/labelme"
-    # image_dir = "/media/dm/新加卷/SDK/base-utils/data/labelme"
-    input_size = [160, 160]
-    dataset = LabelMeDataset(filename=filename,
+    image_dir = "/media/PKing/新加卷1/SDK/base-utils/data/person"
+    dataset = LabelMeDataset(filename=None,
                              data_root=None,
-                             anno_dir=None,
-                             image_dir=None,
+                             anno_dir=image_dir,
+                             image_dir=image_dir,
                              class_name=None,
                              check=False,
                              phase="val",
@@ -314,10 +307,9 @@ if __name__ == "__main__":
     print("have num:{}".format(len(dataset)))
     for i in range(len(dataset)):
         print(i)  # i=20
-        data = dataset.__getitem__(i)
+        data = dataset.__getitem__(2)
         image, points, bboxes, labels = data["image"], data["point"], data["box"], data["label"]
         h, w = image.shape[:2]
         image_file = data["image_file"]
         anno_file = os.path.join("masker", "{}.json".format(os.path.basename(image_file).split(".")[0]))
-        maker_labelme(anno_file, points, labels, (w, h), image_name=image_file, image_bs64=None)
         show_target_image(image, bboxes, labels, points)

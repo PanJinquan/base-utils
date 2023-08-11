@@ -10,7 +10,7 @@ import numpy as np
 import traceback
 from tqdm import tqdm
 from pybaseutils import file_utils, image_utils, pandas_utils
-from pybaseutils.maker import maker_labelme
+from pybaseutils.converter import build_labelme
 from libs.detector.detector import Detector
 
 

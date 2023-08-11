@@ -10,7 +10,7 @@ import numpy as np
 import traceback
 from tqdm import tqdm
 from pybaseutils import file_utils, image_utils, pandas_utils
-from pybaseutils.maker import maker_labelme
+from pybaseutils.converter import build_labelme
 from libs.detector.detector import Detector
 
 
@@ -121,7 +121,7 @@ class ParseDataset(object):
             json_file = file_utils.create_dir(out_dir, None, "{}.json".format(image_id))
             img_file = file_utils.create_dir(out_dir, None, "{}.jpg".format(image_id))
             file_utils.remove_file(img_file)
-            maker_labelme.maker_labelme(json_file, points, names, img_file, image_size)
+            build_labelme.maker_labelme(json_file, points, names, img_file, image_size)
             # cv2.imwrite(img_file, image)
             file_utils.copy_file(image_file, img_file)
         if vis:

@@ -9,10 +9,10 @@
 import os
 import numpy as np
 from pybaseutils import image_utils, file_utils, color_utils
-from pybaseutils.dataloader import custom_coco
+from pybaseutils.dataloader import base_coco
 
 
-class CocoInstances(custom_coco.CocoDataset):
+class CocoInstances(base_coco.CocoDataset):
     def __init__(self, anno_file, image_dir="", class_name=[], transform=None,
                  target_transform=None, use_rgb=False,
                  shuffle=False, check=False, **kwargs):
@@ -46,27 +46,33 @@ class CocoInstances(custom_coco.CocoDataset):
         return data
 
 
-
-def show_target_image(image, mask, boxes, labels):
-    # 为了方便显示，mask*50
+def show_target_image(image, mask, boxes, labels, class_name=[], thickness=2, fontScale=1.0):
     mask = np.asarray(mask, np.uint8)
     color_image, color_mask = color_utils.decode_color_image_mask(image, mask)
-    color_image = image_utils.draw_image_bboxes_labels_text(color_image, boxes, labels)
+    color_image = image_utils.draw_image_bboxes_labels(color_image, boxes, labels, class_name=class_name,
+                                                       thickness=thickness, fontScale=fontScale)
     vis_image = image_utils.image_hstack([image, mask, color_image, color_mask])
     image_utils.cv_show_image("image", vis_image)
 
 
 if __name__ == "__main__":
-    size = [640, 640]
-    class_name = None
+    class_name = []
+    # 测试COCO数据集
     coco_root = "/home/PKing/nasdata/dataset/face_person/COCO/"
     image_dir = coco_root + 'val2017/images'
-    anno_file = coco_root + 'annotations/person_keypoints_val2017.json'
+    # anno_file = coco_root + 'annotations/person_keypoints_val2017.json'
     anno_file = coco_root + 'annotations/instances_val2017.json'
+
+    anno_file = "/media/PKing/新加卷1/SDK/base-utils/data/VOC2007/voc_coco_demo.json"
+    image_dir = "/media/PKing/新加卷1/SDK/base-utils/data/VOC2007/JPEGImages"
+
+    anno_file = "/media/PKing/新加卷1/SDK/base-utils/data/person.json"
+    image_dir = "/media/PKing/新加卷1/SDK/base-utils/data/person"
     dataset = CocoInstances(anno_file, image_dir, class_name=class_name)
+    class_name = dataset.class_name
     for i in range(len(dataset)):
         data = dataset.__getitem__(i)
         image, boxes, labels, mask = data['image'], data["boxes"], data["label"], data["mask"]
         print("i={},image_id={}".format(i, data["image_id"]))
-        dataset.showAnns(image,data['annotations'])
-        show_target_image(image, mask, boxes, labels)
+        dataset.showAnns(image, data['annotations'])
+        # show_target_image(image, mask, boxes, labels, class_name=class_name)

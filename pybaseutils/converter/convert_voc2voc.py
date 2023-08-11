@@ -10,7 +10,7 @@ import numpy as np
 import cv2
 from tqdm import tqdm
 from pybaseutils.dataloader import parser_voc
-from pybaseutils.maker import maker_voc
+from pybaseutils.converter import build_voc
 from pybaseutils import file_utils, image_utils
 
 
@@ -75,8 +75,8 @@ def convert_voc2voc(filename, out_xml_dir=None, out_image_dir=None, class_dict=N
             format = "jpg"
         newname = "{}.{}".format(image_id, format)
         xml_path = file_utils.create_dir(out_xml_dir, None, "{}.xml".format(image_id))
-        objects = maker_voc.create_objects(bboxes, labels, keypoints=None, class_name=None)
-        maker_voc.write_voc_xml_objects(newname, image_shape, objects, xml_path)
+        objects = build_voc.create_objects(bboxes, labels, keypoints=None, class_name=None)
+        build_voc.write_voc_xml_objects(newname, image_shape, objects, xml_path)
         if out_image_dir:
             dst_file = file_utils.create_dir(out_image_dir, None, newname)
             # file_utils.copy_file(image_file, dst_file)

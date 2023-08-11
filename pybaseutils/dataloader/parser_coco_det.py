@@ -12,11 +12,11 @@ import random
 import json
 from collections import defaultdict
 from torch.utils.data.dataset import ConcatDataset
-from pybaseutils.dataloader import custom_coco
+from pybaseutils.dataloader import base_coco
 from pybaseutils import image_utils, file_utils
 
 
-class CocoDetection(custom_coco.CocoDataset):
+class CocoDetection(base_coco.CocoDataset):
     """Coco dataset."""
 
     def __init__(self, anno_file, image_dir="", class_name=[], transform=None, target_transform=None, use_rgb=True,
@@ -107,7 +107,7 @@ def CocoDatasets(filename=None,
     return datasets
 
 
-def show_target_image(image, bboxes, labels, normal=False, transpose=False, class_name=None, use_rgb=True,
+def show_target_image(image, boxes, labels, normal=False, transpose=False, class_name=None, use_rgb=True,
                       thickness=2, fontScale=1.0):
     """
     :param image:
@@ -120,7 +120,7 @@ def show_target_image(image, bboxes, labels, normal=False, transpose=False, clas
     import numpy as np
     from pybaseutils import image_utils
     image = np.asarray(image)
-    bboxes = np.asarray(bboxes)
+    boxes = np.asarray(boxes)
     labels = np.asarray(labels)
     # print("image:{}".format(image.shape))
     # print("bboxes:{}".format(bboxes))
@@ -131,8 +131,8 @@ def show_target_image(image, bboxes, labels, normal=False, transpose=False, clas
     landms_scale = np.asarray([w, h] * 5)
     bboxes_scale = np.asarray([w, h] * 2)
     if normal:
-        bboxes = bboxes * bboxes_scale
-    image = image_utils.draw_image_bboxes_labels(image, bboxes, labels, class_name=class_name,
+        boxes = boxes * bboxes_scale
+    image = image_utils.draw_image_bboxes_labels(image, boxes, labels, class_name=class_name,
                                                  thickness=thickness, fontScale=fontScale, drawType="chinese")
     image_utils.cv_show_image("image", image, delay=0, use_rgb=use_rgb)
     print("===" * 10)
@@ -142,7 +142,7 @@ def show_target_image(image, bboxes, labels, normal=False, transpose=False, clas
 if __name__ == "__main__":
     size = [640, 640]
     anno_file = "/home/PKing/nasdata/dataset/face_person/COCO/val2017/annotations/instances_val2017.json"
-    voc = CocoDetection(anno_file, class_name=None, transform=None, use_rgb=True)
+    voc = CocoDetection(anno_file, class_name=[], transform=None, use_rgb=True)
     class_name = voc.class_name
     for i in range(len(voc)):
         data = voc.__getitem__(i)
