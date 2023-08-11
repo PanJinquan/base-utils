@@ -1,8 +1,8 @@
 # -*-coding: utf-8 -*-
 """
-    @Author : Pan
-    @E-mail : 390737991@qq.com
-    @Date   : 2022-06-29 18:31:12
+    @Author : PKing
+    @E-mail :
+    @Date   : 2023-08-10 10:18:32
     @Brief  :
 """
 import os
@@ -18,7 +18,7 @@ from pybaseutils import image_utils, file_utils, coords_utils
 from pybaseutils.dataloader.base_dataset import Dataset
 
 
-class TextDataset(Dataset):
+class YOLODataset(Dataset):
     """
     YOLO数据格式解析器
     数据格式：(class,cx,cy,w,h)/(1,width,height,width,height)，将归一化的Text数据
@@ -49,7 +49,7 @@ class TextDataset(Dataset):
         :param use_rgb:
         :param shuffle:
         """
-        super(TextDataset, self).__init__()
+        super(YOLODataset, self).__init__()
         self.min_area = 1 / 1000  # 如果前景面积不足0.1%,则去除
         self.use_rgb = use_rgb
         self.class_name, self.class_dict = self.parser_classes(class_name)
@@ -280,8 +280,8 @@ def parser_labelme(anno_file, class_dict={}, shape=None):
     :param shape: 图片shape(H,W,C),可进行坐标点的维度检查，避免越界
     :return:
     """
-    annotation = TextDataset.load_annotations(anno_file)
-    bboxes, labels = TextDataset.parser_annotation(annotation, class_dict, shape)
+    annotation = YOLODataset.load_annotations(anno_file)
+    bboxes, labels = YOLODataset.parser_annotation(annotation, class_dict, shape)
     return bboxes, labels
 
 
@@ -295,7 +295,7 @@ if __name__ == "__main__":
     # filename = "/home/dm/nasdata/dataset/csdn/helmet/helmet-asian/total.txt"
     # filename = "/home/dm/nasdata/dataset/csdn/helmet/helmet-asian/total.txt"
     filename = "/home/dm/nasdata/dataset/csdn/traffic light/红绿灯数据集/train.txt"
-    dataset = TextDataset(filename=filename,
+    dataset = YOLODataset(filename=filename,
                           data_root=None,
                           anno_dir=None,
                           image_dir=None,

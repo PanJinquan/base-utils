@@ -1,10 +1,10 @@
 # -*-coding: utf-8 -*-
 """
-    @Author : panjq
-    @E-mail : pan_jinquan@163.com
-    @Date   : 2021-08-30 11:28:54
+    @Author : PKing
+    @E-mail :
+    @Date   : 2023-08-10 10:18:32
+    @Brief  :
 """
-
 import os
 import numpy as np
 import cv2
@@ -22,6 +22,7 @@ class CocoDetection(base_coco.CocoDataset):
     def __init__(self, anno_file, image_dir="", class_name=[], transform=None, target_transform=None, use_rgb=True,
                  shuffle=False, check=False, **kwargs):
         """
+        initialize COCO api for object detection annotations
         ├── annotations
         │    ├── instances_train2017.json
         │    └── person_keypoints_train2017.json

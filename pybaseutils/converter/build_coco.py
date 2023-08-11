@@ -103,15 +103,10 @@ class COCOBuilder():
         :param seg_dir:   for voc `SegmentationObject`,if seg_dir=None,will ignore Segmentation Object
         :param image_id: 初始的image_id,if None,will reset to currrent time
         """
-        self.coco = dict()
-        self.coco['images'] = []
-        self.coco['type'] = 'instances'
-        self.coco['annotations'] = []
-        self.coco['categories'] = []
-
+        # init COCO Dataset struct
+        self.coco = {"images": [], "annotations": [], "categories": [], "type": "instances"}
         self.category_set = dict()
         self.image_set = set()
-
         self.category_item_id = 0
         if not init_id: init_id = int(time.time()) * 2
         self.image_id = init_id

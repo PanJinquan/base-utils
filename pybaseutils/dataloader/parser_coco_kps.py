@@ -1,10 +1,9 @@
 # -*-coding: utf-8 -*-
 """
-    @Project: PythonAPI
-    @File   : cocoDemo.py
-    @Author : panjq
-    @E-mail : pan_jinquan@163.com
-    @Date   : 2019-05-07 16:33:01
+    @Author : PKing
+    @E-mail :
+    @Date   : 2023-08-10 10:18:32
+    @Brief  :
 """
 import os
 import numpy as np
@@ -15,6 +14,7 @@ from pybaseutils.dataloader import base_coco
 class CocoKeypoints(base_coco.CocoDataset):
     def __init__(self, anno_file, image_dir="", class_name=[], num_joints=-1, **kwargs):
         """
+        initialize COCO api for keypoint annotations
         :param anno_file:
         :param image_dir:
         :param class_name:

@@ -1,10 +1,9 @@
 # -*-coding: utf-8 -*-
 """
-    @Project: PythonAPI
-    @File   : cocoDemo.py
-    @Author : panjq
-    @E-mail : pan_jinquan@163.com
-    @Date   : 2019-05-07 16:33:01
+    @Author : PKing
+    @E-mail :
+    @Date   : 2023-08-10 10:18:32
+    @Brief  :
 """
 import os
 import numpy as np
@@ -66,7 +65,7 @@ if __name__ == "__main__":
     anno_file = "/media/PKing/新加卷1/SDK/base-utils/data/VOC2007/voc_coco_demo.json"
     image_dir = "/media/PKing/新加卷1/SDK/base-utils/data/VOC2007/JPEGImages"
 
-    anno_file = "/media/PKing/新加卷1/SDK/base-utils/data/person.json"
+    anno_file = "/media/PKing/新加卷1/SDK/base-utils/data/merge_person.json"
     image_dir = "/media/PKing/新加卷1/SDK/base-utils/data/person"
     dataset = CocoInstances(anno_file, image_dir, class_name=class_name)
     class_name = dataset.class_name

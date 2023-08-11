@@ -9,7 +9,7 @@ import os
 import numpy as np
 import cv2
 from tqdm import tqdm
-from pybaseutils.dataloader import parser_textdata
+from pybaseutils.dataloader import parser_yolo
 from pybaseutils.converter import build_voc
 from pybaseutils import file_utils, image_utils
 
@@ -22,15 +22,15 @@ def convert_yolo2voc(filename, out_xml_dir=None, out_image_dir=None, class_name=
     :param class_name: 如{0: "face", 1: "person"} label-map  if not None
     :param rename: 新名字flag
     """
-    dataset = parser_textdata.TextDataset(filename=filename,
-                                          data_root=None,
-                                          anno_dir=None,
-                                          image_dir=None,
-                                          class_name=None,
-                                          use_rgb=False,
-                                          check=False,
-                                          phase="val",
-                                          shuffle=False)
+    dataset = parser_yolo.YOLODataset(filename=filename,
+                                      data_root=None,
+                                      anno_dir=None,
+                                      image_dir=None,
+                                      class_name=None,
+                                      use_rgb=False,
+                                      check=False,
+                                      phase="val",
+                                      shuffle=False)
     print("have num:{}".format(len(dataset)))
     class_set = []
     for i in tqdm(range(len(dataset))):
@@ -59,7 +59,7 @@ def convert_yolo2voc(filename, out_xml_dir=None, out_image_dir=None, class_name=
             cv2.imwrite(dst_file, image)
 
         if vis:
-            parser_textdata.show_target_image(image, bboxes, labels, class_name=class_name, use_rgb=False)
+            parser_yolo.show_target_image(image, bboxes, labels, class_name=class_name, use_rgb=False)
     file_utils.save_file_list(out_image_dir, filename=None, prefix="", postfix=file_utils.IMG_POSTFIX,
                               only_id=False, shuffle=False, max_num=None)
     print("class_set:{}".format(class_set))

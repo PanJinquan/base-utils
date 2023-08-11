@@ -15,7 +15,7 @@ import random
 import numbers
 from tqdm import tqdm
 from pybaseutils.dataloader.base_dataset import Dataset
-from pybaseutils.dataloader.voc_seg_utils import VocSeg
+from pybaseutils.dataloader import voc_seg_utils
 from pybaseutils import file_utils
 
 
@@ -235,7 +235,7 @@ class VOCDataset(Dataset):
         if self.seg_dir:
             # if exist VOC SegmentationObject
             seg_path = os.path.join(self.seg_dir, filename.split('.')[0] + '.png')
-            seg, area = VocSeg.get_segmentation_area(seg_path, bbox)
+            seg, area = voc_seg_utils.get_segment_area(seg_path, bbox)
         if not seg:
             # cal stroke_segs and area by bbox
             xmin, ymin, xmax, ymax = bbox
