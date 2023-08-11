@@ -90,7 +90,7 @@ def load_coco(annotation, class_name=None) -> COCO:
     return coco
 
 
-class CocoDataset(Dataset):
+class CocoDataset(object):
     """Coco dataset."""
 
     def __init__(self, anno_file, image_dir="", class_name=[], transform=None, target_transform=None, use_rgb=True,
@@ -188,7 +188,7 @@ class CocoDataset(Dataset):
         :return:
         """
         if isinstance(class_name, str):
-            class_name = super().read_files(class_name)
+            class_name = Dataset.read_files(class_name)
         elif isinstance(class_name, list) and "unique" in class_name:
             self.unique = True
         if isinstance(class_name, list) and len(class_name) > 0:
@@ -370,6 +370,19 @@ class CocoDataset(Dataset):
         if use_rgb:
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         return image
+
+    def set_skeleton_keypoints(self, ids, skeleton=[], keypoints=[]):
+        """
+        设置COCO的skeleton和keypoints
+        :param ids: 类别ID
+        :param skeleton: COCO数据集的skeleton下标是从1开始的
+        :param keypoints:
+        :return:
+        """
+        if isinstance(skeleton, np.ndarray): skeleton = skeleton.tolist()
+        if isinstance(keypoints, np.ndarray): keypoints = keypoints.tolist()
+        if len(skeleton) > 0: self.coco.loadCats(ids)[0]['skeleton'] = skeleton
+        if len(keypoints) > 0: self.coco.loadCats(ids)[0]['keypoints'] = keypoints
 
     def showAnns(self, image, annotations: dict):
         """

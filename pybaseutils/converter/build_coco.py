@@ -216,8 +216,8 @@ class COCOBuilder():
         实际预测时，不要求预测每个关节点的可见性
         """
         kpts = np.zeros(shape=(17, 3), dtype=np.int32)
-        kpts[:, 0] = np.clip(kpts[:, 0], 1, width - 1)
-        kpts[:, 1] = np.clip(kpts[:, 1], 1, height - 1)
+        kpts[:, 0] = np.clip(kpts[:, 0], 0, width - 1)
+        kpts[:, 1] = np.clip(kpts[:, 1], 0, height - 1)
         kpts = kpts.reshape(-1).tolist()
         return kpts
 

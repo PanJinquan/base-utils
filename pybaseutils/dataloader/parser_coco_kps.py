@@ -45,13 +45,25 @@ class CocoKeypoints(base_coco.CocoDataset):
                               "finger10": 10, "pen0": 11, "pen1": 12}
             self.skeleton = [(0, 1), (2, 3), (4, 5), (6, 7), (8, 9), (10, 1), (10, 3), (10, 5), (10, 7), (10, 9),
                              (11, 12)]
+        elif "hand" in class_name:
+            "http://challenge.xfyun.cn/topic/info?type=hand-key-point"
+            self.skeleton = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [0, 6], [0, 7], [0, 8],
+                             [5, 9], [9, 10], [10, 11], [11, 12], [9, 13], [13, 14], [14, 15], [15, 16],
+                             [13, 17], [17, 18], [18, 19], [19, 20], [0, 17]]
+            self.num_joints = 21
         else:
-            self.keypoints = self.kps_info[0]['keypoints']  # 关键点名称
-            self.skeleton = self.kps_info[0]['skeleton']  # 关键点连接线
-            self.skeleton = np.asarray(self.skeleton)
-            self.skeleton = self.skeleton - np.min(self.skeleton)  # COCO数据集的skeleton下标是从1开始的
+            # self.keypoints = self.kps_info[0]['keypoints']  # 关键点名称
+            coco_skeleton = self.kps_info[0]['skeleton']  # 关键点连接线
+            coco_skeleton = np.asarray(coco_skeleton)
+            self.skeleton = coco_skeleton - np.min(coco_skeleton)
             self.skeleton = self.skeleton.tolist()
-            self.num_joints = len(self.keypoints)
+            self.num_joints = np.max(self.skeleton) + 1  #
+        # skeleton下标从0开始，coco_skeleton下标是从1开始的
+        self.coco_skeleton = np.array(self.skeleton, dtype=np.int32) + 1
+        self.set_skeleton_keypoints(self.kps_info[0]['id'], skeleton=self.coco_skeleton, keypoints=[])
+        print("skeleton               :{}".format(self.skeleton))
+        print("coco skeleton          :{}".format(self.coco_skeleton.tolist()))
+        print("anno_file              :{}".format(anno_file))
 
     def __getitem__(self, index):
         """
@@ -67,12 +79,12 @@ class CocoKeypoints(base_coco.CocoDataset):
         return data
 
 
-def show_target_image(image, keypoints, boxes, labels, skeleton):
+def show_target_image(image, keypoints, boxes, labels, skeleton, vis_id=False):
     image = image_utils.draw_key_point_in_image(image,
                                                 keypoints,
                                                 pointline=skeleton,
                                                 boxes=boxes,
-                                                vis_id=True,
+                                                vis_id=vis_id,
                                                 thickness=2)
     image_utils.cv_show_image("keypoints", image, delay=0)
 
@@ -84,9 +96,11 @@ if __name__ == "__main__":
     image_dir = coco_root + 'val2017/images'
     anno_file = coco_root + 'annotations/person_keypoints_val2017.json'
 
-    anno_file = "/media/PKing/新加卷1/SDK/base-utils/data/person.json"
-    image_dir = "/media/PKing/新加卷1/SDK/base-utils/data/person"
-
+    # anno_file = "/media/PKing/新加卷1/SDK/base-utils/data/person.json"
+    # image_dir = "/media/PKing/新加卷1/SDK/base-utils/data/person"
+    image_dir = "/home/PKing/nasdata/dataset/tmp/challenge/精细化手部关键点检测挑战赛/精细化手部关键点检测挑战赛公开数据-初赛/训练集/image"
+    anno_file = "/home/PKing/nasdata/dataset/tmp/challenge/精细化手部关键点检测挑战赛/精细化手部关键点检测挑战赛公开数据-初赛/训练集/train_anno.json"
+    class_name = ["hand"]
     dataset = CocoKeypoints(anno_file, image_dir, class_name=class_name)
     skeleton = dataset.skeleton
     for i in range(len(dataset)):
