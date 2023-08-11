@@ -19,16 +19,18 @@ from pybaseutils.converter import build_voc
 from pybaseutils.dataloader import parser_labelme
 
 
-class LabelMeDemo(object):
-    def __init__(self, json_dir, image_dir):
+class Labelme2VOC(object):
+    """Convert Labelme to VOC dataset format"""
+
+    def __init__(self, image_dir, anno_dir):
         """
-        :param json_dir:
-        :param image_dir:
+        :param image_dir: 图片目录(*.json)
+        :param anno_dir:  标注文件目录
         """
         self.image_dir = image_dir
         self.dataset = parser_labelme.LabelMeDataset(filename=None,
                                                      data_root=None,
-                                                     anno_dir=json_dir,
+                                                     anno_dir=anno_dir,
                                                      image_dir=image_dir,
                                                      class_name=None,
                                                      use_rgb=False,
@@ -36,7 +38,7 @@ class LabelMeDemo(object):
                                                      phase="val",
                                                      shuffle=False)
 
-    def convert_dataset2voc(self, out_root, class_dict={}, out_image_dir=None, crop=False, rename=False, vis=True):
+    def build_dataset(self, out_root, class_dict={}, out_image_dir=None, crop=False, rename=False, vis=True):
         """
         :param out_root: VOC输出根目录
         :param class_dict: label映射 list或dict，如果label不在class_dict中，则使用原始label
@@ -107,7 +109,7 @@ if __name__ == "__main__":
     json_dir = "/home/dm/nasdata/dataset/tmp/fall/fall-v3/json"
     out_root = os.path.dirname(json_dir)
     image_dir = os.path.join(out_root, "JPEGImages")
-    class_dict = None
+    class_dict = {}
     # class_dict = {"person": "up", "squat": "bending", "fall": "down"}
-    lm = LabelMeDemo(json_dir, image_dir)
-    lm.convert_dataset2voc(out_root, class_dict=class_dict, vis=False, crop=False)
+    lm = Labelme2VOC(image_dir, json_dir)
+    lm.build_dataset(out_root, class_dict=class_dict, vis=False, crop=False)

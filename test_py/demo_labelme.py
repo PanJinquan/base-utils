@@ -22,5 +22,5 @@ if __name__ == "__main__":
     image_dir = os.path.join(out_root, "JPEGImages")
     class_dict = None
     # class_dict = {"person": "up", "squat": "bending", "fall": "down"}
-    lm = convert_labelme2voc.LabelMeDemo(json_dir, image_dir)
-    lm.convert_dataset2voc(out_root, class_dict=class_dict, vis=False, crop=False)
+    lm = convert_labelme2voc.Labelme2VOC(json_dir, image_dir)
+    lm.build_dataset(out_root, class_dict=class_dict, vis=False, crop=False)

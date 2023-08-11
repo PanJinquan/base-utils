@@ -16,7 +16,7 @@ import numpy as np
 from tqdm import tqdm
 from pybaseutils import file_utils, image_utils
 from pybaseutils.converter import build_voc
-from pybaseutils.converter.convert_labelme2voc import LabelMeDemo
+from pybaseutils.converter.convert_labelme2voc import Labelme2VOC
 from pybaseutils.dataloader import parser_labelme
 
 if __name__ == "__main__":
@@ -25,5 +25,5 @@ if __name__ == "__main__":
     image_dir = os.path.join(out_root, "JPEGImages")
     class_dict = None
     # class_dict = {"person": "up", "squat": "bending", "fall": "down"}
-    lm = LabelMeDemo(json_dir, image_dir)
-    lm.convert_dataset2voc(out_root, class_dict=class_dict, vis=False, crop=False)
+    lm = Labelme2VOC(json_dir, image_dir)
+    lm.build_dataset(out_root, class_dict=class_dict, vis=False, crop=False)

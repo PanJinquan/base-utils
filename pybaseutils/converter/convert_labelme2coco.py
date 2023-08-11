@@ -22,12 +22,12 @@ from pybaseutils.converter import build_coco
 
 
 class Labelme2COCO(build_coco.COCOBuilder):
-    """Convert Pascal VOC Dataset to COCO dataset format"""
+    """Convert Labelme to COCO dataset format"""
 
     def __init__(self, image_dir, anno_dir, init_id=None):
         """
-        :param anno_dir:  for voc `Annotations`
-        :param image_dir: for voc `JPEGImages`,if image_dir=None ,will ignore checking image shape
+        :param image_dir: 图片目录(*.json)
+        :param anno_dir:  标注文件目录
         :param init_id: 初始的image_id,if None,will reset to current time
         """
         super(Labelme2COCO, self).__init__(init_id=init_id)

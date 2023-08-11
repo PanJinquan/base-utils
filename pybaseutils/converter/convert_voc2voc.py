@@ -14,21 +14,6 @@ from pybaseutils.converter import build_voc
 from pybaseutils import file_utils, image_utils
 
 
-def traffic_light(bboxes, labels):
-    dst_bboxes = []
-    for box, label in zip(bboxes, labels):
-        xmin, ymin, xmax, ymax = box
-        w, h = (xmax - xmin), (ymax - ymin)
-        if label == "red":
-            box = [xmin, ymin, xmin + w, ymin + h * 2.8]
-        elif label == "green":
-            box = [xmin, ymin - h * 2.0, xmax, ymax]
-        elif label == "yellow":
-            box = [xmin, ymin - h, xmax, ymax + h]
-        dst_bboxes.append(box)
-    return dst_bboxes, labels
-
-
 def convert_voc2voc(filename, out_xml_dir=None, out_image_dir=None, class_dict=None, class_name=None, rename="",
                     vis=True):
     """
