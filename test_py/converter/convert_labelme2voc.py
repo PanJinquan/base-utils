@@ -1,23 +1,16 @@
-# -*- coding: utf-8 -*-
+# -*-coding: utf-8 -*-
 """
-# --------------------------------------------------------
-# @Project: AlphaPose
-# @Author : Pan
-# @E-mail : 390737991@qq.com
-# @Date   : 2020-02-14 09:15:52
-# --------------------------------------------------------
+    @Author : Pan
+    @E-mail : 390737991@qq.com
+    @Date   : 2022-10-12 16:21:55
+    @Brief  :
 """
 import sys
 import os
 
 sys.path.insert(0, os.getcwd())
 import cv2
-import numpy as np
-from tqdm import tqdm
-from pybaseutils import file_utils, image_utils
-from pybaseutils.converter import build_voc
 from pybaseutils.converter.convert_labelme2voc import Labelme2VOC
-from pybaseutils.dataloader import parser_labelme
 
 if __name__ == "__main__":
     json_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/equipment/dataset-v3/json"
