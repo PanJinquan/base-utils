@@ -7,3 +7,5 @@ twine upload dist/*  --verbose
 #Enter your username: PKing
 #Enter your password:
 
+echo please use PIP to install pybaseutils:
+echo pip install --upgrade pybaseutils -i https://pypi.org/simple

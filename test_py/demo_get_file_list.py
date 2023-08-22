@@ -104,5 +104,5 @@ def get_voc_file_list(voc_root, prefix="", postfix=file_utils.IMG_POSTFIX, only_
 if __name__ == "__main__":
     # file_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/岗评项目数据/标注数据/岗评项目_室内电力操作检测-22labels/JPEGImages"
     # save_file_list(file_dir, postfix=file_utils.IMG_POSTFIX + ["*.JPG"], only_id=False, shuffle=False, max_num=None)
-    voc_root = "/home/PKing/nasdata/dataset/tmp/drowsy-driving/drowsy-driving/Drowsy-Driving-Det1/test"
+    voc_root = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-det-dataset/dataset-v4"
     get_voc_file_list(voc_root, postfix=file_utils.IMG_POSTFIX + ["*.JPG"], only_id=False, shuffle=True, max_num=None)

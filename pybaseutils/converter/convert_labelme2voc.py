@@ -36,7 +36,8 @@ class Labelme2VOC(object):
                                                      use_rgb=False,
                                                      check=False,
                                                      phase="val",
-                                                     shuffle=False)
+                                                     shuffle=False,
+                                                     min_points=1)
 
     def build_dataset(self, out_root, class_dict={}, out_image_dir=None, crop=False, rename=False, vis=True):
         """
@@ -106,10 +107,9 @@ class Labelme2VOC(object):
 
 
 if __name__ == "__main__":
-    json_dir = "/home/dm/nasdata/dataset/tmp/fall/fall-v3/json"
+    json_dir = "/media/PKing/新加卷1/SDK/base-utils/data/coco/json"
     out_root = os.path.dirname(json_dir)
     image_dir = os.path.join(out_root, "JPEGImages")
     class_dict = {}
-    # class_dict = {"person": "up", "squat": "bending", "fall": "down"}
     lm = Labelme2VOC(image_dir, json_dir)
     lm.build_dataset(out_root, class_dict=class_dict, vis=False, crop=False)

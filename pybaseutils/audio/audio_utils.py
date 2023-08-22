@@ -1,7 +1,7 @@
 # -*-coding: utf-8 -*-
 """
-    @Author : 
-    @E-mail : 
+    @Author :
+    @E-mail :
     @Date   : 2023-05-11 10:36:28
     @Brief  : pip install ffmpy -i https://pypi.douban.com/simple
               https://blog.csdn.net/zhiweihongyan1/article/details/121735158
@@ -11,7 +11,6 @@ import os
 import base64
 import io
 import soundfile as sf
-import numpy as np
 import copy
 import librosa
 import wave
@@ -30,6 +29,28 @@ def load_pcm(filename):
     return data
 
 
+def float32toint16(data_f32):
+    omin = -32768
+    omax = 32767
+    imin = -1.0
+    imax = 1.0
+    # 将数据float32从[-1.0,1.0]映射到int16
+    data_int16 = (omax - omin) * (data_f32 - imin) / (imax - imin) + omin
+    data_int16 = np.array(data_int16, dtype=np.int16)
+    return data_int16
+
+
+def int16tofloat32(data_int16):
+    imin = -32768
+    imax = 32767
+    omin = -1.0
+    omax = 1.0
+    audio_data = np.array(data_int16, dtype=np.float32)
+    # 将数据int16映射到[-1.0,1.0] float32
+    data_f32 = (omax - omin) * (audio_data - imin) / (imax - imin) + omin
+    return data_f32
+
+
 def audio_data2pcm_bytes(audio_data: np.ndarray, data_type=np.int16):
     """
     将语音数据转换PCM数据
@@ -39,13 +60,7 @@ def audio_data2pcm_bytes(audio_data: np.ndarray, data_type=np.int16):
     :param data_type: 数据类型
     :return:
     """
-    omin = -32768
-    omax = 32767
-    imin = -1.0
-    imax = 1.0
-    # 将数据float32从[-1.0,1.0]映射到int16
-    audio_data = (omax - omin) * (audio_data - imin) / (imax - imin) + omin
-    data = np.array(audio_data, dtype=data_type)
+    data = float32toint16(audio_data)
     bytes = data.tobytes()  # array转换为bytes
     return bytes
 
@@ -57,14 +72,8 @@ def pcm_bytes2audio_data(pcm_bytes, data_type=np.int16):
     :param data_type: 数据类型
     :return:
     """
-    imin = -32768
-    imax = 32767
-    omin = -1.0
-    omax = 1.0
     audio_data = np.frombuffer(pcm_bytes, dtype=data_type)
-    audio_data = np.array(audio_data, dtype=np.float32)
-    # 将数据int16映射到[-1.0,1.0] float32
-    audio_data = (omax - omin) * (audio_data - imin) / (imax - imin) + omin
+    audio_data = int16tofloat32(audio_data)
     return audio_data
 
 
@@ -95,10 +104,10 @@ def pcm2wav(pcm_file, wav_file="", channels=1, bits=16, sr=16000):
 def wav2pcm(wav_file, pcm_file, data_type=np.int16):
     """
     pcm转wav(支持多声道和单声道)：https://www.45fan.com/article.php?aid=1Hzw69oiQl7fA1VM
-    :param wav_file: 
-    :param pcm_file: 
-    :param data_type: 
-    :return: 
+    :param wav_file:
+    :param pcm_file:
+    :param data_type:
+    :return:
     """
     if not pcm_file: pcm_file = wav_file.replace(".wav", ".pcm")
     wf = wave.open(wav_file, "rb")
@@ -307,21 +316,29 @@ def get_feature_mfcc(wav, sr, n_mfcc=128, hop_length=256):
     return mfcc
 
 
-def extract_video_audio(video_file: str, audio_file: str):
+def extract_video_audio(video_file: str, audio_file: str = ""):
     """
     提取视频声音
+    ffmpeg -i {file_path} -f wav -ar 16000 {file_name}file_path:
+    视频的文件路径
+    file_name: 文件名称
+    -ar: 设置音频采样频率。对于输出流，它默认设置为相应输入流的频率。对于输入流，此选项仅对音频抓取设备和原始解复用器有意义，并映射到相应的解复用器选项
+    -i: 输入文件网址
+    -f: 强制输入或输出文件格式。通常会自动检测输入文件的格式，并根据输出文件的文件扩展名猜测格式，因此在大多数情况下不需要此选项。
     >> os.system(f'ffmpeg -i {video_file} -ac 1 -y {audio_file}')
     :param video_file: 输入视频文件
     :param audio_file: 输出音频文件
     :return:
     """
+    if not audio_file: audio_file = video_file[:-len(".mp4")] + ".wav"
     if os.path.exists(audio_file): os.remove(audio_file)
     _ext_audio = os.path.basename(audio_file).split(".")[-1]
-    if _ext_audio not in ['mp3', 'wav']: raise Exception('audio format not support')
-    # ff = FFmpeg(inputs={video_file: None}, outputs={audio_file: '-f {} -vn'.format(_ext_audio)})
+    # if _ext_audio not in ['mp3', 'wav']: raise Exception('audio format not support')
+    # ff = FFmpeg(inputs={video_file: None}, outputs={audio_file: '-f {} -vn -ac 1 -ar 16000'.format(_ext_audio)})
     # ff = FFmpeg(inputs={video_file: None}, outputs={audio_file: ' -ac 1 -y'.format(_ext_audio)})
     # ff.run()
-    os.system(f'ffmpeg -i {video_file} -ac 1 -y {audio_file}')
+    os.system(f'ffmpeg -i {video_file} -ac 1 -y -ar 16000 {audio_file}')
+    # os.system(f'ffmpeg -i {video_file} -ac 1 -y {audio_file}')
     return audio_file
 
 

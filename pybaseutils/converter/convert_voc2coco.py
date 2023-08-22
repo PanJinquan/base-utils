@@ -42,7 +42,7 @@ class VOC2COCO(build_coco.COCOBuilder):
 
     def build_dataset(self, class_dict={}):
         """构建从VOC到COCO的数据集"""
-        for index in tqdm(range(len(self.voc.image_id))):
+        for index in tqdm(range(len(self.voc.image_ids))):
             image_id = self.voc.index2id(index)
             image_file, annotation_file = self.voc.get_image_anno_file(image_id)
             objects = self.voc.get_annotation(annotation_file)

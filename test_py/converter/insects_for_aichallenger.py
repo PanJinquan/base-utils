@@ -18,7 +18,7 @@ def parser_dataset(image_dir, anno_file, out_voc, vis=True):
     anno_info = file_utils.read_json_data(anno_file)
     for data in tqdm(anno_info):
         class_id = data['disease_class']
-        image_name = data['image_id']
+        image_name = data['image_ids']
         image_file = os.path.join(image_dir, image_name)
         if not os.path.exists(image_file): continue
         if vis:

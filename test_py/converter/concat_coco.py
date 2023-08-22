@@ -64,7 +64,7 @@ class ConcatCocoDataset(object):
         images_id = COCOTools.get_images_id(self.coco["images"])
         add_images_id = COCOTools.get_images_id(images)
         for id in add_images_id:
-            assert id not in images_id, Exception("have same image_id:{}".format(id))
+            assert id not in images_id, Exception("have same image_ids:{}".format(id))
 
         for item in images:
             if dirname:

@@ -23,8 +23,8 @@ def read_csv(filename, usecols=None):
 
 def get_rows_by_keys(df, keys=[]) -> pd.DataFrame:
     """
-    data =  data[["image_id","label"]]
-    data =  get_rows_by_keys(df, ["image_id", "label"]).values
+    data =  data[["image_ids","label"]]
+    data =  get_rows_by_keys(df, ["image_ids", "label"]).values
     :param df:
     :param keys:
     :return:

@@ -5,8 +5,8 @@
 #sudo docker run -it --gpus all -p 40000:80 -v `pwd`:/app $image /bin/bash
 
 ############### 将容器转换为镜像 ###############
-# docker commit -m "info" -a "author" container_id image_id:tag
-# docker push image_id:tag
+# docker commit -m "info" -a "author" container_id image_ids:tag
+# docker push image_ids:tag
 
 ############### 一些异常处理    ###############
 # Error response from daemon: could not select device driver "" with capabilities: [[gpu]]

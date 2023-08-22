@@ -208,7 +208,7 @@ def read_data(filename, split=",", convertNum=True):
 
 def read_line_image_label(line_image_label):
     """
-    line_image_label:[image_id,boxes_nums,x1, y1, w, h, label_id,x1, y1, w, h, label_id,...]
+    line_image_label:[image_ids,boxes_nums,x1, y1, w, h, label_id,x1, y1, w, h, label_id,...]
     :param line_image_label:
     :return:
     """

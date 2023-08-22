@@ -14,7 +14,7 @@ import numbers
 import torch
 import json
 from tqdm import tqdm
-from pybaseutils import image_utils, file_utils, coords_utils
+from pybaseutils import image_utils, file_utils, json_utils
 from pybaseutils.dataloader.base_dataset import Dataset
 
 
@@ -29,6 +29,7 @@ class LabelMeDataset(Dataset):
                  use_rgb=False,
                  shuffle=False,
                  check=False,
+                 min_points=-1,
                  **kwargs):
         """
         :param filename:
@@ -38,10 +39,12 @@ class LabelMeDataset(Dataset):
         :param transform:
         :param use_rgb:
         :param shuffle:
+        :param min_points: 当标注的轮廓点的个数小于min_points，会被剔除；负数不剔除
         """
         super(LabelMeDataset, self).__init__()
         self.min_area = 1 / 1000  # 如果前景面积不足0.1%,则去除
         self.use_rgb = use_rgb
+        self.min_points = min_points
         self.class_name, self.class_dict = self.parser_classes(class_name)
         parser = self.parser_paths(filename, data_root, anno_dir, image_dir)
         self.data_root, self.anno_dir, self.image_dir, self.image_id = parser
@@ -131,7 +134,7 @@ class LabelMeDataset(Dataset):
             if not os.path.exists(image_file):
                 continue
             annotation, width, height = self.load_annotations(annotation_file)
-            box, label, point, group = self.parser_annotation(annotation, self.class_dict, None)
+            box, label, point, group = self.parser_annotation(annotation, self.class_dict, min_points=self.min_points)
             if len(label) == 0:
                 continue
             dst_ids.append(image_id)
@@ -178,17 +181,19 @@ class LabelMeDataset(Dataset):
         annotation, width, height = self.load_annotations(anno_file)
         image = self.read_image(image_file, use_rgb=self.use_rgb)
         shape = image.shape
-        box, label, point, groups = self.parser_annotation(annotation, self.class_dict, shape)
+        box, label, point, groups = self.parser_annotation(annotation, self.class_dict, shape,
+                                                           min_points=self.min_points)
         data = {"image": image, "point": point, "box": box, "label": label, "groups": groups,
                 "image_file": image_file, "anno_file": anno_file, "width": width, "height": height}
         return data
 
     @staticmethod
-    def parser_annotation(annotation: dict, class_dict={}, shape=None):
+    def parser_annotation(annotation: dict, class_dict={}, shape=None, min_points=-1):
         """
         :param annotation:  labelme标注的数据
         :param class_dict:  label映射
         :param shape: 图片shape(H,W,C),可进行坐标点的维度检查，避免越界
+        :param min_points: 当标注的轮廓点的个数小于等于min_points，会被剔除；负数不剔除
         :return:
         """
         bboxes, labels, points, groups = [], [], [], []
@@ -200,7 +205,10 @@ class LabelMeDataset(Dataset):
                 if isinstance(class_dict, dict):
                     label = class_dict[label]
             pts = np.asarray(anno["points"], dtype=np.int32)
-            group_id = anno["group_id"] if anno["group_id"] else 0
+            if min_points > 0 and len(pts) <= min_points:
+                continue
+            group_id = json_utils.get_value(anno, key=["group_id"], default=0)
+            group_id = group_id if group_id else 0
             if shape:
                 h, w = shape[:2]
                 pts[:, 0] = np.clip(pts[:, 0], 0, w - 1)
@@ -256,6 +264,58 @@ class LabelMeDataset(Dataset):
         except Exception as e:
             raise Exception("empty image:{}".format(image_file))
         return image
+
+    def get_keypoint_object(self, annotation: list, w, h, class_name=["person"]):
+        """
+        获得labelme关键点检测数据
+        :param annotation:
+        :param w:
+        :param h:
+        :param class_name:
+        :return:
+        """
+        objects = {}
+        for i, anno in enumerate(annotation):
+            label = anno["label"].lower()
+            points = np.asarray(anno["points"], dtype=np.int32)
+            group_id = anno["group_id"] if anno["group_id"] else 0  # 通过group_id标记同一实例
+            if file_utils.is_int(label):
+                keypoints: dict = json_utils.get_value(objects, [group_id, "keypoints"], default={})
+                keypoints.update({int(label): points.tolist()[0]})
+                objects = json_utils.set_value(objects, key=[group_id, "keypoints"], value=keypoints)
+            elif label in class_name:
+                segs = points
+                segs[:, 0] = np.clip(segs[:, 0], 0, w - 1)
+                segs[:, 1] = np.clip(segs[:, 1], 0, h - 1)
+                box = image_utils.polygons2boxes([segs])[0]
+                objects = json_utils.set_value(objects, key=[group_id],
+                                               value={"labels": label, "boxes": box, "segs": segs})
+        return objects
+
+    def get_instance_object(self, annotation: list, w, h, class_name=[]):
+        """
+        获得labelme实例分割/检测数据
+        :param annotation:
+        :param w:
+        :param h:
+        :param class_name:
+        :return:
+        """
+        objects = {}
+        for i, anno in enumerate(annotation):
+            label = anno["label"].lower()
+            points = np.asarray(anno["points"], dtype=np.int32)
+            group_id = i
+            if file_utils.is_int(label):
+                continue
+            elif class_name is None or len(class_name) == 0 or label in class_name:
+                segs = points
+                segs[:, 0] = np.clip(segs[:, 0], 0, w - 1)
+                segs[:, 1] = np.clip(segs[:, 1], 0, h - 1)
+                box = image_utils.polygons2boxes([segs])[0]
+                objects = json_utils.set_value(objects, key=[group_id],
+                                               value={"labels": label, "boxes": box, "segs": segs})
+        return objects
 
     @staticmethod
     def load_annotations(ann_file: str):

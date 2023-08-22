@@ -50,22 +50,22 @@ class VOCDataset(Dataset):
         self.unique = False  # 是否是单一label，如["BACKGROUND", "unique"]
         self.class_name, self.class_dict = self.parser_classes(class_name)
         parser = self.parser_paths(filename, data_root, anno_dir, image_dir)
-        self.data_root, self.anno_dir, self.image_dir, self.image_id = parser
+        self.data_root, self.anno_dir, self.image_dir, self.image_ids = parser
         self.seg_dir = seg_dir
         if check or (self.class_name is None):
-            self.image_id = self.checking(self.image_id, class_name=self.class_name)
+            self.image_ids = self.checking(self.image_ids, class_name=self.class_name)
         self.transform = transform
         self.use_rgb = use_rgb
         self.classes = list(self.class_dict.values()) if self.class_dict else None
         self.num_classes = max(list(self.class_dict.values())) + 1 if self.class_dict else None
         if shuffle:
             random.seed(200)
-            random.shuffle(self.image_id)
-        self.num_images = len(self.image_id)
+            random.shuffle(self.image_ids)
+        self.num_images = len(self.image_ids)
         # print("VOCDataset class_count:{}".format(class_count))
         print("VOCDataset class_name :{}".format(class_name))
         print("VOCDataset class_dict :{}".format(self.class_dict))
-        print("VOCDataset num images :{}".format(len(self.image_id)))
+        print("VOCDataset num images :{}".format(len(self.image_ids)))
         print("VOCDataset num_classes:{}".format(self.num_classes))
 
     def __get_image_anno_file(self, image_dir, anno_dir, image_name: str):
@@ -150,21 +150,21 @@ class VOCDataset(Dataset):
         if isinstance(data_root, str):
             anno_dir = os.path.join(data_root, "Annotations") if not anno_dir else anno_dir
             image_dir = os.path.join(data_root, "JPEGImages") if not image_dir else image_dir
-        image_id = []
+        image_ids = []
         if isinstance(filename, str):
             data_root = os.path.dirname(filename)
-            image_id = self.read_files(filename)
+            image_ids = self.read_files(filename)
         if not anno_dir:
             anno_dir = os.path.join(data_root, "Annotations")
         if not image_dir:
             image_dir = os.path.join(data_root, "JPEGImages")
-        if image_dir and not image_id:
-            image_id = self.get_file_list(image_dir, postfix=file_utils.IMG_POSTFIX, basename=False)
-            image_id = [os.path.basename(f) for f in image_id]
-        elif anno_dir and not image_id:
-            image_id = self.get_file_list(anno_dir, postfix=["*.xml"], basename=False)
-            image_id = [os.path.basename(f) for f in image_id]
-        return data_root, anno_dir, image_dir, image_id
+        if image_dir and not image_ids:
+            image_ids = self.get_file_list(image_dir, postfix=file_utils.IMG_POSTFIX, basename=False)
+            image_ids = [os.path.basename(f) for f in image_ids]
+        elif anno_dir and not image_ids:
+            image_ids = self.get_file_list(anno_dir, postfix=["*.xml"], basename=False)
+            image_ids = [os.path.basename(f) for f in image_ids]
+        return data_root, anno_dir, image_dir, image_ids
 
     def convert_target(self, boxes, labels):
         # （xmin,ymin,xmax,ymax,label）
@@ -216,13 +216,13 @@ class VOCDataset(Dataset):
         :return:
         """
         if isinstance(index, numbers.Number):
-            image_id = self.image_id[index]
+            image_id = self.image_ids[index]
         else:
             image_id = index
         return image_id
 
     def __len__(self):
-        return len(self.image_id)
+        return len(self.image_ids)
 
     def get_segment_info(self, filename, bbox):
         """
@@ -370,27 +370,27 @@ class ConcatDataset(Dataset):
         # super(ConcatDataset, self).__init__()
         if not isinstance(datasets, list):
             datasets = [datasets]
-        self.image_id = []
+        self.image_ids = []
         self.dataset = datasets
         self.shuffle = shuffle
         for dataset_id, dataset in enumerate(self.dataset):
-            image_id = dataset.image_id
-            image_id = self.add_dataset_id(image_id, dataset_id)
-            self.image_id += image_id
+            image_ids = dataset.image_ids
+            image_ids = self.add_dataset_id(image_ids, dataset_id)
+            self.image_ids += image_ids
             self.classes = dataset.classes
         if shuffle:
             random.seed(200)
-            random.shuffle(self.image_id)
+            random.shuffle(self.image_ids)
 
-    def add_dataset_id(self, image_id, dataset_id):
+    def add_dataset_id(self, image_ids, dataset_id):
         """
-        :param image_id:
+        :param image_ids:
         :param dataset_id:
         :return:
         """
         out_image_id = []
-        for id in image_id:
-            out_image_id.append({"dataset_id": dataset_id, "image_id": id})
+        for image_id in image_ids:
+            out_image_id.append({"dataset_id": dataset_id, "image_id": image_id})
         return out_image_id
 
     def __getitem__(self, index):
@@ -398,16 +398,15 @@ class ConcatDataset(Dataset):
         :param index: int
         :return:
         """
-        dataset_id = self.image_id[index]["dataset_id"]
-        image_id = self.image_id[index]["image_id"]
+        dataset_id = self.image_ids[index]["dataset_id"]
+        image_id = self.image_ids[index]["image_id"]
         dataset = self.dataset[dataset_id]
-        # print(dataset.data_root, image_id)
         data = dataset.__getitem__(image_id)
         return data
 
     def get_image_anno_file(self, index):
-        dataset_id = self.image_id[index]["dataset_id"]
-        image_id = self.image_id[index]["image_id"]
+        dataset_id = self.image_ids[index]["dataset_id"]
+        image_id = self.image_ids[index]["image_id"]
         return self.dataset[dataset_id].get_image_anno_file(image_id)
 
     def get_annotation(self, xml_file):
@@ -417,7 +416,7 @@ class ConcatDataset(Dataset):
         return self.dataset[0].read_image(image_file, use_rgb=self.dataset[0].use_rgb)
 
     def __len__(self):
-        return len(self.image_id)
+        return len(self.image_ids)
 
 
 def VOCDatasets(filename=None,

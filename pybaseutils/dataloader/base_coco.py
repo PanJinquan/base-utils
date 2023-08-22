@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 from collections import defaultdict
 from torch.utils.data.dataset import ConcatDataset
 from pycocotools.coco import COCO
+from pycocotools import mask as coco_mask
 from pybaseutils.dataloader.base_dataset import Dataset
 from pybaseutils import image_utils, file_utils, json_utils
 
@@ -81,6 +82,12 @@ class COCORebuild(COCO):
 
 
 def load_coco(annotation, class_name=None) -> COCO:
+    """
+    :param annotation:
+    :param class_name: 重新映射的类别(有BUG，暂时不用)
+    :return:
+    """
+    class_name = None
     if isinstance(class_name, dict):
         annotation = COCORebuild.coco_categories_remapping(annotation, class_name)
     elif isinstance(class_name, list) and "unique" in class_name:
@@ -114,8 +121,8 @@ class CocoDataset(object):
         self.image_dir, self.anno_dir = self.parser_paths(anno_file, image_dir)
         self.unique = False
         self.use_rgb = use_rgb
-        self.coco = load_coco(anno_file, class_name)
-        self.category2id = self.load_categories()  # 获得COCO所有种类(类别)category
+        self.coco = load_coco(anno_file)
+        self.category2id = self.load_categories()  # 获得COCO所有种类(类别)category,如{"person":0}
         self.id2category = {i: c for c, i in self.category2id.items()}
         if not class_name:
             class_name = list(self.category2id.keys())
@@ -124,20 +131,23 @@ class CocoDataset(object):
         self.label2category_id = {l: self.category2id[c] for c, l in self.class_dict.items() if c in self.category2id}
         self.category_id2label = {c: l for l, c in self.label2category_id.items()}
         # 所有数据的image id
-        self.image_id, self.class_count = self.get_image_id(self.class_name)
-        # self.image_id = self.image_id[:100]
+        self.image_ids, self.class_count = self.get_image_ids(self.class_name)
+        self.files_info = self.get_files_info(self.image_ids)
+        self.annos_info = self.get_annos_info(self.image_ids)
+        assert self.files_info == self.files_info
+        # self.image_ids = self.image_ids[:100]
         if shuffle:
             random.seed(200)
-            random.shuffle(self.image_id)
-        self.num_images = len(self.image_id)
+            random.shuffle(self.image_ids)
+        self.num_images = len(self.image_ids)
         self.classes = list(self.class_dict.values()) if self.class_dict else None
         self.num_classes = max(list(self.class_dict.values())) + 1 if self.class_dict else None
         print("CocoDataset anno_file  :{}".format(anno_file))
-        print("CocoDataset image_dir  :{}".format(image_dir))
+        print("CocoDataset image_dir  :{}".format(self.image_dir))
         print("CocoDataset class_count:{}".format(self.class_count))
         print("CocoDataset class_name :{}".format(self.class_name))
         print("CocoDataset class_dict :{}".format(self.class_dict))
-        print("CocoDataset num images :{}".format(len(self.image_id)))
+        print("CocoDataset num images :{}".format(len(self.image_ids)))
         print("CocoDataset num_classes:{}".format(self.num_classes))
 
     def parser_paths(self, filename=None, image_dir=None):
@@ -161,22 +171,22 @@ class CocoDataset(object):
         assert os.path.exists(image_dir), Exception("no directory:{}".format(image_dir))
         return image_dir, anno_dir
 
-    def get_image_id(self, class_name):
+    def get_image_ids(self, class_name):
         """过滤符合条件的image id"""
         if "unique" in class_name:
             CatIds = self.coco.getCatIds(catNms=[])  # catNms is cat names
         else:
             CatIds = self.coco.getCatIds(catNms=class_name)  # catNms is cat names
-        # image_id = self.coco.getImgIds(catIds=[])  # getImgIds返回的是图片中同时存在class_name的图片
+        # image_ids = self.coco.getImgIds(catIds=[])  # getImgIds返回的是图片中同时存在class_name的图片
         class_count = {}
-        image_id = set()
+        image_ids = set()
         for cat in CatIds:
             id = self.coco.getImgIds(catIds=cat)  # 满足class_name其中一个类别即可
             name = self.coco.loadCats(cat)[0]["name"]
             class_count[name] = len(id)
-            image_id = image_id | set(id)  # 并集
-        image_id = list(image_id)
-        return image_id, class_count
+            image_ids = image_ids | set(id)  # 并集
+        image_ids = list(image_ids)
+        return image_ids, class_count
 
     def parser_classes(self, class_name):
         """
@@ -220,7 +230,7 @@ class CocoDataset(object):
         return categories
 
     def __len__(self):
-        return len(self.image_id)
+        return len(self.image_ids)
 
     def get_object_annotations(self, ids):
         # get ground truth annotations
@@ -230,25 +240,19 @@ class CocoDataset(object):
         anno_info = self.coco.loadAnns(annos_ids)
         return anno_info, file_info
 
-    def get_object_detection(self, annos):
-        """
-        return: boxes=(num_boxes,5), xmin,ymin,xmax,ymax
-        """
-        labels, boxes = [], []
-        for anno in annos:
-            # some annotations have basically no width / height, skip them
-            if anno['bbox'][2] < 1 or anno['bbox'][3] < 1:
-                continue
-            name = self.id2category[anno['category_id']] if not self.unique else "unique"
-            if self.class_name and name not in self.class_name:
-                continue
-            bbox = anno['bbox']  # x,y,w,h
-            label = self.class_dict[name]
-            boxes.append(bbox)
-            labels.append(label)
-        labels = np.asarray(labels)
-        boxes = image_utils.xywh2xyxy(np.asarray(boxes))
-        return boxes, labels
+    def get_files_info(self, image_ids: list = None):
+        if not image_ids: image_ids = self.image_ids
+        file_info = self.coco.loadImgs(ids=image_ids)
+        return file_info
+
+    def get_annos_info(self, image_ids: list = None):
+        if not image_ids: image_ids = self.image_ids
+        anno_info = []
+        for ids in image_ids:
+            ids = self.coco.getAnnIds(imgIds=[ids], iscrowd=False)
+            ann = self.coco.loadAnns(ids)
+            anno_info.append(ann)
+        return anno_info
 
     def get_object_image(self, file_info):
         """
@@ -263,72 +267,61 @@ class CocoDataset(object):
         assert height == file_info['height']
         return image, width, height
 
-    def get_object_instance(self, anns, h, w):
+    def get_object_detection(self, annos):
+        """
+        return: boxes=(num_boxes,5), xmin,ymin,xmax,ymax
+        """
+        labels, rects = [], []
+        for anno in annos:
+            # some annotations have basically no width / height, skip them
+            if anno['bbox'][2] < 1 or anno['bbox'][3] < 1:
+                continue
+            name = self.id2category[anno['category_id']] if not self.unique else "unique"
+            if self.class_name and name not in self.class_name:
+                continue
+            bbox = anno['bbox']  # x,y,w,h
+            label = self.class_dict[name]
+            rects.append(bbox)
+            labels.append(label)
+        labels = np.asarray(labels)
+        boxes = image_utils.xywh2xyxy(np.asarray(rects))
+        return boxes, labels
+
+    def get_object_instance(self, anns, h, w, decode=False):
         """
         获得实例分割信息
         :param anns:
         :param h:
         :param w:
+        :decode w: 是否对segment进行解码，
+                  True:在mask显示分割信息,False：mask为0，无分割信息
         :return:
         """
         mask = np.zeros((h, w), dtype=np.uint8)
-        segs, labels, boxes = [], [], []
+        segs, labels, rects = [], [], []
         for ann in anns:
             name = self.id2category[ann['category_id']] if not self.unique else "unique"
             if self.class_name and name not in self.class_name:
                 continue
-            # rle = coco_mask.frPyObjects(anno['segmentation'], h, w)
-            # m = coco_mask.decode(rle)
-            m = self.coco.annToMask(ann)
-            if not (m > 0).sum():
-                continue
+            seg = ann['segmentation'][0]
+            if len(seg) == 0: continue
             # polygons = image_utils.find_mask_contours(m) # bug：多个实例时，bbox有问题
             # bbox = image_utils.polygons2boxes(polygons)[0]
             label = self.class_dict[name]
-            boxes.append(ann['bbox'])
+            rects.append(ann['bbox'])
             labels.append(label)
-            seg = [np.array(ann['segmentation'][0], dtype=np.int32).reshape(-1, 2)]
+            seg = [np.array(seg, dtype=np.int32).reshape(-1, 2)]
             segs.append(seg)
-            if len(m.shape) < 3:
-                mask[:, :] += (mask == 0) * (m * label)
-            else:
-                mask[:, :] += (mask == 0) * (((np.sum(m, axis=2)) > 0) * label).astype(np.uint8)
-        labels = np.asarray(labels)
-        boxes = image_utils.xywh2xyxy(np.asarray(boxes))
-        return boxes, labels, mask, segs
-
-    def get_segment_info(self, anns, h, w):
-        """
-        获得语义分割信息
-        :param anns:
-        :param h:
-        :param w:
-        :return:
-        """
-        mask = np.zeros((h, w), dtype=np.uint8)
-        segs, labels, boxes = [], [], []
-        for ann in anns:
-            name = self.id2category[ann['category_id']] if not self.unique else "unique"
-            if self.class_name and name not in self.class_name:
-                continue
-            # rle = coco_mask.frPyObjects(anno['segmentation'], h, w)
-            # m = coco_mask.decode(rle)
+            # parse mask
+            if not decode: continue
+            # m = coco_mask.decode(coco_mask.frPyObjects(seg, h, w))
             m = self.coco.annToMask(ann)
-            if not (m > 0).sum():
-                continue
-            polygons = image_utils.find_mask_contours(m)  # bug：多个实例时，bbox有问题
-            bbox = image_utils.polygons2boxes(polygons)[0]
-            label = self.class_dict[name]
-            boxes.append(bbox)  # 实例分割是ann['bbox']
-            labels.append(label)
-            seg = [np.array(ann['segmentation'][0], dtype=np.int32).reshape(-1, 2)]
-            segs.append(seg)
             if len(m.shape) < 3:
                 mask[:, :] += (mask == 0) * (m * label)
             else:
                 mask[:, :] += (mask == 0) * (((np.sum(m, axis=2)) > 0) * label).astype(np.uint8)
         labels = np.asarray(labels)
-        boxes = image_utils.xywh2xyxy(np.asarray(boxes))
+        boxes = image_utils.xywh2xyxy(np.asarray(rects))
         return boxes, labels, mask, segs
 
     def get_keypoint_info(self, anns, num_joints):
@@ -344,7 +337,7 @@ class CocoDataset(object):
         :param anns:
         :return:
         """
-        keypoints, labels, boxes = [], [], []
+        keypoints, labels, rects = [], [], []
         for ann in anns:
             name = self.id2category[ann['category_id']] if not self.unique else "unique"
             if self.class_name and name not in self.class_name:
@@ -354,10 +347,10 @@ class CocoDataset(object):
             keypoint = keypoint[:, 0:2]
             keypoints.append(keypoint)
             label = self.class_dict[name]
-            boxes.append(ann['bbox'])
+            rects.append(ann['bbox'])
             labels.append(label)
         labels = np.asarray(labels)
-        boxes = image_utils.xywh2xyxy(np.asarray(boxes))
+        boxes = image_utils.xywh2xyxy(np.asarray(rects))
         return boxes, labels, keypoints
 
     def read_image(self, image_file: str, use_rgb=True):

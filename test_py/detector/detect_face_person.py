@@ -133,7 +133,7 @@ class ParseDataset(object):
         for i, img in enumerate(crops):
             name = self.names[int(labels[i])] if self.names else labels[i]
             if out_dir:
-                # img_file = file_utils.create_dir(out_dir, name, "{}_{:0=3d}.jpg".format(image_id, i))
+                # img_file = file_utils.create_dir(out_dir, name, "{}_{:0=3d}.jpg".format(image_ids, i))
                 img_file = file_utils.create_dir(out_dir, None, "{}_{:0=3d}.jpg".format(image_id, i))
                 cv2.imwrite(img_file, img)
             if vis: image_utils.cv_show_image("crop", img, use_rgb=False, delay=0)

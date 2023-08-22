@@ -103,7 +103,7 @@ class ParseDataset(object):
                 if len(bbox_score) == 0: continue
                 names, bbox_score = self.map_class_names(image_file, bbox_score, labels, max_nums=1)
                 image_id = "{}_{:0=6d}".format(flag, i) if flag else os.path.basename(image_name).split(".")[0]
-                # image_id = "{}_{:0=6d}".format(flag,int(os.path.basename(image_name).split(".")[0]))
+                # image_ids = "{}_{:0=6d}".format(flag,int(os.path.basename(image_name).split(".")[0]))
                 self.save_lableme(image, bbox_score, names, image_file, image_id, out_dir=out_dir, vis=vis)
             except:
                 print("i={},file={}".format(i, image_file))

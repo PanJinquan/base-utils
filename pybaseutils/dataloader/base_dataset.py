@@ -35,7 +35,7 @@ class Dataset(object):
     """
 
     def __init__(self, **kwargs):
-        self.image_id = []
+        self.image_ids = []
 
     def __getitem__(self, index):
         raise NotImplementedError
@@ -164,7 +164,7 @@ class ConcatDataset(Dataset):
         self.dataset = datasets
         self.shuffle = shuffle
         for dataset_id, dataset in enumerate(self.dataset):
-            image_id = dataset.image_id
+            image_id = dataset.image_ids
             image_id = self.add_dataset_id(image_id, dataset_id)
             self.image_id += image_id
             self.classes = dataset.classes
@@ -180,7 +180,7 @@ class ConcatDataset(Dataset):
         """
         out_image_id = []
         for id in image_id:
-            out_image_id.append({"dataset_id": dataset_id, "image_id": id})
+            out_image_id.append({"dataset_id": dataset_id, "image_ids": id})
         return out_image_id
 
     def __getitem__(self, index):
@@ -189,14 +189,14 @@ class ConcatDataset(Dataset):
         :return:
         """
         dataset_id = self.image_id[index]["dataset_id"]
-        image_id = self.image_id[index]["image_id"]
+        image_id = self.image_id[index]["image_ids"]
         dataset = self.dataset[dataset_id]
         data = dataset.__getitem__(image_id)
         return data
 
     def get_image_anno_file(self, index):
         dataset_id = self.image_id[index]["dataset_id"]
-        image_id = self.image_id[index]["image_id"]
+        image_id = self.image_id[index]["image_ids"]
         return self.dataset[dataset_id].get_image_anno_file(image_id)
 
     def get_annotation(self, xml_file):

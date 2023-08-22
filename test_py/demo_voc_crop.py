@@ -56,7 +56,7 @@ if __name__ == "__main__":
     对VOC的数据目标进行裁剪
     """
     # filename = "/home/PKing/nasdata/dataset/tmp/face_person/MPII/train5000.txt"
-    filename = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/equipment/dataset-v3/file_list.txt"
+    filename = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-det-dataset/dataset-v4/file_list.txt"
     # class_name = ["face", "face-eyeglasses"]
     # class_name = "/home/dm/nasdata/dataset/tmp/traffic-sign/TT100K/VOC/train/class_name.txt"
     # class_name = ["unique"]
@@ -81,7 +81,7 @@ if __name__ == "__main__":
     for i in tqdm(range(len(dataset))):
         try:
             data = dataset.__getitem__(i)
-            image, targets, image_id = data["image"], data["target"], data["image_id"]
+            image, targets, image_id = data["image"], data["target"], data["image_ids"]
             bboxes, labels = targets[:, 0:4], targets[:, 4:5]
             save_object_crops(image, out_dir, bboxes, labels, image_id, class_name=class_name, scale=scale,
                               flag=flag, vis=False)

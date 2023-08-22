@@ -40,7 +40,7 @@ class CocoDetection(base_coco.CocoDataset):
                                             shuffle=shuffle, check=check, **kwargs)
         print("CocoDataset class_name :{}".format(class_name))
         print("CocoDataset class_dict :{}".format(self.class_dict))
-        print("CocoDataset num images :{}".format(len(self.image_id)))
+        print("CocoDataset num images :{}".format(len(self.image_ids)))
         print("CocoDataset num_classes:{}".format(self.num_classes))
 
     def convert_target(self, boxes, labels):
@@ -53,7 +53,7 @@ class CocoDetection(base_coco.CocoDataset):
         return target
 
     def __getitem__(self, index):
-        image_id = self.image_id[index]
+        image_id = self.image_ids[index]
         anno_info, file_info = self.get_object_annotations(image_id)
         image, width, height = self.get_object_image(file_info)
         boxes, labels = self.get_object_detection(anno_info)
@@ -66,7 +66,7 @@ class CocoDetection(base_coco.CocoDataset):
         if num_boxes == 0:
             index = int(random.uniform(0, len(self)))
             return self.__getitem__(index)
-        data = {"image": image, "target": target, "label": labels, "image_id": image_id}
+        data = {"image": image, "target": target, "label": labels, "image_ids": image_id}
         return data
 
 
@@ -147,7 +147,7 @@ if __name__ == "__main__":
     class_name = voc.class_name
     for i in range(len(voc)):
         data = voc.__getitem__(i)
-        image, targets, image_id = data['image'], data["target"], data["image_id"]
+        image, targets, image_id = data['image'], data["target"], data["image_ids"]
         bboxes, labels = targets[:, 0:4], targets[:, 4:5]
-        print("i={},image_id={}".format(i, data["image_id"]))
+        print("i={},image_ids={}".format(i, data["image_ids"]))
         show_target_image(image, bboxes, labels, normal=False, transpose=False, class_name=class_name)

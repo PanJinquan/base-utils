@@ -36,11 +36,11 @@ class CocoInstances(base_coco.CocoDataset):
         :param vis:
         :return: 
         """
-        image_id = self.image_id[index]
+        image_id = self.image_ids[index]
         anns_info, file_info = self.get_object_annotations(image_id)
         image, width, height = self.get_object_image(file_info)
-        boxes, labels, mask, segs = self.get_object_instance(anns_info, h=height, w=width)
-        data = {"segs": segs, "mask": mask, "image": image, "boxes": boxes, "label": labels, "image_id": image_id,
+        boxes, labels, mask, segs = self.get_object_instance(anns_info, h=height, w=width, decode=True)
+        data = {"segs": segs, "mask": mask, "image": image, "boxes": boxes, "label": labels, "image_ids": image_id,
                 "annotations": anns_info, "file_info": file_info}
         return data
 
@@ -55,23 +55,37 @@ def show_target_image(image, mask, boxes, labels, class_name=[], thickness=2, fo
 
 
 if __name__ == "__main__":
-    class_name = []
+    class_name = {'person': 1, 'bicycle': 0, 'car': 2, 'motorcycle': 3, 'airplane': 4, 'bus': 5, 'train': 6, 'truck': 7,
+                  'boat': 8, 'traffic light': 9, 'fire hydrant': 10, 'stop sign': 11, 'parking meter': 12, 'bench': 13,
+                  'bird': 14, 'cat': 15, 'dog': 16, 'horse': 17, 'sheep': 18, 'cow': 19, 'elephant': 20,
+                  'bear': 21, 'zebra': 22, 'giraffe': 23, 'backpack': 24, 'umbrella': 25, 'handbag': 26, 'tie': 27,
+                  'suitcase': 28, 'frisbee': 29, 'skis': 30, 'snowboard': 31, 'sports ball': 32, 'kite': 33,
+                  'baseball bat': 34, 'baseball glove': 35, 'skateboard': 36, 'surfboard': 37, 'tennis racket': 38,
+                  'bottle': 39, 'wine glass': 40, 'cup': 41, 'fork': 42, 'knife': 43, 'spoon': 44, 'bowl': 45,
+                  'banana': 46, 'apple': 47, 'sandwich': 48, 'orange': 49, 'broccoli': 50, 'carrot': 51, 'hot dog': 52,
+                  'pizza': 53, 'donut': 54, 'cake': 55, 'chair': 56, 'couch': 57, 'potted plant': 58, 'bed': 59,
+                  'dining table': 60, 'toilet': 61, 'tv': 62, 'laptop': 63, 'mouse': 64, 'remote': 65, 'keyboard': 66,
+                  'cell phone': 67, 'microwave': 68, 'oven': 69, 'toaster': 70, 'sink': 71, 'refrigerator': 72,
+                  'book': 73, 'clock': 74, 'vase': 75, 'scissors': 76, 'teddy bear': 77, 'hair drier': 78,
+                  'toothbrush': 79}
+    # class_name = []
+    class_name = ["BG", 'person', 'car']
+    # class_name = {'bb': "bk", "person": "unique"}
     # 测试COCO数据集
     coco_root = "/home/PKing/nasdata/dataset/face_person/COCO/"
     image_dir = coco_root + 'val2017/images'
     # anno_file = coco_root + 'annotations/person_keypoints_val2017.json'
     anno_file = coco_root + 'annotations/instances_val2017.json'
 
-    anno_file = "/media/PKing/新加卷1/SDK/base-utils/data/VOC2007/voc_coco_demo.json"
-    image_dir = "/media/PKing/新加卷1/SDK/base-utils/data/VOC2007/JPEGImages"
-
-    anno_file = "/media/PKing/新加卷1/SDK/base-utils/data/merge_person.json"
-    image_dir = "/media/PKing/新加卷1/SDK/base-utils/data/person"
-    dataset = CocoInstances(anno_file, image_dir, class_name=class_name)
+    # anno_file = "/media/PKing/新加卷1/SDK/base-utils/data/VOC2007/voc_coco_demo.json"
+    # image_dir = "/media/PKing/新加卷1/SDK/base-utils/data/VOC2007/JPEGImages"
+    #
+    anno_file = "/media/PKing/新加卷1/SDK/base-utils/data/coco/person.json"
+    dataset = CocoInstances(anno_file, image_dir=None, class_name=class_name)
     class_name = dataset.class_name
     for i in range(len(dataset)):
         data = dataset.__getitem__(i)
         image, boxes, labels, mask = data['image'], data["boxes"], data["label"], data["mask"]
-        print("i={},image_id={}".format(i, data["image_id"]))
-        dataset.showAnns(image, data['annotations'])
-        # show_target_image(image, mask, boxes, labels, class_name=class_name)
+        print("i={},image_ids={}".format(i, data["image_ids"]))
+        # dataset.showAnns(image, data['annotations'])
+        show_target_image(image, mask, boxes, labels, class_name=class_name)

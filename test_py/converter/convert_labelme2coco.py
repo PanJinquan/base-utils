@@ -18,7 +18,7 @@ def demo_for_voc():
     anno_dir = "/media/PKing/新加卷1/SDK/base-utils/data/person"
     save_coco_file = os.path.join(os.path.dirname(image_dir), "person.json")
     build = Labelme2COCO(image_dir=image_dir, anno_dir=anno_dir, init_id=None)
-    build.build_dataset()
+    build.build_keypoint_dataset()
     build.save_coco(save_coco_file)
 
 

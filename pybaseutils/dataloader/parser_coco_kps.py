@@ -70,11 +70,11 @@ class CocoKeypoints(base_coco.CocoDataset):
         :param vis:
         :return: 
         """
-        image_id = self.image_id[index]
+        image_id = self.image_ids[index]
         anns_info, file_info = self.get_object_annotations(image_id)
         image, width, height = self.get_object_image(file_info)
         boxes, labels, keypoints = self.get_keypoint_info(anns_info, self.num_joints)
-        data = {"keypoints": keypoints, "image": image, "boxes": boxes, "label": labels, "image_id": image_id,
+        data = {"keypoints": keypoints, "image": image, "boxes": boxes, "label": labels, "image_ids": image_id,
                 "annotations": anns_info, "file_info": file_info}
         return data
 
@@ -97,16 +97,16 @@ if __name__ == "__main__":
     anno_file = coco_root + 'annotations/person_keypoints_val2017.json'
 
     # anno_file = "/media/PKing/新加卷1/SDK/base-utils/data/person.json"
-    # image_dir = "/media/PKing/新加卷1/SDK/base-utils/data/person"
-    image_dir = "/home/PKing/nasdata/dataset/tmp/challenge/精细化手部关键点检测挑战赛/精细化手部关键点检测挑战赛公开数据-初赛/训练集/image"
-    anno_file = "/home/PKing/nasdata/dataset/tmp/challenge/精细化手部关键点检测挑战赛/精细化手部关键点检测挑战赛公开数据-初赛/训练集/train_anno.json"
+    image_dir = "/media/PKing/新加卷1/SDK/base-utils/data/person"
+    # image_dir = "/home/PKing/nasdata/dataset/tmp/challenge/精细化手部关键点检测挑战赛/精细化手部关键点检测挑战赛公开数据-初赛/训练集/image"
+    # anno_file = "/home/PKing/nasdata/dataset/tmp/challenge/精细化手部关键点检测挑战赛/精细化手部关键点检测挑战赛公开数据-初赛/训练集/train_anno.json"
     class_name = ["hand"]
     dataset = CocoKeypoints(anno_file, image_dir, class_name=class_name)
     skeleton = dataset.skeleton
     for i in range(len(dataset)):
         data = dataset.__getitem__(i)
-        # data = {"segs": segs, "image": image, "boxes": boxes, "label": labels, "image_id": image_id}
+        # data = {"segs": segs, "image": image, "boxes": boxes, "label": labels, "image_ids": image_ids}
         image, boxes, labels, keypoints = data['image'], data["boxes"], data["label"], data["keypoints"]
-        print("i={},image_id={}".format(i, data["image_id"]))
-        dataset.showAnns(image, data['annotations'])
+        print("i={},image_ids={}".format(i, data["image_ids"]))
+        # dataset.showAnns(image, data['annotations'])
         show_target_image(image, keypoints, boxes, labels, skeleton=skeleton)

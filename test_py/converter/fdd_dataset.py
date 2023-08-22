@@ -42,7 +42,7 @@ if __name__ == "__main__":
     for i in range(len(dataset)):
         print(i)
         data = dataset.__getitem__(i)
-        image, targets, image_id = data["image"], data["target"], data["image_id"]
+        image, targets, image_id = data["image"], data["target"], data["image_ids"]
         bboxes, labels = targets[:, 0:4], targets[:, 4:5]
         flag = int(image_id.split(".")[0])
         name = convert_to_class(data["image_file"], bboxes, labels, flag, class_name, out_dir=out_dir)

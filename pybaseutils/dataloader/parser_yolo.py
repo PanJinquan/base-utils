@@ -54,27 +54,27 @@ class YOLODataset(Dataset):
         self.use_rgb = use_rgb
         self.class_name, self.class_dict = self.parser_classes(class_name)
         parser = self.parser_paths(filename, data_root, anno_dir, image_dir)
-        self.data_root, self.anno_dir, self.image_dir, self.image_id = parser
-        self.postfix = self.get_image_postfix(self.image_dir, self.image_id)
+        self.data_root, self.anno_dir, self.image_dir, self.image_ids = parser
+        self.postfix = self.get_image_postfix(self.image_dir, self.image_ids)
         self.classes = list(self.class_dict.values()) if self.class_dict else None
         self.num_classes = max(list(self.class_dict.values())) + 1 if self.class_dict else None
         self.class_weights = None
         if check:
-            self.image_id = self.checking(self.image_id)
+            self.image_ids = self.checking(self.image_ids)
         if shuffle:
             random.seed(200)
-            random.shuffle(self.image_id)
-        self.num_images = len(self.image_id)
+            random.shuffle(self.image_ids)
+        self.num_images = len(self.image_ids)
         self.scale_rate = 1.0
         self.target_type = 'gaussian'
         self.sigma = 2
         print("Dataset class_name    :{}".format(class_name))
         print("Dataset class_dict    :{}".format(self.class_dict))
-        print("Dataset num images    :{}".format(len(self.image_id)))
+        print("Dataset num images    :{}".format(len(self.image_ids)))
         print("Dataset num_classes   :{}".format(self.num_classes))
 
     def __len__(self):
-        return len(self.image_id)
+        return len(self.image_ids)
 
     def parser_classes(self, class_name):
         """
@@ -125,7 +125,7 @@ class YOLODataset(Dataset):
                                                                            self.postfix)
         return image_file, annotation_file, image_id
 
-    def __get_image_anno_file(self, image_dir, anno_dir, image_id: str, img_postfix):
+    def __get_image_anno_file(self, image_dir, anno_dir, image_name: str, img_postfix):
         """
         :param image_dir:
         :param anno_dir:
@@ -133,9 +133,8 @@ class YOLODataset(Dataset):
         :param img_postfix:
         :return:
         """
-        if not img_postfix and "." in image_id:
-            img_postfix = image_id.split(".")[-1]
-            image_id = image_id[:-len(img_postfix) - 1]
+        img_postfix = image_name.split(".")[-1]
+        image_id = image_name[:-len(img_postfix) - 1]
         image_file = os.path.join(image_dir, "{}.{}".format(image_id, img_postfix))
         annotation_file = os.path.join(anno_dir, "{}.txt".format(image_id))
         return image_file, annotation_file, image_id
@@ -174,22 +173,24 @@ class YOLODataset(Dataset):
         if isinstance(data_root, str):
             anno_dir = os.path.join(data_root, "json") if not anno_dir else anno_dir
             image_dir = os.path.join(data_root, "images") if not image_dir else image_dir
-        image_id = []
+        image_ids = []
         if isinstance(filename, str):
-            image_id = self.read_files(filename, split=",")
+            image_ids = self.read_files(filename, split=",")
             data_root = os.path.dirname(filename)
         if not anno_dir:  # 如果anno_dir为空，则自动搜寻可能存在图片目录
             image_sub = ["labels"]
             anno_dir = self.search_path(data_root, image_sub)
         if not image_dir:
             image_dir = self.search_path(data_root, ["JPEGImages", "images"])
-        if anno_dir and not image_id:
-            image_id = self.get_file_list(anno_dir, postfix=["*.json"], basename=True)
-        elif image_dir and not image_id:
-            image_id = self.get_file_list(anno_dir, postfix=["*.jpg"], basename=True)
+        if anno_dir and not image_ids:
+            image_ids = self.get_file_list(anno_dir, postfix=["*.json"], basename=False)
+            image_ids = [os.path.basename(f) for f in image_ids]
+        elif image_dir and not image_ids:
+            image_ids = self.get_file_list(anno_dir, postfix=["*.jpg"], basename=False)
+            image_ids = [os.path.basename(f) for f in image_ids]
         # assert os.path.exists(image_dir), Exception("no directory:{}".format(image_dir))
         # assert os.path.exists(anno_dir), Exception("no directory:{}".format(anno_dir))
-        return data_root, anno_dir, image_dir, image_id
+        return data_root, anno_dir, image_dir, image_ids
 
     def __getitem__(self, index):
         """
@@ -231,13 +232,13 @@ class YOLODataset(Dataset):
         :return:
         """
         if isinstance(index, numbers.Number):
-            image_id = self.image_id[index]
+            image_id = self.image_ids[index]
         else:
             image_id = index
         return image_id
 
     def __len__(self):
-        return len(self.image_id)
+        return len(self.image_ids)
 
     @staticmethod
     def get_files_id(file_list):

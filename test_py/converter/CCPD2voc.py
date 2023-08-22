@@ -79,7 +79,7 @@ def save_plate_licenses(image, bboxes, plates, out_dir, name=""):
     crops = image_utils.get_bboxes_crop(image, bboxes)
     for i in range(len(crops)):
         label = plates[i]
-        # image_id = file_utils.get_time(format="p")
+        # image_ids = file_utils.get_time(format="p")
         file = os.path.join(out_dir, "{}_{}_{:0=3d}.jpg".format(label, name, i))
         file_utils.create_file_path(file)
         cv2.imwrite(file, crops[i])

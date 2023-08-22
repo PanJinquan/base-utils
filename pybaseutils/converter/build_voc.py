@@ -412,11 +412,15 @@ def create_objects(bboxes: list, labels: list, keypoints=None, class_name={}):
     :param bboxes: [[xmin,ymin,xmax,ymax]]
     :param labels:[name1,name2]
     :param keypoint:
+    :param class_name: 将name重新映射到class_name
     :return:
     """
     object = []
     for i in range(len(labels)):
-        name = class_name[labels[i]] if class_name else labels[i]
+        if class_name and labels[i] in class_name:
+            name = class_name[labels[i]]
+        else:
+            name = labels[i]
         bndbox = bboxes[i]
         keypoint = keypoints[i] if keypoints else []
         obj = create_object(name, bndbox, keypoint)

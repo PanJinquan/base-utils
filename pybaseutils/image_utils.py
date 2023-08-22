@@ -2310,7 +2310,7 @@ def pointPolygonTest(point, contour, measureDist=False):
     return dist
 
 
-def draw_image_contours(image, contours: List[np.ndarray], color=(0, 255, 0), thickness=2):
+def draw_image_contours(image, contours: List[np.ndarray], color=(), thickness=2):
     """
     :param image:
     :param contours: List[np.ndarray],每个列表是一个轮廓(num_points,1,2)
@@ -2318,7 +2318,8 @@ def draw_image_contours(image, contours: List[np.ndarray], color=(0, 255, 0), th
     :return:
     """
     for i in range(0, len(contours)):
-        image[:] = cv2.drawContours(image, contours[i], contourIdx=-1, color=color, thickness=thickness)
+        c = color if color else color_table[i + 1]
+        image[:] = cv2.drawContours(image, contours[i], contourIdx=-1, color=c, thickness=thickness)
     return image
 
 

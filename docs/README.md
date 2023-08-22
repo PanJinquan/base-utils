@@ -160,3 +160,8 @@ apt-get install '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev l
 git config --global credential.helper store
 
 ```
+
+|Model        |      |         |
+|-------------|------|---------|
+|YOLOv5s      |640   |36.7     |
+|YOLOv5m      |640   |44.5     |

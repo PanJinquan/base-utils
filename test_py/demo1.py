@@ -14,56 +14,19 @@ from tqdm import tqdm
 from multiprocessing import Pool
 import numpy as np
 from pybaseutils import file_utils, image_utils, base64_utils, time_utils, json_utils
+from pybaseutils.audio import audio_utils
 
-
-# -*- coding:utf-8 -*-
-"""
-入口函数
-"""
-import os
-import sys
-
-"""PyAudio Example: Play a WAVE file."""
-
-import pyaudio
-import wave
-from tqdm import tqdm
-
-
-
-def play_audio(wave_path):
-
-    CHUNK = 1024
-
-    wf = wave.open(wave_path, 'rb')
-
-    # instantiate PyAudio (1)
-    p = pyaudio.PyAudio()
-
-    # open stream (2)
-    stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
-                    channels=wf.getnchannels(),
-                    rate=wf.getframerate(),
-                    output=True)
-
-    # read data
-    data = wf.readframes(CHUNK)
-
-    # play stream (3)
-    datas = []
-    while len(data) > 0:
-        data = wf.readframes(CHUNK)
-        datas.append(data)
-
-    for d in tqdm(datas):
-        stream.write(d)
-
-    # stop stream (4)
-    stream.stop_stream()
-    stream.close()
-
-    # close PyAudio (5)
-    p.terminate()
-
-file="../data/video/kunkun_cut.mp3"
-play_audio(file)
+video_file = "/home/PKing/Downloads/audio/data/主视角-1号位-完整.mp4"
+video_file = "http://10.13.3.5:8088/camera1/主视角-1号位-完整.mp4"
+audio_file = "/home/PKing/nasdata/dataset-dmai/AIJE/audio/test-audio/test-1号视角.flv"
+# audio_file = "/home/PKing/Downloads/test-1号视角.flv"
+# audio_file = "/home/PKing/Downloads/主视角-1号位-完整.mp4"
+# audio_file = "/home/PKing/Downloads/1.flv"
+# audio_file = "/home/PKing/Downloads/audio/data/主视角-1号位-完整-16k-s16le.wav"
+audio_utils.extract_video_audio(audio_file)
+# ffmpeg -re -i http://10.13.3.5:8088/camera1/主视角-1号位-完整.mp4 -vn -ar 16000 -ac 1 -f s16le
+# os.system(f'ffmpeg -i {video_file} -ac 1 -y {audio_file}')
+# os.system(f'ffmpeg -i {video_file} -ac 1 -y -ar 16000 {audio_file}')
+# os.system(f'ffmpeg -re -i {video_file} -vn -ar 16000 -ac 1 -f s16le -y {audio_file}')
+# os.system(f'ffmpeg -i {video_file} -vn -ar 16000 -ac 1 -f s16le -y {audio_file}')
+# os.system(f'ffmpeg -i {video_file} -vn -ar 16000 -ac 1 -y {audio_file}')
