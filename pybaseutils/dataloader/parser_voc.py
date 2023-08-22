@@ -63,10 +63,11 @@ class VOCDataset(Dataset):
             random.shuffle(self.image_ids)
         self.num_images = len(self.image_ids)
         # print("VOCDataset class_count:{}".format(class_count))
-        print("VOCDataset class_name :{}".format(class_name))
-        print("VOCDataset class_dict :{}".format(self.class_dict))
-        print("VOCDataset num images :{}".format(len(self.image_ids)))
-        print("VOCDataset num_classes:{}".format(self.num_classes))
+        print("VOCDataset class_name      :{}".format(class_name))
+        print("VOCDataset class_dict      :{}".format(self.class_dict))
+        print("VOCDataset num images      :{}".format(len(self.image_ids)))
+        print("VOCDataset num_classes     :{}".format(self.num_classes))
+
 
     def __get_image_anno_file(self, image_dir, anno_dir, image_name: str):
         """
@@ -378,9 +379,12 @@ class ConcatDataset(Dataset):
             image_ids = self.add_dataset_id(image_ids, dataset_id)
             self.image_ids += image_ids
             self.classes = dataset.classes
+            self.class_name = dataset.class_name
         if shuffle:
             random.seed(200)
             random.shuffle(self.image_ids)
+        print("ConcatDataset total images :{}".format(len(self.image_ids)))
+
 
     def add_dataset_id(self, image_ids, dataset_id):
         """
@@ -492,25 +496,17 @@ def show_target_image(image, boxes, labels, normal=False, transpose=False, class
 
 if __name__ == "__main__":
     # from models.transforms import data_transforms
-    # filename = '/home/dm/nasdata/dataset/csdn/helmet/helmet-dataset/test.txt'
-    filename = '/home/dm/nasdata/dataset/csdn/helmet/helmet-asian/total.txt'
-    filename = '/home/dm/nasdata/dataset/csdn/helmet/SafetyHelmetWearingDataset/VOC/train.txt'
-    filename = '/home/dm/nasdata/dataset/csdn/helmet/Helmet_Dataset(kaggle)/helmet_dataset/train.txt'
-    filename = '/home/dm/nasdata/dataset/csdn/helmet/Hard Hat Workers.v2-raw.voc/trainval.txt'
-    filename = '/home/dm/nasdata/dataset/csdn/helmet/Helmet-Asian/total.txt'
-    filename = '/home/dm/nasdata/dataset/csdn/helmet/Helmet-Europe/trainval.txt'
-    # class_dict = ['BACKGROUND', 'unique']
-    class_dict = {'head': 0, "helmet": 1}
-    class_name = ['head', "helmet"]
-    dataset = VOCDatasets(filename=[filename],
+    filename = '/media/PKing/新加卷1/SDK/base-utils/data/coco/file_list.txt'
+    class_name = None
+    dataset = VOCDatasets(filename=[filename,filename],
                           data_root=None,
                           image_dir=None,
                           anno_dir=None,
-                          class_name=class_dict,
+                          class_name=class_name,
                           transform=None,
                           check=False,
                           shuffle=True)
-    print("have num:{}".format(len(dataset)))
+    class_name = dataset.class_name
     for i in range(len(dataset)):
         print(i)
         data = dataset.__getitem__(i)
