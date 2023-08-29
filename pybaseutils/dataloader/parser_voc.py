@@ -68,7 +68,6 @@ class VOCDataset(Dataset):
         print("VOCDataset num images      :{}".format(len(self.image_ids)))
         print("VOCDataset num_classes     :{}".format(self.num_classes))
 
-
     def __get_image_anno_file(self, image_dir, anno_dir, image_name: str):
         """
         :param image_dir:
@@ -385,7 +384,6 @@ class ConcatDataset(Dataset):
             random.shuffle(self.image_ids)
         print("ConcatDataset total images :{}".format(len(self.image_ids)))
 
-
     def add_dataset_id(self, image_ids, dataset_id):
         """
         :param image_ids:
@@ -498,7 +496,7 @@ if __name__ == "__main__":
     # from models.transforms import data_transforms
     filename = '/media/PKing/新加卷1/SDK/base-utils/data/coco/file_list.txt'
     class_name = None
-    dataset = VOCDatasets(filename=[filename,filename],
+    dataset = VOCDatasets(filename=[filename, filename],
                           data_root=None,
                           image_dir=None,
                           anno_dir=None,

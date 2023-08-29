@@ -161,7 +161,11 @@ git config --global credential.helper store
 
 ```
 
-|Model        |      |         |
-|-------------|------|---------|
-|YOLOv5s      |640   |36.7     |
-|YOLOv5m      |640   |44.5     |
+## xdg-open打开文件夹/文件
+
+## 表格
+
+| Model   |     |      |
+|---------|-----|------|
+| YOLOv5s | 640 | 36.7 |
+| YOLOv5m | 640 | 44.5 |

@@ -16,11 +16,11 @@ def video2frames_demo(root, out):
     files = file_utils.get_files_list(root, postfix=["*.avi", "*.mp4", "*.flv"])
     for video_file in files:
         print(video_file)
-        # video_utils.video2frames_similarity(video_file, out_dir=out, func=None, interval=20, thresh=0.2,vis=True)
-        video_utils.video2frames(video_file, out_dir=out, func=None, interval=15, vis=True)
+        video_utils.video2frames_similarity(video_file, out_dir=out, func=None, interval=20, thresh=0.05,vis=True)
+        # video_utils.video2frames(video_file, out_dir=out, func=None, interval=15, vis=True)
 
 
 if __name__ == "__main__":
-    root = "/home/PKing/nasdata/dataset/tmp/Drowsy-Driving/video/videos"
+    root = "/home/PKing/nasdata/release/电信小助手/video/"
     out = root + "-frame"
     video2frames_demo(root, out)

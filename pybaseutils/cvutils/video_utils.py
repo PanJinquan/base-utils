@@ -8,6 +8,7 @@
 import os
 import cv2
 import numpy as np
+from typing import Callable
 from tqdm import tqdm
 from pybaseutils import image_utils, file_utils
 from pybaseutils.cvutils import monitor
@@ -211,11 +212,56 @@ def write_video(self, frame):
     self.video_writer.write(frame)
 
 
+def video_task(frame, **kwargs):
+    # TODO
+    delay = kwargs.get("delay", 0)
+    title = kwargs.get("title", "image")
+    cv2.imshow(title, frame)
+    cv2.moveWindow(title, 0, 0)
+    cv2.waitKey(delay)
+    return frame
+
+
+def video_capture(video_file: int or str, save_video: str = None, interval=1, task: Callable = video_task, **kwargs):
+    """
+    读取摄像头或者视频流
+    :param video_file: String 视频文件，如*.avi,*.mp4,...
+                       Int 摄像头ID，如0，1，2
+    :param save_video: 保存task视频处理后的结果
+    :param interval: 抽帧处理间隔
+    :param task: 回调函数： def task(frame, **kwargs)
+    :param kwargs:回调函数输入参数,
+                 delay: 控制显示延时
+                 title: 控制显示窗口名
+    :return:
+    """
+    # cv2.moveWindow("test", 1000, 100)
+    video_cap = get_video_capture(video_file)
+    width, height, num_frames, fps = get_video_info(video_cap)
+    video_writer = None
+    # fps = max((fps + interval - 1) // interval, 2)
+    fps = max(fps // interval, 2)
+    if save_video: video_writer = get_video_writer(save_video, width, height, fps)
+    # freq = int(fps / detect_freq)
+    count = 0
+    while True:
+        if count % interval == 0:
+            # 设置抽帧的位置
+            video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
+            isSuccess, frame = video_cap.read()
+            if not isSuccess or 0 < num_frames < count: break
+            if task: frame = task(frame, **kwargs)
+            if save_video:
+                video_writer.write(frame)
+        count += 1
+    video_cap.release()
+
+
 class CVVideo():
     def __init__(self):
         pass
 
-    def start_capture(self, video_file, save_video=None, interval=1):
+    def video_capture(self, video_file, save_video=None, interval=1):
         """
         start capture video
         :param video_file: *.avi,*.mp4,...

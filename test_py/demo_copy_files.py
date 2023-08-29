@@ -47,9 +47,9 @@ def demo_copy_move_by_sub_names_v2():
     # out_dir = "/home/dm/cv/panjinquan/dataset-dmai/handwriting/word-class/word-similar/dataset-clear/train"
     # file = "/home/dm/cv/panjinquan/dataset-dmai/handwriting/word-class/word-similar/dataset-clear/loss.txt"
 
-    image_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-clothes/dataset-v1/trainval"
-    out_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-clothes/dataset-v1/test"
-    file = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-clothes/class_name.txt"
+    image_dir = "/home/PKing/nasdata/dataset/tmp/challenge/鸟类品种识别/鸟类品种识别挑战赛训练集/training_set"
+    out_dir = "/home/PKing/nasdata/dataset/tmp/challenge/鸟类品种识别/鸟类品种识别挑战赛训练集/test"
+    file = "/home/PKing/nasdata/dataset/tmp/challenge/鸟类品种识别/鸟类品种识别挑战赛训练集/class_name.txt"
     words = file_utils.read_data(file, split=",")
     sub_names = []
     for word in words:
@@ -58,7 +58,7 @@ def demo_copy_move_by_sub_names_v2():
     sub_names = list(set(sub_names))
     sub_names = sorted(sub_names)
     # file_utils.copy_move_dir_dir(image_dir, out_dir, sub_names=sub_names, per_nums=90, shuffle=True, move=True)
-    file_utils.copy_move_dir_dir(image_dir, out_dir, sub_names=sub_names, per_nums=20, shuffle=True, move=False)
+    file_utils.copy_move_dir_dir(image_dir, out_dir, sub_names=sub_names, per_nums=20, shuffle=True, move=True)
     out_file = os.path.join(os.path.dirname(file), "new_class_name.txt")
     file_utils.write_list_data(out_file, sub_names)
 
@@ -106,8 +106,8 @@ def copy_files(shuffle=False):
 
 if __name__ == "__main__":
     # demo_copy_move()
-    demo_copy_move_by_sub_names_v1()
-    # demo_copy_move_by_sub_names_v2()
+    # demo_copy_move_by_sub_names_v1()
+    demo_copy_move_by_sub_names_v2()
     # demo_copy_move_by_sub_names_v2()
     # demo_copy_move_by_sub_names_v3()
     # copy_files()
