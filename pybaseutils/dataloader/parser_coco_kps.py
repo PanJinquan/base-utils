@@ -61,6 +61,7 @@ class CocoKeypoints(base_coco.CocoDataset):
         # skeleton下标从0开始，coco_skeleton下标是从1开始的
         self.coco_skeleton = np.array(self.skeleton, dtype=np.int32) + 1
         self.set_skeleton_keypoints(self.kps_info[0]['id'], skeleton=self.coco_skeleton, keypoints=[])
+        print("num_joints             :{}".format(self.num_joints))
         print("skeleton               :{}".format(self.skeleton))
         print("coco skeleton          :{}".format(self.coco_skeleton.tolist()))
         print("anno_file              :{}".format(anno_file))
@@ -91,15 +92,15 @@ def show_target_image(image, keypoints, boxes, labels, skeleton, vis_id=False):
 
 if __name__ == "__main__":
     size = [640, 640]
-    class_name = ["person"]
-    coco_root = "/home/PKing/nasdata/dataset/face_person/COCO/"
-    image_dir = coco_root + 'val2017/images'
-    anno_file = coco_root + 'annotations/person_keypoints_val2017.json'
+    # class_name = ["person"]
+    # coco_root = "/home/PKing/nasdata/dataset/face_person/COCO/"
+    # image_dir = coco_root + 'val2017/images'
+    # anno_file = coco_root + 'annotations/person_keypoints_val2017.json'
 
     # anno_file = "/media/PKing/新加卷1/SDK/base-utils/data/person.json"
-    image_dir = "/media/PKing/新加卷1/SDK/base-utils/data/person"
-    # image_dir = "/home/PKing/nasdata/dataset/tmp/challenge/精细化手部关键点检测挑战赛/精细化手部关键点检测挑战赛公开数据-初赛/训练集/image"
-    # anno_file = "/home/PKing/nasdata/dataset/tmp/challenge/精细化手部关键点检测挑战赛/精细化手部关键点检测挑战赛公开数据-初赛/训练集/train_anno.json"
+    # image_dir = "/media/PKing/新加卷1/SDK/base-utils/data/person"
+    image_dir = "/home/PKing/nasdata/dataset/tmp/challenge/精细化手部关键点检测挑战赛/精细化手部关键点检测挑战赛公开数据-初赛/训练集/image"
+    anno_file = "/home/PKing/nasdata/dataset/tmp/challenge/精细化手部关键点检测挑战赛/精细化手部关键点检测挑战赛公开数据-初赛/训练集/train_anno.json"
     class_name = ["hand"]
     dataset = CocoKeypoints(anno_file, image_dir, class_name=class_name)
     skeleton = dataset.skeleton
