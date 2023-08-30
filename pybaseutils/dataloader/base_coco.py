@@ -337,20 +337,22 @@ class CocoDataset(object):
         :param anns:
         :return:
         """
-        keypoints, labels, rects = [], [], []
+        keypoints, labels, rects, boxes = [], [], [], []
         for ann in anns:
             name = self.id2category[ann['category_id']] if not self.unique else "unique"
             if self.class_name and name not in self.class_name:
                 continue
-            keypoint = ann['keypoints']
+            keypoint = ann.get('keypoints', [])
+            if len(keypoint) == 0: continue
             keypoint = np.asarray(keypoint).reshape(num_joints, 3)
             keypoint = keypoint[:, 0:2]
             keypoints.append(keypoint)
             label = self.class_dict[name]
             rects.append(ann['bbox'])
             labels.append(label)
-        labels = np.asarray(labels)
-        boxes = image_utils.xywh2xyxy(np.asarray(rects))
+        if len(labels) > 0:
+            labels = np.asarray(labels)
+            boxes = image_utils.xywh2xyxy(np.asarray(rects))
         return boxes, labels, keypoints
 
     def read_image(self, image_file: str, use_rgb=True):

@@ -39,10 +39,14 @@ class Labelme2COCO(build_coco.COCOBuilder):
                                                      anno_dir=anno_dir, class_name=None, use_rgb=False,
                                                      shuffle=False, check=False, )
 
-    def build_keypoint_dataset(self, class_name=["person"]):
+    def build_keypoints_dataset(self, save_file, num_joints, class_name, kps_name=[], skeleton=[], only_kps=True):
         """
         构建COCO的关键点检测数据集
-        :param class_name: 目标关键点名称
+        :param save_file: string 输出COCO格式的文件
+        :param num_joints: int 关键点个数
+        :param class_name: list 目标关键点名称,仅支持单个类别,如['person']
+        :param kps_name: 关键点的名称
+        :param skeleton: 关键点连接点
         :return:
         """
         assert len(class_name) == 1  # 目前仅仅支持单个类别
@@ -51,6 +55,8 @@ class Labelme2COCO(build_coco.COCOBuilder):
             image_file, anno_file, image_id = self.labelme.get_image_anno_file(image_id)
             annotation, width, height = self.labelme.load_annotations(anno_file)
             if not annotation: continue
+            objects = self.labelme.get_keypoint_object(annotation, width, height, class_name=class_name)
+            if not objects: continue
             filename = os.path.basename(image_file)
             if filename in self.category_set:
                 raise Exception('file_name duplicated')
@@ -59,11 +65,11 @@ class Labelme2COCO(build_coco.COCOBuilder):
                 current_image_id = self.addImgItem(filename, image_size=image_size)
             else:
                 raise Exception('duplicated image_dict: {}'.format(filename))
-            objects = self.labelme.get_keypoint_object(annotation, width, height, class_name=class_name)
             for group_id, object in objects.items():
                 name = object["labels"]
                 box = object['boxes']
                 seg = object['segs']
+                keypoints = json_utils.get_value(object, ["keypoints"], default={})
                 if name not in self.category_set:
                     current_category_id = self.addCatItem(name)
                 else:
@@ -73,16 +79,19 @@ class Labelme2COCO(build_coco.COCOBuilder):
                 rect = [xmin, ymin, xmax - xmin, ymax - ymin]
                 # get segmentation info
                 seg, area = self.get_segment_info([seg])
-                keypoints = json_utils.get_value(object, ["keypoints"], default={})
-                keypoints = self.get_keypoints_info(keypoints, width, height)
+                keypoints = self.get_keypoints_info(keypoints, width, height, num_joints=num_joints)
                 self.addAnnoItem(current_image_id, current_category_id, rect, seg, area, keypoints=keypoints)
+        # 设置关键点的名称和skeleton
+        self.set_keypoints_category(kps_name=kps_name, skeleton=skeleton, cat_id=0)
         build_coco.COCOTools.check_coco(self.coco)
+        self.save_coco(save_file)
 
-    def build_instance_dataset(self, class_name=[]):
+    def build_instances_dataset(self, save_file, class_name=[]):
         """
         构建COCO的目标检测和实例分割数据集
+        :param save_file: 输出COCO格式的文件
         :param class_name: 只选择的类别转换,默认全部
-        :return: 
+        :return:
         """
         for index in tqdm(range(len(self.labelme.image_id))):
             image_id = self.labelme.index2id(index)
@@ -90,6 +99,8 @@ class Labelme2COCO(build_coco.COCOBuilder):
             image_file, anno_file, image_id = self.labelme.get_image_anno_file(image_id)
             annotation, width, height = self.labelme.load_annotations(anno_file)
             if not annotation: continue
+            objects = self.labelme.get_instance_object(annotation, width, height, class_name=class_name)
+            if not objects: continue
             filename = os.path.basename(image_file)
             if filename in self.category_set:
                 raise Exception('file_name duplicated')
@@ -98,7 +109,6 @@ class Labelme2COCO(build_coco.COCOBuilder):
                 current_image_id = self.addImgItem(filename, image_size=image_size)
             else:
                 raise Exception('duplicated image_dict: {}'.format(filename))
-            objects = self.labelme.get_instance_object(annotation, width, height, class_name=class_name)
             for group_id, object in objects.items():
                 name = object["labels"]
                 box = object['boxes']
@@ -114,39 +124,62 @@ class Labelme2COCO(build_coco.COCOBuilder):
                 seg, area = self.get_segment_info([seg])
                 self.addAnnoItem(current_image_id, current_category_id, rect, seg, area, keypoints=[])
         build_coco.COCOTools.check_coco(self.coco)
+        self.save_coco(save_file)
 
-    def get_keypoints_info(self, keypoints: dict, width, height):
+    def get_keypoints_info(self, keypoints: dict, width, height, num_joints):
         """
-        keypoints=17*3,x,y,visibility
+        keypoints=num_joints*3,x,y,visibility
         keypoints关节点的格式 : [x_1, y_1, v_1,...,x_k, y_k, v_k]
         其中x,y为Keypoint的坐标，v为可见标志
             v = 0 : 未标注点
             v = 1 : 标注了但是图像中不可见（例如遮挡）
             v = 2 : 标注了并图像可见
         实际预测时，不要求预测每个关节点的可见性
+        :param keypoints:
+        :param num_joints: 关键点个数
+        :param width: 图像宽度
+        :param height: 图像长度
+        :return:
         """
-        kpts = np.zeros(shape=(17, 3), dtype=np.int32)
+        if len(keypoints) == 0: return []
+        kps = np.zeros(shape=(num_joints, 3), dtype=np.int32)
         for i, v in keypoints.items():
-            kpts[i, :] = v + [2]  # (x,y,v=2)
-        kpts[:, 0] = np.clip(kpts[:, 0], 0, width - 1)
-        kpts[:, 1] = np.clip(kpts[:, 1], 0, height - 1)
-        kpts = kpts.reshape(-1).tolist()
-        return kpts
+            kps[i, :] = v + [2]  # (x,y,v=2)
+        kps[:, 0] = np.clip(kps[:, 0], 0, width - 1)
+        kps[:, 1] = np.clip(kps[:, 1], 0, height - 1)
+        kps = kps.reshape(-1).tolist()
+        return kps
 
     def save_coco(self, json_file):
         """保存COCO数据集"""
         super(Labelme2COCO, self).save_coco(json_file)
 
 
-def demo_for_voc():
+def demo_for_person5():
+    kps_name = ["p0", "p1", "p2", "p3", "p4"]
+    skeleton = [[0, 2], [2, 1], [2, 3], [3, 4]]
     image_dir = "/media/PKing/新加卷1/SDK/base-utils/data/coco/JPEGImages"
     anno_dir = "/media/PKing/新加卷1/SDK/base-utils/data/coco/json"
-    save_coco_file = os.path.join(os.path.dirname(image_dir), "person.json")
+    coco_ins_file = os.path.join(os.path.dirname(image_dir), "coco_ins.json")
+    coco_kps_file = os.path.join(os.path.dirname(image_dir), "coco_kps.json")
     build = Labelme2COCO(image_dir=image_dir, anno_dir=anno_dir, init_id=None)
-    # build.build_keypoint_dataset()
-    build.build_instance_dataset()
-    build.save_coco(save_coco_file)
+    build.build_keypoints_dataset(coco_kps_file,
+                                  class_name=["person"],
+                                  kps_name=kps_name,
+                                  skeleton=skeleton,
+                                  num_joints=5)
+    # build.build_instances_dataset(coco_ins_file)
+
+
+def demo_for_hand21():
+    image_dir = "/media/PKing/新加卷1/SDK/base-utils/data/coco/JPEGImages"
+    anno_dir = "/media/PKing/新加卷1/SDK/base-utils/data/coco/json"
+    coco_ins_file = os.path.join(os.path.dirname(image_dir), "coco_ins.json")
+    coco_kps_file = os.path.join(os.path.dirname(image_dir), "coco_kps.json")
+    build = Labelme2COCO(image_dir=image_dir, anno_dir=anno_dir, init_id=None)
+    build.build_keypoints_dataset(coco_kps_file, class_name=["person"], num_joints=5)
+    # build.build_instances_dataset(coco_ins_file)
 
 
 if __name__ == '__main__':
-    demo_for_voc()
+    demo_for_person5()

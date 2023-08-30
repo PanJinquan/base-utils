@@ -142,7 +142,7 @@ def show_target_image(image, boxes, labels, normal=False, transpose=False, class
 
 if __name__ == "__main__":
     size = [640, 640]
-    anno_file = "/home/PKing/nasdata/dataset/face_person/COCO/val2017/annotations/instances_val2017.json"
+    anno_file = "/media/PKing/新加卷1/SDK/base-utils/data/coco/coco_ins.json"
     voc = CocoDetection(anno_file, class_name=[], transform=None, use_rgb=True)
     class_name = voc.class_name
     for i in range(len(voc)):

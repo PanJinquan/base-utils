@@ -128,35 +128,47 @@ class COCOBuilder():
         category_item['supercategory'] = name
         category_item['id'] = self.category_item_id
         category_item['name'] = name
-        if name == "person":
-            category_item['keypoints'] = ['nose', 'left_eye', 'right_eye', 'left_ear', 'right_ear', 'left_shoulder',
-                                          'right_shoulder', 'left_elbow', 'right_elbow', 'left_wrist', 'right_wrist',
-                                          'left_hip', 'right_hip', 'left_knee', 'right_knee', 'left_ankle',
-                                          'right_ankle']
-            category_item['skeleton'] = [[16, 14], [14, 12], [17, 15], [15, 13], [12, 13], [6, 12], [7, 13], [6, 7],
-                                         [6, 8], [7, 9], [8, 10], [9, 11], [2, 3], [1, 2], [1, 3], [2, 4],
-                                         [3, 5], [4, 6], [5, 7]]
+        keypoints = []
+        skeleton = []
+        if name == "coco_person":
+            keypoints = ['nose', 'left_eye', 'right_eye', 'left_ear', 'right_ear', 'left_shoulder',
+                         'right_shoulder', 'left_elbow', 'right_elbow', 'left_wrist', 'right_wrist',
+                         'left_hip', 'right_hip', 'left_knee', 'right_knee', 'left_ankle',
+                         'right_ankle']
+            skeleton = [[16, 14], [14, 12], [17, 15], [15, 13], [12, 13], [6, 12], [7, 13], [6, 7],
+                        [6, 8], [7, 9], [8, 10], [9, 11], [2, 3], [1, 2], [1, 3], [2, 4],
+                        [3, 5], [4, 6], [5, 7]]
         elif name == "finger":
-            skeleton_name = {"finger0": 0, "finger1": 1, "finger2": 2, "finger3": 3, "finger4": 4,
-                             "finger5": 5, "finger6": 6, "finger7": 7, "finger8": 8, "finger9": 9}
-            category_item['keypoints'] = list(skeleton_name.keys())
-            # category_item['skeleton'] = [(0, 1), (2, 3), (4, 5), (6, 7), (8, 9)]
-            category_item['skeleton'] = [(0, 1), (2, 3), (4, 5), (6, 7), (8, 9), (10, 1), (10, 3), (10, 5), (10, 7),
-                                         (10, 9)]
+            keypoints = {"finger0": 0, "finger1": 1, "finger2": 2, "finger3": 3, "finger4": 4,
+                         "finger5": 5, "finger6": 6, "finger7": 7, "finger8": 8, "finger9": 9}
+            keypoints = list(keypoints.keys())
+            skeleton = [(0, 1), (2, 3), (4, 5), (6, 7), (8, 9), (10, 1), (10, 3), (10, 5), (10, 7),
+                        (10, 9)]
         elif name == "finger_pen":
-            skeleton_name = {"finger0": 0, "finger1": 1, "finger2": 2, "finger3": 3, "finger4": 4,
-                             "finger5": 5, "finger6": 6, "finger7": 7, "finger8": 8, "finger9": 9,
-                             "finger10": 10, "pen0": 11, "pen1": 12}
-
-            category_item['keypoints'] = list(skeleton_name.keys())
-            category_item['skeleton'] = [(0, 1), (2, 3), (4, 5), (6, 7), (8, 9), (10, 1), (10, 3), (10, 5), (10, 7),
-                                         (10, 9), (11, 12)]
-        else:
-            category_item['keypoints'] = []
-            category_item['skeleton'] = []
+            keypoints = {"finger0": 0, "finger1": 1, "finger2": 2, "finger3": 3, "finger4": 4,
+                         "finger5": 5, "finger6": 6, "finger7": 7, "finger8": 8, "finger9": 9,
+                         "finger10": 10, "pen0": 11, "pen1": 12}
+            keypoints = list(keypoints.keys())
+            skeleton = [(0, 1), (2, 3), (4, 5), (6, 7), (8, 9), (10, 1), (10, 3), (10, 5), (10, 7), (10, 9), (11, 12)]
+        # keypoints，skeleton
+        category_item['keypoints'] = keypoints
+        category_item['skeleton'] = skeleton
         self.coco['categories'].append(category_item)
         self.category_set[name] = self.category_item_id
         return self.category_item_id
+
+    def set_keypoints_category(self, kps_name=[], skeleton=[], cat_id=0):
+        """
+        设置关键点的名称和skeleton
+        :param kps_name: 关键点的名称
+        :param skeleton: 关键点连接点
+        :param cat_id:
+        :return:
+        """
+        # skeleton下标从0开始，coco_skeleton下标是从1开始的
+        # skeleton = np.array(skeleton, dtype=np.int32) + 1
+        self.coco['categories'][cat_id]['keypoints'] = kps_name
+        self.coco['categories'][cat_id]['skeleton'] = skeleton
 
     def addImgItem(self, file_name, image_size):
         """
@@ -200,26 +212,33 @@ class COCOBuilder():
         annotation_item['bbox'] = rect  # [x,y,w,h]
         annotation_item['category_id'] = category_id
         annotation_item['id'] = self.annotation_id
-        if len(keypoints) > 0:
-            annotation_item['num_keypoints'] = int(len(keypoints) / 3)
-            annotation_item['keypoints'] = keypoints
+        # if len(keypoints) > 0:
+        #     annotation_item['num_keypoints'] = int(len(keypoints) / 3)
+        #     annotation_item['keypoints'] = keypoints
+        annotation_item['num_keypoints'] = int(len(keypoints) / 3)
+        annotation_item['keypoints'] = keypoints
         self.coco['annotations'].append(annotation_item)
 
-    def get_keypoints_info(self, keypoints, width, height):
+    def get_keypoints_info(self, keypoints, width, height, num_joints):
         """
-        keypoints=17*3,x,y,visibility
+        keypoints=num_joints*3,x,y,visibility
         keypoints关节点的格式 : [x_1, y_1, v_1,...,x_k, y_k, v_k]
         其中x,y为Keypoint的坐标，v为可见标志
             v = 0 : 未标注点
             v = 1 : 标注了但是图像中不可见（例如遮挡）
             v = 2 : 标注了并图像可见
         实际预测时，不要求预测每个关节点的可见性
+        :param keypoints:
+        :param num_joints: 关键点个数
+        :param width: 图像宽度
+        :param height: 图像长度
+        :return:
         """
-        kpts = np.zeros(shape=(17, 3), dtype=np.int32)
-        kpts[:, 0] = np.clip(kpts[:, 0], 0, width - 1)
-        kpts[:, 1] = np.clip(kpts[:, 1], 0, height - 1)
-        kpts = kpts.reshape(-1).tolist()
-        return kpts
+        kps = np.zeros(shape=(num_joints, 3), dtype=np.int32)
+        kps[:, 0] = np.clip(kps[:, 0], 0, width - 1)
+        kps[:, 1] = np.clip(kps[:, 1], 0, height - 1)
+        kps = kps.reshape(-1).tolist()
+        return kps
 
     def get_segment_info(self, contours):
         """

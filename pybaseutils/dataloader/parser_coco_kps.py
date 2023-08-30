@@ -80,7 +80,7 @@ class CocoKeypoints(base_coco.CocoDataset):
         return data
 
 
-def show_target_image(image, keypoints, boxes, labels, skeleton, vis_id=False):
+def show_target_image(image, keypoints, boxes, labels, skeleton, vis_id=True):
     image = image_utils.draw_key_point_in_image(image,
                                                 keypoints,
                                                 pointline=skeleton,
@@ -97,11 +97,14 @@ if __name__ == "__main__":
     # image_dir = coco_root + 'val2017/images'
     # anno_file = coco_root + 'annotations/person_keypoints_val2017.json'
 
-    # anno_file = "/media/PKing/新加卷1/SDK/base-utils/data/person.json"
-    # image_dir = "/media/PKing/新加卷1/SDK/base-utils/data/person"
-    image_dir = "/home/PKing/nasdata/dataset/tmp/challenge/精细化手部关键点检测挑战赛/精细化手部关键点检测挑战赛公开数据-初赛/训练集/image"
-    anno_file = "/home/PKing/nasdata/dataset/tmp/challenge/精细化手部关键点检测挑战赛/精细化手部关键点检测挑战赛公开数据-初赛/训练集/train_anno.json"
-    class_name = ["hand"]
+    image_dir = "/media/PKing/新加卷1/SDK/base-utils/data/coco/JPEGImages"
+    anno_file = "/media/PKing/新加卷1/SDK/base-utils/data/coco/coco_kps.json"
+    class_name = ["person"]
+
+    # hand
+    # image_dir = "/home/PKing/nasdata/dataset/tmp/challenge/精细化手部关键点检测挑战赛/精细化手部关键点检测挑战赛公开数据-初赛/训练集/image"
+    # anno_file = "/home/PKing/nasdata/dataset/tmp/challenge/精细化手部关键点检测挑战赛/精细化手部关键点检测挑战赛公开数据-初赛/训练集/train_anno.json"
+    # class_name = ["hand"]
     dataset = CocoKeypoints(anno_file, image_dir, class_name=class_name)
     skeleton = dataset.skeleton
     for i in range(len(dataset)):

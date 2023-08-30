@@ -80,7 +80,7 @@ if __name__ == "__main__":
     # anno_file = "/media/PKing/新加卷1/SDK/base-utils/data/VOC2007/voc_coco_demo.json"
     # image_dir = "/media/PKing/新加卷1/SDK/base-utils/data/VOC2007/JPEGImages"
     #
-    anno_file = "/media/PKing/新加卷1/SDK/base-utils/data/coco/person.json"
+    anno_file = "/media/PKing/新加卷1/SDK/base-utils/data/coco/coco_ins.json"
     dataset = CocoInstances(anno_file, image_dir=None, class_name=class_name)
     class_name = dataset.class_name
     for i in range(len(dataset)):
