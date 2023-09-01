@@ -10,6 +10,23 @@ import numpy as np
 from pybaseutils import image_utils, file_utils, color_utils
 from pybaseutils.dataloader import base_coco
 
+# skeleton连接线，keypoint关键点名称，num_joints关键点个数
+BONES = {
+    "coco_person": {
+        "skeleton": [[15, 13], [13, 11], [16, 14], [14, 12], [11, 12], [5, 11], [6, 12], [5, 6], [5, 7],
+                     [6, 8], [7, 9], [8, 10], [1, 2], [0, 1], [0, 2], [1, 3], [2, 4], [3, 5], [4, 6]],
+        "keypoint": [],
+        "num_joints": 17,
+    },
+    "hand": {
+        "skeleton": [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8],
+                     [5, 9], [9, 10], [10, 11], [11, 12], [9, 13], [13, 14], [14, 15], [15, 16],
+                     [13, 17], [17, 18], [18, 19], [19, 20], [0, 17]],
+        "keypoint": [],
+        "num_joints": 21,
+    }
+}
+
 
 class CocoKeypoints(base_coco.CocoDataset):
     def __init__(self, anno_file, image_dir="", class_name=[], num_joints=-1, **kwargs):
@@ -25,34 +42,15 @@ class CocoKeypoints(base_coco.CocoDataset):
         super(CocoKeypoints, self).__init__(anno_file, image_dir=image_dir, class_name=class_name, transform=None,
                                             target_transform=None, use_rgb=False,
                                             shuffle=False, check=False, **kwargs)
+        if not class_name: class_name = [self.class_name[1]]
         self.kps_info = self.load_keypoints_info(target=class_name)
-        self.image_dir = image_dir
         self.num_joints = num_joints
-        if "coco_person" in class_name:
-            self.skeleton = [[15, 13], [13, 11], [16, 14], [14, 12], [11, 12], [5, 11], [6, 12], [5, 6], [5, 7],
-                             [6, 8], [7, 9], [8, 10], [1, 2], [0, 1], [0, 2], [1, 3], [2, 4], [3, 5], [4, 6]]
-            self.keypoints = self.kps_info[0]['keypoints']  # 关键点名称
-        elif "pig" in class_name:
-            self.skeleton = [[0, 1], [1, 2], [2, 3]]
-        elif "finger" in class_name:
-            self.skeleton = [(0, 1), (2, 3), (4, 5), (6, 7), (8, 9), (10, 1), (10, 3), (10, 5), (10, 7), (10, 9)]
-            self.keypoints = {"finger0": 0, "finger1": 1, "finger2": 2, "finger3": 3, "finger4": 4,
-                              "finger5": 5, "finger6": 6, "finger7": 7, "finger8": 8, "finger9": 9,
-                              "finger10": 10}
-            # elif "finger_pen" in COCO_NAME:
-            self.keypoints = {"finger0": 0, "finger1": 1, "finger2": 2, "finger3": 3, "finger4": 4,
-                              "finger5": 5, "finger6": 6, "finger7": 7, "finger8": 8, "finger9": 9,
-                              "finger10": 10, "pen0": 11, "pen1": 12}
-            self.skeleton = [(0, 1), (2, 3), (4, 5), (6, 7), (8, 9), (10, 1), (10, 3), (10, 5), (10, 7), (10, 9),
-                             (11, 12)]
-        elif "hand" in class_name:
-            "http://challenge.xfyun.cn/topic/info?type=hand-key-point"
-            self.skeleton = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [0, 6], [0, 7], [0, 8],
-                             [5, 9], [9, 10], [10, 11], [11, 12], [9, 13], [13, 14], [14, 15], [15, 16],
-                             [13, 17], [17, 18], [18, 19], [19, 20], [0, 17]]
-            self.num_joints = 21
+        if class_name[0] in BONES:
+            self.skeleton = BONES[class_name[0]]["skeleton"]  # 关键点连接线
+            self.keypoint = BONES[class_name[0]]["keypoint"]  # 关键点名称
+            self.num_joints = BONES[class_name[0]]["num_joints"]
         else:
-            # self.keypoints = self.kps_info[0]['keypoints']  # 关键点名称
+            self.keypoints = self.kps_info[0].get('keypoints', [])  # 关键点名称
             coco_skeleton = self.kps_info[0]['skeleton']  # 关键点连接线
             coco_skeleton = np.asarray(coco_skeleton)
             self.skeleton = coco_skeleton - np.min(coco_skeleton)
@@ -80,18 +78,17 @@ class CocoKeypoints(base_coco.CocoDataset):
         return data
 
 
-def show_target_image(image, keypoints, boxes, labels, skeleton, vis_id=True):
+def show_target_image(image, keypoints, boxes, skeleton, vis_id=False):
     image = image_utils.draw_key_point_in_image(image,
                                                 keypoints,
                                                 pointline=skeleton,
                                                 boxes=boxes,
                                                 vis_id=vis_id,
-                                                thickness=2)
+                                                thickness=1)
     image_utils.cv_show_image("keypoints", image, delay=0)
 
 
 if __name__ == "__main__":
-    size = [640, 640]
     # class_name = ["person"]
     # coco_root = "/home/PKing/nasdata/dataset/face_person/COCO/"
     # image_dir = coco_root + 'val2017/images'
@@ -102,9 +99,11 @@ if __name__ == "__main__":
     class_name = ["person"]
 
     # hand
-    # image_dir = "/home/PKing/nasdata/dataset/tmp/challenge/精细化手部关键点检测挑战赛/精细化手部关键点检测挑战赛公开数据-初赛/训练集/image"
-    # anno_file = "/home/PKing/nasdata/dataset/tmp/challenge/精细化手部关键点检测挑战赛/精细化手部关键点检测挑战赛公开数据-初赛/训练集/train_anno.json"
-    # class_name = ["hand"]
+    image_dir = ""
+    # anno_file = "/home/PKing/nasdata/dataset/tmp/hand-pose/HandPose-v2/train/train_anno.json"
+    # anno_file = "/home/PKing/nasdata/dataset/tmp/hand-pose/HandPose-v1/test/test_anno.json"
+    anno_file = "/home/PKing/nasdata/dataset/tmp/hand-pose/handpose_datasets_v1/COCO/coco_data.json"
+    class_name = []
     dataset = CocoKeypoints(anno_file, image_dir, class_name=class_name)
     skeleton = dataset.skeleton
     for i in range(len(dataset)):
@@ -113,4 +112,4 @@ if __name__ == "__main__":
         image, boxes, labels, keypoints = data['image'], data["boxes"], data["label"], data["keypoints"]
         print("i={},image_ids={}".format(i, data["image_ids"]))
         # dataset.showAnns(image, data['annotations'])
-        show_target_image(image, keypoints, boxes, labels, skeleton=skeleton)
+        show_target_image(image, keypoints, boxes, skeleton=skeleton)

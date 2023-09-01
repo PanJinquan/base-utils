@@ -13,6 +13,7 @@ import os
 import cv2
 import time
 import numpy as np
+from tqdm import tqdm
 from pybaseutils import file_utils
 
 
@@ -105,8 +106,8 @@ class COCOBuilder():
         """
         # init COCO Dataset struct
         self.coco = {"images": [], "annotations": [], "categories": [], "type": "instances"}
-        self.category_set = dict()
-        self.image_set = set()
+        self.category_set = dict()  # 类别集合
+        self.image_set = set()  # 图片文件集合
         self.category_item_id = 0
         if not init_id: init_id = int(time.time()) * 2
         self.image_id = init_id
@@ -118,8 +119,22 @@ class COCOBuilder():
         file_utils.write_json_path(json_file, self.coco)
         print("save file:{}".format(json_file))
 
+    def set_keypoints_category(self, kps_name=[], skeleton=[], cat_id=0):
+        """
+        设置关键点的名称和skeleton
+        :param kps_name: 关键点的名称
+        :param skeleton: 关键点连接点
+        :param cat_id:
+        :return:
+        """
+        # skeleton下标从0开始，coco_skeleton下标是从1开始的
+        # skeleton = np.array(skeleton, dtype=np.int32) + 1
+        self.coco['categories'][cat_id]['keypoints'] = kps_name
+        self.coco['categories'][cat_id]['skeleton'] = skeleton
+
     def addCatItem(self, name):
         """
+        给COCO中categories增加类别
         :param name:
         :return:
         """
@@ -157,21 +172,9 @@ class COCOBuilder():
         self.category_set[name] = self.category_item_id
         return self.category_item_id
 
-    def set_keypoints_category(self, kps_name=[], skeleton=[], cat_id=0):
-        """
-        设置关键点的名称和skeleton
-        :param kps_name: 关键点的名称
-        :param skeleton: 关键点连接点
-        :param cat_id:
-        :return:
-        """
-        # skeleton下标从0开始，coco_skeleton下标是从1开始的
-        # skeleton = np.array(skeleton, dtype=np.int32) + 1
-        self.coco['categories'][cat_id]['keypoints'] = kps_name
-        self.coco['categories'][cat_id]['skeleton'] = skeleton
-
     def addImgItem(self, file_name, image_size):
         """
+        给COCO中images增加数据
         :param file_name:
         :param image_size: [height, width]
         :return:
@@ -190,11 +193,12 @@ class COCOBuilder():
 
     def addAnnoItem(self, image_id, category_id, rect, seg, area, keypoints=[]):
         """
-        :param image_id:
-        :param category_id:
+        给COCO中annotations增加数据
+        :param image_id: int
+        :param category_id: iny
         :param rect:[x,y,w,h]
-        :param seg:
-        :param area:
+        :param seg: [[轮廓1]，[轮廓2],....]格式为：[[x,y,x,y,...,x,y],[x,y,x,y,...,x,y],...]
+        :param area: float,可通过get_segment_info获得seg和area
         :param keypoints: 关键点
                 keypoints = [0] * 17 * 3
                 keypoints = np.asarray(keypoints)
@@ -234,7 +238,9 @@ class COCOBuilder():
         :param height: 图像长度
         :return:
         """
-        kps = np.zeros(shape=(num_joints, 3), dtype=np.int32)
+        if len(keypoints) == 0: return []
+        kps = np.zeros(shape=(num_joints, 3), dtype=np.int32) + 2
+        kps[:, 0:2] = keypoints
         kps[:, 0] = np.clip(kps[:, 0], 0, width - 1)
         kps[:, 1] = np.clip(kps[:, 1], 0, height - 1)
         kps = kps.reshape(-1).tolist()
@@ -242,19 +248,93 @@ class COCOBuilder():
 
     def get_segment_info(self, contours):
         """
-        分割轮廓保存格式 [[x1,y1 x2,y2,... xn,yn], # 实例轮廓1
+        正常情况下，一个实例只有一条轮廓
+        :param contours: (nums,points_nums,2)，(轮廓个数,轮廓点数,2),points_nums<4将会剔除
+        :return: segs，分割轮廓保存格式 ：
+                       [[x1,y1 x2,y2,... xn,yn], # 实例轮廓1
                         [x1,y1 x2,y2,... xn,yn], # 实例轮廓2
                         ]
-        正常情况下，一个实例只有一条轮廓
-        :param contour: (nums,points_nums,2)，(轮廓个数,轮廓点数,2)
-        :return:
+                 area轮廓面积
         """
         # 计算轮廓面积
         segs, area = [], 0
         for contour in contours:
+            if len(contour) < 4: continue
             contour = np.asarray(contour, dtype=np.int32)
             s = abs(cv2.contourArea(contour, True))
             seg = contour.reshape(-1).tolist()
             segs.append(seg)
             area += s
         return segs, area
+
+    def addObjects(self, filename, objects: dict, width, height, num_joints):
+        """
+        :param filename: os.path.basename(filename)
+        :param objects:
+                        boxes  is [[xmin,ymin,xmax,ymax],[xmin,ymin,xmax,ymax],...]
+                        labels is [目标1,目标2,...]
+                        contours is [目标1的轮廓,目标2的轮廓,...]
+                        keypoints is [目标1的关键点,目标2的关键点,...],格式：
+                        keypoints=num_joints*3,x,y,visibility
+                        keypoints关节点的格式 : [x_1, y_1, v_1,...,x_k, y_k, v_k]
+                        其中x,y为Keypoint的坐标，v为可见标志
+                            v = 0 : 未标注点
+                            v = 1 : 标注了但是图像中不可见（例如遮挡）
+                            v = 2 : 标注了并图像可见
+        实际预测时，不要求预测每个关节点的可见性
+        :param width:
+        :param height:
+        :param num_joints:
+        :return:
+        """
+        boxes = objects.get("boxes", [])
+        labels = objects.get("labels", [])
+        contours = objects.get("contours", [])
+        keypoints = objects.get("keypoints", [])
+        if not boxes: return
+        if not labels: return
+        assert len(boxes) == len(labels)
+        if filename not in self.image_set:
+            current_image_id = self.addImgItem(filename, image_size=[height, width])
+        else:
+            raise Exception('file_name duplicated: {}'.format(filename))
+        for i in range(len(boxes)):
+            name = labels[i]
+            bbox = boxes[i]
+            segs = contours[i] if contours else []
+            kpts = keypoints[i] if keypoints else []
+            if name not in self.category_set:
+                current_category_id = self.addCatItem(name)
+            else:
+                current_category_id = self.category_set[name]
+            if isinstance(bbox, np.ndarray): bbox = bbox.tolist()
+            xmin, ymin, xmax, ymax = bbox
+            rect = [xmin, ymin, xmax - xmin, ymax - ymin]
+            # get segmentation info
+            if len(segs) == 0: segs = [[[xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax]]]
+            segs, area = self.get_segment_info(segs)
+            self.addAnnoItem(current_image_id, current_category_id, rect, segs, area, keypoints=kpts)
+
+    def build_keypoints_dataset_example(self, save_file, num_joints, class_name, kps_name=[], skeleton=[], **kwargs):
+        """
+        构建COCO的关键点检测数据集
+        :param save_file: string 输出COCO格式的文件
+        :param num_joints: int 关键点个数
+        :param class_name: list 目标关键点名称,仅支持单个类别,如['person']
+        :param kps_name: 关键点的名称
+        :param skeleton: 关键点连接点
+        :return:
+        """
+        assert len(class_name) == 1  # 目前仅仅支持单个类别
+        dataset = []
+        for index in tqdm(dataset):
+            image_file = ...
+            height, width = ...
+            labels, boxes, contours, keypoints = [], [], [], []
+            filename = os.path.basename(image_file)
+            objects = {"boxes": boxes, "labels": labels, "contours": contours, "keypoints": keypoints}
+            self.addObjects(filename, objects, width, height, num_joints)
+        # 设置关键点的名称和skeleton
+        self.set_keypoints_category(kps_name=kps_name, skeleton=skeleton, cat_id=0)
+        COCOTools.check_coco(self.coco)
+        self.save_coco(save_file)

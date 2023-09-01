@@ -20,7 +20,6 @@ from pybaseutils import file_utils, json_utils, image_utils
 from pybaseutils.dataloader import parser_labelme
 from pybaseutils.converter import build_coco
 
-
 class Labelme2COCO(build_coco.COCOBuilder):
     """Convert Labelme to COCO dataset format"""
 
@@ -58,29 +57,21 @@ class Labelme2COCO(build_coco.COCOBuilder):
             objects = self.labelme.get_keypoint_object(annotation, width, height, class_name=class_name)
             if not objects: continue
             filename = os.path.basename(image_file)
-            if filename in self.category_set:
-                raise Exception('file_name duplicated')
-            if filename not in self.image_set:
-                image_size = [height, width]
-                current_image_id = self.addImgItem(filename, image_size=image_size)
-            else:
-                raise Exception('duplicated image_dict: {}'.format(filename))
+            labels, boxes, contours, keypoints = [], [], [], []
             for group_id, object in objects.items():
-                name = object["labels"]
-                box = object['boxes']
-                seg = object['segs']
-                keypoints = json_utils.get_value(object, ["keypoints"], default={})
-                if name not in self.category_set:
-                    current_category_id = self.addCatItem(name)
-                else:
-                    current_category_id = self.category_set[name]
-                if isinstance(box, np.ndarray): box = box.tolist()
-                xmin, ymin, xmax, ymax = box
-                rect = [xmin, ymin, xmax - xmin, ymax - ymin]
-                # get segmentation info
-                seg, area = self.get_segment_info([seg])
-                keypoints = self.get_keypoints_info(keypoints, width, height, num_joints=num_joints)
-                self.addAnnoItem(current_image_id, current_category_id, rect, seg, area, keypoints=keypoints)
+                label = object["labels"]
+                box = object["boxes"]
+                segs = [object['segs']]
+                kpts = json_utils.get_value(object, ["keypoints"], default={})
+                if only_kps and not kpts:
+                    continue
+                kpts = self.get_keypoints_info(kpts, width, height, num_joints)
+                labels.append(label)
+                boxes.append(box)
+                contours.append(segs)
+                keypoints.append(kpts)
+            info = {"boxes": boxes, "labels": labels, "contours": contours, "keypoints": keypoints}
+            self.addObjects(filename, info, width, height, num_joints)
         # 设置关键点的名称和skeleton
         self.set_keypoints_category(kps_name=kps_name, skeleton=skeleton, cat_id=0)
         build_coco.COCOTools.check_coco(self.coco)
@@ -102,27 +93,16 @@ class Labelme2COCO(build_coco.COCOBuilder):
             objects = self.labelme.get_instance_object(annotation, width, height, class_name=class_name)
             if not objects: continue
             filename = os.path.basename(image_file)
-            if filename in self.category_set:
-                raise Exception('file_name duplicated')
-            if filename not in self.image_set:
-                image_size = [height, width]
-                current_image_id = self.addImgItem(filename, image_size=image_size)
-            else:
-                raise Exception('duplicated image_dict: {}'.format(filename))
+            labels, boxes, contours = [], [], []
             for group_id, object in objects.items():
-                name = object["labels"]
-                box = object['boxes']
-                seg = object['segs']
-                if name not in self.category_set:
-                    current_category_id = self.addCatItem(name)
-                else:
-                    current_category_id = self.category_set[name]
-                if isinstance(box, np.ndarray): box = box.tolist()
-                xmin, ymin, xmax, ymax = box
-                rect = [xmin, ymin, xmax - xmin, ymax - ymin]
-                # get segmentation info
-                seg, area = self.get_segment_info([seg])
-                self.addAnnoItem(current_image_id, current_category_id, rect, seg, area, keypoints=[])
+                label = object["labels"]
+                box = object["boxes"]
+                segs = [object['segs']]
+                labels.append(label)
+                boxes.append(box)
+                contours.append(segs)
+            info = {"boxes": boxes, "labels": labels, "contours": contours}
+            self.addObjects(filename, info, width, height, num_joints=0)
         build_coco.COCOTools.check_coco(self.coco)
         self.save_coco(save_file)
 
@@ -177,8 +157,8 @@ def demo_for_hand21():
     coco_ins_file = os.path.join(os.path.dirname(image_dir), "coco_ins.json")
     coco_kps_file = os.path.join(os.path.dirname(image_dir), "coco_kps.json")
     build = Labelme2COCO(image_dir=image_dir, anno_dir=anno_dir, init_id=None)
-    build.build_keypoints_dataset(coco_kps_file, class_name=["person"], num_joints=5)
-    # build.build_instances_dataset(coco_ins_file)
+    # build.build_keypoints_dataset(coco_kps_file, class_name=["person"], num_joints=5)
+    build.build_instances_dataset(coco_ins_file)
 
 
 if __name__ == '__main__':

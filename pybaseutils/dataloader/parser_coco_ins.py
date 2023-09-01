@@ -77,11 +77,15 @@ if __name__ == "__main__":
     # anno_file = coco_root + 'annotations/person_keypoints_val2017.json'
     anno_file = coco_root + 'annotations/instances_val2017.json'
 
-    # anno_file = "/media/PKing/新加卷1/SDK/base-utils/data/VOC2007/voc_coco_demo.json"
-    # image_dir = "/media/PKing/新加卷1/SDK/base-utils/data/VOC2007/JPEGImages"
-    #
     anno_file = "/media/PKing/新加卷1/SDK/base-utils/data/coco/coco_ins.json"
-    dataset = CocoInstances(anno_file, image_dir=None, class_name=class_name)
+    image_dir = "/media/PKing/新加卷1/SDK/base-utils/data/coco/JPEGImages"
+    class_name = None
+    #
+    # anno_file = "/media/PKing/新加卷1/SDK/base-utils/data/coco/coco_ins.json"
+    # anno_file = "/home/PKing/nasdata/dataset/tmp/hand-pose/FreiHAND/training/coco_kps.json"
+    # image_dir = "/home/PKing/nasdata/dataset/tmp/hand-pose/FreiHAND/training/rgb"
+    # class_name = None
+    dataset = CocoInstances(anno_file, image_dir=image_dir, class_name=class_name)
     class_name = dataset.class_name
     for i in range(len(dataset)):
         data = dataset.__getitem__(i)
