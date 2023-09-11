@@ -38,7 +38,7 @@ class CocoInstances(base_coco.CocoDataset):
         """
         image_id = self.image_ids[index]
         anns_info, file_info = self.get_object_annotations(image_id)
-        image, width, height = self.get_object_image(file_info)
+        image, width, height, image_file = self.get_object_image(file_info)
         boxes, labels, mask, segs = self.get_object_instance(anns_info, h=height, w=width, decode=True)
         data = {"segs": segs, "mask": mask, "image": image, "boxes": boxes, "label": labels, "image_ids": image_id,
                 "annotations": anns_info, "file_info": file_info}

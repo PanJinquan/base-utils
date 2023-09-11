@@ -11,12 +11,11 @@ import cv2
 import random
 import json
 from collections import defaultdict
-from torch.utils.data.dataset import ConcatDataset
-from pybaseutils.dataloader import base_coco
+from pybaseutils.dataloader.base_coco import CocoDataset, ConcatDataset
 from pybaseutils import image_utils, file_utils
 
 
-class CocoDetection(base_coco.CocoDataset):
+class CocoDetection(CocoDataset):
     """Coco dataset."""
 
     def __init__(self, anno_file, image_dir="", class_name=[], transform=None, target_transform=None, use_rgb=True,
@@ -55,7 +54,7 @@ class CocoDetection(base_coco.CocoDataset):
     def __getitem__(self, index):
         image_id = self.image_ids[index]
         anno_info, file_info = self.get_object_annotations(image_id)
-        image, width, height = self.get_object_image(file_info)
+        image, width, height, image_file = self.get_object_image(file_info)
         boxes, labels = self.get_object_detection(anno_info)
         if self.transform and len(boxes) > 0:
             image, boxes, labels = self.transform(image, boxes, labels)
@@ -66,18 +65,20 @@ class CocoDetection(base_coco.CocoDataset):
         if num_boxes == 0:
             index = int(random.uniform(0, len(self)))
             return self.__getitem__(index)
-        data = {"image": image, "target": target, "label": labels, "image_ids": image_id}
+        data = {"image": image, "target": target, "label": labels, "width": width, "height": height,
+                "image_ids": image_id, "image_file": image_file}
         return data
 
 
 def CocoDatasets(filename=None,
-                 image_dir=None,
+                 image_dir="",
                  class_name=None,
                  transform=None,
                  target_transform=None,
                  use_rgb=True,
                  shuffle=False,
-                 check=False):
+                 check=False,
+                 **kwargs):
     """
     :param filename:
     :param data_root:
@@ -91,18 +92,20 @@ def CocoDatasets(filename=None,
     :param check:
     :return:
     """
+    from torch.utils.data.dataset import ConcatDataset
     if not isinstance(filename, list) and os.path.isfile(filename):
         filename = [filename]
     datasets = []
     for file in filename:
-        data = CocoDetection(anno_file=file,
+        data = CocoDetection(file,
                              image_dir=image_dir,
                              class_name=class_name,
                              transform=transform,
                              target_transform=target_transform,
                              use_rgb=use_rgb,
                              shuffle=shuffle,
-                             check=check)
+                             check=check,
+                             **kwargs)
         datasets.append(data)
     datasets = ConcatDataset(datasets)
     return datasets

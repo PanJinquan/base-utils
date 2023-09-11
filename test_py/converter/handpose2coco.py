@@ -101,7 +101,7 @@ class HandPose(build_coco.COCOBuilder):
 
 
 if __name__ == '__main__':
-    image_dir = "/home/PKing/nasdata/dataset/tmp/hand-pose/handpose_datasets_v1/sample"
-    # image_dir = "/home/PKing/nasdata/dataset/tmp/hand-pose/handpose_datasets_v1/handpose_datasets_v1"
+    # image_dir = "/home/PKing/nasdata/dataset/tmp/hand-pose/handpose_datasets_v1/sample"
+    image_dir = "/home/PKing/nasdata/dataset/tmp/hand-pose/handpose_datasets_v1/handpose_datasets_v1"
     h = HandPose()
     h.handpose_datasets_v1(image_dir, json_dir=image_dir, vis=False)

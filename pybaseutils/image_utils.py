@@ -25,7 +25,7 @@ from pybaseutils import file_utils
 from pybaseutils.coords_utils import *
 from pybaseutils.transforms import affine_transform
 
-color_table = [(0, 0, 0), (0, 0, 255), (0, 255, 0), (255, 0, 0),
+color_table = [(0, 0, 0), (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 255, 255), (255, 0, 255), (255, 255, 0),
                (128, 0, 0), (0, 128, 0), (128, 128, 0),
                (0, 0, 128), (128, 0, 128), (0, 128, 128), (128, 128, 128),
                (64, 0, 0), (192, 0, 0), (64, 128, 0), (192, 128, 0),
@@ -202,20 +202,20 @@ def show_batch_image(title, batch_images, index=0):
         cv_show_image(title, image)
 
 
-def show_image(title, rgb_image):
+def show_image(title, image):
     '''
     调用matplotlib显示RGB图片
     :param title: 图像标题
-    :param rgb_image: 图像的数据
+    :param image: 图像的数据
     :return:
     '''
     # plt.figure("show_image")
     # print(image.dtype)
-    channel = len(rgb_image.shape)
+    channel = len(image.shape)
     if channel == 3:
-        plt.imshow(rgb_image)
+        plt.imshow(image)
     else:
-        plt.imshow(rgb_image, cmap='gray')
+        plt.imshow(image, cmap='gray')
     plt.axis('on')  # 关掉坐标轴为 off
     plt.title(title)  # 图像题目
     plt.show()
@@ -521,8 +521,8 @@ def read_images_url(url: str, size=None, norm=False, use_rgb=False):
             content = np.asarray(bytearray(stream), dtype="uint8")
             image = cv2.imdecode(content, cv2.IMREAD_COLOR)
             # pil_image = PIL.Image.open(BytesIO(stream))
-            # rgb_image=np.asarray(pil_image)
-            # bgr_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR)
+            # image=np.asarray(pil_image)
+            # image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     else:
         image = cv2.imread(url)
     if image is None:
@@ -948,11 +948,12 @@ def draw_image_rects(image, rects, color=(0, 0, 255), thickness=-1):
 
 def draw_image_boxes(image, boxes, color=(0, 0, 255), thickness=-1):
     thickness, fontScale = get_linesize(max(image.shape), thickness=thickness, fontScale=-1.0)
-    for box in boxes:
+    if isinstance(color[0], numbers.Number): color = [color] * len(boxes)
+    for i, box in enumerate(boxes):
         x1, y1, x2, y2 = box[:4]
         point1 = (int(x1), int(y1))
         point2 = (int(x2), int(y2))
-        cv2.rectangle(image, point1, point2, color, thickness=thickness)
+        cv2.rectangle(image, point1, point2, color[i], thickness=thickness)
     return image
 
 
@@ -963,7 +964,7 @@ def show_image_rects(title, image, rects, color=(0, 0, 255), delay=0, use_rgb=Fa
     :param rects:[[ x, y, w, h],[ x, y, w, h]]
     :return:
     """
-    image = draw_image_rects(image.copy(), rects, color)
+    image = draw_image_rects(image, rects, color)
     cv_show_image(title, image, delay=delay, use_rgb=use_rgb)
     return image
 
@@ -980,7 +981,7 @@ def show_image_boxes(title, image, boxes, color=(0, 0, 255), delay=0, use_rgb=Fa
     return image
 
 
-def draw_image_bboxes_text(rgb_image, boxes, boxes_name, color=(255, 0, 0), thickness=-1, fontScale=-1.0,
+def draw_image_bboxes_text(image, boxes, boxes_name, color=(255, 0, 0), thickness=-1, fontScale=-1.0,
                            drawType="custom", top=True):
     """
     :param boxes_name:
@@ -989,13 +990,12 @@ def draw_image_bboxes_text(rgb_image, boxes, boxes_name, color=(255, 0, 0), thic
     :param boxes: [[x1,y1,x2,y2],[x1,y1,x2,y2]]
     :return:
     """
-    rgb_image = rgb_image.copy()
     if isinstance(boxes_name, np.ndarray):
         boxes_name = boxes_name.reshape(-1).tolist()
     for name, box in zip(boxes_name, boxes):
         box = [int(b) for b in box]
-        custom_bbox_line(rgb_image, box, color, name, thickness, fontScale, drawType, top)
-    return rgb_image
+        custom_bbox_line(image, box, color, name, thickness, fontScale, drawType, top)
+    return image
 
 
 def draw_image_bboxes_labels_text(image, boxes, labels, boxes_name=None, color=None, thickness=2, fontScale=0.8,
@@ -1010,7 +1010,6 @@ def draw_image_bboxes_labels_text(image, boxes, labels, boxes_name=None, color=N
     :param top:
     :return:
     """
-    image = image.copy()
     if isinstance(labels, np.ndarray):
         labels = labels.reshape(-1).tolist()
     boxes_name = boxes_name if boxes_name else labels
@@ -1021,9 +1020,9 @@ def draw_image_bboxes_labels_text(image, boxes, labels, boxes_name=None, color=N
     return image
 
 
-def draw_image_rects_labels_text(rgb_image, rects, labels, boxes_name=None, color=None, drawType="custom", top=True):
+def draw_image_rects_labels_text(image, rects, labels, boxes_name=None, color=None, drawType="custom", top=True):
     """
-    :param rgb_image:
+    :param image:
     :param rects:
     :param labels:
     :param boxes_name:
@@ -1033,11 +1032,11 @@ def draw_image_rects_labels_text(rgb_image, rects, labels, boxes_name=None, colo
     :return:
     """
     boxes = rects2bboxes(rects)
-    rgb_image = draw_image_bboxes_labels_text(rgb_image, boxes, labels, boxes_name, color, drawType, top)
-    return rgb_image
+    image = draw_image_bboxes_labels_text(image, boxes, labels, boxes_name, color, drawType, top)
+    return image
 
 
-def show_image_bboxes_text(title, rgb_image, boxes, boxes_name, color=None, drawType="custom", delay=0, top=True):
+def show_image_bboxes_text(title, image, boxes, boxes_name, color=None, drawType="custom", delay=0, top=True):
     """
     :param boxes_name:
     :param bgr_image: bgr image
@@ -1045,20 +1044,20 @@ def show_image_bboxes_text(title, rgb_image, boxes, boxes_name, color=None, draw
     :param boxes: [[x1,y1,x2,y2],[x1,y1,x2,y2]]
     :return:
     """
-    bgr_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR)
+    bgr_image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     bgr_image = draw_image_bboxes_text(bgr_image, boxes, boxes_name, color, drawType, top)
-    rgb_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2RGB)
-    cv_show_image(title, rgb_image, delay=delay)
-    return rgb_image
+    image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2RGB)
+    cv_show_image(title, image, delay=delay)
+    return image
 
 
-def draw_image_rects_text(rgb_image, rects, rects_name, color=None, drawType="custom", top=True):
+def draw_image_rects_text(image, rects, rects_name, color=None, drawType="custom", top=True):
     boxes = rects2bboxes(rects)
-    rgb_image = draw_image_bboxes_text(rgb_image, boxes, rects_name, color, drawType, top)
-    return rgb_image
+    image = draw_image_bboxes_text(image, boxes, rects_name, color, drawType, top)
+    return image
 
 
-def show_image_rects_text(title, rgb_image, rects, rects_name, color=None, drawType="custom", delay=0, top=True):
+def show_image_rects_text(title, image, rects, rects_name, color=None, drawType="custom", delay=0, top=True):
     """
     :param rects_name:
     :param bgr_image: bgr image
@@ -1066,8 +1065,8 @@ def show_image_rects_text(title, rgb_image, rects, rects_name, color=None, drawT
     :return:
     """
     boxes = rects2bboxes(rects)
-    rgb_image = show_image_bboxes_text(title, rgb_image, boxes, rects_name, color, drawType, delay, top)
-    return rgb_image
+    image = show_image_bboxes_text(title, image, boxes, rects_name, color, drawType, delay, top)
+    return image
 
 
 def draw_image_bboxes_labels(image, bboxes, labels, class_name=None, color=None,
@@ -1088,17 +1087,17 @@ def draw_image_bboxes_labels(image, bboxes, labels, class_name=None, color=None,
     return image
 
 
-def draw_image_rects_labels(rgb_image, rects, labels, class_name=None, color=None, thickness=-1, fontScale=-1.0):
+def draw_image_rects_labels(image, rects, labels, class_name=None, color=None, thickness=-1, fontScale=-1.0):
     """
-    :param rgb_image:
+    :param image:
     :param rects:
     :param labels:
     :return:
     """
     bboxes = rects2bboxes(rects)
-    rgb_image = draw_image_bboxes_labels(rgb_image, bboxes, labels, class_name=class_name, color=color,
-                                         thickness=thickness, fontScale=fontScale)
-    return rgb_image
+    image = draw_image_bboxes_labels(image, bboxes, labels, class_name=class_name, color=color,
+                                     thickness=thickness, fontScale=fontScale)
+    return image
 
 
 def draw_image_detection_rects(image, rects, probs, labels, class_name=None, thickness=-1, fontScale=-1.0,
@@ -1207,7 +1206,7 @@ def draw_landmark(image, landmarks, radius=2, fontScale=1.0, color=(0, 0, 255), 
         for i, landmark in enumerate(lm):
             # 要画的点的坐标
             point = (int(landmark[0]), int(landmark[1]))
-            cv2.circle(image, point, radius, color, thickness=-1)
+            cv2.circle(image, point, radius, color, thickness=-1, lineType=cv2.LINE_AA)
             if vis_id:
                 image = draw_points_text(image, [point], texts=[str(i)], color=color, thickness=radius,
                                          fontScale=fontScale, drawType="simple")
@@ -1251,13 +1250,14 @@ def draw_points_text(image, points, texts=None, color=(255, 0, 0), thickness=-1,
     :return:
     """
     thickness, fontScale = get_linesize(max(image.shape), thickness=thickness, fontScale=fontScale)
-    if texts is None:
-        texts = [""] * len(points)
-    for point, text in zip(points, texts):
+    if texts is None: texts = [""] * len(points)
+    if isinstance(color[0], numbers.Number): color = [color] * len(points)
+    for index, (point, text) in enumerate(zip(points, texts)):
         if not check_point(point): continue
         point = (int(point[0]), int(point[1]))
-        cv2.circle(image, point, thickness * 3, color, -1)
-        draw_text(image, point, text, color=color, fontScale=fontScale, thickness=thickness, drawType=drawType)
+        c = color[index]
+        cv2.circle(image, point, thickness * 3, tuple(c), -1, lineType=cv2.LINE_AA)
+        if text: draw_text(image, point, text, color=c, fontScale=fontScale, thickness=thickness, drawType=drawType)
     return image
 
 
@@ -1381,16 +1381,18 @@ def cv2_putText(img, text, point, fontFace=None, fontScale=0.8, color=(255, 0, 0
     img[:] = np.asarray(pilimg)
 
 
-def draw_key_point_in_image(image, key_points, pointline=[], boxes=[], vis_id=False, thickness=2):
+def draw_key_point_in_image(image, key_points, pointline=[], boxes=[], colors=None, vis_id=False, thickness=2):
     """
-    :param key_points: list(ndarray(19,2)) or ndarray(n_person,19,2)
     :param image:
+    :param key_points: list(ndarray(19,2)) or ndarray(n_person,19,2)
     :param pointline: `auto`->pointline = circle_line(len(points), iscircle=True)
+    :param boxes: 目标框
+    :param colors: 每个点的颜色
     :return:
     """
     nums = max(len(key_points), len(boxes))
     for p in range(nums):
-        color = color_map[p + 1]
+        color = color_table[p + 1] if not colors else colors
         if len(key_points) > 0:
             points = key_points[p]
             if points is None or len(points) == 0: continue
@@ -1477,14 +1479,15 @@ def draw_image_lines(image, points, pointline=[], color=(0, 0, 255), thickness=2
     # points = np.asarray(points, dtype=np.int32)
     if pointline == "auto" or pointline == []:
         pointline = circle_line(len(points), iscircle=True)
-    for point_index in pointline:
-        point1 = tuple(points[point_index[0]])
-        point2 = tuple(points[point_index[1]])
+    if isinstance(color[0], numbers.Number): color = [color] * len(points)
+    for index in pointline:
+        point1 = tuple(points[index[0]])
+        point2 = tuple(points[index[1]])
         if (not check_point(point1)) or (not check_point(point2)):
             continue
         point1 = (int(point1[0]), int(point1[1]))
         point2 = (int(point2[0]), int(point2[1]))
-        cv2.line(image, point1, point2, color, thickness)  # 绿色，3个像素宽度
+        cv2.line(image, point1, point2, color[index[1]], thickness)  # 绿色，3个像素宽度
     return image
 
 

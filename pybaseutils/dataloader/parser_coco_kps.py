@@ -13,18 +13,35 @@ from pybaseutils.dataloader import base_coco
 # skeleton连接线，keypoint关键点名称，num_joints关键点个数
 BONES = {
     "coco_person": {
+        # "skeleton": [[15, 13], [13, 11], [16, 14], [14, 12], [11, 12], [5, 11], [6, 12], [5, 6], [5, 7],
+        #              [6, 8], [7, 9], [8, 10], [1, 2], [0, 1], [0, 2], [1, 3], [2, 4], [3, 5], [4, 6]],
         "skeleton": [[15, 13], [13, 11], [16, 14], [14, 12], [11, 12], [5, 11], [6, 12], [5, 6], [5, 7],
-                     [6, 8], [7, 9], [8, 10], [1, 2], [0, 1], [0, 2], [1, 3], [2, 4], [3, 5], [4, 6]],
+                     [6, 8], [7, 9], [8, 10], [0, 1], [0, 2], [1, 3], [2, 4]],
         "keypoint": [],
         "num_joints": 17,
+        "class_dict": {0: "nose", 1: "left_eye", 2: "right_eye", 3: "left_ear", 4: "right_ear", 5: "left_shoulder",
+                       6: "right_shoulder", 7: "left_elbow", 8: "right_elbow", 9: "left_wrist", 10: "right_wrist",
+                       11: "left_hip", 12: "right_hip", 13: "left_knee", 14: "right_knee", 15: "left_ankle",
+                       16: "right_ankle"}
     },
-    "hand": {
+    "mpii": {
         "skeleton": [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8],
                      [5, 9], [9, 10], [10, 11], [11, 12], [9, 13], [13, 14], [14, 15], [15, 16],
                      [13, 17], [17, 18], [18, 19], [19, 20], [0, 17]],
         "keypoint": [],
         "num_joints": 21,
-    }
+        "class_dict": {0: "r_ankle", 1: "r_knee", 2: "r_hip", 3: "l_hip", 4: "l_knee", 5: "l_ankle", 6: "pelvis",
+                       7: "thorax", 8: "upper_neck", 9: "head_top", 10: " r_wrist", 11: "r_elbow", 12: "r_shoulder",
+                       13: "l_shoulder", 14: "l_elbow", 15: "l_wrist"}
+    },
+    "hand": {
+        "skeleton": [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8], [5, 9],
+                     [9, 10], [10, 11], [11, 12], [9, 13], [13, 14], [14, 15], [15, 16],
+                     [13, 17], [17, 18], [18, 19], [19, 20], [0, 17]],
+        "keypoint": [],
+        "num_joints": 21,
+
+    },
 }
 
 
@@ -71,7 +88,7 @@ class CocoKeypoints(base_coco.CocoDataset):
         """
         image_id = self.image_ids[index]
         anns_info, file_info = self.get_object_annotations(image_id)
-        image, width, height = self.get_object_image(file_info)
+        image, width, height, image_file = self.get_object_image(file_info)
         boxes, labels, keypoints = self.get_keypoint_info(anns_info, self.num_joints)
         data = {"keypoints": keypoints, "image": image, "boxes": boxes, "label": labels, "image_ids": image_id,
                 "annotations": anns_info, "file_info": file_info}
@@ -102,7 +119,7 @@ if __name__ == "__main__":
     image_dir = ""
     # anno_file = "/home/PKing/nasdata/dataset/tmp/hand-pose/HandPose-v2/train/train_anno.json"
     # anno_file = "/home/PKing/nasdata/dataset/tmp/hand-pose/HandPose-v1/test/test_anno.json"
-    anno_file = "/home/PKing/nasdata/dataset/tmp/hand-pose/handpose_datasets_v1/COCO/coco_data.json"
+    anno_file = "/home/PKing/nasdata/dataset/tmp/hand-pose/HandPose-v2/train/train_anno.json"
     class_name = []
     dataset = CocoKeypoints(anno_file, image_dir, class_name=class_name)
     skeleton = dataset.skeleton

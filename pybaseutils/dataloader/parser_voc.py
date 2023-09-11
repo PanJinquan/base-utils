@@ -488,13 +488,13 @@ def show_target_image(image, boxes, labels, normal=False, transpose=False, class
     image = image_utils.draw_image_bboxes_labels(image, boxes, labels, class_name=class_name,
                                                  thickness=thickness, fontScale=fontScale, drawType="chinese")
     image_utils.cv_show_image("image", image, delay=0, use_rgb=use_rgb)
-    print("===" * 10)
     return image
 
 
 if __name__ == "__main__":
     # from models.transforms import data_transforms
     filename = '/media/PKing/新加卷1/SDK/base-utils/data/coco/file_list.txt'
+    filename = '/home/PKing/nasdata/dataset/tmp/gesture/Light-HaGRID/trainval/call/val.txt'
     class_name = None
     dataset = VOCDatasets(filename=[filename, filename],
                           data_root=None,
@@ -513,3 +513,4 @@ if __name__ == "__main__":
         boxes, labels = targets[:, 0:4], targets[:, 4:5]
         show_target_image(image, boxes, labels, normal=False, transpose=False, class_name=class_name)
         # show_boxes_image(image, Dataset.cxcywh2xyxy(boxes, 0, 0), labels, normal=False, transpose=True)
+        print("===" * 10)

@@ -232,13 +232,14 @@ class COCOBuilder():
             v = 1 : 标注了但是图像中不可见（例如遮挡）
             v = 2 : 标注了并图像可见
         实际预测时，不要求预测每个关节点的可见性
-        :param keypoints:
+        :param keypoints: (num_point,2)
         :param num_joints: 关键点个数
         :param width: 图像宽度
         :param height: 图像长度
         :return:
         """
         if len(keypoints) == 0: return []
+        if isinstance(keypoints, list): keypoints = np.asarray(keypoints)
         kps = np.zeros(shape=(num_joints, 3), dtype=np.int32) + 2
         kps[:, 0:2] = keypoints
         kps[:, 0] = np.clip(kps[:, 0], 0, width - 1)
@@ -335,6 +336,7 @@ class COCOBuilder():
             objects = {"boxes": boxes, "labels": labels, "contours": contours, "keypoints": keypoints}
             self.addObjects(filename, objects, width, height, num_joints)
         # 设置关键点的名称和skeleton
+        kps_name = [str(i) for i in list(range(num_joints))]
         self.set_keypoints_category(kps_name=kps_name, skeleton=skeleton, cat_id=0)
         COCOTools.check_coco(self.coco)
         self.save_coco(save_file)
