@@ -8,13 +8,13 @@
 import os
 import numpy as np
 from pybaseutils import image_utils, file_utils, color_utils
-from pybaseutils.dataloader import base_coco
+from pybaseutils.dataloader.base_coco import CocoDataset, ConcatDataset
 
 
-class CocoInstances(base_coco.CocoDataset):
+class CocoInstance(CocoDataset):
     def __init__(self, anno_file, image_dir="", class_name=[], transform=None,
                  target_transform=None, use_rgb=False,
-                 shuffle=False, check=False, **kwargs):
+                 shuffle=False, decode=True, **kwargs):
         """
         initialize COCO api for instance annotations
         :param anno_file:
@@ -24,12 +24,12 @@ class CocoInstances(base_coco.CocoDataset):
         :param target_transform:
         :param use_rgb:
         :param shuffle:
-        :param check:
+        :param decode:
         :param kwargs:
         """
-        super(CocoInstances, self).__init__(anno_file, image_dir=image_dir, class_name=class_name, transform=transform,
-                                            target_transform=target_transform, use_rgb=use_rgb,
-                                            shuffle=shuffle, check=check, **kwargs)
+        super(CocoInstance, self).__init__(anno_file, image_dir=image_dir, class_name=class_name, transform=transform,
+                                           target_transform=target_transform, use_rgb=use_rgb,
+                                           shuffle=shuffle, decode=decode, **kwargs)
 
     def __getitem__(self, index):
         """
@@ -39,10 +39,50 @@ class CocoInstances(base_coco.CocoDataset):
         image_id = self.image_ids[index]
         anns_info, file_info = self.get_object_annotations(image_id)
         image, width, height, image_file = self.get_object_image(file_info)
-        boxes, labels, mask, segs = self.get_object_instance(anns_info, h=height, w=width, decode=True)
+        boxes, labels, mask, segs = self.get_object_instance(anns_info, h=height, w=width, decode=self.decode)
         data = {"segs": segs, "mask": mask, "image": image, "boxes": boxes, "label": labels, "image_ids": image_id,
-                "annotations": anns_info, "file_info": file_info}
+                "annotations": anns_info, "file_info": file_info, "image_file": image_file,"size": [width, height]}
         return data
+
+
+def CocoInstances(anno_file=None,
+                  image_dir="",
+                  class_name=None,
+                  transform=None,
+                  target_transform=None,
+                  use_rgb=True,
+                  shuffle=False,
+                  decode=False,
+                  **kwargs):
+    """
+    :param anno_file: str or List[str]
+    :param data_root:
+    :param json_dir:
+    :param image_dir:
+    :param class_name:
+    :param transform:
+    :param use_rgb:
+    :param keep_difficult:
+    :param shuffle:
+    :param decode:
+    :return:
+    """
+    if not isinstance(anno_file, list) and os.path.isfile(anno_file):
+        anno_file = [anno_file]
+    datasets = []
+    for file in anno_file:
+        data = CocoInstance(anno_file=file,
+                            image_dir=image_dir,
+                            class_name=class_name,
+                            transform=transform,
+                            target_transform=target_transform,
+                            use_rgb=use_rgb,
+                            shuffle=shuffle,
+                            decode=decode,
+                            **kwargs)
+        datasets.append(data)
+    datasets = ConcatDataset(datasets)
+    return datasets
 
 
 def show_target_image(image, mask, boxes, labels, class_name=[], thickness=2, fontScale=1.0):
@@ -72,20 +112,17 @@ if __name__ == "__main__":
     class_name = ["BG", 'person', 'car']
     # class_name = {'bb': "bk", "person": "unique"}
     # 测试COCO数据集
-    coco_root = "/home/PKing/nasdata/dataset/face_person/COCO/"
-    image_dir = coco_root + 'val2017/images'
-    # anno_file = coco_root + 'annotations/person_keypoints_val2017.json'
-    anno_file = coco_root + 'annotations/instances_val2017.json'
+    anno_file = "/home/PKing/nasdata/dataset/face_person/COCO/val2017/instances_val2017.json"
 
-    anno_file = "/media/PKing/新加卷1/SDK/base-utils/data/coco/coco_ins.json"
-    image_dir = "/media/PKing/新加卷1/SDK/base-utils/data/coco/JPEGImages"
-    class_name = None
+    anno_file2 = "/media/PKing/新加卷1/SDK/base-utils/data/coco/coco_ins.json"
+    class_name = {"BG": 0, "BG1": 1, 'person': 2, 'car': 3}
     #
     # anno_file = "/media/PKing/新加卷1/SDK/base-utils/data/coco/coco_ins.json"
     # anno_file = "/home/PKing/nasdata/dataset/tmp/hand-pose/FreiHAND/training/coco_kps.json"
     # image_dir = "/home/PKing/nasdata/dataset/tmp/hand-pose/FreiHAND/training/rgb"
     # class_name = None
-    dataset = CocoInstances(anno_file, image_dir=image_dir, class_name=class_name)
+    # dataset = CocoInstance(anno_file=anno_file, image_dir="", class_name=class_name)
+    dataset = CocoInstances(anno_file=[anno_file2, anno_file], image_dir="", class_name=class_name)
     class_name = dataset.class_name
     for i in range(len(dataset)):
         data = dataset.__getitem__(i)

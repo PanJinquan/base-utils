@@ -143,12 +143,12 @@ def demo_for_person5():
     coco_ins_file = os.path.join(os.path.dirname(image_dir), "coco_ins.json")
     coco_kps_file = os.path.join(os.path.dirname(image_dir), "coco_kps.json")
     build = Labelme2COCO(image_dir=image_dir, anno_dir=anno_dir, init_id=None)
-    build.build_keypoints_dataset(coco_kps_file,
-                                  class_name=["person"],
-                                  kps_name=kps_name,
-                                  skeleton=skeleton,
-                                  num_joints=5)
-    # build.build_instances_dataset(coco_ins_file)
+    # build.build_keypoints_dataset(coco_kps_file,
+    #                               class_name=["person"],
+    #                               kps_name=kps_name,
+    #                               skeleton=skeleton,
+    #                               num_joints=5)
+    build.build_instances_dataset(coco_ins_file)
 
 
 def demo_for_hand21():

@@ -19,7 +19,7 @@ class CocoDetection(CocoDataset):
     """Coco dataset."""
 
     def __init__(self, anno_file, image_dir="", class_name=[], transform=None, target_transform=None, use_rgb=True,
-                 shuffle=False, check=False, **kwargs):
+                 shuffle=False, decode=False, **kwargs):
         """
         initialize COCO api for object detection annotations
         ├── annotations
@@ -32,11 +32,11 @@ class CocoDetection(CocoDataset):
         :param target_transform:
         :param use_rgb:
         :param shuffle:
-        :param check:
+        :param decode:
         """
         super(CocoDetection, self).__init__(anno_file, image_dir=image_dir, class_name=class_name, transform=transform,
                                             target_transform=target_transform, use_rgb=use_rgb,
-                                            shuffle=shuffle, check=check, **kwargs)
+                                            shuffle=shuffle, decode=decode, **kwargs)
         print("CocoDataset class_name :{}".format(class_name))
         print("CocoDataset class_dict :{}".format(self.class_dict))
         print("CocoDataset num images :{}".format(len(self.image_ids)))
@@ -70,17 +70,17 @@ class CocoDetection(CocoDataset):
         return data
 
 
-def CocoDatasets(filename=None,
-                 image_dir="",
-                 class_name=None,
-                 transform=None,
-                 target_transform=None,
-                 use_rgb=True,
-                 shuffle=False,
-                 check=False,
-                 **kwargs):
+def CocoDetections(anno_file=None,
+                   image_dir="",
+                   class_name=None,
+                   transform=None,
+                   target_transform=None,
+                   use_rgb=True,
+                   shuffle=False,
+                   decode=False,
+                   **kwargs):
     """
-    :param filename:
+    :param anno_file: str or List[str]
     :param data_root:
     :param json_dir:
     :param image_dir:
@@ -89,22 +89,22 @@ def CocoDatasets(filename=None,
     :param use_rgb:
     :param keep_difficult:
     :param shuffle:
-    :param check:
+    :param decode:
     :return:
     """
-    from torch.utils.data.dataset import ConcatDataset
-    if not isinstance(filename, list) and os.path.isfile(filename):
-        filename = [filename]
+    # from torch.utils.data.dataset import ConcatDataset
+    if not isinstance(anno_file, list) and os.path.isfile(anno_file):
+        anno_file = [anno_file]
     datasets = []
-    for file in filename:
-        data = CocoDetection(file,
+    for file in anno_file:
+        data = CocoDetection(anno_file=file,
                              image_dir=image_dir,
                              class_name=class_name,
                              transform=transform,
                              target_transform=target_transform,
                              use_rgb=use_rgb,
                              shuffle=shuffle,
-                             check=check,
+                             decode=decode,
                              **kwargs)
         datasets.append(data)
     datasets = ConcatDataset(datasets)

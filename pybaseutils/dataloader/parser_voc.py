@@ -67,6 +67,7 @@ class VOCDataset(Dataset):
         print("VOCDataset class_dict      :{}".format(self.class_dict))
         print("VOCDataset num images      :{}".format(len(self.image_ids)))
         print("VOCDataset num_classes     :{}".format(self.num_classes))
+        print("------" * 10)
 
     def __get_image_anno_file(self, image_dir, anno_dir, image_name: str):
         """

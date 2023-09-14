@@ -58,7 +58,7 @@ class CocoKeypoints(base_coco.CocoDataset):
         """
         super(CocoKeypoints, self).__init__(anno_file, image_dir=image_dir, class_name=class_name, transform=None,
                                             target_transform=None, use_rgb=False,
-                                            shuffle=False, check=False, **kwargs)
+                                            shuffle=False, decode=True, **kwargs)
         if not class_name: class_name = [self.class_name[1]]
         self.kps_info = self.load_keypoints_info(target=class_name)
         self.num_joints = num_joints
@@ -80,6 +80,7 @@ class CocoKeypoints(base_coco.CocoDataset):
         print("skeleton               :{}".format(self.skeleton))
         print("coco skeleton          :{}".format(self.coco_skeleton.tolist()))
         print("anno_file              :{}".format(anno_file))
+        print("------" * 10)
 
     def __getitem__(self, index):
         """

@@ -247,7 +247,7 @@ def video_capture(video_file: int or str, save_video: str = None, interval=1, ta
     while True:
         if count % interval == 0:
             # 设置抽帧的位置
-            video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
+            if isinstance(video_file, str): video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
             isSuccess, frame = video_cap.read()
             if not isSuccess or 0 < num_frames < count: break
             if task: frame = task(frame, **kwargs)
@@ -279,7 +279,7 @@ class CVVideo():
         while True:
             if count % interval == 0:
                 # 设置抽帧的位置
-                video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
+                if isinstance(video_file, str): video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
                 isSuccess, frame = video_cap.read()
                 if not isSuccess or 0 < num_frames < count: break
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)

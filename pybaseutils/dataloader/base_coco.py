@@ -100,7 +100,7 @@ class CocoDataset(object):
     """Coco dataset."""
 
     def __init__(self, anno_file, image_dir="", class_name=[], transform=None, target_transform=None, use_rgb=True,
-                 shuffle=False, check=False, **kwargs):
+                 shuffle=False, decode=True, **kwargs):
         """
         ├── annotations
         │    ├── instances_train2017.json
@@ -112,13 +112,14 @@ class CocoDataset(object):
         :param target_transform:
         :param use_rgb:
         :param shuffle:
-        :param check:
+        :param decode:
         """
         super(CocoDataset, self).__init__()
         self.transform = transform
         self.target_transform = target_transform
         self.image_dir, self.anno_dir = self.parser_paths(anno_file, image_dir)
         self.unique = False
+        self.decode = decode
         self.use_rgb = use_rgb
         self.coco = load_coco(anno_file)
         self.category2id = self.load_categories()  # 获得COCO所有种类(类别)category,如{"person":0}
@@ -139,8 +140,8 @@ class CocoDataset(object):
             random.seed(200)
             random.shuffle(self.image_ids)
         self.num_images = len(self.image_ids)
-        self.classes = list(self.class_dict.values()) if self.class_dict else None
-        self.num_classes = max(list(self.class_dict.values())) + 1 if self.class_dict else None
+        self.classes = list(set(self.class_dict.values())) if self.class_dict else []
+        self.num_classes = max(list(self.class_dict.values())) + 1 if self.class_dict else 0
         print("CocoDataset anno_file  :{}".format(anno_file))
         print("CocoDataset image_dir  :{}".format(self.image_dir))
         print("CocoDataset class_count:{}".format(self.class_count))
@@ -148,6 +149,7 @@ class CocoDataset(object):
         print("CocoDataset class_dict :{}".format(self.class_dict))
         print("CocoDataset num images :{}".format(len(self.image_ids)))
         print("CocoDataset num_classes:{}".format(self.num_classes))
+        print("------" * 10)
 
     def parser_paths(self, filename=None, image_dir=None):
         """
@@ -411,6 +413,8 @@ class ConcatDataset(Dataset):
         self.image_ids = []
         self.dataset = datasets
         self.shuffle = shuffle
+        self.classes = []
+        self.class_name = []
         for dataset_id, dataset in enumerate(self.dataset):
             # image_ids = dataset.image_ids
             image_ids = list(range(len(dataset.image_ids)))
@@ -422,6 +426,7 @@ class ConcatDataset(Dataset):
             random.seed(200)
             random.shuffle(self.image_ids)
         print("ConcatDataset total images :{}".format(len(self.image_ids)))
+        print("------" * 10)
 
     def add_dataset_id(self, image_ids, dataset_id):
         """

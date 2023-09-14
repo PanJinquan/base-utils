@@ -31,7 +31,7 @@ def convert_coco2voc(filename, out_xml_dir=None, out_image_dir=None, class_name=
                                             class_name=class_name,
                                             transform=None,
                                             use_rgb=False,
-                                            check=False,
+                                            decode=False,
                                             shuffle=False)
     print("have num:{}".format(len(dataset)))
     print("have num:{}".format(len(dataset)))

@@ -64,6 +64,7 @@ class LabelMeDataset(Dataset):
         print("Dataset class_dict    :{}".format(self.class_dict))
         print("Dataset num images    :{}".format(len(self.image_id)))
         print("Dataset num_classes   :{}".format(self.num_classes))
+        print("------" * 10)
 
     def __len__(self):
         return len(self.image_id)
