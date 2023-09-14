@@ -24,7 +24,7 @@ class CocoInstance(CocoDataset):
         :param target_transform:
         :param use_rgb:
         :param shuffle:
-        :param decode:
+        :param decode: 是否对segment进行解码， True:在mask显示分割信息,False：mask为0，无分割信息
         :param kwargs:
         """
         super(CocoInstance, self).__init__(anno_file, image_dir=image_dir, class_name=class_name, transform=transform,
@@ -40,8 +40,9 @@ class CocoInstance(CocoDataset):
         anns_info, file_info = self.get_object_annotations(image_id)
         image, width, height, image_file = self.get_object_image(file_info)
         boxes, labels, mask, segs = self.get_object_instance(anns_info, h=height, w=width, decode=self.decode)
-        data = {"segs": segs, "mask": mask, "image": image, "boxes": boxes, "label": labels, "image_ids": image_id,
-                "annotations": anns_info, "file_info": file_info, "image_file": image_file,"size": [width, height]}
+        data = {"segs": segs, "mask": mask, "image": image, "boxes": boxes, "label": labels,
+                "image_id": image_id, "annotations": anns_info, "file_info": file_info,
+                "image_file": image_file, "size": [width, height], "class_name": self.class_name}
         return data
 
 
@@ -52,7 +53,7 @@ def CocoInstances(anno_file=None,
                   target_transform=None,
                   use_rgb=True,
                   shuffle=False,
-                  decode=False,
+                  decode=True,
                   **kwargs):
     """
     :param anno_file: str or List[str]
@@ -64,7 +65,7 @@ def CocoInstances(anno_file=None,
     :param use_rgb:
     :param keep_difficult:
     :param shuffle:
-    :param decode:
+    :param decode: 是否对segment进行解码， True:在mask显示分割信息,False：mask为0，无分割信息
     :return:
     """
     if not isinstance(anno_file, list) and os.path.isfile(anno_file):
@@ -81,17 +82,17 @@ def CocoInstances(anno_file=None,
                             decode=decode,
                             **kwargs)
         datasets.append(data)
-    datasets = ConcatDataset(datasets)
+    datasets = ConcatDataset(datasets, shuffle=shuffle)
     return datasets
 
 
-def show_target_image(image, mask, boxes, labels, class_name=[], thickness=2, fontScale=1.0):
+def show_target_image(image, mask, boxes, labels, class_name=[], thickness=2, fontScale=1., use_rgb=False):
     mask = np.asarray(mask, np.uint8)
     color_image, color_mask = color_utils.decode_color_image_mask(image, mask)
     color_image = image_utils.draw_image_bboxes_labels(color_image, boxes, labels, class_name=class_name,
-                                                       thickness=thickness, fontScale=fontScale)
+                                                       thickness=thickness, fontScale=fontScale, drawType="chinese")
     vis_image = image_utils.image_hstack([image, mask, color_image, color_mask])
-    image_utils.cv_show_image("image", vis_image)
+    image_utils.cv_show_image("image", vis_image, use_rgb=use_rgb)
 
 
 if __name__ == "__main__":
@@ -109,24 +110,28 @@ if __name__ == "__main__":
                   'book': 73, 'clock': 74, 'vase': 75, 'scissors': 76, 'teddy bear': 77, 'hair drier': 78,
                   'toothbrush': 79}
     # class_name = []
-    class_name = ["BG", 'person', 'car']
+    class_name = ["BG", 'car', 'person']
     # class_name = {'bb': "bk", "person": "unique"}
     # 测试COCO数据集
-    anno_file = "/home/PKing/nasdata/dataset/face_person/COCO/val2017/instances_val2017.json"
+    # anno_file2 = "/home/PKing/nasdata/dataset/face_person/COCO/val2017/instances_val2017.json"
 
-    anno_file2 = "/media/PKing/新加卷1/SDK/base-utils/data/coco/coco_ins.json"
-    class_name = {"BG": 0, "BG1": 1, 'person': 2, 'car': 3}
+    anno_file1 = "/media/PKing/新加卷1/SDK/base-utils/data/coco/coco_ins.json"
+    anno_file2 = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v1/val_coco_instance.json"
+    # anno_file2 = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v2/train_coco_instance.json"
+    # class_name = ["BG", 'car', 'person,身穿工作服']
+    class_name = {"BG": 0, 'car': 1, 'person': 2, "身穿工作服": 2}
     #
     # anno_file = "/media/PKing/新加卷1/SDK/base-utils/data/coco/coco_ins.json"
     # anno_file = "/home/PKing/nasdata/dataset/tmp/hand-pose/FreiHAND/training/coco_kps.json"
     # image_dir = "/home/PKing/nasdata/dataset/tmp/hand-pose/FreiHAND/training/rgb"
     # class_name = None
     # dataset = CocoInstance(anno_file=anno_file, image_dir="", class_name=class_name)
-    dataset = CocoInstances(anno_file=[anno_file2, anno_file], image_dir="", class_name=class_name)
+    dataset = CocoInstances(anno_file=[anno_file1, anno_file2], image_dir="",
+                            class_name=class_name, use_rgb=False, shuffle=True)
     class_name = dataset.class_name
     for i in range(len(dataset)):
         data = dataset.__getitem__(i)
         image, boxes, labels, mask = data['image'], data["boxes"], data["label"], data["mask"]
-        print("i={},image_ids={}".format(i, data["image_ids"]))
+        print("i={},image_id={}".format(i, data["image_id"]))
         # dataset.showAnns(image, data['annotations'])
         show_target_image(image, mask, boxes, labels, class_name=class_name)

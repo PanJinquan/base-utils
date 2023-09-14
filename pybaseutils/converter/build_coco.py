@@ -68,6 +68,7 @@ class COCOTools(object):
         检测唯一性
         :return:
         """
+        print("check {}".format(title))
         for i in id_list:
             n = id_list.count(i)
             assert n == 1, Exception("have same {}:{}".format(title, i))

@@ -9,6 +9,7 @@ import os
 import numpy as np
 from pybaseutils import image_utils, file_utils, color_utils
 from pybaseutils.dataloader import base_coco
+from pybaseutils.dataloader.base_coco import CocoDataset, ConcatDataset
 
 # skeleton连接线，keypoint关键点名称，num_joints关键点个数
 BONES = {
@@ -45,7 +46,7 @@ BONES = {
 }
 
 
-class CocoKeypoints(base_coco.CocoDataset):
+class CocoKeypoint(base_coco.CocoDataset):
     def __init__(self, anno_file, image_dir="", class_name=[], num_joints=-1, **kwargs):
         """
         initialize COCO api for keypoint annotations
@@ -56,9 +57,9 @@ class CocoKeypoints(base_coco.CocoDataset):
         :param skeleton:
         :param kwargs:
         """
-        super(CocoKeypoints, self).__init__(anno_file, image_dir=image_dir, class_name=class_name, transform=None,
-                                            target_transform=None, use_rgb=False,
-                                            shuffle=False, decode=True, **kwargs)
+        super(CocoKeypoint, self).__init__(anno_file, image_dir=image_dir, class_name=class_name, transform=None,
+                                           target_transform=None, use_rgb=False,
+                                           shuffle=False, decode=True, **kwargs)
         if not class_name: class_name = [self.class_name[1]]
         self.kps_info = self.load_keypoints_info(target=class_name)
         self.num_joints = num_joints
@@ -91,19 +92,60 @@ class CocoKeypoints(base_coco.CocoDataset):
         anns_info, file_info = self.get_object_annotations(image_id)
         image, width, height, image_file = self.get_object_image(file_info)
         boxes, labels, keypoints = self.get_keypoint_info(anns_info, self.num_joints)
-        data = {"keypoints": keypoints, "image": image, "boxes": boxes, "label": labels, "image_ids": image_id,
-                "annotations": anns_info, "file_info": file_info}
+        data = {"keypoints": keypoints, "image": image, "boxes": boxes, "label": labels, "image_id": image_id,
+                "annotations": anns_info, "file_info": file_info, "image_file": image_file,
+                "size": [width, height], "class_name": self.class_name}
         return data
 
 
-def show_target_image(image, keypoints, boxes, skeleton, vis_id=False):
+def CocoKeypoints(anno_file=None,
+                  image_dir="",
+                  class_name=None,
+                  transform=None,
+                  target_transform=None,
+                  use_rgb=True,
+                  shuffle=False,
+                  decode=True,
+                  **kwargs):
+    """
+    :param anno_file: str or List[str]
+    :param data_root:
+    :param json_dir:
+    :param image_dir:
+    :param class_name:
+    :param transform:
+    :param use_rgb:
+    :param keep_difficult:
+    :param shuffle:
+    :param decode: 是否对segment进行解码， True:在mask显示分割信息,False：mask为0，无分割信息
+    :return:
+    """
+    if not isinstance(anno_file, list) and os.path.isfile(anno_file):
+        anno_file = [anno_file]
+    datasets = []
+    for file in anno_file:
+        data = CocoKeypoint(anno_file=file,
+                            image_dir=image_dir,
+                            class_name=class_name,
+                            transform=transform,
+                            target_transform=target_transform,
+                            use_rgb=use_rgb,
+                            shuffle=shuffle,
+                            decode=decode,
+                            **kwargs)
+        datasets.append(data)
+    datasets = ConcatDataset(datasets, shuffle=shuffle)
+    return datasets
+
+
+def show_target_image(image, keypoints, boxes, skeleton, vis_id=False, use_rgb=True):
     image = image_utils.draw_key_point_in_image(image,
                                                 keypoints,
                                                 pointline=skeleton,
                                                 boxes=boxes,
                                                 vis_id=vis_id,
                                                 thickness=1)
-    image_utils.cv_show_image("keypoints", image, delay=0)
+    image_utils.cv_show_image("keypoints", image, delay=0, use_rgb=use_rgb)
 
 
 if __name__ == "__main__":
@@ -122,12 +164,12 @@ if __name__ == "__main__":
     # anno_file = "/home/PKing/nasdata/dataset/tmp/hand-pose/HandPose-v1/test/test_anno.json"
     anno_file = "/home/PKing/nasdata/dataset/tmp/hand-pose/HandPose-v2/train/train_anno.json"
     class_name = []
-    dataset = CocoKeypoints(anno_file, image_dir, class_name=class_name)
+    dataset = CocoKeypoint(anno_file, image_dir, class_name=class_name)
     skeleton = dataset.skeleton
     for i in range(len(dataset)):
         data = dataset.__getitem__(i)
-        # data = {"segs": segs, "image": image, "boxes": boxes, "label": labels, "image_ids": image_ids}
+        # data = {"segs": segs, "image": image, "boxes": boxes, "label": labels, "image_id": image_id}
         image, boxes, labels, keypoints = data['image'], data["boxes"], data["label"], data["keypoints"]
-        print("i={},image_ids={}".format(i, data["image_ids"]))
+        print("i={},image_id={}".format(i, data["image_id"]))
         # dataset.showAnns(image, data['annotations'])
         show_target_image(image, keypoints, boxes, skeleton=skeleton)

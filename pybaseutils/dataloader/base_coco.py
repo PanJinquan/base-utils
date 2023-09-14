@@ -112,7 +112,7 @@ class CocoDataset(object):
         :param target_transform:
         :param use_rgb:
         :param shuffle:
-        :param decode:
+        :param decode: 是否对segment进行解码， True:在mask显示分割信息,False：mask为0，无分割信息
         """
         super(CocoDataset, self).__init__()
         self.transform = transform
@@ -131,7 +131,7 @@ class CocoDataset(object):
         self.label2category_id = {l: self.category2id[c] for c, l in self.class_dict.items() if c in self.category2id}
         self.category_id2label = {c: l for l, c in self.label2category_id.items()}
         # 所有数据的image id
-        self.image_ids, self.class_count = self.get_image_ids(self.class_name)
+        self.image_ids, self.class_count = self.get_image_ids(self.class_dict)
         self.files_info = self.get_files_info(self.image_ids)
         self.annos_info = self.get_annos_info(self.image_ids)
         assert self.files_info == self.files_info
@@ -172,12 +172,12 @@ class CocoDataset(object):
         assert os.path.exists(image_dir), Exception("no directory:{}".format(image_dir))
         return image_dir, anno_dir
 
-    def get_image_ids(self, class_name):
+    def get_image_ids(self, class_dict: dict):
         """过滤符合条件的image id"""
-        if "unique" in class_name:
+        if "unique" in class_dict:
             CatIds = self.coco.getCatIds(catNms=[])  # catNms is cat names
         else:
-            CatIds = self.coco.getCatIds(catNms=class_name)  # catNms is cat names
+            CatIds = self.coco.getCatIds(catNms=list(class_dict.keys()))  # catNms is cat names
         # image_ids = self.coco.getImgIds(catIds=[])  # getImgIds返回的是图片中同时存在class_name的图片
         class_count = {}
         image_ids = set()
@@ -203,12 +203,19 @@ class CocoDataset(object):
         elif isinstance(class_name, list) and "unique" in class_name:
             self.unique = True
         if isinstance(class_name, list) and len(class_name) > 0:
-            class_dict = {class_name: i for i, class_name in enumerate(class_name)}
+            class_dict = {}
+            for i, name in enumerate(class_name):
+                name = name.split(",")
+                for n in name: class_dict[n] = i
         elif isinstance(class_name, dict) and len(class_name) > 0:
             class_dict = class_name
-            class_name = list(class_dict.keys())
         else:
             class_dict = None
+        if class_dict:
+            class_name = {}
+            for n, i in class_dict.items():
+                class_name[i] = "{},{}".format(class_name[i], n) if i in class_name else n
+            class_name = list(class_name.values())
         return class_name, class_dict
 
     def load_categories(self):
@@ -278,7 +285,7 @@ class CocoDataset(object):
             if anno['bbox'][2] < 1 or anno['bbox'][3] < 1:
                 continue
             name = self.id2category[anno['category_id']] if not self.unique else "unique"
-            if self.class_name and name not in self.class_name:
+            if self.class_dict and name not in self.class_dict:
                 continue
             bbox = anno['bbox']  # x,y,w,h
             label = self.class_dict[name]
@@ -294,15 +301,14 @@ class CocoDataset(object):
         :param anns:
         :param h:
         :param w:
-        :decode w: 是否对segment进行解码，
-                  True:在mask显示分割信息,False：mask为0，无分割信息
+        :param decode: 是否对segment进行解码， True:在mask显示分割信息,False：mask为0，无分割信息
         :return:
         """
         mask = np.zeros((h, w), dtype=np.uint8)
         segs, labels, rects = [], [], []
         for ann in anns:
             name = self.id2category[ann['category_id']] if not self.unique else "unique"
-            if self.class_name and name not in self.class_name:
+            if self.class_dict and name not in self.class_dict:
                 continue
             seg = ann['segmentation'][0]
             if len(seg) == 0: continue
@@ -341,7 +347,7 @@ class CocoDataset(object):
         keypoints, labels, rects, boxes = [], [], [], []
         for ann in anns:
             name = self.id2category[ann['category_id']] if not self.unique else "unique"
-            if self.class_name and name not in self.class_name:
+            if self.class_dict and name not in self.class_dict:
                 continue
             keypoint = ann.get('keypoints', [])
             if len(keypoint) == 0: continue
@@ -426,6 +432,7 @@ class ConcatDataset(Dataset):
             random.seed(200)
             random.shuffle(self.image_ids)
         print("ConcatDataset total images :{}".format(len(self.image_ids)))
+        print("ConcatDataset class_name   :{}".format(self.class_name))
         print("------" * 10)
 
     def add_dataset_id(self, image_ids, dataset_id):

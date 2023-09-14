@@ -32,7 +32,7 @@ class CocoDetection(CocoDataset):
         :param target_transform:
         :param use_rgb:
         :param shuffle:
-        :param decode:
+        :param decode: 是否对segment进行解码， True:在mask显示分割信息,False：mask为0，无分割信息
         """
         super(CocoDetection, self).__init__(anno_file, image_dir=image_dir, class_name=class_name, transform=transform,
                                             target_transform=target_transform, use_rgb=use_rgb,
@@ -65,8 +65,8 @@ class CocoDetection(CocoDataset):
         if num_boxes == 0:
             index = int(random.uniform(0, len(self)))
             return self.__getitem__(index)
-        data = {"image": image, "target": target, "label": labels, "width": width, "height": height,
-                "image_ids": image_id, "image_file": image_file}
+        data = {"image": image, "target": target, "label": labels, "image_id": image_id,
+                "image_file": image_file, "size": [width, height], "class_name": self.class_name}
         return data
 
 
@@ -107,12 +107,12 @@ def CocoDetections(anno_file=None,
                              decode=decode,
                              **kwargs)
         datasets.append(data)
-    datasets = ConcatDataset(datasets)
+    datasets = ConcatDataset(datasets, shuffle=shuffle)
     return datasets
 
 
-def show_target_image(image, boxes, labels, normal=False, transpose=False, class_name=None, use_rgb=True,
-                      thickness=2, fontScale=1.0):
+def show_target_image(image, boxes, labels, normal=False, transpose=False, class_name=None,
+                      thickness=2, fontScale=1.0, use_rgb=True):
     """
     :param image:
     :param targets_t:
@@ -150,7 +150,7 @@ if __name__ == "__main__":
     class_name = voc.class_name
     for i in range(len(voc)):
         data = voc.__getitem__(i)
-        image, targets, image_id = data['image'], data["target"], data["image_ids"]
+        image, targets, image_id = data['image'], data["target"], data["image_id"]
         bboxes, labels = targets[:, 0:4], targets[:, 4:5]
-        print("i={},image_ids={}".format(i, data["image_ids"]))
+        print("i={},image_id={}".format(i, data["image_id"]))
         show_target_image(image, bboxes, labels, normal=False, transpose=False, class_name=class_name)

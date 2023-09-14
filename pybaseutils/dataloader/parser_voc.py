@@ -52,8 +52,8 @@ class VOCDataset(Dataset):
         parser = self.parser_paths(filename, data_root, anno_dir, image_dir)
         self.data_root, self.anno_dir, self.image_dir, self.image_ids = parser
         self.seg_dir = seg_dir
-        if check or (self.class_name is None):
-            self.image_ids = self.checking(self.image_ids, class_name=self.class_name)
+        if check or (self.class_dict is None):
+            self.image_ids = self.checking(self.image_ids, class_dict=self.class_dict)
         self.transform = transform
         self.use_rgb = use_rgb
         self.classes = list(self.class_dict.values()) if self.class_dict else None
@@ -83,7 +83,7 @@ class VOCDataset(Dataset):
         annotation_file = os.path.join(anno_dir, "{}.xml".format(image_id))
         return image_file, annotation_file
 
-    def checking(self, image_ids: list, class_name, ignore_empty=True):
+    def checking(self, image_ids: list, class_dict: dict, ignore_empty=True):
         """
         :param image_ids:
         :param ignore_empty : 是否去除一些空数据
@@ -111,7 +111,7 @@ class VOCDataset(Dataset):
                 continue
             dst_ids.append(image_id)
         class_set = sorted(class_set)
-        if not class_name:
+        if not class_dict:
             print("class_name is None, Dataset will auto get class_set :{}".format(class_set))
             self.class_name = class_set
             self.class_dict = {class_name: i for i, class_name in enumerate(class_set)}
@@ -128,16 +128,23 @@ class VOCDataset(Dataset):
         :return:
         """
         if isinstance(class_name, str):
-            class_name = super().read_files(class_name)
+            class_name = Dataset.read_files(class_name)
         elif isinstance(class_name, list) and "unique" in class_name:
             self.unique = True
         if isinstance(class_name, list) and len(class_name) > 0:
-            class_dict = {class_name: i for i, class_name in enumerate(class_name)}
+            class_dict = {}
+            for i, name in enumerate(class_name):
+                name = name.split(",")
+                for n in name: class_dict[n] = i
         elif isinstance(class_name, dict) and len(class_name) > 0:
             class_dict = class_name
-            class_name = list(class_dict.keys())
         else:
             class_dict = None
+        if class_dict:
+            class_name = {}
+            for n, i in class_dict.items():
+                class_name[i] = "{},{}".format(class_name[i], n) if i in class_name else n
+            class_name = list(class_name.values())
         return class_name, class_dict
 
     def parser_paths(self, filename=None, data_root=None, anno_dir=None, image_dir=None):
@@ -270,7 +277,7 @@ class VOCDataset(Dataset):
         for object in objects:
             name = str(object["name"]) if not self.unique else "unique"
             name = "BACKGROUND" if str(object["name"]) == 'BACKGROUND' else name
-            if self.class_name and name not in self.class_name:
+            if self.class_dict and name not in self.class_dict:
                 continue
             difficult = int(object["difficult"]) if 'difficult' in object else 0
             xmin = float(object["bndbox"]["xmin"])
@@ -384,6 +391,9 @@ class ConcatDataset(Dataset):
             random.seed(200)
             random.shuffle(self.image_ids)
         print("ConcatDataset total images :{}".format(len(self.image_ids)))
+        print("ConcatDataset class_name   :{}".format(self.class_name))
+        print("------" * 10)
+
 
     def add_dataset_id(self, image_ids, dataset_id):
         """
