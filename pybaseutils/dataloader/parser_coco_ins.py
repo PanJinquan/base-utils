@@ -118,8 +118,8 @@ if __name__ == "__main__":
     anno_file1 = "/media/PKing/新加卷1/SDK/base-utils/data/coco/coco_ins.json"
     anno_file2 = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v1/val_coco_instance.json"
     # anno_file2 = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v2/train_coco_instance.json"
-    # class_name = ["BG", 'car', 'person,身穿工作服']
-    class_name = {"BG": 0, 'car': 1, 'person': 2, "身穿工作服": 2}
+    # class_name = ["BG", 'car,person,身穿工作服']
+    class_name = {"BG": 0, 'car': 1, 'person': 1, "身穿工作服": 1}
     #
     # anno_file = "/media/PKing/新加卷1/SDK/base-utils/data/coco/coco_ins.json"
     # anno_file = "/home/PKing/nasdata/dataset/tmp/hand-pose/FreiHAND/training/coco_kps.json"
