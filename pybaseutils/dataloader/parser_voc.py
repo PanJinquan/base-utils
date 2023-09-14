@@ -152,7 +152,7 @@ class VOCDataset(Dataset):
             anno_dir = os.path.join(data_root, "Annotations") if not anno_dir else anno_dir
             image_dir = os.path.join(data_root, "JPEGImages") if not image_dir else image_dir
         image_ids = []
-        if isinstance(filename, str):
+        if isinstance(filename, str) and filename:
             data_root = os.path.dirname(filename)
             image_ids = self.read_files(filename)
         if not anno_dir:

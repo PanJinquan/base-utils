@@ -20,10 +20,11 @@ from pybaseutils import file_utils, json_utils, image_utils
 from pybaseutils.dataloader import parser_labelme
 from pybaseutils.converter import build_coco
 
+
 class Labelme2COCO(build_coco.COCOBuilder):
     """Convert Labelme to COCO dataset format"""
 
-    def __init__(self, image_dir, anno_dir, init_id=None):
+    def __init__(self, image_dir, anno_dir, filename="", init_id=None):
         """
         :param image_dir: 图片目录(*.json)
         :param anno_dir:  标注文件目录
@@ -34,7 +35,7 @@ class Labelme2COCO(build_coco.COCOBuilder):
         print(image_dir)
         self.anno_dir = anno_dir
         self.image_dir = image_dir
-        self.labelme = parser_labelme.LabelMeDataset(filename=None, data_root=None, image_dir=image_dir,
+        self.labelme = parser_labelme.LabelMeDataset(filename=filename, data_root=None, image_dir=image_dir,
                                                      anno_dir=anno_dir, class_name=None, use_rgb=False,
                                                      shuffle=False, check=False, )
 
@@ -49,7 +50,7 @@ class Labelme2COCO(build_coco.COCOBuilder):
         :return:
         """
         assert len(class_name) == 1  # 目前仅仅支持单个类别
-        for index in tqdm(range(len(self.labelme.image_id))):
+        for index in tqdm(range(len(self.labelme.image_ids))):
             image_id = self.labelme.index2id(index)
             image_file, anno_file, image_id = self.labelme.get_image_anno_file(image_id)
             annotation, width, height = self.labelme.load_annotations(anno_file)
@@ -84,7 +85,7 @@ class Labelme2COCO(build_coco.COCOBuilder):
         :param class_name: 只选择的类别转换,默认全部
         :return:
         """
-        for index in tqdm(range(len(self.labelme.image_id))):
+        for index in tqdm(range(len(self.labelme.image_ids))):
             image_id = self.labelme.index2id(index)
             # image_id = 'test3.png'
             image_file, anno_file, image_id = self.labelme.get_image_anno_file(image_id)
@@ -135,7 +136,7 @@ class Labelme2COCO(build_coco.COCOBuilder):
         super(Labelme2COCO, self).save_coco(json_file)
 
 
-def demo_for_person5():
+def demo():
     kps_name = ["p0", "p1", "p2", "p3", "p4"]
     skeleton = [[0, 2], [2, 1], [2, 3], [3, 4]]
     image_dir = "/media/PKing/新加卷1/SDK/base-utils/data/coco/JPEGImages"
@@ -151,15 +152,5 @@ def demo_for_person5():
     build.build_instances_dataset(coco_ins_file)
 
 
-def demo_for_hand21():
-    image_dir = "/media/PKing/新加卷1/SDK/base-utils/data/coco/JPEGImages"
-    anno_dir = "/media/PKing/新加卷1/SDK/base-utils/data/coco/json"
-    coco_ins_file = os.path.join(os.path.dirname(image_dir), "coco_ins.json")
-    coco_kps_file = os.path.join(os.path.dirname(image_dir), "coco_kps.json")
-    build = Labelme2COCO(image_dir=image_dir, anno_dir=anno_dir, init_id=None)
-    # build.build_keypoints_dataset(coco_kps_file, class_name=["person"], num_joints=5)
-    build.build_instances_dataset(coco_ins_file)
-
-
 if __name__ == '__main__':
-    demo_for_person5()
+    demo()

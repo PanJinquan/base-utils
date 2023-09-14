@@ -44,7 +44,7 @@ class Labelme2YOLO(object):
         :param class_name: 只选择的类别转换,默认全部
         :return: 
         """
-        for i in tqdm(range(len(self.labelme.image_id))):
+        for i in tqdm(range(len(self.labelme.image_ids))):
             image_id = self.labelme.index2id(i)
             image_file, anno_file, image_id = self.labelme.get_image_anno_file(image_id)
             annotation, width, height = self.labelme.load_annotations(anno_file)

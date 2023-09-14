@@ -175,7 +175,7 @@ class YOLODataset(Dataset):
             anno_dir = os.path.join(data_root, "json") if not anno_dir else anno_dir
             image_dir = os.path.join(data_root, "images") if not image_dir else image_dir
         image_ids = []
-        if isinstance(filename, str):
+        if isinstance(filename, str) and filename:
             image_ids = self.read_files(filename, split=",")
             data_root = os.path.dirname(filename)
         if not anno_dir:  # 如果anno_dir为空，则自动搜寻可能存在图片目录
