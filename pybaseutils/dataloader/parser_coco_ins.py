@@ -116,10 +116,15 @@ if __name__ == "__main__":
     # anno_file2 = "/home/PKing/nasdata/dataset/face_person/COCO/val2017/instances_val2017.json"
 
     anno_file1 = "/media/PKing/新加卷1/SDK/base-utils/data/coco/coco_ins.json"
-    anno_file2 = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v1/val_coco_instance.json"
+    anno_file2 = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v2/train_coco_instance.json"
     # anno_file2 = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v2/train_coco_instance.json"
     # class_name = ["BG", 'car,person,身穿工作服']
-    class_name = {"BG": 0, 'car': 1, 'person': 1, "身穿工作服": 1}
+    # class_name = {"BG": 0, 'car': 1, 'person': 1, "身穿工作服": 1}
+
+    class_name={'手': 0, '护目镜': 1, '未穿工作服': 2, '身穿工作服': 2, '其他鞋': 3, '绝缘鞋': 3, '安全带': 4, '安全帽': 5,
+            '绝缘垫': 6, '绝缘手套': 7, '万用表': 8, '万用表线头': 9, '相序表': 10, '相序表线头': 11, '钳形电流表': 12,
+            '电能表': 13, '尖嘴钳': 14, '验电笔': 15, '螺丝刀': 16, '接线盒': 17, '电流互感器': 18, '表箱关': 19,
+            '表箱开': 19, '竹梯': 20, '准备区域': 21, '工作台': 22}
     #
     # anno_file = "/media/PKing/新加卷1/SDK/base-utils/data/coco/coco_ins.json"
     # anno_file = "/home/PKing/nasdata/dataset/tmp/hand-pose/FreiHAND/training/coco_kps.json"
@@ -127,9 +132,10 @@ if __name__ == "__main__":
     # class_name = None
     # dataset = CocoInstance(anno_file=anno_file, image_dir="", class_name=class_name)
     dataset = CocoInstances(anno_file=[anno_file1, anno_file2], image_dir="",
-                            class_name=class_name, use_rgb=False, shuffle=True)
+                            class_name=class_name, use_rgb=False, shuffle=False)
     class_name = dataset.class_name
     for i in range(len(dataset)):
+        i = 2159
         data = dataset.__getitem__(i)
         image, boxes, labels, mask = data['image'], data["boxes"], data["label"], data["mask"]
         print("i={},image_id={}".format(i, data["image_id"]))

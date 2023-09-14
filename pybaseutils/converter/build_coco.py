@@ -248,7 +248,7 @@ class COCOBuilder():
         kps = kps.reshape(-1).tolist()
         return kps
 
-    def get_segment_info(self, contours):
+    def get_segment_info(self, contours, min_nums=3, min_area=10):
         """
         正常情况下，一个实例只有一条轮廓
         :param contours: (nums,points_nums,2)，(轮廓个数,轮廓点数,2),points_nums<4将会剔除
@@ -261,12 +261,13 @@ class COCOBuilder():
         # 计算轮廓面积
         segs, area = [], 0
         for contour in contours:
-            if len(contour) < 4: continue
+            if len(contour) < min_nums: continue
             contour = np.asarray(contour, dtype=np.int32)
             s = abs(cv2.contourArea(contour, True))
             seg = contour.reshape(-1).tolist()
             segs.append(seg)
             area += s
+        if area < min_area: segs, area = [], []
         return segs, area
 
     def addObjects(self, filename, objects: dict, width, height, num_joints):

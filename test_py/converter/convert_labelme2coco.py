@@ -45,10 +45,10 @@ def demo_for_aije():
     v4:{'电流互感器': 1, '表箱开': 2, '表箱关': 3, '竹梯': 4, '接线盒': 5, '电能表': 6, '安全帽': 7, '护目镜': 8, '绝缘手套': 9, '身穿工作服': 10, '工作台': 11, '准备区域': 12, '安全带': 13, '其他鞋': 14, '未穿工作服': 15, '万用表': 16, '螺丝刀': 17, '验电笔': 18, '绝缘鞋': 19, '万用表线头': 20, '相序表': 21, '相序表线头': 22, '钳形电流表': 23, '手': 24}
     :return:
     """
-    filename = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v1/val.txt"
-    image_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v1/JPEGImages"
-    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v1/json"
-    coco_ins_file = os.path.join(os.path.dirname(image_dir), "val_coco_instance.json")
+    filename = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v4/train.txt"
+    image_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v4/JPEGImages"
+    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v4/json"
+    coco_ins_file = os.path.join(os.path.dirname(image_dir), "train_coco_instance.json")
     build = Labelme2COCO(image_dir=image_dir, anno_dir=anno_dir, filename=filename, init_id=None)
     build.build_instances_dataset(coco_ins_file)
 

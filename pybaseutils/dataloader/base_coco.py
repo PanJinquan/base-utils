@@ -310,8 +310,8 @@ class CocoDataset(object):
             name = self.id2category[ann['category_id']] if not self.unique else "unique"
             if self.class_dict and name not in self.class_dict:
                 continue
+            if len(ann['segmentation']) == 0: continue
             seg = ann['segmentation'][0]
-            if len(seg) == 0: continue
             # polygons = image_utils.find_mask_contours(m) # bug：多个实例时，bbox有问题
             # bbox = image_utils.polygons2boxes(polygons)[0]
             label = self.class_dict[name]
