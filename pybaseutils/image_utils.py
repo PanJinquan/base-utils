@@ -660,15 +660,15 @@ def resize_image(image, size: Tuple, interpolation=cv2.INTER_LINEAR):
     """
     if not size: return image
     size = (size, size) if len(size) == 1 else size
-    resize_width, resize_height = size
-    height, width = image.shape[:2]
-    if (resize_height is None) and (resize_width is None):  # 错误写法：resize_height and resize_width is None
+    dw, dh = size
+    sh, sw = image.shape[:2]
+    if (dh is None) and (dw is None):  # 错误写法：resize_height and resize_width is None
         return image
-    if resize_height is None:
-        resize_height = int(height * resize_width / width)
-    elif resize_width is None:
-        resize_width = int(width * resize_height / height)
-    image = cv2.resize(image, dsize=(int(resize_width), int(resize_height)), interpolation=interpolation)
+    if dh is None:
+        dh = int(sh * dw / sw)
+    elif dw is None:
+        dw = int(sw * dh / sh)
+    image = cv2.resize(image, dsize=(int(dw), int(dh)), interpolation=interpolation)
     return image
 
 
@@ -2740,7 +2740,7 @@ def get_video_info(video_cap: cv2.VideoCapture):
     height = int(video_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     num_frames = int(video_cap.get(cv2.CAP_PROP_FRAME_COUNT))
     fps = int(video_cap.get(cv2.CAP_PROP_FPS))
-    print("video:width:{},height:{},fps:{},num_frames:{}".format(width, height, fps, num_frames))
+    print("read video:width:{},height:{},fps:{},num_frames:{}".format(width, height, fps, num_frames))
     return width, height, num_frames, fps
 
 
@@ -2758,7 +2758,7 @@ def get_video_writer(video_file, width, height, fps):
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
     frameSize = (int(width), int(height))
     video_writer = cv2.VideoWriter(video_file, fourcc, fps, frameSize)
-    print("video:width:{},height:{},fps:{}".format(width, height, fps))
+    print("save video:width:{},height:{},fps:{}".format(width, height, fps))
     return video_writer
 
 

@@ -456,13 +456,21 @@ def copy_dir_delete(src, dst):
     # time.sleep(3 / 1000.)
 
 
-def copy_dir(src, dst, sub=False):
+def copy_dir(src, dst, sub=False, exclude=[]):
     """ copy src-directory to dst-directory, will cover the same files"""
     if not os.path.exists(src):
         print("\nno src path:{}".format(src))
         return
     if sub: dst = os.path.join(dst, os.path.basename(src))
     for root, dirs, files in os.walk(src, topdown=False):
+        isExclude = False
+        if exclude:
+            for p2 in exclude:
+                p2 = p2[2:] if p2.startswith("./") else p2
+                p1 = root[len(src) + 1:]
+                isExclude = p1.startswith(p2)
+                if isExclude: break
+        if isExclude: continue
         dest_path = os.path.join(dst, os.path.relpath(root, src))
         if not os.path.exists(dest_path):
             os.makedirs(dest_path)
@@ -641,39 +649,42 @@ def get_all_files(file_dir):
     return file_list
 
 
-def get_files_lists(file_dir, postfix=IMG_POSTFIX, subname="", shuffle=False):
+def get_files_lists(file_dir, postfix=IMG_POSTFIX, subname="", shuffle=False, sub=False):
     """
     读取文件和列表: list,*.txt ,image path, directory
     :param file_dir: list,*.txt ,image path, directory
     :param subname: "JPEGImages"
+    :param sub: 是否去除根路径
     :return:
     """
     if isinstance(file_dir, list):
-        image_list = file_dir
+        file_list = file_dir
     elif file_dir.endswith(".txt"):
         data_root = os.path.dirname(file_dir)
-        image_list = read_data(file_dir, split=None)
-        if subname: image_list = [os.path.join(data_root, subname, n) for n in image_list]
+        file_list = read_data(file_dir, split=None)
+        if subname: file_list = [os.path.join(data_root, subname, n) for n in file_list]
     elif os.path.isdir(file_dir):
-        image_list = get_files_list(file_dir, prefix="", postfix=postfix)
+        file_list = get_files_list(file_dir, prefix="", postfix=postfix)
     elif os.path.isfile(file_dir):
-        image_list = [file_dir]
+        file_list = [file_dir]
     else:
-        image_list = [file_dir]
+        file_list = [file_dir]
         # raise Exception("Error:{}".format(file_dir))
     if shuffle:
         random.seed(100)
-        random.shuffle(image_list)
-    return image_list
+        random.shuffle(file_list)
+    if sub: file_list = get_sub_list(file_list, dirname=file_dir)
+    return file_list
 
 
-def get_files_list(file_dir, prefix="", postfix=None, basename=False):
+def get_files_list(file_dir, prefix="", postfix=None, basename=False, sub=False):
     """
     获得file_dir目录下，后缀名为postfix所有文件列表，包括子目录所有文件
     :param file_dir:
     :param prefix: 前缀
     :param postfix: 后缀
     :param basename: 返回的列表是文件名（True），还是文件的完整路径(False)
+    :param sub: 是否去除根路径
     :return:
     """
     file_list = []
@@ -691,6 +702,7 @@ def get_files_list(file_dir, prefix="", postfix=None, basename=False):
                 file_list.append(file)
     file_list.sort()
     file_list = get_basename(file_list) if basename else file_list
+    if sub: file_list = get_sub_list(file_list, dirname=file_dir)
     return file_list
 
 

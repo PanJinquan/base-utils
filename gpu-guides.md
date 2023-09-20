@@ -80,3 +80,8 @@ pip install nvidia-pyindex
 pip install nvidia-tensorrt==8.4.1.5 (版本與TensorRT-8.4.1.5.Linux.x86_64-gnu.cuda-11.6.cudnn8.4匹配即可)
 ```
 
+## 制定GPU
+
+```bash
+OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 python train.py
+```

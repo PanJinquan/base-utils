@@ -177,11 +177,11 @@ def frames2video(image_dir, video_file=None, func=None, size=None, postfix=["*.p
     cv2.destroyAllWindows()
 
 
-def convert_video_format(video_file, save_video, interval=1):
-    return video2video(video_file, save_video, interval=interval)
+def convert_video_format(video_file, save_video, start=0, interval=1):
+    return video2video(video_file, save_video, start=start, interval=interval)
 
 
-def video2video(video_file, save_video, interval=1, vis=True, delay=20):
+def video2video(video_file, save_video, start=0, interval=1, vis=True, delay=20):
     """
     转换视频格式
     :param video_file: *.avi,*.mp4,...
@@ -193,7 +193,7 @@ def video2video(video_file, save_video, interval=1, vis=True, delay=20):
     width, height, num_frames, fps = get_video_info(video_cap)
     video_writer = get_video_writer(save_video, width, height, fps)
     # freq = int(fps / detect_freq)
-    count = 0
+    count = start
     while True:
         # if count % interval == 0:
         if count % interval == 0 and count > 0:
@@ -208,8 +208,36 @@ def video2video(video_file, save_video, interval=1, vis=True, delay=20):
     video_writer.release()
 
 
-def write_video(self, frame):
-    self.video_writer.write(frame)
+def resize_video(video_file, save_video, size=(), start=0, interval=1, vis=True, delay=20):
+    """
+    转换视频格式
+    :param video_file: *.avi,*.mp4,...
+    :param save_video: *.avi
+    :param interval: 间隔
+    :param start:
+    :return:
+    """
+    video_cap = get_video_capture(video_file)
+    width, height, num_frames, fps = get_video_info(video_cap)
+    frame = np.zeros(shape=(height, width), dtype=np.uint8)
+    frame = image_utils.resize_image(frame, size=size)
+    height, width = frame.shape[:2]
+    video_writer = get_video_writer(save_video, width, height, fps)
+    # freq = int(fps / detect_freq)
+    count = start
+    while True:
+        # if count % interval == 0:
+        if count % interval == 0 and count > 0:
+            # 设置抽帧的位置
+            video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
+            isSuccess, frame = video_cap.read()
+            if not isSuccess or 0 < num_frames < count: break
+            frame = image_utils.resize_image(frame, size=size)
+            if vis: image_utils.cv_show_image("frame", frame, use_rgb=False, delay=delay)
+            video_writer.write(frame)
+        count += 1
+    video_cap.release()
+    video_writer.release()
 
 
 def video_task(frame, **kwargs):

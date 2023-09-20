@@ -20,7 +20,14 @@ def video_converter(root, out):
         video_utils.video2video(video_file, save_video, interval=1, vis=False)
 
 
+def resize_video():
+    video_file = "/home/PKing/nasdata/dataset/tmp/hand-pose/demo/video3-1080p.mp4"
+    save_video = "/home/PKing/nasdata/dataset/tmp/hand-pose/demo/video3-640p.mp4"
+    video_utils.resize_video(video_file, save_video, size=(None, 640), interval=1, vis=True, delay=10)
+
+
 if __name__ == "__main__":
     root = "/media/dm/新加卷/SDK/project/Camera-Calibration-Reconstruct-Cpp/data/lenacv-video"
     out = "/media/dm/新加卷/SDK/project/Camera-Calibration-Reconstruct-Cpp/data/lenacv-video1"
-    video_converter(root, out)
+    # video_converter(root, out)
+    resize_video()
