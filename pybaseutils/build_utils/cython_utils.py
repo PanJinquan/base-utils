@@ -10,6 +10,8 @@ import os
 import shutil
 from pybaseutils import file_utils
 
+IGNORE_DIRS = ['.git', '.idea', 'docs', 'test', 'build', 'dist']
+
 
 def indent(num):
     assert isinstance(num, int)
@@ -56,48 +58,49 @@ ext_modules = [
     return setup_file
 
 
-def build_app_modules(root,
-                      app="app",
-                      build="./_build",
-                      exclude_files=['.git', '.idea', '_build', 'build'],
-                      exclude_modules=[]):
+def get_app_modules(root,
+                    app,
+                    build="./build",
+                    exclude_dirs=IGNORE_DIRS,
+                    exclude_files=[]):
     """
     获得项目需要编译的模块
     :param root: 项目根目录路径
     :param app: 项目app模型名称
+    :param build: 编辑输出目录
+    :param exclude_dirs: 不需要处理的文件夹
     :param exclude_files: 不需要处理的文件
-    :param exclude_modules: 不需要处理的模块
     :return: app_build, setup_file, modules
     """
     app_name = os.path.basename(root)
-    app_build = os.path.join(build, app)
-    file_utils.copy_dir(root, build, exclude=exclude_files)
+    app_build = os.path.abspath(os.path.join(build, app))
+    file_utils.copy_dir(root, build, exclude=exclude_dirs)
     files = file_utils.get_files_lists(app_build, postfix=["*.py"], sub=False)
     files = file_utils.get_sub_list(files, dirname=os.path.dirname(app_build))
     modules = []
     for file in files:
         if file.startswith("./"): file = file[2:]
-        if file.endswith('__init__.py') or (file in exclude_modules):
+        if file.endswith('__init__.py') or (file in exclude_files):
             continue
         src = os.path.join(build, file)
         dst = os.path.join(build, file + "x")
         shutil.copyfile(src, dst)
         modules.append(file[:-3])
-    clear_app_build(app_build, delete_types=['.c', '.py', '.so'], exclude_file=exclude_modules)  # 只保留pyx文件
+    clear_app_build(app_build, delete_types=['.c', '.py', '.so'], exclude_files=exclude_files)  # 只保留pyx文件
     setup_file = gen_app_setup_file(os.path.join(build, 'setup.py'), app_name, modules)
-    return app_build, setup_file, modules
+    return setup_file
 
 
-def clear_app_build(app_root, delete_types, exclude_file):
+def clear_app_build(app_build, delete_types, exclude_files):
     """
     删除编译中间文件
-    :param app_root:
+    :param app_build:
     :param delete_types:
-    :param exclude_file: 不需要处理的文件
+    :param exclude_files: 不需要处理的文件
     :return:
     """
-    root = os.path.dirname(app_root)
-    for parent, dirs, files in os.walk(app_root, topdown=False):
+    root = os.path.dirname(app_build)
+    for parent, dirs, files in os.walk(app_build, topdown=False):
         if parent.endswith("__pycache__"):
             print("remove: {}".format(parent))
             shutil.rmtree(parent)
@@ -106,31 +109,63 @@ def clear_app_build(app_root, delete_types, exclude_file):
             p = "." + name.split(".")[-1]
             path = os.path.join(parent, name)
             file = path[len(root) + 1:]
-            if file.endswith('__init__.py') or (file in exclude_file): continue
+            if file.endswith('__init__.py') or (file in exclude_files): continue
             if p in delete_types:
                 print("remove: {}".format(path))
                 os.remove(path)
 
 
+def build_cython_setup(build, app, setup_file, exclude_files=[], clear=True):
+    """
+    :param build: 编辑输出目录
+    :param app: 项目app模型名称
+    :param setup_file:
+    :param exclude_files: 不需要处理的文件
+    :param clear: 是否清除编译中间文件
+    :return:
+    """
+    app_build = os.path.abspath(os.path.join(build, app))
+    tmp_build = os.path.join(build, "build")
+    os.system(f'cd {build} && pwd && python3 {setup_file} build_ext --inplace')
+    # clear_app_files
+    if clear:
+        if os.path.exists(tmp_build): shutil.rmtree(tmp_build)
+        delete_types = ['.pyx', '.c', '.py']  # 删除py文件和编译中间文件,只留下.so文件，用于部署
+        # delete_types = ['.so', '.pyx', '.c']  # 删除所有编译文件
+        clear_app_build(app_build, delete_types=delete_types, exclude_files=exclude_files)
+
+
+def build_cython(root,
+                 app="./app",
+                 build="./build",
+                 exclude_dirs=IGNORE_DIRS,
+                 exclude_files=[]):
+    """
+    :param root: 项目根目录路径
+    :param app: 项目app模型名称
+    :param build: 编辑输出目录
+    :param exclude_dirs: 不需要处理的文件夹
+    :param exclude_files: 不需要处理的文件
+    :return:
+    """
+    setup_file = get_app_modules(root, app=app, build=build,
+                                 exclude_dirs=exclude_dirs,
+                                 exclude_files=exclude_files)
+    build_cython_setup(build, app, setup_file, exclude_files=exclude_files)
+
+
 if __name__ == '__main__':
     root = os.path.dirname(__file__)
-    build_root = os.path.join(root, "_build")
-    app = "app"
+    build = os.path.join(root, "build")
+    app = "./app"
     # 利用cython把代码编译成so库(代码入口点和需要做反射的代码不能编译:如main,http接口)
-    exclude_file = ['build_cpython.py',
-                    'setup.py',
-                    'app/main.py',
-                    'app/service.py',
-                    'app/utils/http_utils.py',
-                    'app/routers/health.py',
-                    'app/routers/interface.py',
-                    'app/routers/version.py']  # 不进行编译的文件
-    app_build, setup_file, modules = build_app_modules(root, app="app", build=build_root,
-                                                       exclude_files=['.git', '.idea', '_build', 'build'],
-                                                       exclude_modules=exclude_file)
-    os.system(f'cd {build_root} && pwd && python3 {setup_file} build_ext --inplace')
-    # clear_app_files
-    # clear_app_build(app_build, delete_types=['.pyx', '.c'], exclude_file=exclude_file)  # 删除编译中间文件
-    clear_app_build(app_build, delete_types=['.pyx', '.c', '.py'], exclude_file=exclude_file)  # 删除py文件和编译中间文件，用于部署
-    # clear_app_build(app_build, delete_types=['.c', '.py'], exclude_file=exclude_file)  # 删除py文件和编译中间文件，用于部署
-    # clear_app_build(app_build, delete_types=['.so', '.pyx', '.c'], exclude_file=exclude_file)  # 删除所有编译文件
+    exclude_files = ['build_cython.py',
+                     'setup.py',
+                     'app/main.py',
+                     'app/service.py',
+                     'app/utils/http_utils.py',
+                     'app/routers/health.py',
+                     'app/routers/interface.py',
+                     'app/routers/version.py']  # 不进行编译的文件
+    exclude_dirs = IGNORE_DIRS
+    build_cython(root, app, build, exclude_dirs=exclude_dirs, exclude_files=exclude_files)
