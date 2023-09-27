@@ -5,20 +5,21 @@
     @Date   : 2023-09-20 14:35:22
     @Brief  : pip install pyarmor==7.7.4
               https://pyarmor.readthedocs.io/en/v5.4.0/project.html#managing-obfuscated-scripts-with-project
+              https://pyarmor.readthedocs.io/en/v7.3.0/project.html#project-configuration-file
               https://baijiahao.baidu.com/s?id=1775756280786745996&wfr=spider&for=pc
               https://www.jianshu.com/p/c1d3d79e3545/
 """
 
 import os
 from pybaseutils import file_utils
-from pybaseutils.build_utils import cython_utils
 
-IGNORE_DIRS = cython_utils.IGNORE_DIRS
+IGNORE_DIRS = ['.git', '.idea', 'docs', 'build', 'dist']
 
 
 def build_pyarmor_project(root,
                           entry,
                           build="./build",
+                          manifest="global-include *.py",
                           exclude_dirs=IGNORE_DIRS
                           ):
     """
@@ -27,20 +28,26 @@ def build_pyarmor_project(root,
     pyarmor init --entry=app/main.py
     pyarmor build
     :param root: 项目根目录路径
-    :param entry: 主函数
-    :param build: 编辑输出目录
-    :param exclude_dirs: 不需要处理的文件夹
-    :param exclude_files: 不需要处理的文件
+    :param entry: 主函数/入口函数
+    :param build: 编译输出目录
+    :param manifest: 用于指定需要处理的文件，默认global-include *.py
+    :param exclude_dirs: 不需要处理的文件
     :return:
     """
+    app = os.path.dirname(entry)
     file_utils.copy_dir(root, build, exclude=exclude_dirs)
     os.system(f'pyarmor --version')
     os.system(f'rm -rf .pyarmor_config')
     os.system(f'rm -rf dist')
     os.system(f'pyarmor init --entry={entry}')
-    os.system(f'pyarmor build')
-    os.system(f'cd dist && cp -r pytransform ./app')
-    file_utils.copy_dir(os.path.join(root, "dist"), build, exclude=[])
+    if manifest:
+        os.system(f'pyarmor config --manifest="{manifest}"')
+    os.system(f'pyarmor build --output={build} --force')
+    # os.system(f'cd {build} && cp -r pytransform {os.path.join(build, app)}')
+    file_utils.move_dir(os.path.join(build, "pytransform"), os.path.join(build, app, "pytransform"))
+    file_utils.remove_dir(os.path.join(build, "pytransform"))
+    # 将pyarmor编译结果保存到
+    # file_utils.copy_dir(os.path.join(root, "dist"), build, exclude=[])
 
 
 def build_pyarmor_bk(root,
@@ -52,8 +59,8 @@ def build_pyarmor_bk(root,
     """
     存在BUG，不推荐使用
     :param root: 项目根目录路径
-    :param main: 主函数
-    :param build: 编辑输出目录
+    :param main: 主函数/入口函数
+    :param build: 编译输出目录
     :param exclude_dirs: 不需要处理的文件夹
     :param exclude_files: 不需要处理的文件
     :return:

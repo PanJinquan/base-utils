@@ -78,6 +78,17 @@ def combine_flags(flags: list, use_time=True, info=True):
     return out_flags
 
 
+def write_file(file, data):
+    """写二进制数据"""
+    with open(file, 'wb') as f: f.write(data)
+
+
+def read_file(file):
+    """读取二进制数据"""
+    with open(file, 'rb') as f: key = f.read()
+    return key
+
+
 class WriterTXT(object):
     """ write data in txt files"""
 
@@ -637,6 +648,43 @@ def get_sub_list(file_list, dirname: str):
         if dirname == f[:len(dirname)]:
             sub_list.append(f[len(dirname) + 1:])
     return sub_list
+
+
+def get_train_test_files(file_dir, ratio=0.2, postfix=IMG_POSTFIX, subname="", shuffle=False, sub=False, save=True):
+    """
+    划分训练集和测试集
+    :param file_dir:
+    :param ratio: 若小于0，则表示test/train的比例；若大于0，则表示test的样本数，剩下的为train数目
+    :param postfix:
+    :param subname:
+    :param shuffle:
+    :param sub:
+    :return:
+    """
+    file_list = get_files_lists(file_dir, postfix=postfix, subname=subname,
+                                shuffle=shuffle, sub=sub)
+    if shuffle:
+        random.seed(100)
+        random.shuffle(file_list)
+    nums = len(file_list)
+    test_nums = ratio if ratio > 1 else int(len(file_list) * ratio)
+    test, train = file_list[0:test_nums], file_list[test_nums:]
+    train.sort()
+    test.sort()
+    if os.path.isdir(file_dir):
+        out = file_dir
+    elif os.path.isfile(file_dir):
+        out = os.path.dirname(file_dir)
+    else:
+        out = file_dir
+    if save:
+        write_list_data(os.path.join(out, f"total-{nums}.txt"), file_list)
+        write_list_data(os.path.join(out, f"train-{len(train)}.txt"), train)
+        write_list_data(os.path.join(out, f"test-{len(test)}.txt"), test)
+    print("total files: {}".format(nums))
+    print("train files: {}".format(len(train)))
+    print("test  files: {}".format(len(test)))
+    return train, test
 
 
 def get_all_files(file_dir):

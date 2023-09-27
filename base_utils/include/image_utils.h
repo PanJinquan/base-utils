@@ -222,11 +222,22 @@ void draw_point_text(cv::Mat &image, cv::Point2f points, string text = "",
 /***
  * 绘制多个点和文本
  * @param image
- * @param points
- * @param texts
+ * @param points 点
+ * @param texts 点需要显示的文本
  */
 void draw_points_texts(cv::Mat &image, vector<cv::Point2f> points, vector<string> texts = {},
                        cv::Scalar color = cv::Scalar(255, 0, 0));
+
+
+/***
+ * 绘制多个点和文本
+ * @param image
+ * @param points 点
+ * @param texts 点需要显示的文本
+ * @param colors 颜色表
+ */
+void draw_points_texts_colors(cv::Mat &image, vector<cv::Point2f> points, vector<string> texts = {},
+                              vector<cv::Scalar> colors = {cv::Scalar(255, 0, 0)});
 
 
 /***
@@ -254,9 +265,21 @@ void draw_rects_texts(cv::Mat &image, vector<cv::Rect> rects, vector<string> tex
  * @param image
  * @param points
  * @param skeleton 需要连接的ID序号
+ * @param color 连接线的颜色
  */
 void draw_lines(cv::Mat &image, vector<cv::Point2f> points, vector<vector<int>> skeleton,
-                cv::Scalar color = cv::Scalar(255, 0, 0));
+                cv::Scalar color = cv::Scalar(255, 0, 0), int thickness = 2);
+
+/***
+ * 绘制连接线
+ * @param image
+ * @param points
+ * @param skeleton 需要连接的ID序号
+ * @param color 连接线的颜色表
+ */
+void draw_lines(cv::Mat &image, vector<cv::Point2f> points, vector<vector<int>> skeleton, vector<cv::Scalar> colors,
+                int thickness = 2);
+
 
 /***
  * 绘制带箭头的连接线

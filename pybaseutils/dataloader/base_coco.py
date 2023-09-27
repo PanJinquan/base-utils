@@ -142,6 +142,7 @@ class CocoDataset(object):
         self.num_images = len(self.image_ids)
         self.classes = list(set(self.class_dict.values())) if self.class_dict else []
         self.num_classes = max(list(self.class_dict.values())) + 1 if self.class_dict else 0
+        self.bones = {}
         print("CocoDataset anno_file  :{}".format(anno_file))
         print("CocoDataset image_dir  :{}".format(self.image_dir))
         print("CocoDataset class_count:{}".format(self.class_count))
@@ -421,6 +422,7 @@ class ConcatDataset(Dataset):
         self.shuffle = shuffle
         self.classes = []
         self.class_name = []
+        self.bones = {}
         for dataset_id, dataset in enumerate(self.dataset):
             # image_ids = dataset.image_ids
             image_ids = list(range(len(dataset.image_ids)))
@@ -428,6 +430,7 @@ class ConcatDataset(Dataset):
             self.image_ids += image_ids
             self.classes = dataset.classes
             self.class_name = dataset.class_name
+            self.bones = dataset.bones
         if shuffle:
             random.seed(200)
             random.shuffle(self.image_ids)

@@ -23,5 +23,5 @@ if __name__ == '__main__':
                      'app/routers/health.py',
                      'app/routers/interface.py',
                      'app/routers/version.py']  # 不进行编译的文件
-    exclude_dirs = ['.git', '.idea', '_build', 'build', 'docs', 'test']
+    exclude_dirs = ['.git', '.idea', 'docs', 'test', 'build', 'dist']
     cython_utils.build_cython(root, app, build, exclude_dirs=exclude_dirs, exclude_files=exclude_files)

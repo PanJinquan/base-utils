@@ -146,10 +146,10 @@ def show_target_image(image, boxes, labels, normal=False, transpose=False, class
 if __name__ == "__main__":
     size = [640, 640]
     anno_file = "/home/PKing/nasdata/dataset/tmp/hand-pose/HandPose-v2/train/train_anno.json"
-    voc = CocoDetection(anno_file, class_name=[], transform=None, use_rgb=True)
-    class_name = voc.class_name
-    for i in range(len(voc)):
-        data = voc.__getitem__(i)
+    dataset = CocoDetection(anno_file, class_name=[], transform=None, use_rgb=True)
+    class_name = dataset.class_name
+    for i in range(len(dataset)):
+        data = dataset.__getitem__(i)
         image, targets, image_id = data['image'], data["target"], data["image_id"]
         bboxes, labels = targets[:, 0:4], targets[:, 4:5]
         print("i={},image_id={}".format(i, data["image_id"]))

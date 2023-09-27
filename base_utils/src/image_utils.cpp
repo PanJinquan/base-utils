@@ -226,7 +226,7 @@ void draw_point_text(cv::Mat &image, cv::Point2f points, string text, cv::Scalar
     if (text != "") {
         cv::putText(image,
                     text,
-                    cv::Point(points.x + 5, points.y+20),
+                    cv::Point(points.x + 5, points.y + 20),
                     cv::FONT_HERSHEY_COMPLEX,
                     0.8,
                     color);
@@ -247,7 +247,22 @@ void draw_points_texts(cv::Mat &image, vector<cv::Point2f> points, vector<string
 }
 
 
-void draw_rect_text(cv::Mat &image, cv::Rect rect, string text, cv::Scalar color, int thickness,double fontScale) {
+void draw_points_texts_colors(cv::Mat &image, vector<cv::Point2f> points, vector<string> texts,
+                              vector<cv::Scalar> colors) {
+    int num = points.size();
+    if (texts.size() != num && texts.size() == 0) {
+        for (int i = 0; i < num; ++i) {
+            texts.push_back("");
+        }
+    }
+    for (int i = 0; i < num; ++i) {
+        cv::Scalar color = colors[i% colors.size()];
+        draw_point_text(image, points[i], texts[i], color);
+    }
+}
+
+
+void draw_rect_text(cv::Mat &image, cv::Rect rect, string text, cv::Scalar color, int thickness, double fontScale) {
     cv::rectangle(image, rect, color, thickness);
     if (text != "") {
         cv::putText(image,
@@ -272,20 +287,38 @@ void draw_rects_texts(cv::Mat &image,
         }
     }
     for (int i = 0; i < num; ++i) {
-        draw_rect_text(image, rects[i], texts[i], color, thickness,fontScale);
+        draw_rect_text(image, rects[i], texts[i], color, thickness, fontScale);
     }
 }
 
 void draw_lines(cv::Mat &image,
                 vector<cv::Point2f> points,
                 vector<vector<int>> skeleton,
-                cv::Scalar color) {
-    int thickness = 1;
-    for (auto &pair:skeleton) {
+                cv::Scalar color,
+                int thickness) {
+    for (int i = 0; i < skeleton.size(); ++i) {
+        auto pair = skeleton[i];
         if (points[pair[0]].x > 0. && points[pair[0]].y > 0. &&
             points[pair[1]].x > 0. && points[pair[1]].y > 0.) {
             cv::Point2d p0 = points[pair[0]];
             cv::Point2d p1 = points[pair[1]];
+            cv::line(image, p0, p1, color, thickness);
+        }
+    }
+}
+
+void draw_lines(cv::Mat &image,
+                vector<cv::Point2f> points,
+                vector<vector<int>> skeleton,
+                vector<cv::Scalar> colors,
+                int thickness) {
+    for (int i = 0; i < skeleton.size(); ++i) {
+        auto pair = skeleton[i];
+        if (points[pair[0]].x > 0. && points[pair[0]].y > 0. &&
+            points[pair[1]].x > 0. && points[pair[1]].y > 0.) {
+            cv::Point2d p0 = points[pair[0]];
+            cv::Point2d p1 = points[pair[1]];
+            cv::Scalar color = colors[pair[1] % colors.size()];
             cv::line(image, p0, p1, color, thickness);
         }
     }
@@ -478,7 +511,7 @@ void image_boxes_resize_padding_inverse(cv::Size image_size, cv::Size input_size
 
 void image_mosaic(cv::Mat &image, cv::Rect rect, int radius) {
     //仅对矩形框区域进行像素修改。遍历矩形框区域像素，并对其进行修改
-    if (radius<=0) return;
+    if (radius <= 0) return;
     int n = image.channels();
     rect &= cv::Rect(0, 0, image.cols, image.rows);
     int xmax = rect.x + rect.width;
@@ -511,7 +544,7 @@ void image_mosaic(cv::Mat &image, vector<cv::Rect> rects, int radius) {
 
 
 void image_blur(cv::Mat &image, cv::Rect rect, int radius, bool gaussian) {
-    if (radius<=0) return;
+    if (radius <= 0) return;
     rect &= cv::Rect(0, 0, image.cols, image.rows);
     cv::Mat roi = image(rect);
     if (gaussian) {

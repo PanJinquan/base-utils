@@ -248,7 +248,7 @@ class COCOBuilder():
         kps = kps.reshape(-1).tolist()
         return kps
 
-    def get_segment_info(self, contours, min_nums=3, min_area=10):
+    def get_segment_info(self, contours, min_nums=2, min_area=10):
         """
         正常情况下，一个实例只有一条轮廓
         :param contours: (nums,points_nums,2)，(轮廓个数,轮廓点数,2),points_nums<4将会剔除
@@ -306,16 +306,17 @@ class COCOBuilder():
             bbox = boxes[i]
             segs = contours[i] if contours else []
             kpts = keypoints[i] if keypoints else []
-            if name not in self.category_set:
-                current_category_id = self.addCatItem(name)
-            else:
-                current_category_id = self.category_set[name]
             if isinstance(bbox, np.ndarray): bbox = bbox.tolist()
             xmin, ymin, xmax, ymax = bbox
             rect = [xmin, ymin, xmax - xmin, ymax - ymin]
             # get segmentation info
             if len(segs) == 0: segs = [[[xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax]]]
-            segs, area = self.get_segment_info(segs)
+            segs, area = self.get_segment_info(segs, min_nums=2, min_area=10)
+            if len(segs) == 0: continue
+            if name not in self.category_set:
+                current_category_id = self.addCatItem(name)
+            else:
+                current_category_id = self.category_set[name]
             self.addAnnoItem(current_image_id, current_category_id, rect, segs, area, keypoints=kpts)
 
     def build_keypoints_dataset_example(self, save_file, num_joints, class_name, kps_name=[], skeleton=[], **kwargs):

@@ -67,7 +67,7 @@ def get_app_modules(root,
     获得项目需要编译的模块
     :param root: 项目根目录路径
     :param app: 项目app模型名称
-    :param build: 编辑输出目录
+    :param build: 编译输出目录
     :param exclude_dirs: 不需要处理的文件夹
     :param exclude_files: 不需要处理的文件
     :return: app_build, setup_file, modules
@@ -143,7 +143,7 @@ def build_cython(root,
     """
     :param root: 项目根目录路径
     :param app: 项目app模型名称
-    :param build: 编辑输出目录
+    :param build: 编译输出目录
     :param exclude_dirs: 不需要处理的文件夹
     :param exclude_files: 不需要处理的文件
     :return:
