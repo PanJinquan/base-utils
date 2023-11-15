@@ -125,14 +125,24 @@ vector<cv::Point2f> rotate_points(vector<cv::Point2f> &points, cv::Point2f cente
 }
 
 
-cv::Rect extend_rect(cv::Rect rect, float sx, float sy) {
+cv::Rect extend_rect(cv::Rect rect, float sx, float sy, bool fixed, bool use_max) {
     float cx = (rect.x + rect.x + rect.width) / 2.0f;
     float cy = (rect.y + rect.y + rect.height) / 2.0f;
-    float ew = rect.width * sx;
-    float eh = rect.height * sy;
-    float ex = cx - 0.5 * ew;
-    float ey = cy - 0.5 * eh;
-    cv::Rect r(ex, ey, ew, eh);
+    cv::Rect r(0, 0, 0, 0);
+    float ex, ey, ew, eh;
+    if (fixed) {
+        float dw = rect.width * (sx - 1);
+        float dh = rect.height * (sy - 1);
+        float pd = use_max ? (dw > dh ? dw : dh) : (dw < dh ? dw : dh);
+        ew = rect.width + pd;
+        eh = rect.height + pd;
+    } else {
+        ew = rect.width * sx;
+        eh = rect.height * sy;
+    }
+    ex = cx - 0.5 * ew;
+    ey = cy - 0.5 * eh;
+    r.x = ex, r.y = ey, r.width = ew, r.height = eh;
     return r;
 }
 
@@ -256,7 +266,7 @@ void draw_points_texts_colors(cv::Mat &image, vector<cv::Point2f> points, vector
         }
     }
     for (int i = 0; i < num; ++i) {
-        cv::Scalar color = colors[i% colors.size()];
+        cv::Scalar color = colors[i % colors.size()];
         draw_point_text(image, points[i], texts[i], color);
     }
 }

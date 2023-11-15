@@ -27,6 +27,7 @@ class COCOTools(object):
         :param categories:
         :return: dict:{name:id}
         """
+        assert categories, Exception("categories is empty")
         supercategorys = []
         categories_id = {}
         for item in categories:
@@ -43,6 +44,7 @@ class COCOTools(object):
         :param annotations:
         :return: annotations id list
         """
+        assert annotations, Exception("annotations is empty")
         annotations_id = []
         for item in annotations:
             id = item["id"]
@@ -56,6 +58,7 @@ class COCOTools(object):
         :param images:
         :return: images id list
         """
+        assert images, Exception("images is empty")
         images_id = []
         for item in images:
             id = item["id"]
@@ -130,6 +133,7 @@ class COCOBuilder():
         """
         # skeleton下标从0开始，coco_skeleton下标是从1开始的
         # skeleton = np.array(skeleton, dtype=np.int32) + 1
+        assert self.coco['categories'], Exception("categories is empty")
         self.coco['categories'][cat_id]['keypoints'] = kps_name
         self.coco['categories'][cat_id]['skeleton'] = skeleton
 
@@ -270,7 +274,7 @@ class COCOBuilder():
         if area < min_area: segs, area = [], []
         return segs, area
 
-    def addObjects(self, filename, objects: dict, width, height, num_joints):
+    def addObjects(self, filename, objects: dict, width, height, num_joints, ignore_tiny=False):
         """
         :param filename: os.path.basename(filename)
         :param objects:
@@ -288,6 +292,7 @@ class COCOBuilder():
         :param width:
         :param height:
         :param num_joints:
+        :param ignore_tiny: 是否去除segment很细小的目标
         :return:
         """
         boxes = objects.get("boxes", [])
@@ -311,7 +316,10 @@ class COCOBuilder():
             rect = [xmin, ymin, xmax - xmin, ymax - ymin]
             # get segmentation info
             if len(segs) == 0: segs = [[[xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax]]]
-            segs, area = self.get_segment_info(segs, min_nums=2, min_area=10)
+            if ignore_tiny:
+                segs, area = self.get_segment_info(segs, min_nums=2, min_area=10)
+            else:
+                segs, area = self.get_segment_info(segs, min_nums=0, min_area=0)
             if len(segs) == 0: continue
             if name not in self.category_set:
                 current_category_id = self.addCatItem(name)

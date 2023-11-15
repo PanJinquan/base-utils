@@ -118,7 +118,7 @@ class ParseDataset(object):
         conf = dets[:, 4:5]
         labels = dets[:, 5]
         if square:
-            boxes = image_utils.get_square_bboxes(boxes, use_max=True, baseline=-1)
+            boxes = image_utils.get_square_boxes(boxes, use_max=True, baseline=-1)
         if scale:
             # boxes = image_utils.extend_xyxy(boxes, scale=scale)
             # boxes = self.faceboxes2bodyup(boxes, scale=scale)

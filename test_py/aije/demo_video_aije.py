@@ -19,8 +19,10 @@ name_table = {"室内作业": "indoor",
               "号视角": "camera"
               }
 
+name_table = {}
 
-def video2frames_similarity(video_file, out_dir=None, func=None, interval=1, thresh=0.25, vis=True):
+
+def video2frames_similarity(video_file, out_dir=None, func=None, interval=1, thresh=0.25, prefix="", vis=True):
     """
     视频抽帧图像
     :param video_file: 视频文件
@@ -35,6 +37,7 @@ def video2frames_similarity(video_file, out_dir=None, func=None, interval=1, thr
     # 室内
     name = os.path.basename(video_file).split(".")[0]
     name = "{}_{}".format(os.path.basename(os.path.dirname(video_file)), name)
+    if prefix: name = f"{prefix}_{name}"
     for k, v in name_table.items(): name = name.replace(k, v)
     # 室外
     # name = file_utils.get_time()
@@ -67,21 +70,24 @@ def video2frames_similarity(video_file, out_dir=None, func=None, interval=1, thr
     cv2.destroyAllWindows()
 
 
-thresh_dict = {"1号视角": 0.5, "2号视角": 0.15, "3号视角": 0.3, "4号视角": 0.3}
+# thresh_dict = {"1号视角": 0.5, "2号视角": 0.15, "3号视角": 0.3, "4号视角": 0.3}
+thresh_dict = {"一号位": 0.58, "平视": 0.35, "俯视": 0.35, "右视": 0.25, "左视": 0.3}
+# thresh_dict = {"1号位": 0.58, "平视": 0.35, "全景": 0.35, "俯视": 0.35, "右视": 0.25, "左视": 0.3}
 
 
-def video2frames_demo(root, out, thresh=0.3):
-    files = file_utils.get_files_list(root, postfix=["*.avi", "*.mp4", "*.flv"])
+def video2frames_demo(root, out, thresh=0.3, prefix="广州"):
+    files = file_utils.get_files_lists(root, postfix=["*.avi", "*.mp4", "*.flv"])
     for video_file in tqdm(files):
         # video_file = "/home/PKing/nasdata/dataset-dmai/AIJE/岗评项目数据/中山视频/开发数据/室外作业视频_0713-0729/20220715室外作业/20220715室外作业01/4号视角.flv"
         print(video_file)
         name = os.path.basename(video_file).split(".")[0]
         if name in thresh_dict:
             thresh = thresh_dict[name]
-        video2frames_similarity(video_file, out_dir=out, func=None, interval=100, thresh=thresh, vis=True)
+        video2frames_similarity(video_file, out_dir=out, func=None, interval=100,
+                                thresh=thresh, prefix=prefix, vis=True)
 
 
 if __name__ == "__main__":
-    root = "/home/PKing/nasdata/dataset-dmai/AIJE/岗评项目数据/中山视频/开发数据/室外作业视频_0713-0729/20220721室外作业/20220721室外作业05"
-    out =  "/home/PKing/nasdata/dataset-dmai/AIJE/岗评项目数据/中山视频/开发数据/室外作业视频_0713-0729/20220721室外作业-frame"
+    root = "/home/PKing/nasdata/dataset-dmai/AIJE/岗评项目数据/东莞视频/室内/20231027_第四场"
+    out = root + "-frame"
     video2frames_demo(root, out)

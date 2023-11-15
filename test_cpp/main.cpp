@@ -95,6 +95,18 @@ void test_image_padding() {
     DEBUG_IMSHOW("dst", dst, 0);
 }
 
+
+void test_image_boxes() {
+    string path = "../../data/test_image/grid2.png";
+    DEBUG_TIME(t1);
+    cv::Mat image = cv::imread(path);
+    cv::Rect rect1(50, 50, 60, 300);
+    auto rect2 = extend_rect(rect1, 1.2, 1.2, true, true);
+    draw_rect_text(image, rect1, {}, cv::Scalar(255, 0, 0));
+    draw_rect_text(image, rect2, {}, cv::Scalar(0, 255, 0));
+    DEBUG_IMSHOW("image", image, 0);
+}
+
 void test_read_dir() {
     //string image_dir = "../../data/test_image/test1.jpg";
     string image_dir = "../../base_utils";
@@ -150,6 +162,7 @@ int main() {
     //test_rotate_points();
     //test_math_utils_vector();
     //test_image_padding();
-    test_mosaic();
+    //test_mosaic();
+    test_image_boxes();
     return 0;
 }

@@ -22,39 +22,51 @@ from pybaseutils.dataloader import parser_labelme
 class Labelme2VOC(object):
     """Convert Labelme to VOC dataset format"""
 
-    def __init__(self, image_dir, anno_dir):
+    def __init__(self, image_dir, anno_dir, class_name=None, shuffle=False, min_points=1):
         """
         :param image_dir: 图片目录(*.json)
         :param anno_dir:  标注文件目录
+        :param min_points: 当标注的轮廓点的个数小于min_points，会被剔除；负数不剔除
         """
         self.image_dir = image_dir
         self.dataset = parser_labelme.LabelMeDataset(filename=None,
                                                      data_root=None,
                                                      anno_dir=anno_dir,
                                                      image_dir=image_dir,
-                                                     class_name=None,
+                                                     class_name=class_name,
                                                      use_rgb=False,
                                                      check=False,
                                                      phase="val",
-                                                     shuffle=False,
-                                                     min_points=1)
+                                                     shuffle=shuffle,
+                                                     min_points=min_points)
 
-    def build_dataset(self, out_root, class_dict={}, out_image_dir=None, crop=False, rename=False, vis=True):
+    def get_object_detection(self, data):
+        """
+        data = {"image": image, "point": point, "box": box, "label": label, "groups": groups,
+                "image_file": image_file, "anno_file": anno_file, "width": width, "height": height}
+        :param data:
+        :return:
+        """
+        return data
+
+    def build_dataset(self, out_root, class_dict={}, out_img=False, crop=False, ignore=False,
+                      rename=False, vis=True):
         """
         :param out_root: VOC输出根目录
         :param class_dict: label映射 list或dict，如果label不在class_dict中，则使用原始label
-        :param out_image_dir: 保存 JPEGImages
+        :param out_img: 保存 JPEGImages
         :param crop: 是否进行目标裁剪
         :param rename: 是否重命名
         :param vis: 是否可视化
         :return:
         """
         out_xml_dir = os.path.join(out_root, "Annotations")
+        out_image_dir = os.path.join(out_root, "JPEGImages") if out_img else None
         out_crop_dir = os.path.join(out_root, "crops")
         class_set = []
         for i in tqdm(range(len(self.dataset))):
             data = self.dataset.__getitem__(i)
-            # data = self.dataset.__getitem__(307)
+            data = self.get_object_detection(data)
             image, points, bboxes, labels = data["image"], data["point"], data["box"], data["label"]
             anno_file = data["anno_file"]
             image_file = data["image_file"]

@@ -22,13 +22,13 @@ if __name__ == "__main__":
     # filename = "/home/dm/nasdata/dataset/csdn/Eyeglasses/dataset/face-eyeglasses/trainval.txt"
     # filename = "/home/dm/nasdata/dataset/tmp/insects/VOC2/VOC/VOCdevkit/trainval.txt"
     # filename = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-det-dataset/dataset-v4/train.txt"
-    filename = "/home/PKing/nasdata/dataset/tmp/hand-pose/Hand-voc3/train.txt"
+    filename = "/home/PKing/nasdata/dataset/tmp/pen/dataset-pen-finger-tip-v2/train/train.txt"
     # filename = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/word-old/train.txt"
     # class_name = ["face", "face-eyeglasses"]
     # class_name = "/home/dm/nasdata/dataset/tmp/traffic-sign/TT100K/VOC/train/class_name.txt"
     # class_name = ["unique"]
     # class_name =None
-    class_name = ['hand']
+    class_name = ['pen_tip',"finger_tip"]
     dataset = parser_voc.VOCDataset(filename=filename,
                                     data_root=None,
                                     anno_dir=None,
@@ -37,7 +37,7 @@ if __name__ == "__main__":
                                     transform=None,
                                     use_rgb=False,
                                     check=False,
-                                    shuffle=False)
+                                    shuffle=True)
     print("have num:{}".format(len(dataset)))
     class_name = dataset.class_name
     for i in range(len(dataset)):

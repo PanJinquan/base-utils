@@ -14,8 +14,8 @@ from pybaseutils.converter import build_voc
 from pybaseutils import file_utils, image_utils
 
 
-def convert_coco2voc(filename, out_xml_dir=None, out_image_dir=None, class_name=None, rename="",
-                     vis=True):
+def convert_coco2voc(filename, out_xml_dir=None, out_image_dir=None, class_name=None, class_dict={},
+                     rename="", vis=True):
     """
     将COCO格式转换为VOC格式
     :param filename:
@@ -24,6 +24,12 @@ def convert_coco2voc(filename, out_xml_dir=None, out_image_dir=None, class_name=
     :param class_name:
     :param rename: 新名字flag
     """
+    if isinstance(class_name, dict):
+        class_dict = class_name
+        class_name = list(class_name.keys())
+    else:
+        class_dict = None
+        class_name = class_name
     dataset = parser_coco_det.CocoDetection(anno_file=filename,
                                             data_root=None,
                                             anno_dir=None,
@@ -35,14 +41,16 @@ def convert_coco2voc(filename, out_xml_dir=None, out_image_dir=None, class_name=
                                             shuffle=False)
     print("have num:{}".format(len(dataset)))
     print("have num:{}".format(len(dataset)))
+    if class_dict: class_name = [class_dict[n] for n in class_name if n in class_dict]
     class_set = []
     for i in tqdm(range(len(dataset))):
         data = dataset.__getitem__(i)
-        image, targets= data["image"], data["target"]
+        image, targets = data["image"], data["target"]
         image_file = data["image_file"]
         bboxes, labels = targets[:, 0:4], targets[:, 4:5]
         labels = np.asarray(labels, np.int32).reshape(-1).tolist()
         names = [dataset.class_name[i] for i in labels]
+        if class_dict: names = [class_dict[n] for n in names if n in class_dict]
         image_shape = image.shape
         class_set = names + class_set
         class_set = list(set(class_set))
@@ -76,4 +84,4 @@ if __name__ == "__main__":
     out_xml_dir = os.path.join(os.path.dirname(filename), "VOC/Annotations")
     out_image_dir = os.path.join(os.path.dirname(filename), "VOC/JPEGImages")
     class_name = ['hand']
-    convert_coco2voc(filename, out_xml_dir, out_image_dir=out_image_dir, class_name=class_name, rename="",  vis=False)
+    convert_coco2voc(filename, out_xml_dir, out_image_dir=out_image_dir, class_name=class_name, rename="", vis=False)

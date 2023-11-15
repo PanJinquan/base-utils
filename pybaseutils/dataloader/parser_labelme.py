@@ -49,7 +49,6 @@ class LabelMeDataset(Dataset):
         parser = self.parser_paths(filename, data_root, anno_dir, image_dir)
         self.data_root, self.anno_dir, self.image_dir, self.image_ids = parser
         self.classes = list(self.class_dict.values()) if self.class_dict else None
-        self.num_classes = max(list(self.class_dict.values())) + 1 if self.class_dict else None
         self.class_weights = None
         if check:
             self.image_ids = self.checking(self.image_ids)
@@ -63,7 +62,6 @@ class LabelMeDataset(Dataset):
         print("Dataset class_name    :{}".format(class_name))
         print("Dataset class_dict    :{}".format(self.class_dict))
         print("Dataset num images    :{}".format(len(self.image_ids)))
-        print("Dataset num_classes   :{}".format(self.num_classes))
         print("------" * 10)
 
     def __len__(self):
@@ -85,7 +83,7 @@ class LabelMeDataset(Dataset):
         elif isinstance(class_name, list) and "unique" in class_name:
             self.unique = True
         if isinstance(class_name, list):
-            class_dict = {str(class_name): i for i, class_name in enumerate(class_name)}
+            class_dict = {str(name): str(name) for name in class_name}
         elif isinstance(class_name, dict):
             class_dict = class_name
             class_name = list(class_dict.keys())
@@ -266,7 +264,7 @@ class LabelMeDataset(Dataset):
             raise Exception("empty image:{}".format(image_file))
         return image
 
-    def get_keypoint_object(self, annotation: list, w, h, class_name=["person"]):
+    def get_keypoint_object(self, annotation: list, w, h, class_name=[]):
         """
         获得labelme关键点检测数据
         :param annotation:
@@ -279,18 +277,20 @@ class LabelMeDataset(Dataset):
         for i, anno in enumerate(annotation):
             label = anno["label"].lower()
             points = np.asarray(anno["points"], dtype=np.int32)
-            group_id = anno["group_id"] if anno["group_id"] else 0  # 通过group_id标记同一实例
+            group_id = anno["group_id"] if "group_id" in anno and anno["group_id"] else 0  # 通过group_id标记同一实例
             if file_utils.is_int(label):
                 keypoints: dict = json_utils.get_value(objects, [group_id, "keypoints"], default={})
                 keypoints.update({int(label): points.tolist()[0]})
                 objects = json_utils.set_value(objects, key=[group_id, "keypoints"], value=keypoints)
             elif label in class_name:
-                segs = points
-                segs[:, 0] = np.clip(segs[:, 0], 0, w - 1)
-                segs[:, 1] = np.clip(segs[:, 1], 0, h - 1)
-                box = image_utils.polygons2boxes([segs])[0]
-                objects = json_utils.set_value(objects, key=[group_id],
-                                               value={"labels": label, "boxes": box, "segs": segs})
+                contours = points
+                contours[:, 0] = np.clip(contours[:, 0], 0, w - 1)
+                contours[:, 1] = np.clip(contours[:, 1], 0, h - 1)
+                boxes = image_utils.polygons2boxes([contours])
+                if group_id in objects:
+                    objects[group_id].update({"labels": label, "boxes": boxes[0], "segs": contours})
+                else:
+                    objects[group_id] = {"labels": label, "boxes": boxes[0], "segs": contours}
         return objects
 
     def get_instance_object(self, annotation: list, w, h, class_name=[]):

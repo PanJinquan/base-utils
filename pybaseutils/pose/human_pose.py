@@ -113,7 +113,7 @@ class Pose(object):
             conf = self.conf[index]
             box = base_utils.points2box(kpt)
             c = self.__check_pose(kpt, conf, th=th)
-            if square: box = image_utils.get_square_bboxes([box], use_max=True)[0]
+            if square: box = image_utils.get_square_boxes([box], use_max=True)[0]
         else:
             kpt, box, conf, c = [], [], [], False
         info = {"kpt": kpt, "box": box, "conf": conf, "check": c, "name": "bodyUP"}
@@ -198,7 +198,7 @@ class Pose(object):
             conf = self.conf[index]
             box = base_utils.points2box(kpt)
             c = self.__check_pose(kpt, conf, th=th)
-            if square: box = image_utils.get_square_bboxes([box], use_max=True)[0]
+            if square: box = image_utils.get_square_boxes([box], use_max=True)[0]
         else:
             kpt, box, conf, c = [], [], [], False
         info = {"kpt": kpt, "box": box, "conf": conf, "check": c, "name": "head"}

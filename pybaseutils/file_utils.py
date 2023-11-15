@@ -8,6 +8,7 @@
 """
 import os
 import time
+import re
 import shutil
 import numpy as np
 import json
@@ -254,6 +255,30 @@ def read_lines_image_labels(filename):
             boxes_label_lists.append([image_id, box, label])
     return boxes_label_lists
 
+
+def split_letters_and_numbers(string, join=True):
+    """
+    切分字母和数字
+    :param string:
+    :param join:
+    :return:
+    """
+    letters = []
+    numbers = []
+    for char in string:
+        if char.isalpha():  # 判断字符是否是字母
+            letters.append(char)
+        elif char.isdigit():  # 判断字符是否是数字
+            numbers.append(char)
+    if join:
+        letters = "".join(letters)
+        numbers = "".join(numbers)
+    return letters, numbers
+
+def is_number(value):
+    if re.match(r'^[-+]?[0-9]+(\.[0-9]+)?$', value):
+        return True
+    return False
 
 def is_int(str):
     """

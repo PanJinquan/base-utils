@@ -31,7 +31,7 @@ def save_object_crops(image, out_dir, bboxes, labels, image_id, class_name=None,
     """
     image_id = image_id.split(".")[0]
     if square:
-        bboxes = image_utils.get_square_bboxes(bboxes, use_max=True, baseline=-1)
+        bboxes = image_utils.get_square_boxes(bboxes, use_max=True, baseline=-1)
     if scale:
         bboxes = image_utils.extend_xyxy(bboxes, scale=scale)
     if padding:
@@ -59,7 +59,7 @@ if __name__ == "__main__":
           '绝缘手套', '绝缘鞋', '脚扣', '螺丝', '身穿工作服', '遮拦杆', '铁架', '铝扎线']
     室外: []
     """
-    filename = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-outdoor-det/dataset-v1/file_list.txt"
+    filename = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-outdoor-det/dataset-v1/trainval.txt"
     class_name = ['身穿工作服', '未穿工作服', '表箱关', '表箱开', '其他鞋', '绝缘鞋']  # 室内
 
     out_dir = os.path.join(os.path.dirname(filename), "crops")

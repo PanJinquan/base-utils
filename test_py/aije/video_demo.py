@@ -41,7 +41,7 @@ if __name__ == '__main__':
     image_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-det-dataset/video-compress/JPEGImages"
     filename = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-det-dataset/video-compress/camera3.txt"
     # video_file = "/home/PKing/nasdata/dataset-dmai/AIJE/POC/南方电网视频/我的文件/室内/平视-3号位.mp4"
-    video_file = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-det-dataset/video-compress/普望科技视频压缩效果测试/6倍/平视-3号位/平视-3号位-完整.mp4"
+    video_file = "/home/PKing/nasdata/dataset-dmai/AIJE/岗评项目数据/东莞视频/室内/20231027_第二场"
     output = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-det-dataset/video-compress/compress/camera3"
 
     rename_image_file(video_file, image_dir, filename, output)

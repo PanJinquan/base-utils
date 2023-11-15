@@ -31,7 +31,7 @@ def save_object_crops(image, out_dir, bboxes, labels, image_id, class_name=None,
     """
     image_id = image_id.split(".")[0]
     if square:
-        bboxes = image_utils.get_square_bboxes(bboxes, use_max=True, baseline=-1)
+        bboxes = image_utils.get_square_boxes(bboxes, use_max=True, baseline=-1)
     if scale:
         bboxes = image_utils.extend_xyxy(bboxes, scale=scale)
     if padding:

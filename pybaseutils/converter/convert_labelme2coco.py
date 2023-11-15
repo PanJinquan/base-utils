@@ -39,7 +39,22 @@ class Labelme2COCO(build_coco.COCOBuilder):
                                                      anno_dir=anno_dir, class_name=None, use_rgb=False,
                                                      shuffle=False, check=False, )
 
-    def build_keypoints_dataset(self, save_file, num_joints, class_name, kps_name=[], skeleton=[], only_kps=True):
+    def get_keypoint_object(self, annotation: list, w, h, class_name=[], use_group=True):
+        """
+        获得labelme关键点检测数据
+        :param annotation:
+        :param w:
+        :param h:
+        :param class_name:
+        :param use_group: True : 表示数据使用可能存在多个实例，并使用group_id标识了不同实例，且label使用了整数index表示
+                          False: 表示数据只有一个实例，未使用group_id，且label={name}{index}表示，如pen0,pen1
+        :return:
+        """
+        assert use_group
+        return self.labelme.get_keypoint_object(annotation, w=w, h=h, class_name=class_name)
+
+    def build_keypoints_dataset(self, save_file, num_joints, class_name, kps_name=[], skeleton=[],
+                                out_img=False, only_kps=True, use_group=True, vis=False):
         """
         构建COCO的关键点检测数据集
         :param save_file: string 输出COCO格式的文件
@@ -47,15 +62,24 @@ class Labelme2COCO(build_coco.COCOBuilder):
         :param class_name: list 目标关键点名称,仅支持单个类别,如['person']
         :param kps_name: 关键点的名称
         :param skeleton: 关键点连接点
+        :param out_img: 是否只保留存在关键点数据的图片
+        :param use_group: True : 表示数据使用可能存在多个实例，并使用group_id标识了不同实例，且label使用了整数index表示
+                          False: 表示数据只有一个实例，未使用group_id，且label={name}{index}表示，如pen0,pen1
         :return:
         """
         assert len(class_name) == 1  # 目前仅仅支持单个类别
+        assert len(kps_name) == num_joints
+        out_dir = os.path.dirname(save_file)
         for index in tqdm(range(len(self.labelme.image_ids))):
+            # index = 172
             image_id = self.labelme.index2id(index)
             image_file, anno_file, image_id = self.labelme.get_image_anno_file(image_id)
             annotation, width, height = self.labelme.load_annotations(anno_file)
             if not annotation: continue
-            objects = self.labelme.get_keypoint_object(annotation, width, height, class_name=class_name)
+            if vis or (width is None and os.path.exists(image_file)):
+                image = cv2.imread(image_file)
+                height, width = image.shape[:2]
+            objects = self.get_keypoint_object(annotation, width, height, class_name=class_name, use_group=use_group)
             if not objects: continue
             filename = os.path.basename(image_file)
             labels, boxes, contours, keypoints = [], [], [], []
@@ -72,11 +96,26 @@ class Labelme2COCO(build_coco.COCOBuilder):
                 contours.append(segs)
                 keypoints.append(kpts)
             info = {"boxes": boxes, "labels": labels, "contours": contours, "keypoints": keypoints}
-            self.addObjects(filename, info, width, height, num_joints)
+            self.addObjects(filename, info, width, height, num_joints, ignore_tiny=False)
+            if out_img:
+                file_utils.copy_file_to_dir(image_file, os.path.join(out_dir, "COCO_images"))
+                file_utils.copy_file_to_dir(anno_file, os.path.join(out_dir, "COCO_json"))
+            if vis: self.draw_image(image, info, skeleton=skeleton)
         # 设置关键点的名称和skeleton
         self.set_keypoints_category(kps_name=kps_name, skeleton=skeleton, cat_id=0)
         build_coco.COCOTools.check_coco(self.coco)
         self.save_coco(save_file)
+
+    def draw_image(self, image, info: dict, skeleton):
+        print(info)
+        boxes = info["boxes"]
+        labels = info["labels"]
+        contours = info["contours"]
+        keypoints = np.asarray(info["keypoints"]).reshape(-1, 3)[:, 0:2]
+        image = image_utils.draw_image_bboxes_text(image, boxes, boxes_name=labels, thickness=2, fontScale=1.0)
+        image = image_utils.draw_key_point_in_image(image, [keypoints], pointline=skeleton)
+        image_utils.cv_show_image("image", image)
+        return image
 
     def build_instances_dataset(self, save_file, class_name=[]):
         """

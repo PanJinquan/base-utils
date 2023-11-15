@@ -140,9 +140,12 @@ vector<cv::Point2f> rotate_points(vector<cv::Point2f> &points, cv::Point2f cente
  * @param rect
  * @param sx X方向扩展倍数
  * @param sy Y方向扩展倍数
+ * @param fixed 长宽是否按照相同大小扩展,当长宽比相差比较大，直接scale会导致短边扩展不明显，
+                使用fixed的长宽会按照相同大小扩展
+ * @param use_max
  * @return
  */
-cv::Rect extend_rect(cv::Rect rect, float sx = 1.0f, float sy = 1.0f);
+cv::Rect extend_rect(cv::Rect rect, float sx = 1.0f, float sy = 1.0f, bool fixed = false, bool use_max = true);
 
 /***
  * 图像裁剪,超出的区域会被丢弃

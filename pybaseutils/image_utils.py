@@ -1315,8 +1315,8 @@ def custom_bbox_line(image, bbox, color, name, thickness=2, fontScale=0.8, drawT
         cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness)
         text_size, baseline = cv2.getTextSize(str(name), cv2.FONT_HERSHEY_SIMPLEX, fontScale, thickness)
         if top:
-            text_loc = (bbox[0], bbox[1] + text_size[1])  # 在左上角下方绘制文字
-            # text_loc = (bbox[0], bbox[1] - baseline // 2)# 在左上角上方绘制文字
+            # text_loc = (bbox[0], bbox[1] + text_size[1])  # 在左上角下方绘制文字
+            text_loc = (bbox[0], bbox[1] - baseline // 2)# 在左上角上方绘制文字
         else:
             text_loc = (bbox[0], bbox[3])
         bg1 = (text_loc[0], text_loc[1] - text_size[1])
