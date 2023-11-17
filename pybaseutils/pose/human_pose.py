@@ -8,15 +8,30 @@
 import cv2
 import numbers
 import numpy as np
+from app.utils import geometry_tools, common_utils
 from pybaseutils import image_utils, file_utils
-from pybaseutils.pose import pose_utils as base_utils
-from pybaseutils.pose import bones_utils
+from app.infercore.base import base_utils
 
-
+# skeleton连接线，keypoint关键点名称，num_joints关键点个数
+BONES = {
+    "coco_person": {
+        "skeleton": [[15, 13], [13, 11], [16, 14], [14, 12], [11, 12], [5, 11], [6, 12], [5, 6], [5, 7],
+                     [6, 8], [7, 9], [8, 10], [1, 2], [0, 1], [0, 2], [1, 3], [2, 4], [3, 5], [4, 6]],
+        "keypoint": [],
+        "num_joints": 17,
+    },
+    "hand": {
+        "skeleton": [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8],
+                     [5, 9], [9, 10], [10, 11], [11, 12], [9, 13], [13, 14], [14, 15], [15, 16],
+                     [13, 17], [17, 18], [18, 19], [19, 20], [0, 17]],
+        "keypoint": [],
+        "num_joints": 21,
+    }
+}
 
 
 class Pose(object):
-    def __init__(self, kpt, conf, box=[], score=1.0, img=None, threshold=0.3, target="coco_person"):
+    def __init__(self, kpt, conf, box=[], score=1.0, img=None, threshold=0.5, target="coco_person"):
         """
         :param kpt: 关键点坐标,shape is (17,2)
         :param conf: 关键点置信度,shape is (17,)
@@ -31,15 +46,16 @@ class Pose(object):
         self.box = box  # 人体框(xmin,ymin,xmax,ymax)
         self.score = score  # 人体框置信度
         self.img = img
-        self.skeleton = bones_utils.BONES[target]['skeleton']
-        self.colors =bones_utils.BONES[target]['colors']
-        self.num_joints =bones_utils.BONES[target]['num_joints']
-        self.check = len(self.kpt) == self.num_joints
-        self.front = self.check_face_front()  # 正向/背向镜头
+        self.skeleton = BONES[target]['skeleton']
+        self.num_joints = BONES[target]['num_joints']
+        self.check = self.num_joints == len(self.kpt)
+        self.check_body = self.check
         if self.check:
-            index = [5, 6, 12, 11]
-            self.check = self.__check_pose(self.kpt[index], self.conf[index], th=threshold)
+            body_up = [5, 6, 12, 11]
+            self.check_body = self.__check_pose(self.kpt[body_up], self.conf[body_up], th=threshold)
+            self.check = self.check_body and self.__check_pose(self.kpt, self.conf, th=threshold)
         self.baseline = self.__baseline()
+        self.front = self.check_face_front()  # 正向/背向镜头
 
     def __baseline(self):
         """计算身体的baseline，该长度作为人体的相对长度"""
@@ -100,7 +116,7 @@ class Pose(object):
         if vis: self.draw_info(info=info, vis=vis)
         return info
 
-    def bodyUP(self, square=False, th=0.2, vis=False):
+    def body_upper(self, square=False, th=0.4, vis=False):
         """
         获得上半身关键点和box
         :param th: 置信度阈值
@@ -113,10 +129,30 @@ class Pose(object):
             conf = self.conf[index]
             box = base_utils.points2box(kpt)
             c = self.__check_pose(kpt, conf, th=th)
-            if square: box = image_utils.get_square_boxes([box], use_max=True)[0]
+            if square: box = image_utils.get_square_bboxes([box], use_max=True)[0]
         else:
             kpt, box, conf, c = [], [], [], False
-        info = {"kpt": kpt, "box": box, "conf": conf, "check": c, "name": "bodyUP"}
+        info = {"kpt": kpt, "box": box, "conf": conf, "check": c, "name": "body_upper"}
+        if vis: self.draw_info(info=info, vis=vis)
+        return info
+
+    def body_lower(self, square=False, th=0.4, vis=False):
+        """
+        获得下半身关键点和box
+        :param th: 置信度阈值
+        :param vis:
+        :return:
+        """
+        if self.check:
+            index = [11, 12, 13, 14, 15, 16]
+            kpt = self.kpt[index]
+            conf = self.conf[index]
+            box = base_utils.points2box(kpt)
+            c = self.__check_pose(kpt, conf, th=th)
+            if square: box = image_utils.get_square_bboxes([box], use_max=True)[0]
+        else:
+            kpt, box, conf, c = [], [], [], False
+        info = {"kpt": kpt, "box": box, "conf": conf, "check": c, "name": "body_lower"}
         if vis: self.draw_info(info=info, vis=vis)
         return info
 
@@ -198,7 +234,7 @@ class Pose(object):
             conf = self.conf[index]
             box = base_utils.points2box(kpt)
             c = self.__check_pose(kpt, conf, th=th)
-            if square: box = image_utils.get_square_boxes([box], use_max=True)[0]
+            if square: box = image_utils.get_square_bboxes([box], use_max=True)[0]
         else:
             kpt, box, conf, c = [], [], [], False
         info = {"kpt": kpt, "box": box, "conf": conf, "check": c, "name": "head"}
@@ -217,8 +253,8 @@ class Pose(object):
         if isinstance(kpt, list): kpt = np.asarray(kpt)
         if isinstance(conf, list): conf = np.asarray(conf)
         if len(kpt) == 0: return False
-        p = np.prod(kpt, axis=1)
-        r = sum(p > 0) > 0 and np.mean(conf) > th  # 置信度要超过一定阈值
+        # 判断x，y是否合法，且置信度要超过一定阈值
+        r = sum(kpt[:, 0] > 0) > 0 and sum(kpt[:, 1] > 0) > 0 and np.mean(conf) > th
         return r
 
     def draw_pose(self, vis=False):
@@ -231,7 +267,6 @@ class Pose(object):
                                                     pointline=self.skeleton,
                                                     boxes=[self.box],
                                                     thickness=2,
-                                                    colors=self.colors,
                                                     vis_id=True)
         if vis: image_utils.cv_show_image("image", image)
         return image
@@ -284,11 +319,10 @@ def example():
     image = cv2.imread(image_file)
     p = Pose(kpt, conf, box, img=image, target="coco_person")
     # p = Pose([], [], [], img=image, target="coco_person")
-    p.draw_pose(vis=True)
-    p.handR(vis=True)
-    p.handL(vis=True)
-    # p.bodyUP(vis=True)
-    # p.body(vis=True)
+    # p.draw_pose(vis=True)
+    # p.handR(vis=True)
+    # p.handL(vis=True)
+    p.body_lower(vis=True)
     # p.head(vis=True)
     # p.neck(vis=True)
     # p.draw_pose(vis=True)

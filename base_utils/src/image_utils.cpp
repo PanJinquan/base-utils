@@ -232,7 +232,7 @@ void image_save(string name, cv::Mat &image) {
 void draw_point_text(cv::Mat &image, cv::Point2f points, string text, cv::Scalar color) {
     int radius = 4;
     int thickness = -1;//实心点
-    cv::circle(image, points, radius, color, thickness);
+    cv::circle(image, points, radius, color, thickness,cv::LINE_AA);
     if (text != "") {
         cv::putText(image,
                     text,

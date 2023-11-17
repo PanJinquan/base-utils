@@ -10,6 +10,9 @@
 #include "mean_filter.h"
 #include "kalman_filter.h"
 
+#define FILTER MeanFilter
+//#define FILTER KalmanFilter
+
 using namespace std;
 
 class TrackingFlow {
@@ -31,8 +34,7 @@ public:
             delete mFilter.at(i);
             mFilter.at(i) = nullptr;
         }
-        vector<MovingMeanFilter *>().swap(mFilter);
-        //vector<KalmanFilter *>().swap(mFilter);
+        vector<FILTER *>().swap(mFilter);
     }
 
 private:
@@ -41,7 +43,7 @@ private:
      */
     void init() {
         for (int i = 0; i < this->mNumPoints; ++i) {
-            mFilter.push_back(new MovingMeanFilter());
+            mFilter.push_back(new FILTER());
             // mFilter.push_back(KalmanFilter());
         }
     }
@@ -68,8 +70,7 @@ private:
 
 private:
     int mNumPoints;
-    std::vector<MovingMeanFilter *> mFilter;
-    //std::vector<KalmanFilter*> mFilter;
+    std::vector<FILTER *> mFilter;
 };
 
 #endif //DETECTOR_POITFLOW_H

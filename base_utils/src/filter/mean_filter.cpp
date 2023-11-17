@@ -5,14 +5,14 @@
 #include <filter/mean_filter.h>
 
 
-MovingMeanFilter::MovingMeanFilter(int win_size, float decay) {
+MeanFilter::MeanFilter(int win_size, float decay) {
     this->mWinSize = win_size;
     vector<float> WeightDecay = get_weight_decay(win_size, decay);
     // fix a bug: 必须clone()，否则会被释放掉
     this->mWeightDecay = cv::Mat(WeightDecay).reshape(1, 1).clone();
 }
 
-MovingMeanFilter::~MovingMeanFilter() {
+MeanFilter::~MeanFilter() {
     mQueue.clear();
     vector<cv::Point>().swap(mQueue);
     mWeightDecay.release();
@@ -21,7 +21,7 @@ MovingMeanFilter::~MovingMeanFilter() {
 }
 
 
-void MovingMeanFilter::update(cv::Point pos) {
+void MeanFilter::update(cv::Point pos) {
     if (mQueue.size() >= this->mWinSize) {
         mQueue.erase(mQueue.begin());
     }
@@ -39,7 +39,7 @@ void MovingMeanFilter::update(cv::Point pos) {
 }
 
 
-cv::Point MovingMeanFilter::predict() {
+cv::Point MeanFilter::predict() {
     cv::Point dst;
     if (mQueue.size() > 0) {
         dst = filter();
@@ -50,7 +50,7 @@ cv::Point MovingMeanFilter::predict() {
 }
 
 
-cv::Point MovingMeanFilter::filter() {
+cv::Point MeanFilter::filter() {
     cv::Mat data = cv::Mat(mQueue).reshape(1, mQueue.size());
     data.convertTo(data, CV_32FC1, 1.0);
     cv::Mat out = this->mWeightDecay * data; //矩阵乘法:w(1,num)*data(num,2)
@@ -59,7 +59,7 @@ cv::Point MovingMeanFilter::filter() {
 }
 
 
-vector<float> MovingMeanFilter::get_weight_decay(int n, float decay) {
+vector<float> MeanFilter::get_weight_decay(int n, float decay) {
     float r = decay / (1.0 - decay);
     float sum = 0.f;
     //计算衰减权重
