@@ -124,10 +124,14 @@ def get_image_heatmap(image, points: list, input_size=[448, 448], radius=2, fusi
 if __name__ == "__main__":
     from pybaseutils import image_utils
 
-    image_path = "/home/dm/project/python-learning-notes/dataset/test_image/test1.jpg"
-    image = image_utils.read_image(image_path)
-    input_size = [416, 416]
-    points = [[100, 200], [400, 200]]
+    image = image_utils.create_image(shape=(256, 256, 3), color=(0, 0, 0))
+    input_size = [256, 256]
+    points = [
+        [50, 30],
+        [180, 25],
+        [230, 200],
+        [60, 230]
+    ]
     colormap = "split"
     # image = np.zeros_like(image, dtype=np.uint8)
     image, mask = get_image_heatmap(image, points, input_size=input_size, fusion=colormap)

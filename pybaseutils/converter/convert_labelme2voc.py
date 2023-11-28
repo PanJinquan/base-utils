@@ -95,8 +95,10 @@ class Labelme2VOC(object):
             if vis:
                 self.show_object_image(image, objects)
         if not out_image_dir: out_image_dir = self.image_dir
-        file_utils.save_file_list(out_image_dir, filename=None, prefix="", postfix=file_utils.IMG_POSTFIX,
-                                  only_id=False, shuffle=False, max_num=None)
+        # file_utils.save_file_list(out_image_dir, filename=None, prefix="", postfix=file_utils.IMG_POSTFIX,
+        #                           only_id=False, shuffle=False, max_num=None)
+        file_utils.get_voc_file_list(None, image_dir=out_image_dir, annos_dir=out_xml_dir,
+                                     prefix="", postfix=file_utils.IMG_POSTFIX)
         class_set = sorted(class_set)
         print("have class_set:{}\n{}".format(len(class_set), class_set))
 

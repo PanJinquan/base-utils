@@ -1256,6 +1256,7 @@ def draw_points_text(image, points, texts=None, color=(255, 0, 0), thickness=-1,
         if not check_point(point): continue
         point = (int(point[0]), int(point[1]))
         c = color[index]
+        text = str(text)
         cv2.circle(image, point, thickness * 3, tuple(c), -1, lineType=cv2.LINE_AA)
         if text: draw_text(image, point, text, color=c, fontScale=fontScale, thickness=thickness, drawType=drawType)
     return image

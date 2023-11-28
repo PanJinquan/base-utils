@@ -31,12 +31,12 @@ def resize_fun(frame):
 
 def android_gif():
     # video_file = "/media/dm/新加卷/SDK/CSDN/双目测距/demo/image-nouse-wls.mp4"
-    video_file = "/home/PKing/nasdata/dataset/tmp/pen/video/demo-pen2/android-dmeo.mp4"
+    video_file = "/home/PKing/nasdata/dataset/tmp/pen/video/demo-finger-pen-tip-demo/pen-tip-android-demo1.mp4"
     video_utils.video2gif(video_file, interval=8, func=resize_android, fps=5, use_pil=False, vis=True)
 
 
 def python_gif():
-    video_file = "/home/PKing/nasdata/dataset/tmp/pen/video/demo-finger-pen-tip-demo/pen-tip-demo0.avi"
+    video_file = "/home/PKing/nasdata/dataset/tmp/pen/video/demo-finger-pen-tip-demo/dotrack.avi"
     video_utils.video2gif(video_file, interval=8, func=resize_fun, fps=6, use_pil=False, vis=True)
 
 
@@ -50,5 +50,5 @@ def image_gif():
 
 if __name__ == "__main__":
     # image_gif()
-    android_gif()
-    # python_gif()
+    # android_gif()
+    python_gif()

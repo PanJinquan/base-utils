@@ -66,10 +66,15 @@ def save_file_list(file_dir, prefix="", postfix=file_utils.IMG_POSTFIX, only_id=
     print("num files:{},out_path:{}".format(len(file_list), filename))
 
 
-def get_voc_file_list(voc_root, prefix="", postfix=file_utils.IMG_POSTFIX, only_id=True, check=True, shuffle=False,
+def get_voc_file_list(voc_root,
+                      prefix="",
+                      postfix=file_utils.IMG_POSTFIX,
+                      only_id=True,
+                      check=True,
+                      shuffle=False,
                       max_num=None):
     """
-    蝴蝶VOC数据集的文件列表
+    获得VOC数据集的文件列表，并剔除无效的文件
     :param voc_root:
     :param prefix:
     :param postfix:
@@ -104,5 +109,5 @@ def get_voc_file_list(voc_root, prefix="", postfix=file_utils.IMG_POSTFIX, only_
 if __name__ == "__main__":
     # file_dir = "/home/PKing/cv/panjinquan/dataset/face_person/AIJE/outdoor/JPEGImages"
     # save_file_list(file_dir, postfix=file_utils.IMG_POSTFIX + ["*.JPG"], only_id=False, shuffle=False, max_num=None)
-    voc_root = "/home/PKing/cv/panjinquan/dataset/face_person/MPII"
+    voc_root = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v5"
     get_voc_file_list(voc_root, postfix=file_utils.IMG_POSTFIX + ["*.JPG"], only_id=False, shuffle=True, max_num=None)

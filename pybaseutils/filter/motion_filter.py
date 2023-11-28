@@ -5,10 +5,10 @@
     @Date   : 2021-01-19 19:29:47
 """
 import numpy as np
-from pybaseutils.smooth import QueueTable
+from pybaseutils.filter import QueueTable
 
 
-class DecayFilter():
+class MotionFilter():
     def __init__(self, win_size, decay=0.9):
         """
         :param win_size:记录历史信息的窗口大小

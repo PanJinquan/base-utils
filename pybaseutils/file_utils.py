@@ -275,10 +275,12 @@ def split_letters_and_numbers(string, join=True):
         numbers = "".join(numbers)
     return letters, numbers
 
+
 def is_number(value):
     if re.match(r'^[-+]?[0-9]+(\.[0-9]+)?$', value):
         return True
     return False
+
 
 def is_int(str):
     """
@@ -1156,6 +1158,48 @@ def copy_move_dir_dir(src, dst, postfix=None, sub_names=None, per_nums=None, shu
                                max_nums=per_nums, shuffle=shuffle, move=move)
     out_list = get_files_list(dst, prefix="", postfix=postfix, basename=False)
     return out_list
+
+
+def get_voc_file_list(voc_root,
+                      image_dir="",
+                      annos_dir="",
+                      prefix="",
+                      postfix=IMG_POSTFIX,
+                      only_id=True,
+                      check=True,
+                      shuffle=False,
+                      max_num=None):
+    """
+    获得VOC数据集的文件列表，并剔除无效的文件
+    :param voc_root:
+    :param prefix:
+    :param postfix:
+    :param only_id:
+    :param check: 检测xml和图片是否存在
+    :param shuffle:
+    :param max_num:
+    :return:
+    """
+    image_dir = image_dir if image_dir else os.path.join(voc_root, "JPEGImages")
+    annos_dir = annos_dir if annos_dir else os.path.join(voc_root, "Annotations")
+    filename = os.path.join(os.path.dirname(image_dir), "file_list.txt")
+    file_list = get_files_list(image_dir, prefix=prefix, postfix=postfix, basename=False)
+    file_list = get_sub_list(file_list, dirname=image_dir)
+    if check:
+        xmls_list = get_files_list(annos_dir, postfix=["*.xml"], basename=True)
+        print("xml file:{},image file:{}".format(len(xmls_list), len(file_list)))
+        xmls_ids = [str(f).split(".")[0] for f in xmls_list]
+        file_list = [f for f in file_list if str(f).split(".")[0] in xmls_ids]
+    if only_id:
+        file_list = [str(f).split(".")[0] for f in file_list]
+    if shuffle:
+        random.seed(100)
+        random.shuffle(file_list)
+    if max_num:
+        max_num = min(max_num, len(file_list))
+        file_list = file_list[0:max_num]
+    write_list_data(filename, file_list)
+    print("num files:{},out_path:{}".format(len(file_list), filename))
 
 
 if __name__ == '__main__':

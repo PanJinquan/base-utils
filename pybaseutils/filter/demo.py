@@ -8,14 +8,14 @@ import numpy as np
 import cv2
 import kalman_filter
 import mean_filter
-import decay_filter
+import motion_filter
 
 
 class FilterDemo():
     def __init__(self):
         # self.filter = kalman_filter.KalmanFilter()
         # self.filter = mean_filter.MeanFilter(win_size=8, decay=0.3)
-        self.filter = decay_filter.DecayFilter(win_size=1, decay=0.5)
+        self.filter = motion_filter.MotionFilter(win_size=1, decay=0.5)
         self.curr_mes = np.array([-1, -1])
         self.curr_pre = np.array([-1, -1])
 
