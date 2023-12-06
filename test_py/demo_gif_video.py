@@ -24,20 +24,21 @@ def resize_android(frame):
 
 def resize_fun(frame):
     h, w = frame.shape[:2]
-    frame = image_utils.resize_image(frame, size=(544, None))
+    # frame = image_utils.resize_image(frame, size=(512, None))
+    frame = image_utils.resize_image(frame, size=(960, None))
     # frame = image_utils.resize_image(frame, size=(None, 640))  # android-video
     return frame
 
 
 def android_gif():
     # video_file = "/media/dm/新加卷/SDK/CSDN/双目测距/demo/image-nouse-wls.mp4"
-    video_file = "/home/PKing/nasdata/dataset/tmp/pen/video/demo-finger-pen-tip-demo/pen-tip-android-demo1.mp4"
-    video_utils.video2gif(video_file, interval=8, func=resize_android, fps=5, use_pil=False, vis=True)
+    video_file = "/home/PKing/nasdata/dataset/tmp/gesture/demo/demo-android.mp4"
+    video_utils.video2gif(video_file, interval=4, func=resize_android, fps=6, use_pil=False, vis=True)
 
 
 def python_gif():
-    video_file = "/home/PKing/nasdata/dataset/tmp/pen/video/demo-finger-pen-tip-demo/dotrack.avi"
-    video_utils.video2gif(video_file, interval=8, func=resize_fun, fps=6, use_pil=False, vis=True)
+    video_file = "/media/PKing/新加卷1/SDK/project/object-detection-tnn-sdk/data/video/video-test2-result.avi"
+    video_utils.video2gif(video_file, interval=2, func=resize_fun, fps=6, use_pil=False, vis=True)
 
 
 def image_gif():

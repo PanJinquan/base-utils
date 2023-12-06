@@ -47,7 +47,8 @@ sudo sshfs -o allow_other -o nonempty user@IP:/path/to/data  /path/to/local/data
 - 解绑
 
 ```bash
-fusermount -u /path/to/local/data # 解绑
+sudo umount -l /Path/to/target # 解绑(推荐使用)
+sudo fusermount -u  /Path/to/target # 解绑
 ```
 
 - 软连接
