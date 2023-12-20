@@ -207,7 +207,7 @@ cv::Mat image_center_crop(cv::Mat &image, int crop_width, int crop_height) {
 }
 
 
-void image_show(string name, cv::Mat &image, int waitKey) {
+void image_show(string name, cv::Mat &image, int delay) {
 #ifndef PLATFORM_ANDROID
     cv::namedWindow(name, cv::WINDOW_NORMAL);
     cv::Mat img_show = image.clone();
@@ -217,7 +217,7 @@ void image_show(string name, cv::Mat &image, int waitKey) {
     //sprintf(str, ",Size:%dx%d", image.rows, image.cols);
     //RESIZE(img_show, 400);
     cv::imshow(name, img_show);
-    cv::waitKey(waitKey);
+    cv::waitKey(delay);
 #endif
 }
 

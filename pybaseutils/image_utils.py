@@ -672,7 +672,7 @@ def resize_image(image, size: Tuple, interpolation=cv2.INTER_LINEAR):
     return image
 
 
-def image_boxes_resize_padding(image, input_size, boxes=None, color=(0, 0, 0)):
+def image_boxes_resize_padding(image, input_size, boxes=None, points=None, color=(0, 0, 0)):
     """
     等比例图像resize,保持原始图像内容比，避免失真,短边会0填充
     input_size = [300, 300]
@@ -699,12 +699,20 @@ def image_boxes_resize_padding(image, input_size, boxes=None, color=(0, 0, 0)):
     if not boxes is None and len(boxes) > 0:
         boxes[:] = boxes[:] * scale
         boxes[:] = boxes[:] + [left, top, left, top]
+    if not points is None and len(points) > 0:
+        points[:] = points[:] * scale
+        points[:] = points[:] + [left, top]
     return out
 
 
-def image_boxes_resize_padding_inverse(image_size, input_size, boxes=None):
+def image_boxes_resize_padding_inverse(image_size, input_size, boxes=None, points=None):
     """
     image_boxes_resize_padding的逆过程
+    :param image_size: 原始图像的大小(W,H)
+    :param input_size: 模型输入大小(W,H)
+    :param boxes: 输入/输出检测框(n,4)
+    :param points: 输入/输出关键点(n,4)
+    :return:
     """
     width, height = image_size
     scale = min([input_size[0] / width, input_size[1] / height])
@@ -716,6 +724,9 @@ def image_boxes_resize_padding_inverse(image_size, input_size, boxes=None):
     if not boxes is None and len(boxes) > 0:
         boxes[:] = boxes[:] - [left, top, left, top]
         boxes[:] = boxes[:] / scale
+    if not points is None and len(points) > 0:
+        points[:] = points[:] - [left, top]
+        points[:] = points[:] / scale
     return boxes
 
 
@@ -1317,7 +1328,7 @@ def custom_bbox_line(image, bbox, color, name, thickness=2, fontScale=0.8, drawT
         text_size, baseline = cv2.getTextSize(str(name), cv2.FONT_HERSHEY_SIMPLEX, fontScale, thickness)
         if top:
             # text_loc = (bbox[0], bbox[1] + text_size[1])  # 在左上角下方绘制文字
-            text_loc = (bbox[0], bbox[1] - baseline // 2)# 在左上角上方绘制文字
+            text_loc = (bbox[0], bbox[1] - baseline // 2)  # 在左上角上方绘制文字
         else:
             text_loc = (bbox[0], bbox[3])
         bg1 = (text_loc[0], text_loc[1] - text_size[1])

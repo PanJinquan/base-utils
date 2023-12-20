@@ -260,80 +260,8 @@ def write_voc_landm_xml_file(filename, image_shape, bboxes, labels, landms, xmlp
     f.close()
 
 
-def write_voc_landm_xml_objects(filename, image_shape, objects: list, xml_path):
-    """
-    write_voc_landm_xml_file(filename, image_shape, bboxes, labels, landms, xmlpath):
-    :param image_shape:image_dict.shape
-    :param filename: file name
-    :param xml_path: save Annotations(*.xml) file path
-    :param objects: [object] ,object= {
-                                    "name": name,
-                                    "bndbox": bndbox,
-                                    "keypoints": keypoint
-                                     }
-            - name: bbox label name
-            - bndbox: bbox =[x_min, y_min, x_max, y_max]
-            - keypoint: [x_1, y_1, v_1,...,x_k, y_k, v_k],
-                    其中x,y为Keypoint的坐标，v为可见标志
-                    v = 0 : 未标注点
-                    v = 1 : 标注了但是图像中不可见（例如遮挡）
-                    v = 2 : 标注了并图像可见
-    :return:
-    """
-    height, width, depth = image_shape
-    xml = codecs.open(xml_path, 'w', encoding='utf-8')
-    xml.write('<annotation>\n')
-    xml.write('\t<folder>' + 'VOC2007' + '</folder>\n')
-    xml.write('\t<filename>' + filename + '</filename>\n')
-    xml.write('\t<source>\n')
-    xml.write('\t\t<database>The VOC2007 Database</database>\n')
-    xml.write('\t\t<annotation>PASCAL VOC2007</annotation>\n')
-    xml.write('\t\t<image_dict>flickr</image_dict>\n')
-    xml.write('\t\t<flickrid>NULL</flickrid>\n')
-    xml.write('\t</source>\n')
-    xml.write('\t<owner>\n')
-    xml.write('\t\t<flickrid>NULL</flickrid>\n')
-    xml.write('\t\t<name>author</name>\n')
-    xml.write('\t</owner>\n')
-    xml.write('\t<size>\n')
-    xml.write('\t\t<width>' + str(width) + '</width>\n')
-    xml.write('\t\t<height>' + str(height) + '</height>\n')
-    xml.write('\t\t<depth>' + str(depth) + '</depth>\n')
-    xml.write('\t</size>\n')
-    xml.write('\t\t<segmented>0</segmented>\n')
-    for obj in objects:
-        name = obj["name"]
-        x_min, y_min, x_max, y_max = obj["bndbox"]
-        xml.write('\t<object>\n')
-        xml.write('\t\t<name>{}</name>\n'.format(name))
-        xml.write('\t\t<pose>Unspecified</pose>\n')
-        xml.write('\t\t<truncated>0</truncated>\n')
-        xml.write('\t\t<difficult>0</difficult>\n')
-        xml.write('\t\t<bndbox>\n')
-        xml.write('\t\t\t<xmin>' + str(x_min) + '</xmin>\n')
-        xml.write('\t\t\t<ymin>' + str(y_min) + '</ymin>\n')
-        xml.write('\t\t\t<xmax>' + str(x_max) + '</xmax>\n')
-        xml.write('\t\t\t<ymax>' + str(y_max) + '</ymax>\n')
-        xml.write('\t\t</bndbox>\n')
-        if "keypoints" in obj:
-            lm = obj["keypoints"]
-            xml.write('\t\t<lm>\n')
-            visible = 1
-            for i in range(len(lm)):
-                x, y = lm[i][0], lm[i][1]
-                xml.write('\t\t\t<x{}>'.format(i + 1) + str(x) + '</x{}>\n'.format(i + 1))
-                xml.write('\t\t\t<y{}>'.format(i + 1) + str(y) + '</y{}>\n'.format(i + 1))
-                if x < 0 or x > width or y < 0 or y > height:
-                    visible = 0
-            xml.write('\t\t\t<visible>' + str(visible) + '</visible>\n')
-            xml.write('\t\t</lm>\n')
-        xml.write('\t</object>\n')
-    xml.write('</annotation>')
-
-
 def write_voc_xml_objects(filename, image_shape, objects: list, xml_path):
     """
-    write_voc_landm_xml_file(filename, image_shape, bboxes, labels, landms, xmlpath):
     :param image_shape:image_dict.shape
     :param filename: file name
     :param xml_path: save Annotations(*.xml) file path

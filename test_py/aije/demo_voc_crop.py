@@ -59,7 +59,7 @@ if __name__ == "__main__":
           '绝缘手套', '绝缘鞋', '脚扣', '螺丝', '身穿工作服', '遮拦杆', '铁架', '铝扎线']
     室外: []
     """
-    filename = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-outdoor-det/dataset-v1/trainval.txt"
+    filename = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-outdoor-det/dataset-v2/train.txt"
     class_name = ['身穿工作服', '未穿工作服', '表箱关', '表箱开', '其他鞋', '绝缘鞋']  # 室内
 
     out_dir = os.path.join(os.path.dirname(filename), "crops")

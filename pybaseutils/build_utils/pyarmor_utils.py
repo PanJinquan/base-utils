@@ -6,6 +6,7 @@
     @Brief  : pip install pyarmor==7.7.4
               https://pyarmor.readthedocs.io/en/v5.4.0/project.html#managing-obfuscated-scripts-with-project
               https://pyarmor.readthedocs.io/en/v7.3.0/project.html#project-configuration-file
+              https://docs.python.org/2/distutils/sourcedist.html#commands (Commands)
               https://baijiahao.baidu.com/s?id=1775756280786745996&wfr=spider&for=pc
               https://www.jianshu.com/p/c1d3d79e3545/
 """

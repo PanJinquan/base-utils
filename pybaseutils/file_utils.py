@@ -1165,7 +1165,7 @@ def get_voc_file_list(voc_root,
                       annos_dir="",
                       prefix="",
                       postfix=IMG_POSTFIX,
-                      only_id=True,
+                      only_id=False,
                       check=True,
                       shuffle=False,
                       max_num=None):

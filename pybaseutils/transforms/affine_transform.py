@@ -11,6 +11,7 @@ import random
 import PIL.Image as Image
 import numpy as np
 from typing import List, Tuple
+from pybaseutils.transforms import face_alignment
 
 
 def get_center_scale(rect, aspect_ratio, scale_rate=1.0, out_size=int or List[int, int]):
@@ -152,54 +153,6 @@ def get_affine_transform(output_size,
     return trans
 
 
-def get_reference_facial_points(square=True, isshow=False):
-    """
-    获得人脸参考关键点,目前支持两种输入的参考关键点,即[96, 112]和[112, 112]
-    face_size_ref = [96, 112]
-    kpts_ref = [[30.29459953, 51.69630051],
-                [65.53179932, 51.50139999],
-                [48.02519989, 71.73660278],
-                [33.54930115, 92.3655014],
-                [62.72990036, 92.20410156]]
-    ==================
-    face_size_ref = [112, 112]
-    kpts_ref = [[38.29459953 51.69630051]
-                [73.53179932 51.50139999]
-                [56.02519989 71.73660278]
-                [41.54930115 92.3655014 ]
-                [70.72990036 92.20410156]]
-
-    ==================
-    square = True, crop_size = (112, 112)
-    square = False,crop_size = (96, 112),
-    :param square: True is [112, 112] or False is [96, 112]
-    :param isshow: True or False,是否显示
-    :return:
-    """
-    # face size[96_112] reference facial points
-    face_size_ref = [96, 112]
-    kpts_ref = [[30.29459953, 51.69630051],
-                [65.53179932, 51.50139999],
-                [48.02519989, 71.73660278],
-                [33.54930115, 92.3655014],
-                [62.72990036, 92.20410156]]
-    kpts_ref = np.asarray(kpts_ref)  # kpts_ref_96_112
-    # for output_size=[112, 112]
-    if square:
-        face_size_ref = np.array(face_size_ref)
-        size_diff = max(face_size_ref) - face_size_ref
-        kpts_ref += size_diff / 2
-        face_size_ref += size_diff
-
-    if isshow:
-        from utils import image_utils
-        tmp = np.zeros(shape=(face_size_ref[1], face_size_ref[0], 3), dtype=np.uint8)
-        tmp = image_utils.draw_landmark(tmp, [kpts_ref], vis_id=True)
-        cv2.imshow("kpts_ref", tmp)
-        cv2.waitKey(0)
-    return kpts_ref
-
-
 def affine_transform_for_landmarks(image, landmarks, output_size=None):
     """
     对图像和landmarks关键点进行仿生变换
@@ -211,7 +164,7 @@ def affine_transform_for_landmarks(image, landmarks, output_size=None):
     if not output_size:
         h, w, _ = image.shape
         output_size = [w, h]
-    kpts_ref = get_reference_facial_points(square=True, isshow=False)
+    kpts_ref = face_alignment.get_reference_facial_points(out_size=(112, 112), vis=False)
     alig_faces = []
     warped_landmarks = []
     for landmark in landmarks:
@@ -507,7 +460,7 @@ def demo_for_image_boxes():
     bboxes = [[98, 42, 160, 100], [244, 260, 297, 332]]
     output_size = [320, 320]
     image = image_utils.read_image(image_path)
-    image_utils.show_image_boxes("src", image, bboxes, waitKey=10)
+    image_utils.show_image_boxes("src", image, bboxes, delay=10)
     for i in range(360):
         trans_image, trans_boxes = affine_transform_for_boxes(image, bboxes, output_size=output_size, rot=i)
         print("shape:{},bboxes     ：{}".format(image.shape, bboxes))
@@ -587,4 +540,4 @@ if __name__ == "__main__":
     # demo_for_landmarks()
     # demo_for_image_boxes()
     # demo_for_image_affine_transform()
-    demo_for_affine_transform_for_image_points()
+    # demo_for_affine_transform_for_image_points()

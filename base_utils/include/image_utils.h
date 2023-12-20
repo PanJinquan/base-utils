@@ -192,9 +192,9 @@ cv::Mat image_center_crop(cv::Mat &image, int crop_width, int crop_height);
  * 显示图像
  * @param name
  * @param image
- * @param waitKey
+ * @param delay
  */
-void image_show(string name, cv::Mat &image, int waitKey = 0);
+void image_show(string name, cv::Mat &image, int delay = 0);
 
 
 /***
