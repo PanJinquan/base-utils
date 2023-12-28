@@ -30,7 +30,7 @@ def get_reference_facial_points(out_size=(112, 112), square=True, vis=False):
     square = True, crop_size = (112, 112)
     square = False,crop_size = (96, 112),
     :param square: True is [112, 112] or False is [96, 112]
-    :param isshow: True or False,是否显示
+    :param vis   : True or False,是否显示
     :return:
     """
     size_ref = (96, 112)
@@ -40,21 +40,52 @@ def get_reference_facial_points(out_size=(112, 112), square=True, vis=False):
                 [33.54930115, 92.3655014],
                 [62.72990036, 92.20410156]]
     dst_pts = np.asarray(kpts_ref, dtype=np.float32)
+    dst_size = size_ref
     if square or out_size[0] != size_ref[0] or out_size[1] != size_ref[1]:
         size_ref = np.array(size_ref, dtype=np.float32)
         maxL = max(size_ref)
         wh_diff = maxL - size_ref
         dst_pts = dst_pts + wh_diff / 2.0
         dst_pts = dst_pts * out_size / maxL
-        size_ref = size_ref + wh_diff
-        size_ref = size_ref * out_size / maxL
+        dst_size = size_ref + wh_diff
+        dst_size = dst_size * out_size / maxL
+    dst_size = (int(dst_size[0]), int(dst_size[1]))
     if vis:
         from pybaseutils import image_utils
-        tmp = np.zeros(shape=(int(size_ref[1]), int(size_ref[0]), 3), dtype=np.uint8)
+        tmp = np.zeros(shape=(int(dst_size[1]), int(dst_size[0]), 3), dtype=np.uint8)
         tmp = image_utils.draw_landmark(tmp, [dst_pts], vis_id=True)
         cv2.imshow("kpts_ref", tmp)
         cv2.waitKey(0)
     return dst_pts
+
+
+def get_facial_points(out_size=(112, 112), scale=(1.0, 1.0), square=True, vis=False):
+    """
+    :param out_size:
+    :param scale:
+    :param square:
+    :param vis:
+    :return:
+    """
+    dst_pts = get_reference_facial_points(out_size=out_size, square=square, vis=False)
+    dst_pts, out_size = extend_facial_points(dst_pts, out_size=out_size, scale=scale, vis=vis)
+    return dst_pts, out_size
+
+
+def extend_facial_points(src_pts, out_size=(112, 112), scale=(1.5, 1.5), vis=False):
+    src_pts = np.array(src_pts, dtype=np.float32)
+    dst_size = np.array(out_size, dtype=np.float32)
+    dst_size = dst_size * scale
+    wh_diff = dst_size - out_size
+    dst_pts = src_pts + wh_diff / 2.0
+    if vis:
+        from pybaseutils import image_utils
+        tmp = np.zeros(shape=(int(dst_size[1]), int(dst_size[0]), 3), dtype=np.uint8)
+        tmp = image_utils.draw_landmark(tmp, [dst_pts], vis_id=True)
+        cv2.imshow("kpts_ref", tmp)
+        cv2.waitKey(0)
+    dst_size = (int(dst_size[0]), int(dst_size[1]))
+    return dst_pts, dst_size
 
 
 def solve_lstsq(src_pts: np.ndarray, dst_pts: np.ndarray):
@@ -143,7 +174,7 @@ def get_inverse_matrix(M):
     return Minv
 
 
-def alignment_image(image, src_pts, dst_pts, out_size, method="lstsq"):
+def image_alignment(image, src_pts, dst_pts, out_size, method="lstsq"):
     """
     apply affine transform实现对齐图像
     D=M*S or D=H*S
@@ -169,24 +200,46 @@ def alignment_image(image, src_pts, dst_pts, out_size, method="lstsq"):
     return align_image, M, Minv
 
 
+def face_alignment(image, src_pts, out_size=(112, 112), method="lstsq"):
+    """
+    实现人脸校准
+    :param image: input image
+    :param src_pts: 原始点S集合(n×2)
+    :param out_size: 变换后输出图像大小
+    :param method: lstsq,estimate,affine,homo
+    :return:  align_image 对齐后的图像
+              M           S->D的变换矩阵(2×3)
+              Minv        D->S的逆变换矩阵(2×3)
+    """
+    # 获得标准人脸关键点
+    dst_pts = get_reference_facial_points(out_size=out_size, square=True, vis=False)
+    align_face, M, Minv = image_alignment(image, src_pts, dst_pts, out_size, method=method)
+    return align_face, M, Minv
+
+
 if __name__ == "__main__":
     from pybaseutils import image_utils
 
+    image_file = "test.jpg"
     out_size = (224, 224)
-    dst_pts = get_reference_facial_points(out_size=out_size, vis=False)
-    src_pts = [[305.6163, 254.10919],
-               [388.11459, 268.15384],
-               [352.84979, 324.34232],
-               [287.70984, 342.08038],
-               [370.14178, 354.08649]]
+    image = cv2.imread(image_file)
+    # face detection from MTCNN
+    boxes = np.asarray([[200.27724761, 148.9578526, 456.70521605, 473.52968433]])
+    src_pts = np.asarray([[[287.86636353, 306.13598633],
+                           [399.58618164, 272.68032837],
+                           [374.80252075, 360.95596313],
+                           [326.71264648, 409.12332153],
+                           [419.06210327, 381.41421509]]])
+
     src_pts = np.asarray(src_pts, dtype=np.float32)
+    dst_pts, out_size = get_facial_points(out_size=out_size, scale=(1.5, 1.5))
     M = get_transform(src_pts, dst_pts, method="lstsq")
     # M = get_transform(src_pts, dst_pts, method="estimate")
     print(np.asarray(M, dtype=np.float32))
-    image_file = "../data/test02.jpg"
-    image = cv2.imread(image_file)
-    align_image, M, Minv = alignment_image(image, src_pts, dst_pts, out_size, method="lstsq")
+    align_image, M, Minv = image_alignment(image, src_pts, dst_pts, out_size, method="lstsq")
     print("M   :\n", M)
     print("Minv:\n", Minv)
+    print("align_image:\n", align_image.shape)
+
     image_utils.cv_show_image("image", image, delay=10)
     image_utils.cv_show_image("align_image", align_image)

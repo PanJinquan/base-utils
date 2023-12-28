@@ -67,7 +67,7 @@ def document_image_correct(src, src_pts, dst_pts=None, out_size=None, use_ransac
         m, status = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5)
     else:
         m = cv2.getPerspectiveTransform(src_pts, dst_pts)
-    dst = cv2.warpPerspective(src, m, dsize=out_size, flags=cv2.INTER_LINEAR)
+    dst = cv2.warpPerspective(src, m, dsize=tuple(out_size), flags=cv2.INTER_LINEAR)
     if vis:
         dst = image_utils.draw_points_text(dst, np.int32(dst_pts), color=(0, 255, 0), thickness=3)
         image_utils.cv_show_image("correct-result", dst, use_rgb=False)
