@@ -59,23 +59,23 @@ def get_reference_facial_points(out_size=(112, 112), square=True, vis=False):
     return dst_pts
 
 
-def get_facial_points(out_size=(112, 112), scale=(1.0, 1.0), square=True, vis=False):
+def get_facial_points(out_size=(112, 112), extend=(1.0, 1.0), square=True, vis=False):
     """
     :param out_size:
-    :param scale:
+    :param extend:
     :param square:
     :param vis:
     :return:
     """
     dst_pts = get_reference_facial_points(out_size=out_size, square=square, vis=False)
-    dst_pts, out_size = extend_facial_points(dst_pts, out_size=out_size, scale=scale, vis=vis)
+    dst_pts, out_size = extend_facial_points(dst_pts, out_size=out_size, extend=extend, vis=vis)
     return dst_pts, out_size
 
 
-def extend_facial_points(src_pts, out_size=(112, 112), scale=(1.5, 1.5), vis=False):
+def extend_facial_points(src_pts, out_size=(112, 112), extend=(1.5, 1.5), vis=False):
     src_pts = np.array(src_pts, dtype=np.float32)
     dst_size = np.array(out_size, dtype=np.float32)
-    dst_size = dst_size * scale
+    dst_size = dst_size * extend
     wh_diff = dst_size - out_size
     dst_pts = src_pts + wh_diff / 2.0
     if vis:
@@ -200,20 +200,25 @@ def image_alignment(image, src_pts, dst_pts, out_size, method="lstsq"):
     return align_image, M, Minv
 
 
-def face_alignment(image, src_pts, out_size=(112, 112), method="lstsq"):
+def face_alignment(image, src_pts, out_size=(112, 112), extend=(), method="lstsq"):
     """
     实现人脸校准
     :param image: input image
     :param src_pts: 原始点S集合(n×2)
     :param out_size: 变换后输出图像大小
+    :param extend: 裁剪缩放大小
     :param method: lstsq,estimate,affine,homo
     :return:  align_image 对齐后的图像
               M           S->D的变换矩阵(2×3)
               Minv        D->S的逆变换矩阵(2×3)
     """
-    # 获得标准人脸关键点
-    dst_pts = get_reference_facial_points(out_size=out_size, square=True, vis=False)
-    align_face, M, Minv = image_alignment(image, src_pts, dst_pts, out_size, method=method)
+    if extend:
+        dst_pts, out_size = get_facial_points(out_size=out_size, extend=extend, square=True, vis=False)
+        align_face, M, Minv = image_alignment(image, src_pts, dst_pts, out_size, method="lstsq")
+    else:
+        # 获得标准人脸关键点
+        dst_pts = get_reference_facial_points(out_size=out_size, square=True, vis=False)
+        align_face, M, Minv = image_alignment(image, src_pts, dst_pts, out_size, method=method)
     return align_face, M, Minv
 
 
@@ -221,7 +226,7 @@ if __name__ == "__main__":
     from pybaseutils import image_utils
 
     image_file = "test.jpg"
-    out_size = (224, 224)
+    out_size = (112, 112)
     image = cv2.imread(image_file)
     # face detection from MTCNN
     boxes = np.asarray([[200.27724761, 148.9578526, 456.70521605, 473.52968433]])
@@ -232,14 +237,9 @@ if __name__ == "__main__":
                            [419.06210327, 381.41421509]]])
 
     src_pts = np.asarray(src_pts, dtype=np.float32)
-    dst_pts, out_size = get_facial_points(out_size=out_size, scale=(1.5, 1.5))
-    M = get_transform(src_pts, dst_pts, method="lstsq")
-    # M = get_transform(src_pts, dst_pts, method="estimate")
-    print(np.asarray(M, dtype=np.float32))
-    align_image, M, Minv = image_alignment(image, src_pts, dst_pts, out_size, method="lstsq")
+    align_image, M, Minv = face_alignment(image, src_pts, out_size, method="lstsq", extend=(1.5, 1.5))
     print("M   :\n", M)
     print("Minv:\n", Minv)
     print("align_image:\n", align_image.shape)
-
     image_utils.cv_show_image("image", image, delay=10)
     image_utils.cv_show_image("align_image", align_image)

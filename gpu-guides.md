@@ -85,3 +85,7 @@ pip install nvidia-tensorrt==8.4.1.5 (版本與TensorRT-8.4.1.5.Linux.x86_64-gnu
 ```bash
 OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 python train.py
 ```
+
+
+## 没有root权限安装CUDA
+- 参考：https://blog.csdn.net/qq_41105401/article/details/126038851 
