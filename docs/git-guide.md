@@ -15,3 +15,13 @@
          git reset --hard dev
          git push origin master --force
     ```
+
+- fatal: unable to access 'https://*****.git': Failed connect to 127.0.0.1:8888; Connection refused
+  
+  取消代理即可：
+  
+  ```bash
+  git config --global --unset http.proxy
+  git config --global --unset https.proxy  
+  ```
+    
