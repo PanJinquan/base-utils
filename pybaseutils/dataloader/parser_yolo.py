@@ -40,7 +40,20 @@ class YOLODataset(Dataset):
         Box coordinates must be in normalized xywh format (from 0 - 1).
         If your boxes are in pixels, divide x_center and width by image width, and y_center and height by image height.
         such as:[0, 0.9146634615384616, 0.3497596153846154, 0.11298076923076923, 0.14182692307692307]
-
+        ----------------------------------------
+        .
+        ├── images
+        │       ├── 0001.jpg
+        │       ├── 0002.jpg
+        │       ├── 0003.jpg
+        │       └── 0004.jpg
+        ├── labels
+        │       ├── 0001.txt
+        │       ├── 0002.txt
+        │       ├── 0003.txt
+        │       └── 0004.txt
+        └── train.txt
+        ----------------------------------------
         :param filename:
         :param data_root:
         :param anno_dir:
@@ -203,29 +216,37 @@ class YOLODataset(Dataset):
         image = self.read_image(image_file, use_rgb=self.use_rgb)
         shape = image.shape
         annotation = self.load_annotations(anno_file)
-        box, label = self.parser_annotation(annotation, self.class_dict, shape)
-        data = {"image": image, "box": box, "label": label,
+        box, label, point = self.parser_annotation(annotation, shape, self.class_dict)
+        data = {"image": image, "box": box, "label": label, "point": point,
                 "image_file": image_file, "anno_file": anno_file}
         return data
 
     @staticmethod
-    def parser_annotation(annotation: dict, class_dict={}, shape=None):
+    def parser_annotation(annotation: dict, shape, class_dict):
         """
         :param annotation:  labelme标注的数据
         :param class_dict:  label映射
         :param shape: 图片shape(H,W,C),可进行坐标点的维度检查，避免越界
         :return:
         """
-        # annotation is [class cx cy w h]
+        # dim=5,annotation is [class_index, cx, cy, w,  h]
+        # dim=9,annotation is [class_index, x1, y1, x2, y2, x3, y3, x4, y4],四个角点
         annotation = np.asarray(annotation)
+        num, dim = annotation.shape
         labels = annotation[:, 0:1].astype(int)
-        center = annotation[:, 1:5]
-        if shape:
-            h, w = shape[:2]
-            bboxes = coords_utils.cxcywh2xyxy(center, width=w, height=h, normalized=True)
+        points = annotation[:, 1:]
+        h, w = shape[:2]
+        if dim == 5:
+            if shape:
+                bboxes = coords_utils.cxcywh2xyxy(points, width=w, height=h, normalized=True)
+            else:
+                bboxes = coords_utils.cxcywh2xyxy(points)
+            points = image_utils.boxes2polygons(bboxes)
         else:
-            bboxes = coords_utils.cxcywh2xyxy(center)
-        return bboxes, labels
+            points = points.reshape(-1, 4, 2)
+            points = points * [w, h]
+            bboxes = image_utils.points2bbox(points)
+        return bboxes, labels, points
 
     def index2id(self, index):
         """
@@ -283,12 +304,22 @@ def parser_labelme(anno_file, class_dict={}, shape=None):
     :return:
     """
     annotation = YOLODataset.load_annotations(anno_file)
-    bboxes, labels = YOLODataset.parser_annotation(annotation, class_dict, shape)
+    bboxes, labels, points = YOLODataset.parser_annotation(annotation, shape, class_dict)
     return bboxes, labels
 
 
-def show_target_image(image, bboxes, labels, class_name=None, use_rgb=True):
-    image = image_utils.draw_image_bboxes_labels(image, bboxes, labels, class_name=class_name)
+def show_target_image(image, bboxes, labels, points=[], class_name=None, use_rgb=True):
+    """
+    :param image:
+    :param bboxes:
+    :param labels:
+    :param points: [shape(n,2),[shape(n,2)]]
+    :param class_name:
+    :param use_rgb:
+    :return:
+    """
+    image = image_utils.draw_image_contours(image, contours=points)
+    # image = image_utils.draw_image_bboxes_labels(image, bboxes, labels, class_name=class_name)
     image_utils.cv_show_image("det", image, use_rgb=use_rgb)
 
 
@@ -296,7 +327,7 @@ if __name__ == "__main__":
     # filename = "/home/dm/nasdata/dataset/csdn/helmet/helmet-dataset-v2/train.txt"
     # filename = "/home/dm/nasdata/dataset/csdn/helmet/helmet-asian/total.txt"
     # filename = "/home/dm/nasdata/dataset/csdn/helmet/helmet-asian/total.txt"
-    filename = "/home/dm/nasdata/dataset/csdn/traffic light/红绿灯数据集/train.txt"
+    filename = "/home/PKing/Downloads/dota8/dota8/images/train/train.txt"
     dataset = YOLODataset(filename=filename,
                           data_root=None,
                           anno_dir=None,
@@ -310,6 +341,7 @@ if __name__ == "__main__":
         print(i)  # i=20
         data = dataset.__getitem__(i)
         image, bboxes, labels = data["image"], data["box"], data["label"]
+        points = data["point"]
         h, w = image.shape[:2]
         image_file = data["image_file"]
-        show_target_image(image, bboxes, labels)
+        show_target_image(image, bboxes, labels, points=points)

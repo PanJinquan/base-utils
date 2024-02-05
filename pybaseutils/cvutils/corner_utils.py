@@ -13,7 +13,7 @@ from pybaseutils.cluster import kmean
 
 def get_order_points(pts_src):
     """
-    对4个点进行排序:[top-left, top-right, bottom-right, bottom-left]
+    对4个点按顺时针方向进行排序:[top-left, top-right, bottom-right, bottom-left]
     top-left    ：对应y+x之和的最小点
     bottom-right：对应y+x之和的最大点
     top-right   ：对应y-x之差的最小点

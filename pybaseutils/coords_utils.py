@@ -162,6 +162,27 @@ def extend_xyxy_similar_square(xyxy, use_max=True, weight=1.0, valid_range=[]):
     if valid_range: _boxes = clip_xyxy(_boxes, valid_range=valid_range)
     return _boxes
 
+def shrink_polygon_pyclipper(polygon, ratio):
+    """
+    使用Polygon库计算多边形区域的周长和面积，使用pyclipper库进行shrink
+    :param polygon: 
+    :param ratio: 
+    :return: 
+    """
+    from shapely.geometry import Polygon
+    import pyclipper
+    polygon_shape = Polygon(polygon)
+    distance = polygon_shape.area * (1 - np.power(ratio, 2)) / polygon_shape.length
+    subject = [tuple(l) for l in polygon]
+    padding = pyclipper.PyclipperOffset()
+    padding.AddPath(subject, pyclipper.JT_ROUND, pyclipper.ET_CLOSEDPOLYGON)
+    shrinked = padding.Execute(-distance)
+    if shrinked == []:
+        shrinked = np.array(shrinked)
+    else:
+        shrinked = np.array(shrinked[0]).reshape(-1, 2)
+    return shrinked
+
 
 def get_square_boxes(boxes, use_max=True, baseline=-1):
     """

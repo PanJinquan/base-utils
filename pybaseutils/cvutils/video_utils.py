@@ -61,7 +61,7 @@ def video2gif(video_file, gif_file=None, func=None, interval=1, use_pil=False, f
         image_utils.frames2gif_by_imageio(frames, gif_file=gif_file, fps=fps, loop=0)
 
 
-def video2frames(video_file, out_dir=None, func=None, interval=1, vis=True):
+def video2frames(video_file, out_dir=None, func=None, interval=1, vis=True, delay=10):
     """
     视频抽帧图像
     :param video_file: 视频文件
@@ -87,7 +87,7 @@ def video2frames(video_file, out_dir=None, func=None, interval=1, vis=True):
             if func:
                 frame = func(frame)
             if vis:
-                image_utils.cv_show_image("frame", frame, use_rgb=False, delay=30)
+                image_utils.cv_show_image("frame", frame, use_rgb=False, delay=delay)
             frame_file = os.path.join(out_dir, "{}_{:0=4d}.jpg".format(name, count))
             cv2.imwrite(frame_file, frame)
         count += 1

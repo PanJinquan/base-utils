@@ -14,7 +14,8 @@ from pybaseutils.converter.convert_labelme2voc import Labelme2VOC
 
 if __name__ == "__main__":
     # 将AIJE项目数据集，转换为VOC数据集
-    json_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v6/json"
+    # json_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-test/json"
+    json_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-outdoor-det/dataset-v2/json"
     data_root = os.path.dirname(json_dir)
     image_dir = os.path.join(data_root, "JPEGImages")
 

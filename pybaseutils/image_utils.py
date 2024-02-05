@@ -24,6 +24,7 @@ from math import cos, sin
 from pybaseutils import file_utils
 from pybaseutils.coords_utils import *
 from pybaseutils.transforms import affine_transform
+from pybaseutils.cvutils import corner_utils
 
 color_table = [(0, 0, 0), (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 255, 255), (255, 0, 255), (255, 255, 0),
                (128, 0, 0), (0, 128, 0), (128, 128, 0),
@@ -488,7 +489,7 @@ def read_image_pil(filename, size=None, norm=False, use_rgb=False):
     return image
 
 
-def requests_url(url):
+def requests_url(url, timeout=None):
     """
     读取网络数据流
     :param url:
@@ -496,7 +497,7 @@ def requests_url(url):
     """
     stream = None
     try:
-        res = requests.get(url, timeout=15)
+        res = requests.get(url, timeout=timeout)
         if res.status_code == 200:
             stream = res.content
     except Exception as e:
@@ -504,7 +505,7 @@ def requests_url(url):
     return stream
 
 
-def read_images_url(url: str, size=None, norm=False, use_rgb=False):
+def read_images_url(url: str, size=None, norm=False, use_rgb=False, timeout=5):
     """
     根据url或者图片路径，读取图片
     :param url:
@@ -516,7 +517,7 @@ def read_images_url(url: str, size=None, norm=False, use_rgb=False):
     image = None
     # if re.match(r'^https?:/{2}\w.+$', url):
     if url.startswith("http"):
-        stream = requests_url(url)
+        stream = requests_url(url, timeout=timeout)
         if stream is not None:
             content = np.asarray(bytearray(stream), dtype="uint8")
             image = cv2.imdecode(content, cv2.IMREAD_COLOR)
@@ -2334,7 +2335,9 @@ def draw_image_contours(image, contours: List[np.ndarray], color=(), thickness=2
     """
     for i in range(0, len(contours)):
         c = color if color else color_table[i + 1]
-        image[:] = cv2.drawContours(image, contours[i], contourIdx=-1, color=c, thickness=thickness)
+        p = np.asarray(contours[i], dtype=np.int32)
+        if len(p.shape) == 2: p = [p]
+        image[:] = cv2.drawContours(image, p, contourIdx=-1, color=c, thickness=thickness)
     return image
 
 
@@ -2442,6 +2445,23 @@ def find_mask_contours(mask, mode=cv2.RETR_LIST, method=cv2.CHAIN_APPROX_NONE):
     contours, hierarchy = cv2.findContours(mask, mode=mode, method=method)
     contours = [c.reshape(-1, 2) for c in contours]
     return contours
+
+
+def find_minAreaRect(contours):
+    """
+    获得旋转矩形框，即最小外接矩形的四个角点
+    :param contours:
+    :return:
+    """
+    points = []
+    for i in range(len(contours)):
+        # 得到最小外接矩形的（中心(x,y), (宽,高), 旋转角度）
+        rotatedRect = cv2.minAreaRect(contours[i])  # [center, wh, angle]==>[Point2f, Size, float]
+        pts = cv2.boxPoints(rotatedRect)  # 获取最小外接矩形的4个顶点坐标
+        pts = pts[[1, 2, 3, 0], :]
+        # pts = corner_utils.get_order_points(pts)
+        points.append(pts)
+    return points
 
 
 def find_image_contours(mask: np.ndarray, target_label: List[int] = [1, 2]) -> List[List[np.ndarray]]:

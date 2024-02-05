@@ -72,25 +72,24 @@ def video2frames_similarity(video_file, out_dir=None, func=None, interval=1, thr
 
 # thresh_dict = {"1号视角": 0.5, "2号视角": 0.15, "3号视角": 0.3, "4号视角": 0.3}
 # thresh_dict = {"一号位": 0.58, "平视": 0.35, "俯视": 0.35, "右视": 0.25, "左视": 0.3}
-thresh_dict = {"第一视角": 0.58, "平视": 0.30, "俯视": 0.30, "右视": 0.4, "左视": 0.4, "全景": 0.35}
-
-
+thresh_dict = {"第一视角": 0.58, "主视角": 0.58, "平视": 0.30, "俯视": 0.30, "右视": 0.4, "左视": 0.4, "全景": 0.35}
 # thresh_dict = {"1号位": 0.58, "平视": 0.35, "全景": 0.35, "俯视": 0.35, "右视": 0.25, "左视": 0.3}
 
 
-def video2frames_demo(root, out, prefix="", thresh=0.3):
+def video2frames_demo(root, out, prefix="", thresh=0.2):
     files = file_utils.get_files_lists(root, postfix=["*.avi", "*.mp4", "*.flv"])
     for video_file in tqdm(files):
         print(video_file)
         name = os.path.basename(video_file).split(".")[0]
         if name in thresh_dict:
             thresh = thresh_dict[name]
+        prefix_ = "{}_{}".format(prefix,os.path.basename(root))
         video2frames_similarity(video_file, out_dir=out, func=None, interval=100,
-                                thresh=thresh, prefix=prefix, vis=True)
+                                thresh=thresh, prefix=prefix_, vis=True)
 
 
 if __name__ == "__main__":
-    root = "/home/PKing/nasdata/dataset-dmai/AIJE/岗评项目数据/东莞视频/室内/20231027_第一场"
-    prefix = "东莞"
+    root = "/home/PKing/nasdata/dataset-dmai/AIJE/岗评项目数据/广州视频/20240126"
+    prefix = "广州"
     out = root + "-train"
     video2frames_demo(root, out, prefix=prefix)

@@ -69,7 +69,7 @@ ln -s source dist
 ## 文件解压和解压
 
 ```bash
-zip -r fold.zip fold/        # 压缩fold文件夹
+zip -r fold.zip fold/    # 压缩fold文件夹
 unzip -O CP936 fold.zip  # 解压fold.zip压缩文件(-O CP936可解决中文乱码问题)
 tar -zxvf fold.tar.gz    # 解压fold.tar.gz文件
 unar fold.zip            # 解压fold.zip压缩文件,解决中文乱码(安装：sudo apt-get install unar)

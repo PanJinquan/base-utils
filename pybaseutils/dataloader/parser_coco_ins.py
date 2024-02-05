@@ -86,11 +86,26 @@ def CocoInstances(anno_file=None,
     return datasets
 
 
-def show_target_image(image, mask, boxes, labels, class_name=[], thickness=2, fontScale=1., use_rgb=False):
+def show_target_image(image, mask, boxes, labels, points=[], class_name=[], thickness=2, fontScale=1., use_rgb=False):
+    """
+    :param image:
+    :param mask:
+    :param boxes:
+    :param labels:
+    :param points: [shape(n,2),[shape(n,2)]]
+    :param class_name:
+    :param thickness:
+    :param fontScale:
+    :param use_rgb:
+    :return:
+    """
     mask = np.asarray(mask, np.uint8)
     color_image, color_mask = color_utils.decode_color_image_mask(image, mask)
     color_image = image_utils.draw_image_bboxes_labels(color_image, boxes, labels, class_name=class_name,
                                                        thickness=thickness, fontScale=fontScale, drawType="chinese")
+    if len(points)>0:
+        color_mask = image_utils.draw_image_contours(color_mask, contours=points)
+        color_image = image_utils.draw_image_contours(color_image, contours=points)
     vis_image = image_utils.image_hstack([image, mask, color_image, color_mask])
     image_utils.cv_show_image("image", vis_image, use_rgb=use_rgb)
 
@@ -121,10 +136,10 @@ if __name__ == "__main__":
     # class_name = ["BG", 'car,person,身穿工作服']
     # class_name = {"BG": 0, 'car': 1, 'person': 1, "身穿工作服": 1}
 
-    class_name={'手': 0, '护目镜': 1, '未穿工作服': 2, '身穿工作服': 2, '其他鞋': 3, '绝缘鞋': 3, '安全带': 4, '安全帽': 5,
-            '绝缘垫': 6, '绝缘手套': 7, '万用表': 8, '万用表线头': 9, '相序表': 10, '相序表线头': 11, '钳形电流表': 12,
-            '电能表': 13, '尖嘴钳': 14, '验电笔': 15, '螺丝刀': 16, '接线盒': 17, '电流互感器': 18, '表箱关': 19,
-            '表箱开': 19, '竹梯': 20, '准备区域': 21, '工作台': 22}
+    class_name = {'手': 0, '护目镜': 1, '未穿工作服': 2, '身穿工作服': 2, '其他鞋': 3, '绝缘鞋': 3, '安全带': 4, '安全帽': 5,
+                  '绝缘垫': 6, '绝缘手套': 7, '万用表': 8, '万用表线头': 9, '相序表': 10, '相序表线头': 11, '钳形电流表': 12,
+                  '电能表': 13, '尖嘴钳': 14, '验电笔': 15, '螺丝刀': 16, '接线盒': 17, '电流互感器': 18, '表箱关': 19,
+                  '表箱开': 19, '竹梯': 20, '准备区域': 21, '工作台': 22}
     #
     # anno_file = "/media/PKing/新加卷1/SDK/base-utils/data/coco/coco_ins.json"
     # anno_file = "/home/PKing/nasdata/dataset/tmp/hand-pose/FreiHAND/training/coco_kps.json"

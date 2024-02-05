@@ -17,12 +17,18 @@ import torch
 from pycocotools import cocoeval
 from pybaseutils import image_utils, file_utils
 from pybaseutils.singleton_utils import Singleton
+import skimage.metrics as metrics
 
 if __name__ == '__main__':
-    data = [[1, 2, 3, 4, 5, 6], [11, 21, 0.3, 0.4, 0.5, 0.6]]
-    age_pred1 = torch.Tensor(data)
-    out1 = torch.nn.functional.normalize(age_pred1, p=1, dim=1)
-    print(out1)
-    age_pred2 = np.asarray(data)
-    out2 = age_pred2 / np.reshape(np.sum(np.abs(age_pred2), axis=1), newshape=(-1, 1))
-    print(out2)
+    file = "../data/mask.jpg"
+    src = cv2.imread(file)
+    for i in range(0, 1000000, 2):
+        image = src.copy()
+        image = image_utils.image_rotation(image, angle=i % 360, borderValue=(255, 255, 255))
+        mask = image_utils.get_image_mask(image, inv=True)
+        contours = image_utils.find_mask_contours(mask)
+        points = image_utils.find_minAreaRect(contours)
+        image = image_utils.draw_image_contours(image, contours=contours)
+        image = image_utils.draw_key_point_in_image(image, key_points=points, vis_id=True)
+        # image = image_utils.draw_image_contours(image, contours=points)
+        image_utils.cv_show_image("mask", image)
