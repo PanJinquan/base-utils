@@ -89,7 +89,7 @@ def video2frames_demo(root, out, prefix="", thresh=0.2):
 
 
 if __name__ == "__main__":
-    root = "/home/PKing/nasdata/dataset-dmai/AIJE/岗评项目数据/广州视频/20240126"
-    prefix = "广州"
+    root = "/home/PKing/nasdata/dataset-dmai/AIJE/岗评项目数据/南沙视频/室内"
+    prefix = "南沙"
     out = root + "-train"
     video2frames_demo(root, out, prefix=prefix)

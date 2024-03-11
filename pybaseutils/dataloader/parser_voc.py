@@ -14,7 +14,7 @@ import glob
 import random
 import numbers
 from tqdm import tqdm
-from pybaseutils.dataloader.base_dataset import Dataset
+from pybaseutils.dataloader.base_dataset import Dataset, ConcatDataset
 from pybaseutils.dataloader import voc_seg_utils
 from pybaseutils import file_utils
 
@@ -360,78 +360,6 @@ class VOCDataset(Dataset):
         return image
 
 
-class ConcatDataset(Dataset):
-    """ Concat Dataset """
-
-    def __init__(self, datasets, shuffle=False):
-        """
-        import torch.utils.data as torch_utils
-        voc1 = PolygonParser(filename1)
-        voc2 = PolygonParser(filename2)
-        voc=torch_utils.ConcatDataset([voc1, voc2])
-        ====================================
-        :param datasets:
-        :param shuffle:
-        """
-        super(ConcatDataset, self).__init__()
-        assert len(datasets) > 0, 'dataset should not be an empty iterable'
-        # super(ConcatDataset, self).__init__()
-        if not isinstance(datasets, list):
-            datasets = [datasets]
-        self.image_ids = []
-        self.dataset = datasets
-        self.shuffle = shuffle
-        for dataset_id, dataset in enumerate(self.dataset):
-            image_ids = dataset.image_ids
-            image_ids = self.add_dataset_id(image_ids, dataset_id)
-            self.image_ids += image_ids
-            self.classes = dataset.classes
-            self.class_name = dataset.class_name
-        if shuffle:
-            random.seed(200)
-            random.shuffle(self.image_ids)
-        print("ConcatDataset total images :{}".format(len(self.image_ids)))
-        print("ConcatDataset class_name   :{}".format(self.class_name))
-        print("------" * 10)
-
-
-    def add_dataset_id(self, image_ids, dataset_id):
-        """
-        :param image_ids:
-        :param dataset_id:
-        :return:
-        """
-        out_image_id = []
-        for image_id in image_ids:
-            out_image_id.append({"dataset_id": dataset_id, "image_id": image_id})
-        return out_image_id
-
-    def __getitem__(self, index):
-        """
-        :param index: int
-        :return:
-        """
-        dataset_id = self.image_ids[index]["dataset_id"]
-        image_id = self.image_ids[index]["image_id"]
-        dataset = self.dataset[dataset_id]
-        data = dataset.__getitem__(image_id)
-        return data
-
-    def get_image_anno_file(self, index):
-        dataset_id = self.image_ids[index]["dataset_id"]
-        image_id = self.image_ids[index]["image_id"]
-        return self.dataset[dataset_id].get_image_anno_file(image_id)
-
-    def get_annotation(self, xml_file):
-        return self.dataset[0].get_annotation(xml_file)
-
-    def read_image(self, image_file):
-        return self.dataset[0].read_image(image_file, use_rgb=self.dataset[0].use_rgb)
-
-    def __len__(self):
-        return len(self.image_ids)
-
-
 def VOCDatasets(filename=None,
                 data_root=None,
                 image_dir=None,
@@ -505,7 +433,6 @@ def show_target_image(image, boxes, labels, normal=False, transpose=False, class
 if __name__ == "__main__":
     # from models.transforms import data_transforms
     filename = '/media/PKing/新加卷1/SDK/base-utils/data/coco/file_list.txt'
-    filename = '/home/PKing/nasdata/dataset/tmp/gesture/Light-HaGRID/trainval/call/val.txt'
     class_name = None
     dataset = VOCDatasets(filename=[filename, filename],
                           data_root=None,

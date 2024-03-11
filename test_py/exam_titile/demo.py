@@ -66,7 +66,8 @@ def save_exam_info(data_root, exam_info):
             count = value['出现次数']
             ids += 1
             content[0] = "{}、".format(ids) + content[0]
-            content[-1] = content[-1] + "（模拟考试{}次,出现{}次,出现概率:{}%）".format(exam_nums, count, count*100 // exam_nums) + "\n"
+            # content[-1] = content[-1] + "（模拟考试{}次,出现{}次,出现概率:{}%）".format(exam_nums, count, count*100 // exam_nums) + "\n"
+            # content[-1] = content[-1] + "（模拟考试出现{}次）".format(count) + "\n"
             file.write_line_list(content)
 
         filename = data_root + "({})-{}-考试题库和答案.txt".format(len(item_info), title)
@@ -77,6 +78,7 @@ if __name__ == '__main__':
     # data_root = "/media/PKing/新加卷/个人文件/医学/中医规培-公共科目-方剂学-1603"
     # data_root = "/media/PKing/新加卷/个人文件/医学/中医规培-公共科目-内经-502"
     data_root = "/media/PKing/新加卷/个人文件/医学/中医规培-公共科目-温病学-1058"
+    data_root = "/media/PKing/新加卷/个人文件/医学/中药1"
     text_list = file_utils.get_files_lists(data_root, postfix=["*.txt"])
     exam_info = {}
     end = ["版权所有", "二、"]

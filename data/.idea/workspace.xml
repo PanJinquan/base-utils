@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="eac8b331-828f-4240-865b-f23d2873f66c" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/mask2.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../pybaseutils/transforms/transform_utils.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../test_py/converter/WaterMeters.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../test_py/demo_for_pair_file.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../test_py/demo_for_polygon.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../test_py/demo_image_crop.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../test_py/exam_titile/remove_same.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../test_py/image_correction/0000.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mask.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/mask1.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../docs/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../pybaseutils/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/../pybaseutils/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../pybaseutils/cvutils/corner_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/../pybaseutils/cvutils/corner_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../pybaseutils/file_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/../pybaseutils/file_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../pybaseutils/image_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/../pybaseutils/image_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../pybaseutils/transforms/face_alignment.py" beforeDir="false" afterPath="$PROJECT_DIR$/../pybaseutils/transforms/face_alignment.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../test_py/aije/demo_video_aije.py" beforeDir="false" afterPath="$PROJECT_DIR$/../test_py/aije/demo_video_aije.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../test_py/demo1.py" beforeDir="false" afterPath="$PROJECT_DIR$/../test_py/demo1.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../test_py/exam_titile/demo.py" beforeDir="false" afterPath="$PROJECT_DIR$/../test_py/exam_titile/demo.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../test_py/exam_titile/tmp.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../test_py/exam_titile/tmp.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../test_py/image_correction/demo_correction_v2.py" beforeDir="false" afterPath="$PROJECT_DIR$/../test_py/image_correction/demo_correction_v2.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="ProjectId" id="2dLpz33WTxgCdb9jLQy4C6vVzCK" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="eac8b331-828f-4240-865b-f23d2873f66c" name="Default Changelist" comment="" />
+      <created>1709797472889</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1709797472889</updated>
+      <workItem from="1709797474228" duration="7000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

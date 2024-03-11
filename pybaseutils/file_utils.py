@@ -199,6 +199,7 @@ def read_data(filename, split=",", convertNum=True):
     """
     with open(filename, mode="r", encoding='utf-8') as f:
         content_list = f.readlines()
+        content_list = [line.strip().strip('\ufeff').strip('\xef\xbb\xbf') for line in content_list]
         if split is None:
             content_list = [content.rstrip() for content in content_list]
             return content_list
@@ -921,6 +922,36 @@ def print_dict(dict_data, save_path):
         with open(save_path, "w") as f:
             for info in list_config:
                 f.writelines(info + "\n")
+
+
+def get_pair_files(data_root, out_root=None, image_sub="", label_sub="",
+                   postfix=IMG_POSTFIX, label_postfix="txt", shuffle=False):
+    """
+    获得同目录下一对文件
+    :param data_root: 根目录
+    :param out_root:
+    :param image_sub:
+    :param label_sub:
+    :param label_postfix: label文件后缀，如txt,png,json等
+    :return:
+    """
+    image_dir = os.path.join(data_root, image_sub)
+    label_dir = os.path.join(data_root, label_sub)
+    if out_root: create_dir(out_root)
+    file_list = get_files_lists(file_dir=data_root, postfix=postfix, subname="", shuffle=shuffle, sub=False)
+    content_list = []
+    for i, image_name in tqdm(enumerate(file_list)):
+        postfix = image_name.split(".")[-1]
+        lable_name = image_name.replace(f".{postfix}", f".{label_postfix}")
+        image_file = os.path.join(image_dir, image_name)
+        lable_file = os.path.join(label_dir, lable_name)
+        if os.path.exists(image_file) and os.path.exists(lable_file):
+            image_file, lable_file = get_sub_list([image_file, lable_file], dirname=data_root)
+            content_list.append([image_file, lable_file])
+    if out_root:
+        filename = os.path.join(out_root, "file_list.txt")
+        write_data(filename, content_list, split=",", mode='w')
+    return content_list
 
 
 def read_pair_data(filename, split=True):

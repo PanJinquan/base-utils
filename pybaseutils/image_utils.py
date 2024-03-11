@@ -1317,13 +1317,14 @@ def custom_bbox_line(image, bbox, color, name, thickness=2, fontScale=0.8, drawT
     :return:
     """
     thickness, fontScale = get_linesize(max(image.shape), thickness=thickness, fontScale=fontScale)
+    text_loc = (bbox[0], bbox[1]) if top else (bbox[0], bbox[3])
     if not name: drawType = "simple"
     if drawType == "chinese":
         cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness)
-        cv2_putText(image, str(name), (bbox[0], bbox[1]), color=color, fontScale=fontScale, thickness=thickness)
+        cv2_putText(image, str(name), text_loc, color=color, fontScale=fontScale, thickness=thickness)
     elif drawType == "simple":
         cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness, 8, 0)
-        cv2.putText(image, str(name), (bbox[0], bbox[1]), cv2.FONT_HERSHEY_SIMPLEX, fontScale, color, thickness)
+        cv2.putText(image, str(name), text_loc, cv2.FONT_HERSHEY_SIMPLEX, fontScale, color, thickness)
     elif drawType == "custom":
         cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness)
         text_size, baseline = cv2.getTextSize(str(name), cv2.FONT_HERSHEY_SIMPLEX, fontScale, thickness)
@@ -2249,6 +2250,31 @@ def get_mask_erode_dilate(mask, ksize, binarize=False):
     return mask
 
 
+def get_mask_morphology(image, ksize, binarize=False, op=cv2.MORPH_OPEN, itera=1):
+    """
+    形态学计算
+    :param image: 可以是二值化图像，也可以是RGB图像
+    :param ksize:
+    :param binarize:
+    :param op:为形态变换的类型，包括如下取值类型：
+            MORPH_ERODE：腐蚀，与调用腐蚀函数erode效果相同
+            MORPH_DILATE：膨胀，与调用膨胀函数dilate效果相同
+            MORPH_OPEN：开运算，对图像先进行腐蚀再膨胀，等同于dilate(erode(src,kernal))，开运算对图像的边界进行平滑、去掉凸起等
+            MORPH_CLOSE：闭运算，对图像先进行膨胀在腐蚀，等同于erode(dilate(src,kernal))，闭运算用于填充图像内部的小空洞、填充图像的凹陷等
+            MORPH_GRADIENT：梯度图，用膨胀图减腐蚀图，等同于dilate(src,kernal)−erode(src,kernal)，可以用于获得图像中物体的轮廓
+            MORPH_TOPHAT：顶帽，又称礼帽，用原图像减去开运算后的图像，等同于src−open(src,kernal)，可以用于获得原图像中比周围亮的区域
+            MORPH_BLACKHAT：黑帽，闭运算图像减去原图像，等同于close(src,kernal)−src，可以用于获取原图像中比周围暗的区域
+            MORPH_HITMISS：击中击不中变换，用于匹配处理图像中是否存在核对应的图像，匹配时，需要确保核矩阵非0部分和为0部分都能匹配，注意该变换只能处理灰度图像。
+    :param itera:
+    :return:
+    """
+    if binarize: image = get_image_mask(image, inv=False)
+    kernel = np.ones((ksize, ksize), np.uint8)
+    # morphologyEx输入的image可以是RGB图像
+    image = cv2.morphologyEx(image, op=op, kernel=kernel, iterations=itera)
+    return image
+
+
 def get_scale_image(image, scale=0.85, offset=(0, 0), color=(0, 0, 0), interpolation=cv2.INTER_NEAREST):
     """
     同比居中缩小image，以便居中显示
@@ -2366,6 +2392,19 @@ def get_mask_boundrect_cv(mask, binarize=False, shift=0):
     return [xmin, ymin, xmax, ymax]
 
 
+def binarize(mask, thresh=127, maxval=255, type=cv2.THRESH_BINARY | cv2.THRESH_OTSU):
+    """
+    二值化
+    :param mask:
+    :param thresh:
+    :param maxval:
+    :param type:
+    :return:
+    """
+    ret, mask = cv2.threshold(mask, thresh=thresh, maxval=maxval, type=type)
+    return mask
+
+
 def get_mask_boundrect(mask, binarize=False, shift=0):
     """
     获得mask的最大外接矩形框(比较慢)
@@ -2447,10 +2486,10 @@ def find_mask_contours(mask, mode=cv2.RETR_LIST, method=cv2.CHAIN_APPROX_NONE):
     return contours
 
 
-def find_minAreaRect(contours):
+def find_minAreaRect(contours, order=False):
     """
     获得旋转矩形框，即最小外接矩形的四个角点
-    :param contours:
+    :param contours: [shape(n,2),...,]
     :return:
     """
     points = []
@@ -2459,7 +2498,9 @@ def find_minAreaRect(contours):
         rotatedRect = cv2.minAreaRect(contours[i])  # [center, wh, angle]==>[Point2f, Size, float]
         pts = cv2.boxPoints(rotatedRect)  # 获取最小外接矩形的4个顶点坐标
         pts = pts[[1, 2, 3, 0], :]
-        # pts = corner_utils.get_order_points(pts)
+        if order:
+            pts = corner_utils.get_order_points(pts)
+            # pts2 = corner_utils.order_points_clockwise(pts)
         points.append(pts)
     return points
 

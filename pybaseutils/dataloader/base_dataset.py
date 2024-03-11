@@ -160,27 +160,31 @@ class ConcatDataset(Dataset):
         # super(ConcatDataset, self).__init__()
         if not isinstance(datasets, list):
             datasets = [datasets]
-        self.image_id = []
+        self.image_ids = []
         self.dataset = datasets
         self.shuffle = shuffle
         for dataset_id, dataset in enumerate(self.dataset):
-            image_id = dataset.image_ids
-            image_id = self.add_dataset_id(image_id, dataset_id)
-            self.image_id += image_id
+            image_ids = dataset.image_ids
+            image_ids = self.add_dataset_id(image_ids, dataset_id)
+            self.image_ids += image_ids
             self.classes = dataset.classes
+            self.class_name = dataset.class_name
         if shuffle:
             random.seed(200)
-            random.shuffle(self.image_id)
+            random.shuffle(self.image_ids)
+        print("ConcatDataset total images :{}".format(len(self.image_ids)))
+        print("ConcatDataset class_name   :{}".format(self.class_name))
+        print("------" * 10)
 
-    def add_dataset_id(self, image_id, dataset_id):
+    def add_dataset_id(self, image_ids, dataset_id):
         """
-        :param image_id:
+        :param image_ids:
         :param dataset_id:
         :return:
         """
         out_image_id = []
-        for id in image_id:
-            out_image_id.append({"dataset_id": dataset_id, "image_ids": id})
+        for image_id in image_ids:
+            out_image_id.append({"dataset_id": dataset_id, "image_id": image_id})
         return out_image_id
 
     def __getitem__(self, index):
@@ -188,22 +192,22 @@ class ConcatDataset(Dataset):
         :param index: int
         :return:
         """
-        dataset_id = self.image_id[index]["dataset_id"]
-        image_id = self.image_id[index]["image_ids"]
+        dataset_id = self.image_ids[index]["dataset_id"]
+        image_id = self.image_ids[index]["image_id"]
         dataset = self.dataset[dataset_id]
         data = dataset.__getitem__(image_id)
         return data
 
     def get_image_anno_file(self, index):
-        dataset_id = self.image_id[index]["dataset_id"]
-        image_id = self.image_id[index]["image_ids"]
+        dataset_id = self.image_ids[index]["dataset_id"]
+        image_id = self.image_ids[index]["image_id"]
         return self.dataset[dataset_id].get_image_anno_file(image_id)
 
-    def get_annotation(self, xml_file):
-        return self.dataset[0].get_annotation(xml_file)
+    def get_annotation(self, anno_file):
+        return self.dataset[0].get_annotation(anno_file)
 
     def read_image(self, image_file):
         return self.dataset[0].read_image(image_file, use_rgb=self.dataset[0].use_rgb)
 
     def __len__(self):
-        return len(self.image_id)
+        return len(self.image_ids)

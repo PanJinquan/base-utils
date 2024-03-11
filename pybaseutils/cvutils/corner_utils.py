@@ -11,6 +11,63 @@ from pybaseutils import image_utils, file_utils
 from pybaseutils.cluster import kmean
 
 
+def myapproxPolyDP(contour, n_corners, max_iter=100, lr=0.1, log=False):
+    """
+    多边形拟合函数,减少多边形点的个数
+    https://blog.csdn.net/Robin__Chou/article/details/112705540
+    当n_corners=4(四边形)，也可以使用get_order_points进行代替
+    :param contour: 多边形轮廓集合(N,2)
+    :param n_corners: 需要拟合保留的边数
+    :param max_iter: 最大迭代次数
+    :param lr: 学习率
+    :param log:
+    :return:
+    """
+    epsilon = 0.1 * cv2.arcLength(contour, True)
+    corners = np.zeros(shape=(0, 2), dtype=np.int32)
+    k = 0
+    while k < max_iter:
+        if len(corners) == n_corners:
+            break
+        elif len(corners) > n_corners:
+            epsilon = (1 + lr) * epsilon
+        else:
+            epsilon = (1 - lr) * epsilon
+        corners = cv2.approxPolyDP(contour, epsilon, closed=True)
+        corners = corners.reshape(-1, 2)
+        k += 1
+        if log: print(f"k={k},corners={len(corners)},epsilon={epsilon}")
+    return corners
+
+
+def get_target_points(src_pts: np.ndarray):
+    """
+    根据输入的四个角点，计算其矫正后的目标四个角点,src_pts四个点分布：
+        0--(w01)---1
+        |          |
+      (h03)      (h21)
+        |          |
+        3--(w23)---2
+    :param src_pts:
+    :return:
+    """
+    # 计算四个角点的边长
+    w01 = np.sum(np.square(src_pts[0] - src_pts[1]), axis=0)
+    h03 = np.sum(np.square(src_pts[0] - src_pts[3]), axis=0)
+    h21 = np.sum(np.square(src_pts[2] - src_pts[1]), axis=0)
+    w23 = np.sum(np.square(src_pts[2] - src_pts[3]), axis=0)
+    xmin, ymin = 0, 0
+    if h03 > w01:
+        xmax = np.sqrt(np.mean([w01, w23]))
+        ymax = np.sqrt(np.mean([h03, h21]))
+    else:
+        xmax = np.sqrt(np.mean([w01, w23]))
+        ymax = np.sqrt(np.mean([h03, h21]))
+    dst_pts = [[xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax]]
+    dst_pts = np.asarray(dst_pts)
+    return dst_pts
+
+
 def get_order_points(pts_src):
     """
     对4个点按顺时针方向进行排序:[top-left, top-right, bottom-right, bottom-left]
@@ -22,7 +79,7 @@ def get_order_points(pts_src):
     :return:
     """
     pts_src = np.array(pts_src)
-    pts_dst = np.zeros_like(pts_src)
+    pts_dst = np.zeros(shape=(4, 2), dtype=np.float32)
     s = pts_src.sum(axis=1)
     # Top-left point will have the smallest sum.
     pts_dst[0] = pts_src[np.argmin(s)]
@@ -34,6 +91,22 @@ def get_order_points(pts_src):
     # Bottom-left will have the largest difference.
     pts_dst[3] = pts_src[np.argmax(diff)]
     # Return the ordered coordinates.
+    return pts_dst
+
+
+def get_order_points_v2(pts_src):
+    """
+    参考DBNet.pytorch项目的order_points_clockwise实现
+    :param pts_src:
+    :return:
+    """
+    pts_dst = np.zeros((4, 2), dtype="float32")
+    s = pts_src.sum(axis=1)
+    pts_dst[0] = pts_src[np.argmin(s)]
+    pts_dst[2] = pts_src[np.argmax(s)]
+    diff = np.diff(pts_src, axis=1)
+    pts_dst[1] = pts_src[np.argmin(diff)]
+    pts_dst[3] = pts_src[np.argmax(diff)]
     return pts_dst
 
 
@@ -70,7 +143,8 @@ def get_image_four_corners(image, n_corners=4, ksize=5, blur=True, max_iter=10, 
     # 使用approxPolyDP拟合多边形，减少多边形点的个数
     # max_dist = 0.02 * cv2.arcLength(contour, closed=True)  # 轮廓周长
     max_dist = 0.3 * sum([xmax - xmin, ymax - ymin]) / 2  # 外接矩形框
-    corners = cv2.approxPolyDP(contour, max_dist, closed=True)  # 所有角点
+    # corners = cv2.approxPolyDP(contour, max_dist, closed=True)  # 所有角点
+    corners = cv2.approxPolyDP(contour, 0.01 * cv2.arcLength(contour, True), closed=True)
     corners = corners.reshape(-1, 2)
     if vis: print("contour={},corners={},max_dist={}".format(len(contour), len(corners), max_dist))
     # 如果不够四个角点，则减小max_dist
@@ -85,6 +159,7 @@ def get_image_four_corners(image, n_corners=4, ksize=5, blur=True, max_iter=10, 
     # 如果角点大于4个，则进行kmeans聚类
     if len(corners) > n_corners:
         index = kmean.sklearn_kmeans(corners, n_clusters=n_corners, max_iter=max_iter)
+        # data = cv2.kmeans(corners, K=n_corners)
         clusters = []
         for i in range(n_corners):
             c = np.mean(corners[index == i], axis=0)  # 取中心点
@@ -168,7 +243,6 @@ def get_document_corners_example(image_dir):
     """
     image_list = file_utils.get_files_lists(image_dir)
     for image_file in image_list:
-        image_file = "/home/dm/nasdata/dataset/csdn/文档矫正/image2/test04.jpg"
         print(image_file)
         image = cv2.imread(image_file)
         corners = get_document_corners(image)
@@ -176,6 +250,16 @@ def get_document_corners_example(image_dir):
         image_utils.cv_show_image("image", image, use_rgb=False)
 
 
-if __name__ == "__main__":
-    image_dir = "/home/dm/nasdata/dataset/csdn/文档矫正/image2"
-    get_document_corners_example(image_dir)
+if __name__ == '__main__':
+    file = "../../data/mask1.jpg"
+    src = cv2.imread(file)
+    for i in range(0, 1000000, 2):
+        image = src.copy()
+        image = image_utils.image_rotation(image, angle=i % 360, borderValue=(255, 255, 255))
+        mask = image_utils.get_image_mask(image, inv=True)
+        contours = image_utils.find_mask_contours(mask)
+        points = image_utils.find_minAreaRect(contours)
+        image = image_utils.draw_image_contours(image, contours=contours)
+        image = image_utils.draw_key_point_in_image(image, key_points=points, vis_id=True)
+        # image = image_utils.draw_image_contours(image, contours=points)
+        image_utils.cv_show_image("mask", image)

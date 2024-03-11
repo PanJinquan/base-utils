@@ -334,6 +334,45 @@ class LabelMeDataset(Dataset):
         return annos, width, height
 
 
+def LabelMeDatasets(filename=None,
+                    data_root=None,
+                    image_dir=None,
+                    anno_dir=None,
+                    class_name=None,
+                    transform=None,
+                    use_rgb=True,
+                    shuffle=False,
+                    check=False):
+    """
+    :param filename:
+    :param data_root:
+    :param image_dir:
+    :param anno_dir:
+    :param class_name:
+    :param transform:
+    :param use_rgb:
+    :param shuffle:
+    :param check:
+    :return:
+    """
+    if not isinstance(filename, list) and os.path.isfile(filename):
+        filename = [filename]
+    datasets = []
+    for file in filename:
+        data = LabelMeDataset(filename=file,
+                              data_root=data_root,
+                              image_dir=image_dir,
+                              anno_dir=anno_dir,
+                              class_name=class_name,
+                              transform=transform,
+                              use_rgb=use_rgb,
+                              shuffle=shuffle,
+                              check=check)
+        datasets.append(data)
+    datasets = ConcatDataset(datasets, shuffle=shuffle)
+    return datasets
+
+
 def parser_labelme(anno_file, class_dict={}, shape=None):
     """
     :param annotation:  labelme标注的数据

@@ -1,13 +1,7 @@
 # 常用的工具使用方法
-PyPI recovery codes
-daa596d242587202
-12fac17d7698478c
-33553d161c290b60
-e3f1a0684e48cefc
-a43eb1f0d0de6736
-d377d440e6b45eb3
-352ee03b086aa982
-e648c218903f3b4c
+
+PyPI recovery codes daa596d242587202 12fac17d7698478c 33553d161c290b60 e3f1a0684e48cefc a43eb1f0d0de6736
+d377d440e6b45eb3 352ee03b086aa982 e648c218903f3b4c
 
 ## memory profiler性能分析工具
 
@@ -155,11 +149,22 @@ alias countdir='ls -lR|grep "^d"|wc -l'
 
 - OpenCV+PyQT5兼容问题：https://www.sohu.com/a/602131072_121124366
 - opencv-python4.2.0以上的版本，使用了qt库
+- 解决方法1：
 
 ```bash
 sudo apt-get install libopencv-dev python-opencv
 sudo apt-get install '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev    
 apt-get install '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev
+```
+
+- 解决方法2：使用pyqt5==5.13.2(亲测可用)
+
+```bash
+# 
+opencv-python==4.8.0.76
+opencv-contrib-python==4.8.1.78
+pip install pyqt5==5.13.2 -i https://pypi.tuna.tsinghua.edu.cn/simple
+
 ```
 
 ## 解决git pull/push需要输入密码的问题
