@@ -77,7 +77,7 @@ cv::Point2f create_vector(cv::Point2f point1, cv::Point2f point2);
 float vector_angle(cv::Point2f v1, cv::Point2f v2, bool minangle = false);
 
 
-/***python
+/***
  * 计算两个向量的乘积
  * @param v1
  * @param v2

@@ -232,7 +232,7 @@ void image_save(string name, cv::Mat &image) {
 void draw_point_text(cv::Mat &image, cv::Point2f points, string text, cv::Scalar color) {
     int radius = 4;
     int thickness = -1;//实心点
-    cv::circle(image, points, radius, color, thickness,cv::LINE_AA);
+    cv::circle(image, points, radius, color, thickness, cv::LINE_AA);
     if (text != "") {
         cv::putText(image,
                     text,
@@ -298,6 +298,22 @@ void draw_rects_texts(cv::Mat &image,
     }
     for (int i = 0; i < num; ++i) {
         draw_rect_text(image, rects[i], texts[i], color, thickness, fontScale);
+    }
+}
+
+
+void draw_image_mask_color(cv::Mat &image, cv::Mat mask, cv::Scalar color, float alpha) {
+    for (int y = 0; y < image.rows; y++) {
+        uchar *ptr = image.ptr(y);
+        const float *mask_ptr = mask.ptr<float>(y);
+        for (int x = 0; x < image.cols; x++) {
+            if (mask_ptr[x] >= 0.5) {
+                ptr[0] = cv::saturate_cast<uchar>(ptr[0] * (1 - alpha) + color[0] * alpha);
+                ptr[1] = cv::saturate_cast<uchar>(ptr[1] * (1 - alpha) + color[1] * alpha);
+                ptr[2] = cv::saturate_cast<uchar>(ptr[2] * (1 - alpha) + color[2] * alpha);
+            }
+            ptr += 3;
+        }
     }
 }
 

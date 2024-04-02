@@ -20,16 +20,16 @@ namespace cv {
 }
 
 static vector<string> COCO_NAMES = {"person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck",
-                             "boat", "traffic light", "fire hydrant", "stop sign", "parking meter", "bench",
-                             "bird", "cat", "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra",
-                             "giraffe", "backpack", "umbrella", "handbag", "tie", "suitcase", "frisbee",
-                             "skis", "snowboard", "sports ball", "kite", "baseball bat", "baseball glove",
-                             "skateboard", "surfboard", "tennis racket", "bottle", "wine glass", "cup", "fork",
-                             "knife", "spoon", "bowl", "banana", "apple", "sandwich", "orange", "broccoli",
-                             "carrot", "hot dog", "pizza", "donut", "cake", "chair", "couch", "potted plant",
-                             "bed", "dining table", "toilet", "tv", "laptop", "mouse", "remote", "keyboard",
-                             "cell phone", "microwave", "oven", "toaster", "sink", "refrigerator", "book",
-                             "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush"
+                                    "boat", "traffic light", "fire hydrant", "stop sign", "parking meter", "bench",
+                                    "bird", "cat", "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra",
+                                    "giraffe", "backpack", "umbrella", "handbag", "tie", "suitcase", "frisbee",
+                                    "skis", "snowboard", "sports ball", "kite", "baseball bat", "baseball glove",
+                                    "skateboard", "surfboard", "tennis racket", "bottle", "wine glass", "cup", "fork",
+                                    "knife", "spoon", "bowl", "banana", "apple", "sandwich", "orange", "broccoli",
+                                    "carrot", "hot dog", "pizza", "donut", "cake", "chair", "couch", "potted plant",
+                                    "bed", "dining table", "toilet", "tv", "laptop", "mouse", "remote", "keyboard",
+                                    "cell phone", "microwave", "oven", "toaster", "sink", "refrigerator", "book",
+                                    "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush"
 };
 static vector<cv::Scalar> COLOR_MAP = {
         {56,  0,   255},
@@ -356,6 +356,15 @@ void draw_rect_text(cv::Mat &image, cv::Rect rect, string text = "",
  */
 void draw_rects_texts(cv::Mat &image, vector<cv::Rect> rects, vector<string> texts = {},
                       cv::Scalar color = cv::Scalar(255, 0, 0), int thickness = 2, double fontScale = 0.8);
+
+
+/***
+ * 在原图绘制半透明的mask区域
+ * @param imgBRG 原图
+ * @param mask mask
+ * @param color 绘制颜色
+ */
+void draw_image_mask_color(cv::Mat &image, cv::Mat mask, cv::Scalar color, float alpha = 0.5);
 
 
 /***
