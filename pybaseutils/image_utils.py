@@ -1048,7 +1048,8 @@ def draw_image_rects_labels_text(image, rects, labels, boxes_name=None, color=No
     return image
 
 
-def show_image_bboxes_text(title, image, boxes, boxes_name, color=None, drawType="custom", delay=0, top=True):
+def show_image_bboxes_text(title, image, boxes, boxes_name, color=None, thickness=-1, fontScale=-1.0,
+                           drawType="custom", delay=0, top=True):
     """
     :param boxes_name:
     :param bgr_image: bgr image
@@ -1057,19 +1058,23 @@ def show_image_bboxes_text(title, image, boxes, boxes_name, color=None, drawType
     :return:
     """
     bgr_image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-    bgr_image = draw_image_bboxes_text(bgr_image, boxes, boxes_name, color, drawType, top)
+    bgr_image = draw_image_bboxes_text(bgr_image, boxes, boxes_name=boxes_name, color=color, thickness=thickness,
+                                       fontScale=fontScale, drawType=drawType, top=top)
     image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2RGB)
     cv_show_image(title, image, delay=delay)
     return image
 
 
-def draw_image_rects_text(image, rects, rects_name, color=None, drawType="custom", top=True):
+def draw_image_rects_text(image, rects, rects_name, color=None, thickness=-1, fontScale=-1.0,
+                          drawType="custom", top=True):
     boxes = rects2bboxes(rects)
-    image = draw_image_bboxes_text(image, boxes, rects_name, color, drawType, top)
+    image = draw_image_bboxes_text(image, boxes, boxes_name=rects_name, color=color, thickness=thickness,
+                                   fontScale=fontScale, drawType=drawType, top=top)
     return image
 
 
-def show_image_rects_text(title, image, rects, rects_name, color=None, drawType="custom", delay=0, top=True):
+def show_image_rects_text(title, image, rects, rects_name, color=None, thickness=-1, fontScale=-1.0, drawType="custom",
+                          delay=0, top=True):
     """
     :param rects_name:
     :param bgr_image: bgr image
@@ -1077,7 +1082,8 @@ def show_image_rects_text(title, image, rects, rects_name, color=None, drawType=
     :return:
     """
     boxes = rects2bboxes(rects)
-    image = show_image_bboxes_text(title, image, boxes, rects_name, color, drawType, delay, top)
+    image = show_image_bboxes_text(title, image, boxes, boxes_name=rects_name, color=color, thickness=thickness,
+                                   fontScale=fontScale, drawType=drawType, delay=delay, top=top)
     return image
 
 

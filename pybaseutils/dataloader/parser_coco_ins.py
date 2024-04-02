@@ -40,7 +40,7 @@ class CocoInstance(CocoDataset):
         anns_info, file_info = self.get_object_annotations(image_id)
         image, width, height, image_file = self.get_object_image(file_info)
         boxes, labels, mask, segs = self.get_object_instance(anns_info, h=height, w=width, decode=self.decode)
-        data = {"segs": segs, "mask": mask, "image": image, "boxes": boxes, "label": labels,
+        data = {"segs": segs, "mask": mask, "image": image, "boxes": boxes, "labels": labels,
                 "image_id": image_id, "annotations": anns_info, "file_info": file_info,
                 "image_file": image_file, "size": [width, height], "class_name": self.class_name}
         return data
@@ -132,6 +132,7 @@ if __name__ == "__main__":
 
     anno_file1 = "/media/PKing/新加卷1/SDK/base-utils/data/coco/coco_ins.json"
     anno_file2 = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v2/train_coco_instance.json"
+    anno_file2 = "/media/PKing/新加卷1/SDK/base-utils/data/coco/coco_ins.json"
     # anno_file2 = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v2/train_coco_instance.json"
     # class_name = ["BG", 'car,person,身穿工作服']
     # class_name = {"BG": 0, 'car': 1, 'person': 1, "身穿工作服": 1}
@@ -144,13 +145,12 @@ if __name__ == "__main__":
     # anno_file = "/media/PKing/新加卷1/SDK/base-utils/data/coco/coco_ins.json"
     # anno_file = "/home/PKing/nasdata/dataset/tmp/hand-pose/FreiHAND/training/coco_kps.json"
     # image_dir = "/home/PKing/nasdata/dataset/tmp/hand-pose/FreiHAND/training/rgb"
-    # class_name = None
+    class_name = None
     # dataset = CocoInstance(anno_file=anno_file, image_dir="", class_name=class_name)
     dataset = CocoInstances(anno_file=[anno_file1, anno_file2], image_dir="",
                             class_name=class_name, use_rgb=False, shuffle=False)
     class_name = dataset.class_name
     for i in range(len(dataset)):
-        i = 2159
         data = dataset.__getitem__(i)
         image, boxes, labels, mask = data['image'], data["boxes"], data["label"], data["mask"]
         print("i={},image_id={}".format(i, data["image_id"]))

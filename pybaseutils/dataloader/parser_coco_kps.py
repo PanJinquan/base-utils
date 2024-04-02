@@ -70,7 +70,7 @@ class CocoKeypoint(base_coco.CocoDataset):
         anns_info, file_info = self.get_object_annotations(image_id)
         image, width, height, image_file = self.get_object_image(file_info)
         boxes, labels, keypoints = self.get_keypoint_info(anns_info, self.num_joints)
-        data = {"keypoints": keypoints, "image": image, "boxes": boxes, "label": labels, "image_id": image_id,
+        data = {"keypoints": keypoints, "image": image, "boxes": boxes, "labels": labels, "image_id": image_id,
                 "annotations": anns_info, "file_info": file_info, "image_file": image_file,
                 "size": [width, height], "class_name": self.class_name}
         return data
@@ -148,7 +148,7 @@ if __name__ == "__main__":
     for i in range(len(dataset)):
         data = dataset.__getitem__(i)
         # data = {"segs": segs, "image": image, "boxes": boxes, "label": labels, "image_id": image_id}
-        image, boxes, labels, keypoints = data['image'], data["boxes"], data["label"], data["keypoints"]
+        image, boxes, labels, keypoints = data['image'], data["boxes"], data["labels"], data["keypoints"]
         print("i={},image_id={}".format(i, data["image_id"]))
         # dataset.showAnns(image, data['annotations'])
         show_target_image(image, keypoints, boxes, skeleton=skeleton)

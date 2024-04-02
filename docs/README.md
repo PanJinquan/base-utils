@@ -184,3 +184,8 @@ git config --global credential.helper store
 |---------|-----|------|
 | YOLOv5s | 640 | 36.7 |
 | YOLOv5m | 640 | 44.5 |
+
+## huggingface.co资源下载
+- https://huggingface.co/
+- 方法1：https://blog.csdn.net/gmmmmmmmm/article/details/135953651 (将下载连接huggingface.co`替换为 hf-mirror.com)
+- 方法2：https://modelscope.cn/my/overview

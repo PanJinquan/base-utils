@@ -83,7 +83,7 @@ pip install nvidia-tensorrt==8.4.1.5 (版本與TensorRT-8.4.1.5.Linux.x86_64-gnu
 ## 制定GPU
 
 ```bash
-OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 python train.py
+CUDA_VISIBLE_DEVICES=0 OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 python train.py
 ```
 
 

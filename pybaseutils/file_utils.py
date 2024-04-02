@@ -1233,6 +1233,33 @@ def get_voc_file_list(voc_root,
     print("num files:{},out_path:{}".format(len(file_list), filename))
 
 
+def copy_move_voc_dataset(data_file, data_root=None, out_root=None, file_map={}, move=False):
+    """
+    :param data_file: voc file.txt
+    :param data_root: voc dataset root path
+    :param out_root:  new output root path
+    :param file_map: {"Annotations": "xml", "json": "json", "JPEGImages": None}
+    :param move: move or copy
+    :return:
+    """
+    if not data_root: data_root = os.path.dirname(data_file)
+    files = read_data(data_file, split=None)
+    for name in tqdm(files):
+        idx, pos = name.split(".")
+        for sub, p in file_map.items():
+            n = name.replace(f".{pos}", f".{p}") if p else name
+            path = os.path.join(data_root, sub, n)
+            if out_root and os.path.exists(path):
+                dest = os.path.join(out_root, sub, n)
+                if move:
+                    move_file(path, dest)
+                else:
+                    copy_file(path, dest)
+            else:
+                print(f"no file:{path}")
+    return files
+
+
 if __name__ == '__main__':
     dir = "/home/dm/nasdata/dataset-dmai/handwriting/word-class/trainval/unknown"
     file_list, label_list = get_files_labels(dir)

@@ -216,8 +216,8 @@ class YOLODataset(Dataset):
         image = self.read_image(image_file, use_rgb=self.use_rgb)
         shape = image.shape
         annotation = self.load_annotations(anno_file)
-        box, label, point = self.parser_annotation(annotation, shape, self.class_dict)
-        data = {"image": image, "box": box, "label": label, "point": point,
+        boxes, labels, points = self.parser_annotation(annotation, shape, self.class_dict)
+        data = {"image": image, "boxes": boxes, "labels": labels, "points": points,
                 "image_file": image_file, "anno_file": anno_file}
         return data
 

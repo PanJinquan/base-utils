@@ -67,7 +67,7 @@ class Labelme2VOC(object):
         for i in tqdm(range(len(self.dataset))):
             data = self.dataset.__getitem__(i)
             data = self.get_object_detection(data)
-            image, points, bboxes, labels = data["image"], data["point"], data["box"], data["label"]
+            image, points, bboxes, labels = data["image"], data["points"], data["boxes"], data["labels"]
             anno_file = data["anno_file"]
             image_file = data["image_file"]
             image_shape = image.shape

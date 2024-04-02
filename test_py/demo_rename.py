@@ -11,7 +11,7 @@ from pybaseutils import image_utils, file_utils
 
 
 def rename_image_file(image_dir, output, prefix=""):
-    file_list = file_utils.get_images_list(image_dir)
+    file_list = file_utils.get_files_lists(image_dir)
     time = file_utils.get_time()
     file_utils.create_dir(output)
     for i, old in tqdm(enumerate(file_list)):
@@ -23,6 +23,6 @@ def rename_image_file(image_dir, output, prefix=""):
 
 
 if __name__ == '__main__':
-    image_dir = "/home/PKing/nasdata/dataset/tmp/challenge/鸟类品种识别/鸟类品种识别挑战赛训练集/training_set/鹰"
-    output = "/home/PKing/nasdata/dataset/tmp/challenge/鸟类品种识别/鸟类品种识别挑战赛训练集/training_set/鹰-new"
-    rename_image_file(image_dir, output, prefix="")
+    image_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v81/images"
+    output = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v81/南沙视频数据"
+    rename_image_file(image_dir, output, prefix="南沙")

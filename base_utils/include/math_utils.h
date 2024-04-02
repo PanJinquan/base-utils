@@ -12,6 +12,7 @@
 #define PI 3.141592653589793
 using namespace std;
 
+
 /***
  * SoftMaX函数
  * @param src 输入
@@ -20,6 +21,25 @@ using namespace std;
  * @param max_value 输出SoftMaX最大值，max_value = dst[max_index]
  */
 void softmax(vector<float> &src, vector<float> &dst, int &max_index, float &max_value);
+
+
+inline float fast_exp(float x) {
+    union {
+        uint32_t i;
+        float f;
+    } v{};
+    v.i = (1 << 23) * (1.4426950409 * x + 126.93490512f);
+    return v.f;
+}
+
+/***
+ * Sigmoid函数
+ * @param x
+ * @return
+ */
+inline float sigmoid(float x) {
+    return 1.0f / (1.0f + fast_exp(-x));
+}
 
 
 /***
@@ -57,7 +77,7 @@ cv::Point2f create_vector(cv::Point2f point1, cv::Point2f point2);
 float vector_angle(cv::Point2f v1, cv::Point2f v2, bool minangle = false);
 
 
-/***
+/***python
  * 计算两个向量的乘积
  * @param v1
  * @param v2

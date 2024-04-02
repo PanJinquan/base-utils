@@ -63,3 +63,13 @@ apt-get update && apt-get install ffmpeg libsm6 libxext6 -y
 sudo ldconfig
 ```
 
+- Error：  This might be caused by insufficient shared memory (shm).
+
+> 解决方法：https://www.hangge.com/blog/cache/detail_3221.html <br/>
+
+```bash
+#（1）一种方法就是在容器启动命令上添加 --shm-size 参数，增加 shm 大小
+docker run --shm-size = 256m ...
+#（2）另一种方法就是启动命令上添加 --ipc=host，让容器与主机共享内存。
+docker run --ipc=host ...
+```

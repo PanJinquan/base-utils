@@ -15,7 +15,7 @@ import torch
 import json
 from tqdm import tqdm
 from pybaseutils import image_utils, file_utils, json_utils
-from pybaseutils.dataloader.base_dataset import Dataset
+from pybaseutils.dataloader.base_dataset import Dataset, ConcatDataset
 
 
 class LabelMeDataset(Dataset):
@@ -32,6 +32,8 @@ class LabelMeDataset(Dataset):
                  min_points=-1,
                  **kwargs):
         """
+        要求该目录下存在images和json
+        data_root，anno_dir只要存在一个即可，程序会自动搜索images和json
         :param filename:
         :param data_root:
         :param anno_dir:
@@ -50,18 +52,20 @@ class LabelMeDataset(Dataset):
         self.data_root, self.anno_dir, self.image_dir, self.image_ids = parser
         self.classes = list(self.class_dict.values()) if self.class_dict else None
         self.class_weights = None
+        # self.num_classes = max(list(self.class_dict.values())) + 1 if self.class_dict else None
         if check:
             self.image_ids = self.checking(self.image_ids)
         if shuffle:
             random.seed(200)
             random.shuffle(self.image_ids)
         self.num_images = len(self.image_ids)
-        self.scale_rate = 1.0
-        self.target_type = 'gaussian'
-        self.sigma = 2
+        print("Dataset data_root     :{}".format(self.data_root))
+        print("Dataset anno_dir      :{}".format(self.anno_dir))
+        print("Dataset image_dir     :{}".format(self.image_dir))
         print("Dataset class_name    :{}".format(class_name))
         print("Dataset class_dict    :{}".format(self.class_dict))
         print("Dataset num images    :{}".format(len(self.image_ids)))
+        # print("Dataset num_classes   :{}".format(self.num_classes))
         print("------" * 10)
 
     def __len__(self):
@@ -156,10 +160,12 @@ class LabelMeDataset(Dataset):
             image_ids = self.read_files(filename, split=",")
             data_root = os.path.dirname(filename)
         if not anno_dir:  # 如果anno_dir为空，则自动搜寻可能存在图片目录
-            image_sub = ["json"]
-            anno_dir = self.search_path(data_root, image_sub)
+            anno_dir = self.search_path(data_root, sub_dir=["json"])
+        if not data_root and anno_dir:  #
+            data_root = os.path.dirname(anno_dir)
+            image_dir = self.search_path(data_root, ["images", "JPEGImages"])
         if not image_dir:
-            image_dir = self.search_path(data_root, ["JPEGImages", "images"])
+            image_dir = self.search_path(data_root, ["images", "JPEGImages"])
         if image_dir and not image_ids:
             image_ids = self.get_file_list(image_dir, postfix=file_utils.IMG_POSTFIX, basename=False)
             image_ids = [os.path.basename(f) for f in image_ids]
@@ -180,10 +186,10 @@ class LabelMeDataset(Dataset):
         annotation, width, height = self.load_annotations(anno_file)
         image = self.read_image(image_file, use_rgb=self.use_rgb)
         shape = image.shape
-        box, label, point, groups = self.parser_annotation(annotation, self.class_dict, shape,
-                                                           min_points=self.min_points)
-        data = {"image": image, "point": point, "box": box, "label": label, "groups": groups,
-                "image_file": image_file, "anno_file": anno_file, "width": width, "height": height}
+        boxes, labels, points, groups = self.parser_annotation(annotation, self.class_dict, shape,
+                                                               min_points=self.min_points)
+        data = {"image": image, "points": points, "boxes": boxes, "labels": labels, "groups": groups,
+                "image_file": image_file, "anno_file": anno_file, "size": [shape[1], shape[0]]}
         return data
 
     @staticmethod
@@ -322,10 +328,10 @@ class LabelMeDataset(Dataset):
     def load_annotations(ann_file: str):
         try:
             with open(ann_file, "r") as f:
-                annotation = json.load(f)
-            annos = annotation["shapes"]
-            width = annotation['imageWidth']
-            height = annotation['imageHeight']
+                annotation: dict = json.load(f)
+            annos = annotation.get("shapes", [])
+            width = annotation.get('imageWidth', -1)
+            height = annotation.get('imageHeight', -1)
         except:
             print("illegal annotation:{}".format(ann_file))
             annos = []
@@ -336,38 +342,46 @@ class LabelMeDataset(Dataset):
 
 def LabelMeDatasets(filename=None,
                     data_root=None,
-                    image_dir=None,
                     anno_dir=None,
+                    image_dir=None,
                     class_name=None,
-                    transform=None,
-                    use_rgb=True,
+                    use_rgb=False,
                     shuffle=False,
-                    check=False):
+                    check=False,
+                    min_points=-1,
+                    **kwargs):
     """
     :param filename:
     :param data_root:
-    :param image_dir:
     :param anno_dir:
+    :param image_dir:
     :param class_name:
-    :param transform:
     :param use_rgb:
     :param shuffle:
     :param check:
+    :param min_points:
+    :param kwargs:
     :return:
     """
-    if not isinstance(filename, list) and os.path.isfile(filename):
-        filename = [filename]
+    if data_root and not isinstance(data_root, list) and os.path.isdir(data_root): data_root = [data_root]
+    if image_dir and not isinstance(image_dir, list) and os.path.isdir(image_dir): image_dir = [image_dir]
+    if anno_dir and not isinstance(anno_dir, list) and os.path.isdir(anno_dir): anno_dir = [anno_dir]
+    n = max([len(n) for n in [data_root, image_dir, anno_dir] if n])
+    if data_root is None: data_root = [None] * n
+    if image_dir is None: image_dir = [None] * n
+    if anno_dir is None: anno_dir = [None] * n
     datasets = []
-    for file in filename:
-        data = LabelMeDataset(filename=file,
-                              data_root=data_root,
-                              image_dir=image_dir,
-                              anno_dir=anno_dir,
+    for image, anno, root in zip(image_dir, anno_dir, data_root):
+        data = LabelMeDataset(filename=None,
+                              data_root=root,
+                              anno_dir=anno,
+                              image_dir=image,
                               class_name=class_name,
-                              transform=transform,
                               use_rgb=use_rgb,
                               shuffle=shuffle,
-                              check=check)
+                              check=check,
+                              min_points=min_points,
+                              **kwargs)
         datasets.append(data)
     datasets = ConcatDataset(datasets, shuffle=shuffle)
     return datasets
@@ -386,7 +400,8 @@ def parser_labelme(anno_file, class_dict={}, shape=None):
 
 
 def show_target_image(image, bboxes, labels, points):
-    image = image_utils.draw_image_bboxes_text(image, bboxes, labels, color=(255, 0, 0))
+    image = image_utils.draw_image_bboxes_text(image, bboxes, labels, color=(255, 0, 0),
+                                               thickness=2, fontScale=1.2, drawType="chinese")
     # image = image_utils.draw_landmark(image, points, color=(0, 255, 0))
     image = image_utils.draw_key_point_in_image(image, points)
     image_utils.cv_show_image("det", image)
@@ -395,20 +410,24 @@ def show_target_image(image, bboxes, labels, points):
 if __name__ == "__main__":
     from pybaseutils.converter import build_labelme
 
-    image_dir = "/media/PKing/新加卷1/SDK/base-utils/data/person"
-    dataset = LabelMeDataset(filename=None,
-                             data_root=None,
-                             anno_dir=image_dir,
-                             image_dir=image_dir,
-                             class_name=None,
-                             check=False,
-                             phase="val",
-                             shuffle=False)
+    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v1/json"
+    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v7/json"
+    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-outdoor-det/dataset-test/json"
+    # anno_dir = [anno_dir, anno_dir]
+    names = None
+    dataset = LabelMeDatasets(filename=None,
+                              data_root=None,
+                              anno_dir=anno_dir,
+                              image_dir=None,
+                              class_name=names,
+                              check=False,
+                              phase="val",
+                              shuffle=True)
     print("have num:{}".format(len(dataset)))
     for i in range(len(dataset)):
         print(i)  # i=20
-        data = dataset.__getitem__(2)
-        image, points, bboxes, labels = data["image"], data["point"], data["box"], data["label"]
+        data = dataset.__getitem__(i)
+        image, points, bboxes, labels = data["image"], data["points"], data["boxes"], data["labels"]
         h, w = image.shape[:2]
         image_file = data["image_file"]
         anno_file = os.path.join("masker", "{}.json".format(os.path.basename(image_file).split(".")[0]))

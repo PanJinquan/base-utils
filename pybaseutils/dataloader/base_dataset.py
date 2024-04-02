@@ -36,6 +36,7 @@ class Dataset(object):
 
     def __init__(self, **kwargs):
         self.image_ids = []
+        self.postfix = "jpg"
 
     def __getitem__(self, index):
         raise NotImplementedError

@@ -65,7 +65,7 @@ class CocoDetection(CocoDataset):
         if num_boxes == 0:
             index = int(random.uniform(0, len(self)))
             return self.__getitem__(index)
-        data = {"image": image, "target": target, "label": labels, "image_id": image_id,
+        data = {"image": image, "target": target, "labels": labels, "image_id": image_id,
                 "image_file": image_file, "size": [width, height], "class_name": self.class_name}
         return data
 

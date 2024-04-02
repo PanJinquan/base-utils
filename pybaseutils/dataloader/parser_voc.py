@@ -62,11 +62,13 @@ class VOCDataset(Dataset):
             random.seed(200)
             random.shuffle(self.image_ids)
         self.num_images = len(self.image_ids)
-        # print("VOCDataset class_count:{}".format(class_count))
-        print("VOCDataset class_name      :{}".format(class_name))
-        print("VOCDataset class_dict      :{}".format(self.class_dict))
-        print("VOCDataset num images      :{}".format(len(self.image_ids)))
-        print("VOCDataset num_classes     :{}".format(self.num_classes))
+        print("Dataset data_root     :{}".format(self.data_root))
+        print("Dataset anno_dir      :{}".format(self.anno_dir))
+        print("Dataset image_dir     :{}".format(self.image_dir))
+        print("Dataset class_name    :{}".format(class_name))
+        print("Dataset class_dict    :{}".format(self.class_dict))
+        print("Dataset num images    :{}".format(len(self.image_ids)))
+        print("Dataset num_classes   :{}".format(self.num_classes))
         print("------" * 10)
 
     def __get_image_anno_file(self, image_dir, anno_dir, image_name: str):
@@ -172,6 +174,9 @@ class VOCDataset(Dataset):
         elif anno_dir and not image_ids:
             image_ids = self.get_file_list(anno_dir, postfix=["*.xml"], basename=False)
             image_ids = [os.path.basename(f) for f in image_ids]
+
+        files = self.get_file_list(image_dir, postfix=file_utils.IMG_POSTFIX, basename=False)
+        self.postfix = os.path.basename(files[0]).split(".")[-1] if files else "jpg"
         return data_root, anno_dir, image_dir, image_ids
 
     def convert_target(self, boxes, labels):
@@ -205,7 +210,7 @@ class VOCDataset(Dataset):
             return self.__getitem__(index)
         # return image, boxes, labels
         # return image, {"target": target, "image_id": image_id, "size": [width, height]}
-        data = {"image": image, "target": target, "image_id": image_id,
+        data = {"image": image, "target": target, "boxes": boxes, "labels": labels, "image_id": image_id,
                 "size": [width, height], "image_file": image_file}
         return data
 
@@ -226,7 +231,7 @@ class VOCDataset(Dataset):
         if isinstance(index, numbers.Number):
             image_id = self.image_ids[index]
         else:
-            image_id = index
+            image_id = index if "." in index else f"{index}.{self.postfix}"
         return image_id
 
     def __len__(self):
