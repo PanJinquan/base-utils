@@ -360,7 +360,7 @@ void draw_rects_texts(cv::Mat &image, vector<cv::Rect> rects, vector<string> tex
 
 /***
  * 在原图绘制半透明的mask区域
- * @param imgBRG 原图
+ * @param image 原图
  * @param mask mask
  * @param color 绘制颜色
  */
