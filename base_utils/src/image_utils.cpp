@@ -66,6 +66,42 @@ int VideoCaptureDemo(string video_file) {
 }
 
 
+void find_contours(cv::Mat &mask, vector<vector<cv::Point> > &contours, int max_nums) {
+    vector<cv::Vec4i> hierarchy;
+    cv::findContours(mask, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+    std::sort(contours.begin(), contours.end(),
+              [](vector<cv::Point> a, vector<cv::Point> b) { return a.size() > b.size(); });
+    if (max_nums > 0 && contours.size() > max_nums) {
+        contours.erase(contours.begin() + max_nums, contours.begin() + contours.size());
+    }
+}
+
+
+void draw_contours(cv::Mat &image, vector<vector<cv::Point>> &contours,
+                   cv::Scalar color, float alpha, int thickness, int contourIdx) {
+    cv::drawContours(image, contours, contourIdx, color, thickness, 8);
+    cv::Mat bg = image.clone();
+    cv::fillPoly(bg, contours, color);
+    cv::addWeighted(image, 1 - alpha, bg, alpha, 0, image);
+}
+
+
+void draw_image_mask_color(cv::Mat &image, cv::Mat mask, cv::Scalar color, float alpha) {
+    for (int y = 0; y < image.rows; y++) {
+        uchar *ptr = image.ptr(y);
+        uchar *mask_ptr = mask.ptr<uchar>(y);
+        for (int x = 0; x < image.cols; x++) {
+            if (mask_ptr[x] >= 127) {
+                ptr[0] = cv::saturate_cast<uchar>(ptr[0] * (1 - alpha) + color[0] * alpha);
+                ptr[1] = cv::saturate_cast<uchar>(ptr[1] * (1 - alpha) + color[1] * alpha);
+                ptr[2] = cv::saturate_cast<uchar>(ptr[2] * (1 - alpha) + color[2] * alpha);
+            }
+            ptr += 3;
+        }
+    }
+}
+
+
 cv::Mat image_resize(cv::Mat &image, int resize_width, int resize_height) {
     cv::Mat dst;
     auto width = image.cols;
@@ -301,21 +337,6 @@ void draw_rects_texts(cv::Mat &image,
     }
 }
 
-
-void draw_image_mask_color(cv::Mat &image, cv::Mat mask, cv::Scalar color, float alpha) {
-    for (int y = 0; y < image.rows; y++) {
-        uchar *ptr = image.ptr(y);
-        const float *mask_ptr = mask.ptr<float>(y);
-        for (int x = 0; x < image.cols; x++) {
-            if (mask_ptr[x] >= 0.5) {
-                ptr[0] = cv::saturate_cast<uchar>(ptr[0] * (1 - alpha) + color[0] * alpha);
-                ptr[1] = cv::saturate_cast<uchar>(ptr[1] * (1 - alpha) + color[1] * alpha);
-                ptr[2] = cv::saturate_cast<uchar>(ptr[2] * (1 - alpha) + color[2] * alpha);
-            }
-            ptr += 3;
-        }
-    }
-}
 
 void draw_lines(cv::Mat &image,
                 vector<cv::Point2f> points,

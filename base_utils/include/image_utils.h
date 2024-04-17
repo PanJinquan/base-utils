@@ -31,6 +31,13 @@ static vector<string> COCO_NAMES = {"person", "bicycle", "car", "motorcycle", "a
                                     "cell phone", "microwave", "oven", "toaster", "sink", "refrigerator", "book",
                                     "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush"
 };
+
+static cv::Scalar COLOR_BLACK = cv::Scalar(0, 0, 0);
+static cv::Scalar COLOR_WHITE = cv::Scalar(255, 255, 255);
+static cv::Scalar COLOR_RED = cv::Scalar(0, 0, 255);
+static cv::Scalar COLOR_GREEN = cv::Scalar(0, 255, 0);
+static cv::Scalar COLOR_BLUE = cv::Scalar(255, 0, 0);
+
 static vector<cv::Scalar> COLOR_MAP = {
         {56,  0,   255},
         {226, 255, 0},
@@ -171,6 +178,39 @@ bool get_video_capture(int camera_id, cv::VideoCapture &cap, int width = -1, int
  * @return
  */
 int VideoCaptureDemo(string video_file);
+
+
+/***
+ * 计算mask的轮廓坐标(按面积大小)
+ * @param mask
+ * @param contours
+ * @param max_nums 最多轮廓数，max_nums=-1表示返回所有轮廓，max_nums>0表示按面积大小返回Top max_nums个轮廓数
+ */
+void find_contours(cv::Mat &mask, vector<vector<cv::Point> > &contours, int max_nums = -1);
+
+
+/***
+ * 绘制轮廓区域
+ * 如果已经mask,可以调研draw_image_mask_color直接绘制
+ * @param image
+ * @param contours 输入的轮廓列表，每个轮廓由边界点坐标 (x,y) 向量构成
+ * @param color
+ * @param alpha 绘制颜色的透明度
+ * @param thickness 线宽(-1)cv::FILLED表示实心的轮廓
+ * @param contourIdx 所要绘制的轮廓的编号，-1 表示绘制所有轮廓
+ */
+void draw_contours(cv::Mat &image, vector<vector<cv::Point>> &contours, cv::Scalar color = COLOR_GREEN,
+                   float alpha = 0.5, int thickness = 2, int contourIdx = -1);
+
+
+/***
+ * 在原图绘制半透明的mask区域
+ * @param image 原图
+ * @param mask mask
+ * @param color 绘制颜色
+ * @param alpha 绘制颜色的透明度
+ */
+void draw_image_mask_color(cv::Mat &image, cv::Mat mask, cv::Scalar color, float alpha = 0.5);
 
 
 /***
@@ -356,15 +396,6 @@ void draw_rect_text(cv::Mat &image, cv::Rect rect, string text = "",
  */
 void draw_rects_texts(cv::Mat &image, vector<cv::Rect> rects, vector<string> texts = {},
                       cv::Scalar color = cv::Scalar(255, 0, 0), int thickness = 2, double fontScale = 0.8);
-
-
-/***
- * 在原图绘制半透明的mask区域
- * @param image 原图
- * @param mask mask
- * @param color 绘制颜色
- */
-void draw_image_mask_color(cv::Mat &image, cv::Mat mask, cv::Scalar color, float alpha = 0.5);
 
 
 /***

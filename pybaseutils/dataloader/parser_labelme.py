@@ -203,7 +203,7 @@ class LabelMeDataset(Dataset):
         """
         bboxes, labels, points, groups = [], [], [], []
         for anno in annotation:
-            label = anno["label"].lower()
+            label = anno["label"]
             if class_dict:
                 if not label in class_dict:
                     continue
@@ -281,7 +281,7 @@ class LabelMeDataset(Dataset):
         """
         objects = {}
         for i, anno in enumerate(annotation):
-            label = anno["label"].lower()
+            label = anno["label"]
             points = np.asarray(anno["points"], dtype=np.int32)
             group_id = anno["group_id"] if "group_id" in anno and anno["group_id"] else 0  # 通过group_id标记同一实例
             if file_utils.is_int(label):
@@ -310,7 +310,7 @@ class LabelMeDataset(Dataset):
         """
         objects = {}
         for i, anno in enumerate(annotation):
-            label = anno["label"].lower()
+            label = anno["label"]
             points = np.asarray(anno["points"], dtype=np.int32)
             group_id = i
             if file_utils.is_int(label):
@@ -412,9 +412,10 @@ if __name__ == "__main__":
 
     anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v1/json"
     anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v7/json"
-    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-outdoor-det/dataset-test/json"
+    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/使用钳形电流表测量低压线路电流/dataset-v1/json"
     # anno_dir = [anno_dir, anno_dir]
-    names = None
+    # names = None
+    names = ['A相电线','B相电线','C相电线','N相电线']
     dataset = LabelMeDatasets(filename=None,
                               data_root=None,
                               anno_dir=anno_dir,

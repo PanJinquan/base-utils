@@ -73,7 +73,7 @@ def video2frames_similarity(video_file, out_dir=None, func=None, interval=1, thr
 
 # thresh_dict = {"1号视角": 0.5, "2号视角": 0.15, "3号视角": 0.3, "4号视角": 0.3}
 # thresh_dict = {"一号位": 0.58, "平视": 0.35, "俯视": 0.35, "右视": 0.25, "左视": 0.3}
-thresh_dict = {"第一视角": 0.58, "主视角": 0.58, "平视": 0.30, "俯视": 0.30, "右视": 0.35, "左视": 0.35, "全景": 0.35}
+thresh_dict = {"第一视角": 0.50, "主视角": 0.50, "平视": 0.30, "俯视": 0.30, "右视": 0.35, "左视": 0.35, "全景": 0.30}
 
 
 # thresh_dict = {"1号位": 0.58, "平视": 0.35, "全景": 0.35, "俯视": 0.35, "右视": 0.25, "左视": 0.3}
@@ -92,7 +92,8 @@ def video2frames_demo(root, out, prefix="", thresh=0.2):
 
 
 if __name__ == "__main__":
-    root = "/home/PKing/nasdata/dataset-dmai/AIJE/岗评项目数据/南沙视频/室内/2024-03-11"
-    prefix = "南沙"
+    image_utils.find_mask_contours()
+    root = "/home/PKing/nasdata/dataset-dmai/AIJE/岗评项目数据/使用钳形电流表测量低压线路电流/天河数据/2024-04-12-8"
+    prefix = "天河"
     out = root + "-train"
     video2frames_demo(root, out, prefix=prefix)
