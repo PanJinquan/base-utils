@@ -62,4 +62,7 @@ def WaterMeters(image_dir, label_dir, out_root, use_align=False, vis=True):
 
 
 if __name__ == '__main__':
-    pass
+    boxes1 = [[0, 0, 10, 10], [20, 20, 50, 50], [60, 60, 100, 100]]
+    point1 = np.array(boxes1)  # 中心的
+    point1 = np.concatenate(((point1[:, 0:1] + point1[:, 2:3]) / 2, point1[:, 1:2]), axis=1)
+    print(point1)

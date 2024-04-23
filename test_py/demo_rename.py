@@ -24,6 +24,6 @@ def rename_image_file(image_dir, output, prefix=""):
 
 if __name__ == '__main__':
 
-    image_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/岗评项目数据/使用钳形电流表测量低压线路电流/天河数据/2024-04-12-1-2-train"
-    output = "/home/PKing/nasdata/dataset-dmai/AIJE/岗评项目数据/使用钳形电流表测量低压线路电流/天河数据/2024-04-12-1-2-train2"
-    rename_image_file(image_dir, output, prefix="南沙")
+    image_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/岗评项目数据/室内考题/天河视频/20240419_天河训练视频/室内考题-天河数据1"
+    output = "/home/PKing/nasdata/dataset-dmai/AIJE/岗评项目数据/室内考题/天河视频/20240419_天河训练视频/室内考题-天河数据1-train"
+    rename_image_file(image_dir, output, prefix="天河")
