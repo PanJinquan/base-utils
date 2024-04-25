@@ -48,7 +48,7 @@ void FaceAlignment::crop_faces_alignment(cv::Mat &image, vector<cv::Point2f> &la
     // get transformer matrix
     std::vector<cv::Point2f> dst_pts_(dst_pts, dst_pts + 5);
     cv::Mat M;
-    get_transform(landmarks, dst_pts_, M, 0);
+    get_transform(landmarks, dst_pts_, M, 1);
     cv::warpAffine(image, out_face, M, cv::Size(face_width, face_height));
 }
 
@@ -57,7 +57,7 @@ void FaceAlignment::crop_faces_alignment(cv::Mat &image, vector<cv::Point2f> &la
                                          cv::Mat &Minv) {
     // get transformer matrix
     std::vector<cv::Point2f> dst_pts_(dst_pts, dst_pts + 5);
-    get_transform(landmarks, dst_pts_, M, Minv, 0);
+    get_transform(landmarks, dst_pts_, M, Minv, 1);
     cv::warpAffine(image, out_face, M, cv::Size(face_width, face_height));
 }
 

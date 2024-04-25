@@ -33,15 +33,15 @@ void get_order_points(vector<cv::Point2f> inp, vector<cv::Point2f> &dst) {
 void get_transform(vector<cv::Point2f> &src_pts, vector<cv::Point2f> &dst_pts, cv::Mat &M,
                    int method) {
     if (method == 0) {
-        M = solve_lstsq(src_pts, dst_pts);
-    } else {
         M = cv::estimateAffine2D(src_pts, dst_pts);
+    } else {
+        M = solve_lstsq(src_pts, dst_pts);
     }
 }
 
 void get_transform(vector<cv::Point2f> &src_pts, vector<cv::Point2f> &dst_pts, cv::Mat &M, cv::Mat &Minv,
                    int method) {
-    get_transform(src_pts, dst_pts, M);
+    get_transform(src_pts, dst_pts, M, method);
     cv::invertAffineTransform(M, Minv);
 }
 

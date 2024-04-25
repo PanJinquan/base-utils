@@ -33,7 +33,7 @@ void get_order_points(vector<cv::Point2f> inp, vector<cv::Point2f> &dst);
  * @param src_pts 输入原始关键点
  * @param dst_pts 输入目标关键点
  * @param M 输出变换矩阵
- * @param method 使用方法 0-使用最小二乘法计算变换矩阵；1-使用estimateAffine2D计算变换矩阵
+ * @param method 使用方法 0-使用estimateAffine2D计算变换矩阵 ;1-使用最小二乘法计算变换矩阵
  */
 void get_transform(vector<cv::Point2f> &src_pts, vector<cv::Point2f> &dst_pts, cv::Mat &M, int method = 0);
 
@@ -43,7 +43,7 @@ void get_transform(vector<cv::Point2f> &src_pts, vector<cv::Point2f> &dst_pts, c
  * @param dst_pts 输入目标关键点
  * @param M 输出变换矩阵
  * @param Minv 输出逆变换矩阵
- * @param method 使用方法 0-使用最小二乘法计算变换矩阵；1-使用estimateAffine2D计算变换矩阵
+ * @param method 使用方法 0-使用estimateAffine2D计算变换矩阵 ;1-使用最小二乘法计算变换矩阵
  */
 void get_transform(vector<cv::Point2f> &src_pts, vector<cv::Point2f> &dst_pts,
                    cv::Mat &M, cv::Mat &Minv, int method = 0);
