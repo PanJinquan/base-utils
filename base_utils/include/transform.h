@@ -65,12 +65,18 @@ cv::Mat solve_lstsq(vector<cv::Point2f> &src_pts, vector<cv::Point2f> &dst_pts);
  * @param dst_pts 目标点，当dst_pts为空时，则基于src_pts计算矫正后目标点
  * @param dsize 返回图像的大小
  * @param scale 返回图像缩放大小
+ * @param flags
+ * @param borderMode
+ * @param color is borderValue
  * @return
  */
 cv::Mat image_alignment(cv::Mat &image,
                         vector<cv::Point2f> src_pts,
                         vector<cv::Point2f> &dst_pts,
                         cv::Size dsize = cv::Size(-1, -1),
-                        cv::Size2f scale = cv::Size(1.0, 1.0));
+                        cv::Size2f scale = cv::Size(1.0, 1.0),
+                        int flags = cv::INTER_LINEAR,
+                        int borderMode = cv::BORDER_CONSTANT,
+                        cv::Scalar color = COLOR_BLACK);
 
 #endif //DETECTOR_TRANSFORM_H

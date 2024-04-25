@@ -513,7 +513,7 @@ void image_fusion_cv(cv::Mat &imgBGR, cv::Mat matte, cv::Mat &out, cv::Mat bg);
  * @param color
  * @return
  */
-cv::Mat image_boxes_resize_padding(cv::Mat &image, cv::Size input_size, cv::Scalar color = cv::Scalar(0, 0, 0));
+cv::Mat image_boxes_resize_padding(cv::Mat &image, cv::Size input_size, cv::Scalar color = COLOR_BLACK);
 
 /***
  * 对图像进行等比例缩放和填充
@@ -525,7 +525,7 @@ cv::Mat image_boxes_resize_padding(cv::Mat &image, cv::Size input_size, cv::Scal
  */
 cv::Mat
 image_boxes_resize_padding(cv::Mat &image, cv::Size input_size, vector<cv::Box> &boxes,
-                           cv::Scalar color = cv::Scalar(0, 0, 0));
+                           cv::Scalar color = COLOR_BLACK);
 
 /****
  * image_boxes_resize_padding的逆过程

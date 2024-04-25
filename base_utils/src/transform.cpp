@@ -73,7 +73,10 @@ cv::Mat image_alignment(cv::Mat &image,
                         vector<cv::Point2f> src_pts,
                         vector<cv::Point2f> &dst_pts,
                         cv::Size dsize,
-                        cv::Size2f scale) {
+                        cv::Size2f scale,
+                        int flags,
+                        int borderMode,
+                        cv::Scalar color) {
     // TODO dst_pts是src_pts变换后目前区域的位置点
     // TODO 若dst_pts为空，则利用src_pts计算dst_pts和tsize，相当于只映射src_pts轮廓的最小外接矩形框
     cv::Size2f tsize;//tsize是变换后目前区域矩形框
@@ -110,6 +113,6 @@ cv::Mat image_alignment(cv::Mat &image,
     cv::Mat M;
     cv::Mat I;
     get_transform(src_pts, dst_pts, M, 0);
-    cv::warpAffine(image, I, M, dsize);
+    cv::warpAffine(image, I, M, dsize, flags, borderMode, color);
     return I;
 }
