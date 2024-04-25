@@ -273,8 +273,8 @@ rotate_point(cv::Point2f point, cv::Point2f center, int image_width, int image_h
  * @param angle 旋转角度
  * @return
  */
-vector<cv::Point2f> rotate_points(vector<cv::Point2f> &points, cv::Point2f center,
-                                  int image_width, int image_height, float angle);
+vector<cv::Point2f>
+rotate_points(vector<cv::Point2f> &points, cv::Point2f center, int image_width, int image_height, float angle);
 
 
 /***
