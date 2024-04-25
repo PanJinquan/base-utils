@@ -12,6 +12,13 @@ void get_order_points(vector<cv::Point2f> inp, vector<cv::Point2f> &dst) {
         x_add_y.push_back(inp.at(i).y + inp.at(i).x);
         x_dif_y.push_back(inp.at(i).y - inp.at(i).x);
     }
+    /***
+     *     0(top-left)----(w10)----1(top-right)
+     *        |                       |
+     *      (h30)                    (h21)
+     *        |                       |
+     *    3(bottom-left)--(w23)---2(bottom-right)
+     */
     // [top-left, top-right, bottom-right, bottom-left]
     int tl, br, tr, bl;
     find_min_max_indices<float>(x_add_y, tl, br);

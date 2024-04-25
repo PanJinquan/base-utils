@@ -43,26 +43,26 @@ def myapproxPolyDP(contour, n_corners, max_iter=100, lr=0.1, log=False):
 def get_target_points(src_pts: np.ndarray):
     """
     根据输入的四个角点，计算其矫正后的目标四个角点,src_pts四个点分布：
-        0--(w01)---1
-        |          |
-      (h03)      (h21)
-        |          |
-        3--(w23)---2
+         0(top-left)----(w10)----1(top-right)
+            |                       |
+          (h30)                    (h21)
+            |                       |
+        3(bottom-left)--(w23)---2(bottom-right)
     :param src_pts:
     :return:
     """
     # 计算四个角点的边长
-    w01 = np.sum(np.square(src_pts[0] - src_pts[1]), axis=0)
-    h03 = np.sum(np.square(src_pts[0] - src_pts[3]), axis=0)
+    w10 = np.sum(np.square(src_pts[0] - src_pts[1]), axis=0)
+    h30 = np.sum(np.square(src_pts[0] - src_pts[3]), axis=0)
     h21 = np.sum(np.square(src_pts[2] - src_pts[1]), axis=0)
     w23 = np.sum(np.square(src_pts[2] - src_pts[3]), axis=0)
     xmin, ymin = 0, 0
-    if h03 > w01:
-        xmax = np.sqrt(np.mean([w01, w23]))
-        ymax = np.sqrt(np.mean([h03, h21]))
+    if h30 > w10:
+        xmax = np.sqrt(np.mean([w10, w23]))
+        ymax = np.sqrt(np.mean([h30, h21]))
     else:
-        xmax = np.sqrt(np.mean([w01, w23]))
-        ymax = np.sqrt(np.mean([h03, h21]))
+        xmax = np.sqrt(np.mean([w10, w23]))
+        ymax = np.sqrt(np.mean([h30, h21]))
     dst_pts = [[xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax]]
     dst_pts = np.asarray(dst_pts)
     return dst_pts
@@ -75,6 +75,11 @@ def get_order_points(pts_src):
     bottom-right：对应y+x之和的最大点
     top-right   ：对应y-x之差的最小点
     bottom-left ：对应y-x之差的最大点
+         0(top-left)----(w10)----1(top-right)
+            |                       |
+          (h30)                    (h21)
+            |                       |
+        3(bottom-left)--(w23)---2(bottom-right)
     :param pts_src: pts_dst [top-left, top-right, bottom-right, bottom-left]
     :return:
     """

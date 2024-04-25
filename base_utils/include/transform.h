@@ -12,13 +12,19 @@
 
 
 /***
- * 对4个点按顺时针方向进行排序:[top-left, top-right, bottom-right, bottom-left]
+ * 按顺时针方向进行排序:[top-left, top-right, bottom-right, bottom-left]
  * top-left    ：对应y+x之和的最小点
  * bottom-right：对应y+x之和的最大点
  * top-right   ：对应y-x之差的最小点
  * bottom-left ：对应y-x之差的最大点
- * @param inp
- * @param dst
+ * point is-->
+ *     0(top-left)----(w10)----1(top-right)
+ *        |                       |
+ *      (h30)                    (h21)
+ *        |                       |
+ *    3(bottom-left)--(w23)---2(bottom-right)
+ * @param inp 输入至少4个点
+ * @param dst 返回4个点，按顺时针方向进行排序:[top-left, top-right, bottom-right, bottom-left]
  */
 void get_order_points(vector<cv::Point2f> inp, vector<cv::Point2f> &dst);
 
