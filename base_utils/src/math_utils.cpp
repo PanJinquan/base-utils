@@ -22,7 +22,6 @@ void softmax(vector<float> &src, vector<float> &dst, int &max_index, float &max_
     max_value = dst[max_index];
 }
 
-
 float cv_iou(const cv::Rect &r1, const cv::Rect &r2) {
     cv::Rect I = r1 | r2;//并集
     cv::Rect U = r1 & r2;//交集
@@ -74,4 +73,10 @@ float vector_multiply(vector<float> v1, vector<float> v2) {
 float radian2angle(float radian) {
     float angle = radian * (180 / PI);
     return angle;
+}
+
+
+float cal_distance(cv::Point2f p1, cv::Point2f p2) {
+    float distance = cv::norm(p1 - p2);
+    return distance;
 }

@@ -32,35 +32,6 @@ public:
 
 
     /***
-     * 计算变换矩阵
-     * @param src_pts 输入原始关键点
-     * @param dst_pts 输入目标关键点
-     * @param M 输出变换矩阵
-     * @param method 使用方法 0-使用最小二乘法计算变换矩阵；1-使用estimateAffine2D计算变换矩阵
-     */
-    void get_transform(vector<cv::Point2f> &src_pts, vector<cv::Point2f> &dst_pts, cv::Mat &M, int method = 0);
-
-    /***
-     * 计算变换矩阵
-     * @param src_pts 输入原始关键点
-     * @param dst_pts 输入目标关键点
-     * @param M 输出变换矩阵
-     * @param Minv 输出逆变换矩阵
-     * @param method 使用方法 0-使用最小二乘法计算变换矩阵；1-使用estimateAffine2D计算变换矩阵
-     */
-    void get_transform(vector<cv::Point2f> &src_pts, vector<cv::Point2f> &dst_pts,
-                       cv::Mat &M, cv::Mat &Minv, int method = 0);
-
-
-    /***
-     * 通过最小二乘法计算变换矩阵
-     * @param src_pts 输入原始关键点
-     * @param dst_pts 输入目标关键点
-     * @return
-     */
-    cv::Mat solve_lstsq(vector<cv::Point2f> &src_pts, vector<cv::Point2f> &dst_pts);
-
-    /***
      * 使用alignment的方法裁剪人脸
      * @param image 输入原始图像
      * @param landmarks 输入原始关键点

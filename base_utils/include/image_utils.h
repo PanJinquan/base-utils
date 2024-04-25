@@ -179,6 +179,13 @@ bool get_video_capture(int camera_id, cv::VideoCapture &cap, int width = -1, int
  */
 int VideoCaptureDemo(string video_file);
 
+/***
+ * 获得图像mask(二值化处理)
+ * @param image
+ * @param inv
+ * @return
+ */
+cv::Mat get_image_mask(cv::Mat image, int inv = false);
 
 /***
  * 计算mask的轮廓坐标(按面积大小)
@@ -329,7 +336,7 @@ cv::Mat image_center_crop(cv::Mat &image, int crop_width, int crop_height);
  * @param image
  * @param delay
  */
-void image_show(string name, cv::Mat &image, int delay = 0);
+void image_show(string name, cv::Mat &image, int delay = 0, int flags = cv::WINDOW_NORMAL);
 
 
 /***
@@ -364,6 +371,15 @@ void draw_point_text(cv::Mat &image, cv::Point2f points, string text = "",
  * @param texts 点需要显示的文本
  */
 void draw_points_texts(cv::Mat &image, vector<cv::Point2f> points, vector<string> texts = {},
+                       cv::Scalar color = cv::Scalar(255, 0, 0));
+
+/***
+ * 绘制多个点和文本
+ * @param image
+ * @param points 点
+ * @param texts 点需要显示的文本
+ */
+void draw_points_texts(cv::Mat &image, cv::Point2f points[], int num, vector<string> texts = {},
                        cv::Scalar color = cv::Scalar(255, 0, 0));
 
 
@@ -405,8 +421,18 @@ void draw_rects_texts(cv::Mat &image, vector<cv::Rect> rects, vector<string> tex
  * @param skeleton 需要连接的ID序号
  * @param color 连接线的颜色
  */
+void draw_lines(cv::Mat &image, cv::Point2f points[], vector<vector<int>> skeleton,
+                cv::Scalar color = cv::Scalar(255, 0, 0), int thickness = 2, bool clip = true);
+
+/***
+ * 绘制连接线
+ * @param image
+ * @param points
+ * @param skeleton 需要连接的ID序号
+ * @param color 连接线的颜色
+ */
 void draw_lines(cv::Mat &image, vector<cv::Point2f> points, vector<vector<int>> skeleton,
-                cv::Scalar color = cv::Scalar(255, 0, 0), int thickness = 2);
+                cv::Scalar color = cv::Scalar(255, 0, 0), int thickness = 2, bool clip = true);
 
 /***
  * 绘制连接线
@@ -416,7 +442,7 @@ void draw_lines(cv::Mat &image, vector<cv::Point2f> points, vector<vector<int>> 
  * @param color 连接线的颜色表
  */
 void draw_lines(cv::Mat &image, vector<cv::Point2f> points, vector<vector<int>> skeleton, vector<cv::Scalar> colors,
-                int thickness = 2);
+                int thickness = 2, bool clip = true);
 
 
 /***
@@ -443,6 +469,12 @@ void draw_yaw_pitch_roll_in_left_axis(cv::Mat &imgBRG, float pitch, float yaw, f
                                       cv::Point center, int size = 50, int thickness = 2,
                                       bool vis = true);
 
+/***
+ * 求轮廓最小外接矩形,返回4个坐标点
+ * @param contours
+ * @param points
+ */
+void find_minAreaRect(vector<cv::Point> contours, cv::Point2f points[]);
 
 /***
  * 实现图像融合：out = imgBGR * matte + bg * (1 - matte)
@@ -541,6 +573,13 @@ void image_blur(cv::Mat &image, cv::Rect rect, int radius = 5, bool gaussian = f
  */
 void image_blur(cv::Mat &image, vector<cv::Rect> rects, int radius = 5, bool gaussian = false);
 
+
+/***
+ * 将坐标数组转为vector形式
+ * @param pts
+ * @return
+ */
+vector<cv::Point2f> points2vector(cv::Point2f pts[], int num);
 
 cv::Box rect2box(cv::Rect &rect);
 

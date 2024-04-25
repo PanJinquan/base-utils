@@ -66,6 +66,19 @@ int VideoCaptureDemo(string video_file) {
 }
 
 
+cv::Mat get_image_mask(cv::Mat image, int inv) {
+    cv::Mat mask;
+    if (image.channels() == 3) {
+        cv::cvtColor(image, image, cv::COLOR_BGR2GRAY);
+    }
+    if (inv) {
+        cv::threshold(image, mask, 0, 255, cv::THRESH_BINARY_INV | cv::THRESH_OTSU);
+    } else {
+        cv::threshold(image, mask, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
+    }
+    return mask;
+}
+
 void find_contours(cv::Mat &mask, vector<vector<cv::Point> > &contours, int max_nums) {
     vector<cv::Vec4i> hierarchy;
     cv::findContours(mask, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
@@ -243,9 +256,9 @@ cv::Mat image_center_crop(cv::Mat &image, int crop_width, int crop_height) {
 }
 
 
-void image_show(string name, cv::Mat &image, int delay) {
+void image_show(string name, cv::Mat &image, int delay, int flags) {
 #ifndef PLATFORM_ANDROID
-    cv::namedWindow(name, cv::WINDOW_NORMAL);
+    cv::namedWindow(name, flags);
     cv::Mat img_show = image.clone();
     if (img_show.channels() == 1)
         cvtColor(img_show, img_show, cv::COLOR_GRAY2BGR);
@@ -290,6 +303,12 @@ void draw_points_texts(cv::Mat &image, vector<cv::Point2f> points, vector<string
     for (int i = 0; i < num; ++i) {
         draw_point_text(image, points[i], texts[i], color);
     }
+}
+
+
+void draw_points_texts(cv::Mat &image, cv::Point2f points[], int num, vector<string> texts, cv::Scalar color) {
+    vector<cv::Point2f> tmp = points2vector(points, num);
+    draw_points_texts(image, tmp, texts, color);
 }
 
 
@@ -339,14 +358,32 @@ void draw_rects_texts(cv::Mat &image,
 
 
 void draw_lines(cv::Mat &image,
+                cv::Point2f points[],
+                vector<vector<int>> skeleton,
+                cv::Scalar color,
+                int thickness,
+                bool clip) {
+    for (int i = 0; i < skeleton.size(); ++i) {
+        auto pair = skeleton[i];
+        if (~clip || (points[pair[0]].x > 0. && points[pair[0]].y > 0. &&
+                      points[pair[1]].x > 0. && points[pair[1]].y > 0.)) {
+            cv::Point2d p0 = points[pair[0]];
+            cv::Point2d p1 = points[pair[1]];
+            cv::line(image, p0, p1, color, thickness);
+        }
+    }
+}
+
+void draw_lines(cv::Mat &image,
                 vector<cv::Point2f> points,
                 vector<vector<int>> skeleton,
                 cv::Scalar color,
-                int thickness) {
+                int thickness,
+                bool clip) {
     for (int i = 0; i < skeleton.size(); ++i) {
         auto pair = skeleton[i];
-        if (points[pair[0]].x > 0. && points[pair[0]].y > 0. &&
-            points[pair[1]].x > 0. && points[pair[1]].y > 0.) {
+        if (~clip || (points[pair[0]].x > 0. && points[pair[0]].y > 0. &&
+                      points[pair[1]].x > 0. && points[pair[1]].y > 0.)) {
             cv::Point2d p0 = points[pair[0]];
             cv::Point2d p1 = points[pair[1]];
             cv::line(image, p0, p1, color, thickness);
@@ -358,11 +395,12 @@ void draw_lines(cv::Mat &image,
                 vector<cv::Point2f> points,
                 vector<vector<int>> skeleton,
                 vector<cv::Scalar> colors,
-                int thickness) {
+                int thickness,
+                bool clip) {
     for (int i = 0; i < skeleton.size(); ++i) {
         auto pair = skeleton[i];
-        if (points[pair[0]].x > 0. && points[pair[0]].y > 0. &&
-            points[pair[1]].x > 0. && points[pair[1]].y > 0.) {
+        if (~clip || (points[pair[0]].x > 0. && points[pair[0]].y > 0. &&
+                      points[pair[1]].x > 0. && points[pair[1]].y > 0.)) {
             cv::Point2d p0 = points[pair[0]];
             cv::Point2d p1 = points[pair[1]];
             cv::Scalar color = colors[pair[1] % colors.size()];
@@ -427,6 +465,11 @@ void draw_yaw_pitch_roll_in_left_axis(cv::Mat &imgBRG, float pitch, float yaw, f
                     0.5,
                     (0, 0, 255));
     }
+}
+
+void find_minAreaRect(vector<cv::Point> contours, cv::Point2f points[]) {
+    cv::RotatedRect rr = cv::minAreaRect(contours);
+    rr.points(points);
 }
 
 
@@ -606,6 +649,14 @@ void image_blur(cv::Mat &image, vector<cv::Rect> rects, int radius, bool gaussia
     for (int i = 0; i < rects.size(); i++) {
         image_blur(image, rects[i], radius, gaussian);
     }
+}
+
+vector<cv::Point2f> points2vector(cv::Point2f pts[], int num) {
+    vector<cv::Point2f> out;
+    for (int i = 0; i < num; ++i) {
+        out.push_back(pts[i]);
+    }
+    return out;
 }
 
 
