@@ -184,7 +184,7 @@ def test_transform(image_file):
     mask = image_utils.get_image_mask(src)
     contours = image_utils.find_mask_contours(mask)
     src_pts = image_utils.find_minAreaRect(contours, order=True)[0]
-    dst, dst_pts, M, Minv = image_alignment(src, src_pts, dsize=(-1, -1), scale=(1.2, 1.2))
+    dst, dst_pts, M, Minv = image_alignment(src, src_pts, dsize=(400, 500), scale=(1.2, 1.2))
     src = image_utils.draw_image_contours(src, contours)
     src = image_utils.draw_landmark(src, [src_pts], color=(255, 0, 0), vis_id=True)
     dst = image_utils.draw_landmark(dst, [dst_pts], color=(0, 255, 0), vis_id=True)
