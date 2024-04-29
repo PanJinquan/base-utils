@@ -70,7 +70,12 @@ def consumer_multi(image_path: str, data):
 
 
 class ProcessPool(object):
-    """进程池"""
+    """
+    进程池
+    进程通信： https://blog.csdn.net/yldmkx/article/details/115948722
+    int_data = multiprocessing.Manager().Value(ctypes.c_int, 0)
+	str_data = multiprocessing.Manager().Value(ctypes.c_char_p, 'str0')
+    """
 
     def __init__(self, max_workers=2):
         """

@@ -14,9 +14,24 @@ from pybaseutils import image_utils, file_utils
 
 def save_object_crops(image, out_dir, bboxes, labels, image_id, class_name=None,
                       scale=[], square=False, padding=False, flag="", vis=False):
+    """
+    对VOC的数据目标进行裁剪
+    :param image:
+    :param out_dir:
+    :param bboxes:
+    :param labels:
+    :param image_id:
+    :param class_name:
+    :param scale:
+    :param square:
+    :param padding:
+    :param flag:
+    :param vis:
+    :return:
+    """
     image_id = image_id.split(".")[0]
     if square:
-        bboxes = image_utils.get_square_bboxes(bboxes, use_max=True, baseline=-1)
+        bboxes = image_utils.get_square_boxes(bboxes, use_max=True, baseline=-1)
     if scale:
         bboxes = image_utils.extend_xyxy(bboxes, scale=scale)
     if padding:
@@ -30,7 +45,7 @@ def save_object_crops(image, out_dir, bboxes, labels, image_id, class_name=None,
     for i, img in enumerate(crops):
         name = class_name[int(labels[i])] if class_name else labels[i]
         if out_dir:
-            file_name = "{}_{:0=3d}_{}.jpg".format(image_id, i, flag) if flag else "{}_{:0=3d}.jpg".format(image_id, i)
+            file_name = "{}_{:0=4d}_{}.jpg".format(image_id, i, flag) if flag else "{}_{:0=4d}.jpg".format(image_id, i)
             img_file = file_utils.create_dir(out_dir, name, file_name)
             cv2.imwrite(img_file, img)
         if vis: image_utils.cv_show_image("crop", img, use_rgb=False, delay=0)
@@ -38,16 +53,16 @@ def save_object_crops(image, out_dir, bboxes, labels, image_id, class_name=None,
 
 if __name__ == "__main__":
     """
+    对VOC的数据目标进行裁剪
     """
-    # data_root = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/word-v3"
-    filename = "/home/dm/nasdata/dataset/tmp/face_person/MPII/train5000.txt"
-    # filename = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/word-old/train.txt"
+    # filename = "/home/PKing/nasdata/dataset/tmp/face_person/MPII/train5000.txt"
+    filename = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-det-dataset/dataset-v4/file_list.txt"
     # class_name = ["face", "face-eyeglasses"]
     # class_name = "/home/dm/nasdata/dataset/tmp/traffic-sign/TT100K/VOC/train/class_name.txt"
     # class_name = ["unique"]
-    # class_name = None
-    class_name = ['person']
-    out_dir = os.path.join(os.path.dirname(filename), "crops-train5000")
+    class_name = ['身穿工作服', '未穿工作服', '表箱关', '表箱开', '其他鞋', '绝缘鞋']
+    # class_name = ['person']
+    out_dir = os.path.join(os.path.dirname(filename), "crops")
     dataset = parser_voc.VOCDataset(filename=filename,
                                     data_root=None,
                                     anno_dir=None,
@@ -59,14 +74,14 @@ if __name__ == "__main__":
                                     shuffle=False)
     print("have num:{}".format(len(dataset)))
     class_name = dataset.class_name
-    scale = [1.1, 1.1]
+    scale = [1.0, 1.0]
     flag = str(scale[0]).replace(".", "p")
     flag = None
     # scale = None
     for i in tqdm(range(len(dataset))):
         try:
             data = dataset.__getitem__(i)
-            image, targets, image_id = data["image"], data["target"], data["image_id"]
+            image, targets, image_id = data["image"], data["target"], data["image_ids"]
             bboxes, labels = targets[:, 0:4], targets[:, 4:5]
             save_object_crops(image, out_dir, bboxes, labels, image_id, class_name=class_name, scale=scale,
                               flag=flag, vis=False)

@@ -67,7 +67,7 @@ def document_image_correct(src, src_pts, dst_pts=None, out_size=None, use_ransac
         m, status = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5)
     else:
         m = cv2.getPerspectiveTransform(src_pts, dst_pts)
-    dst = cv2.warpPerspective(src, m, dsize=out_size, flags=cv2.INTER_LINEAR)
+    dst = cv2.warpPerspective(src, m, dsize=tuple(out_size), flags=cv2.INTER_LINEAR)
     if vis:
         dst = image_utils.draw_points_text(dst, np.int32(dst_pts), color=(0, 255, 0), thickness=3)
         image_utils.cv_show_image("correct-result", dst, use_rgb=False)
@@ -126,7 +126,7 @@ def document_correct_image_example(image, use_mouse=False, winname="document", v
     else:
         corners = document_correct_by_auto(image)  # 通过算法自动获得文档的四个角点
     # 在原图显示角点
-    image = image_utils.draw_image_points_lines(image, corners, circle_color=(0, 255, 0), fontScale=2.0, thickness=5)
+    image = image_utils.draw_image_points_lines(image, corners, circle_color=(255, 0, 0), fontScale=4.0, thickness=8)
     image_utils.cv_show_image(winname, image, use_rgb=False, delay=10)
     # 实现文档矫正
     document_image_correct(image, corners, vis=vis)
@@ -134,8 +134,8 @@ def document_correct_image_example(image, use_mouse=False, winname="document", v
 
 if __name__ == '__main__':
     # image_dir = "data/image2"  # 测试图片
-    image_dir = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/page-correct/image3"  # 测试图片
-    use_mouse = True  # 是否通过鼠标操作获得文档的四个角点
+    image_dir = "0000.jpg"  # 测试图片
+    use_mouse = False  # 是否通过鼠标操作获得文档的四个角点
     image_list = file_utils.get_files_lists(image_dir)
     for image_file in image_list:
         print(image_file)

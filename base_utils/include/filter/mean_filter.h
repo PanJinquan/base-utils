@@ -15,7 +15,7 @@ using namespace std;
  * 加权平均滑动滤波法(Weighted Moving Average Filter)，
  * 可以有效解决关键点的抖动问题
  */
-class MovingMeanFilter {
+class MeanFilter {
 public:
     vector<cv::Point> mQueue;
 private:
@@ -28,12 +28,12 @@ public:
      * @param win_size 滑动窗口，用于记录历史信息的窗口大小，默认5
      * @param decay 权重衰减系数，值越大，历史影响衰减的越快，平滑力度越小,默认0.6
      */
-    MovingMeanFilter(int win_size = 5, float decay = 0.6);
+    MeanFilter(int win_size = 5, float decay = 0.6);
 
     /***
      * 析构函数
      */
-    ~MovingMeanFilter();
+    ~MeanFilter();
 
     /***
      * 更新数据

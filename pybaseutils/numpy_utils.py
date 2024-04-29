@@ -1,6 +1,5 @@
 # -*-coding: utf-8 -*-
 """
-    @Project: python-learning-notes
     @File   : numpy_tools.py
     @Author : Pan
     @E-mail : 390737991@qq.com

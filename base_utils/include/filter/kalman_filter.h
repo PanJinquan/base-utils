@@ -30,11 +30,13 @@ private:
 public:
     /***
      *
+     * @param win_size 无意义
+     * @param decay 无意义
      * @param stateNum 状态值4×1向量(x,y,△x,△y)，坐标及速度
      * @param measureNum 测量值2×1向量(x,y)
      * @param controlParams
      */
-    KalmanFilter(int stateNum = 4, int measureNum = 2);
+    KalmanFilter(int win_size = 0, float decay = 0, int stateNum = 4, int measureNum = 2);
 
 
     /***

@@ -5,7 +5,7 @@
 #include "filter/kalman_filter.h"
 
 
-KalmanFilter::KalmanFilter(int stateNum, int measureNum) {
+KalmanFilter::KalmanFilter(int win_size, float decay,int stateNum, int measureNum) {
     mKF = new cv::KalmanFilter(stateNum, measureNum, 0);
     //转移矩阵A
     mKF->transitionMatrix = (cv::Mat_<float>(4, 4) << 1, 0, 1, 0,

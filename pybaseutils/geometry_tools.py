@@ -318,6 +318,31 @@ def rotate_point(point1, point2, angle, height):
     return (x, y)
 
 
+def get_cut_points(start, end, nums=2, scale=1.0, dtype=None):
+    """
+    均匀划分nums个线段，并返回截断点(nums+1)
+    :param start: 起点
+    :param end: 终点
+    :param nums: 将范围[start,end]均匀划分的段数，默认2段
+    :param scale: 对范围[start,end]进行缩放
+    :param dtype: 输出类型
+    :return: 返回截断点,其个数是nums+1
+    """
+    d = end - start
+    c = (start + end) * 0.5  # 中心点
+    start = int(c - d * scale * 0.5)
+    end = int(c + d * scale * 0.5)
+    unit = (end - start) / nums
+    out = []
+    if unit > 0:
+        out = np.arange(start, end + 0.1 * unit, unit)
+        dtype = dtype if dtype else out.dtype
+        if dtype == np.int32 or dtype == np.int64:
+            out = np.around(out)
+    out = np.asarray(out, dtype=dtype)
+    return out
+
+
 def points_interpolate(points, num=-1):
     """
     对曲线的坐标点进行插值
@@ -388,11 +413,11 @@ def rotate_points(points, centers, angle, height):
 
 def demo_for_rotate_point():
     import cv2
-    from utils import image_utils
+    from pybaseutils import image_utils
 
     image_path = "4.jpg"
     image = cv2.imread(image_path)
-    image = image_utils.resize_image(image, resize_width=800, resize_height=800)
+    image = image_utils.resize_image(image, size=(800, 800))
     height, weight, d = image.shape
     point1 = [[300, 200], [50, 200]]
     point1 = np.asarray(point1)
@@ -447,4 +472,5 @@ def line_test2():
 if __name__ == '__main__':
     # line_test()
     # line_test2()
-    print(radian2angle(60))
+    # print(radian2angle(60))
+    print(get_cut_points(0, 5, nums=10, scale=1.0, dtype=np.int32))

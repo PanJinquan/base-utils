@@ -8,6 +8,7 @@
 import os
 import cv2
 import numpy as np
+from typing import Callable
 from tqdm import tqdm
 from pybaseutils import image_utils, file_utils
 from pybaseutils.cvutils import monitor
@@ -60,7 +61,7 @@ def video2gif(video_file, gif_file=None, func=None, interval=1, use_pil=False, f
         image_utils.frames2gif_by_imageio(frames, gif_file=gif_file, fps=fps, loop=0)
 
 
-def video2frames(video_file, out_dir=None, func=None, interval=1, vis=True):
+def video2frames(video_file, out_dir=None, func=None, interval=1, vis=True, delay=10):
     """
     视频抽帧图像
     :param video_file: 视频文件
@@ -74,6 +75,7 @@ def video2frames(video_file, out_dir=None, func=None, interval=1, vis=True):
     if not out_dir:  out_dir = os.path.join(os.path.dirname(video_file), name)
     video_cap = get_video_capture(video_file)
     width, height, num_frames, fps = get_video_info(video_cap)
+    if not interval: interval = fps
     if not os.path.exists(out_dir): os.makedirs(out_dir)
     count = 0
     while True:
@@ -85,7 +87,7 @@ def video2frames(video_file, out_dir=None, func=None, interval=1, vis=True):
             if func:
                 frame = func(frame)
             if vis:
-                image_utils.cv_show_image("frame", frame, use_rgb=False, delay=30)
+                image_utils.cv_show_image("frame", frame, use_rgb=False, delay=delay)
             frame_file = os.path.join(out_dir, "{}_{:0=4d}.jpg".format(name, count))
             cv2.imwrite(frame_file, frame)
         count += 1
@@ -175,11 +177,11 @@ def frames2video(image_dir, video_file=None, func=None, size=None, postfix=["*.p
     cv2.destroyAllWindows()
 
 
-def convert_video_format(video_file, save_video, interval=1):
-    return video2video(video_file, save_video, interval=interval)
+def convert_video_format(video_file, save_video, start=0, interval=1):
+    return video2video(video_file, save_video, start=start, interval=interval)
 
 
-def video2video(video_file, save_video, interval=1, vis=True, delay=20):
+def video2video(video_file, save_video, start=0, interval=1, vis=True, delay=20):
     """
     转换视频格式
     :param video_file: *.avi,*.mp4,...
@@ -191,7 +193,7 @@ def video2video(video_file, save_video, interval=1, vis=True, delay=20):
     width, height, num_frames, fps = get_video_info(video_cap)
     video_writer = get_video_writer(save_video, width, height, fps)
     # freq = int(fps / detect_freq)
-    count = 0
+    count = start
     while True:
         # if count % interval == 0:
         if count % interval == 0 and count > 0:
@@ -206,15 +208,88 @@ def video2video(video_file, save_video, interval=1, vis=True, delay=20):
     video_writer.release()
 
 
-def write_video(self, frame):
-    self.video_writer.write(frame)
+def resize_video(video_file, save_video, size=(), start=0, interval=1, vis=True, delay=20):
+    """
+    转换视频格式
+    :param video_file: *.avi,*.mp4,...
+    :param save_video: *.avi
+    :param interval: 间隔
+    :param start:
+    :return:
+    """
+    video_cap = get_video_capture(video_file)
+    width, height, num_frames, fps = get_video_info(video_cap)
+    frame = np.zeros(shape=(height, width), dtype=np.uint8)
+    frame = image_utils.resize_image(frame, size=size)
+    height, width = frame.shape[:2]
+    video_writer = get_video_writer(save_video, width, height, fps)
+    # freq = int(fps / detect_freq)
+    count = start
+    while True:
+        # if count % interval == 0:
+        if count % interval == 0 and count > 0:
+            # 设置抽帧的位置
+            video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
+            isSuccess, frame = video_cap.read()
+            if not isSuccess or 0 < num_frames < count: break
+            frame = image_utils.resize_image(frame, size=size)
+            if vis: image_utils.cv_show_image("frame", frame, use_rgb=False, delay=delay)
+            video_writer.write(frame)
+        count += 1
+    video_cap.release()
+    video_writer.release()
+
+
+def video_task(frame, **kwargs):
+    # TODO
+    delay = kwargs.get("delay", 0)
+    title = kwargs.get("title", "image")
+    cv2.imshow(title, frame)
+    cv2.moveWindow(title, 0, 0)
+    cv2.waitKey(delay)
+    return frame
+
+
+def video_capture(video_file: int or str, save_video: str = None, interval=1, task: Callable = video_task, **kwargs):
+    """
+    读取摄像头或者视频流
+    :param video_file: String 视频文件，如*.avi,*.mp4,...
+                       Int 摄像头ID，如0，1，2
+    :param save_video: 保存task视频处理后的结果
+    :param interval: 抽帧处理间隔
+    :param task: 回调函数： def task(frame, **kwargs)
+    :param kwargs:回调函数输入参数,
+                 delay: 控制显示延时
+                 title: 控制显示窗口名
+    :return:
+    """
+    # cv2.moveWindow("test", 1000, 100)
+    video_cap = get_video_capture(video_file)
+    width, height, num_frames, fps = get_video_info(video_cap)
+    video_writer = None
+    # fps = max((fps + interval - 1) // interval, 2)
+    fps = max(fps // interval, 2)
+    if save_video: video_writer = get_video_writer(save_video, width, height, fps)
+    # freq = int(fps / detect_freq)
+    count = 0
+    while True:
+        if count % interval == 0:
+            # 设置抽帧的位置
+            if isinstance(video_file, str): video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
+            isSuccess, frame = video_cap.read()
+            if not isSuccess or 0 < num_frames < count: break
+            if task: frame = task(frame, **kwargs)
+            if save_video:
+                video_writer.write(frame)
+        count += 1
+    video_cap.release()
 
 
 class CVVideo():
     def __init__(self):
         pass
 
-    def start_capture(self, video_file, save_video=None, interval=1):
+    def video_capture(self, video_file, save_video=None, interval=1):
         """
         start capture video
         :param video_file: *.avi,*.mp4,...
@@ -232,7 +307,7 @@ class CVVideo():
         while True:
             if count % interval == 0:
                 # 设置抽帧的位置
-                video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
+                if isinstance(video_file, str): video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
                 isSuccess, frame = video_cap.read()
                 if not isSuccess or 0 < num_frames < count: break
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)

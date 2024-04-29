@@ -1,69 +1,32 @@
 # -*-coding: utf-8 -*-
 """
     @Author : PKing
-    @E-mail : 390737991@qq.com
-    @Date   : 2022-12-31 11:37:30
+    @E-mail :
+    @Date   : 2024-02-05 18:19:18
     @Brief  :
 """
-import asyncio
-import time
 import os
 import cv2
-import time
-from tqdm import tqdm
-from multiprocessing import Pool
 import numpy as np
-from pybaseutils import file_utils, image_utils, base64_utils, time_utils, json_utils
-
-
-# -*- coding:utf-8 -*-
-"""
-入口函数
-"""
-import os
-import sys
-
-"""PyAudio Example: Play a WAVE file."""
-
-import pyaudio
-import wave
 from tqdm import tqdm
+from pybaseutils import image_utils, file_utils
+from pybaseutils.transforms import transform_utils
+from pybaseutils.converter import build_voc
 
 
+def test_transform(image_file):
+    src = cv2.imread(image_file)
+    mask = image_utils.get_image_mask(src)
+    contours = image_utils.find_mask_contours(mask)
+    src_pts = image_utils.find_minAreaRect(contours, order=True)[0]
+    dst, dst_pts, M, Minv = transform_utils.image_alignment(src, src_pts, dsize=(400, 300), scale=(1.2, 1.2))
+    src = image_utils.draw_image_contours(src, contours)
+    src = image_utils.draw_landmark(src, [src_pts], color=(255, 0, 0), vis_id=True)
+    dst = image_utils.draw_landmark(dst, [dst_pts], color=(0, 255, 0), vis_id=True)
+    image_utils.cv_show_image("src", src, delay=10)
+    image_utils.cv_show_image("dst", dst, delay=0)
 
-def play_audio(wave_path):
 
-    CHUNK = 1024
-
-    wf = wave.open(wave_path, 'rb')
-
-    # instantiate PyAudio (1)
-    p = pyaudio.PyAudio()
-
-    # open stream (2)
-    stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
-                    channels=wf.getnchannels(),
-                    rate=wf.getframerate(),
-                    output=True)
-
-    # read data
-    data = wf.readframes(CHUNK)
-
-    # play stream (3)
-    datas = []
-    while len(data) > 0:
-        data = wf.readframes(CHUNK)
-        datas.append(data)
-
-    for d in tqdm(datas):
-        stream.write(d)
-
-    # stop stream (4)
-    stream.stop_stream()
-    stream.close()
-
-    # close PyAudio (5)
-    p.terminate()
-
-file="../data/video/kunkun_cut.mp3"
-play_audio(file)
+if __name__ == '__main__':
+    image_file = "../data/mask/mask5.jpg"
+    test_transform(image_file)

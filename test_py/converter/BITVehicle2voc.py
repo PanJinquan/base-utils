@@ -11,7 +11,7 @@ import cv2
 import scipy.io as scio
 import numpy as np
 from tqdm import tqdm
-from pybaseutils.maker import maker_voc
+from pybaseutils.converter import build_voc
 from pybaseutils import file_utils, image_utils
 
 
@@ -65,8 +65,8 @@ def converter_BITVehicle2voc(image_dir, annot_file, out_voc, vis=True):
         image_shape = image.shape
         new_name = "{}.jpg".format(image_id)
         xml_path = file_utils.create_dir(out_xml_dir, None, "{}.xml".format(image_id))
-        objects = maker_voc.create_objects(bboxes, labels)
-        maker_voc.write_voc_xml_objects(new_name, image_shape, objects, xml_path)
+        objects = build_voc.create_objects(bboxes, labels)
+        build_voc.write_voc_xml_objects(new_name, image_shape, objects, xml_path)
         dst_file = file_utils.create_dir(out_image_dir, None, new_name)
         file_utils.copy_file(image_file, dst_file)
         # cv2.imwrite(dst_file, image)

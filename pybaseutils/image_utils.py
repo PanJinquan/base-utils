@@ -24,8 +24,9 @@ from math import cos, sin
 from pybaseutils import file_utils
 from pybaseutils.coords_utils import *
 from pybaseutils.transforms import affine_transform
+from pybaseutils.cvutils import corner_utils
 
-color_table = [(0, 0, 0), (0, 0, 255), (0, 255, 0), (255, 0, 0),
+color_table = [(0, 0, 0), (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 255, 255), (255, 0, 255), (255, 255, 0),
                (128, 0, 0), (0, 128, 0), (128, 128, 0),
                (0, 0, 128), (128, 0, 128), (0, 128, 128), (128, 128, 128),
                (64, 0, 0), (192, 0, 0), (64, 128, 0), (192, 128, 0),
@@ -40,6 +41,8 @@ color_map = [(0, 0, 0), (56, 56, 255), (151, 157, 255), (31, 112, 255), (29, 178
 root = os.path.dirname(__file__)
 coco_skeleton = [[1, 3], [1, 0], [2, 4], [2, 0], [0, 5], [0, 6], [5, 7], [7, 9], [6, 8],
                  [8, 10], [5, 11], [6, 12], [11, 12], [11, 13], [13, 15], [12, 14], [14, 16]]
+coco_skeleton_v2 = [[15, 13], [13, 11], [16, 14], [14, 12], [11, 12], [5, 11], [6, 12], [5, 6], [5, 7],
+                    [6, 8], [7, 9], [8, 10], [1, 2], [0, 1], [0, 2], [1, 3], [2, 4], [3, 5], [4, 6]]
 mpii_skeleton = [[0, 1], [1, 2], [3, 4], [4, 5], [2, 6], [6, 3], [12, 11], [7, 12],
                  [11, 10], [13, 14], [14, 15], [8, 9], [8, 7], [6, 7], [7, 13]]
 
@@ -200,20 +203,20 @@ def show_batch_image(title, batch_images, index=0):
         cv_show_image(title, image)
 
 
-def show_image(title, rgb_image):
+def show_image(title, image):
     '''
     调用matplotlib显示RGB图片
     :param title: 图像标题
-    :param rgb_image: 图像的数据
+    :param image: 图像的数据
     :return:
     '''
     # plt.figure("show_image")
     # print(image.dtype)
-    channel = len(rgb_image.shape)
+    channel = len(image.shape)
     if channel == 3:
-        plt.imshow(rgb_image)
+        plt.imshow(image)
     else:
-        plt.imshow(rgb_image, cmap='gray')
+        plt.imshow(image, cmap='gray')
     plt.axis('on')  # 关掉坐标轴为 off
     plt.title(title)  # 图像题目
     plt.show()
@@ -486,7 +489,7 @@ def read_image_pil(filename, size=None, norm=False, use_rgb=False):
     return image
 
 
-def requests_url(url):
+def requests_url(url, timeout=None):
     """
     读取网络数据流
     :param url:
@@ -494,7 +497,7 @@ def requests_url(url):
     """
     stream = None
     try:
-        res = requests.get(url, timeout=15)
+        res = requests.get(url, timeout=timeout)
         if res.status_code == 200:
             stream = res.content
     except Exception as e:
@@ -502,7 +505,7 @@ def requests_url(url):
     return stream
 
 
-def read_images_url(url, size=None, norm=False, use_rgb=False):
+def read_images_url(url: str, size=None, norm=False, use_rgb=False, timeout=5):
     """
     根据url或者图片路径，读取图片
     :param url:
@@ -512,14 +515,15 @@ def read_images_url(url, size=None, norm=False, use_rgb=False):
     :return:
     """
     image = None
-    if re.match(r'^https?:/{2}\w.+$', url):
-        stream = requests_url(url)
+    # if re.match(r'^https?:/{2}\w.+$', url):
+    if url.startswith("http"):
+        stream = requests_url(url, timeout=timeout)
         if stream is not None:
             content = np.asarray(bytearray(stream), dtype="uint8")
             image = cv2.imdecode(content, cv2.IMREAD_COLOR)
             # pil_image = PIL.Image.open(BytesIO(stream))
-            # rgb_image=np.asarray(pil_image)
-            # bgr_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR)
+            # image=np.asarray(pil_image)
+            # image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     else:
         image = cv2.imread(url)
     if image is None:
@@ -657,19 +661,19 @@ def resize_image(image, size: Tuple, interpolation=cv2.INTER_LINEAR):
     """
     if not size: return image
     size = (size, size) if len(size) == 1 else size
-    resize_width, resize_height = size
-    height, width = image.shape[:2]
-    if (resize_height is None) and (resize_width is None):  # 错误写法：resize_height and resize_width is None
+    dw, dh = size
+    sh, sw = image.shape[:2]
+    if (dh is None) and (dw is None):  # 错误写法：resize_height and resize_width is None
         return image
-    if resize_height is None:
-        resize_height = int(height * resize_width / width)
-    elif resize_width is None:
-        resize_width = int(width * resize_height / height)
-    image = cv2.resize(image, dsize=(int(resize_width), int(resize_height)), interpolation=interpolation)
+    if dh is None:
+        dh = int(sh * dw / sw)
+    elif dw is None:
+        dw = int(sw * dh / sh)
+    image = cv2.resize(image, dsize=(int(dw), int(dh)), interpolation=interpolation)
     return image
 
 
-def image_boxes_resize_padding(image, input_size, boxes=None, color=(0, 0, 0)):
+def image_boxes_resize_padding(image, input_size, boxes=None, points=None, color=(0, 0, 0)):
     """
     等比例图像resize,保持原始图像内容比，避免失真,短边会0填充
     input_size = [300, 300]
@@ -696,12 +700,20 @@ def image_boxes_resize_padding(image, input_size, boxes=None, color=(0, 0, 0)):
     if not boxes is None and len(boxes) > 0:
         boxes[:] = boxes[:] * scale
         boxes[:] = boxes[:] + [left, top, left, top]
+    if not points is None and len(points) > 0:
+        points[:] = points[:] * scale
+        points[:] = points[:] + [left, top]
     return out
 
 
-def image_boxes_resize_padding_inverse(image_size, input_size, boxes=None):
+def image_boxes_resize_padding_inverse(image_size, input_size, boxes=None, points=None):
     """
     image_boxes_resize_padding的逆过程
+    :param image_size: 原始图像的大小(W,H)
+    :param input_size: 模型输入大小(W,H)
+    :param boxes: 输入/输出检测框(n,4)
+    :param points: 输入/输出关键点(n,4)
+    :return:
     """
     width, height = image_size
     scale = min([input_size[0] / width, input_size[1] / height])
@@ -713,6 +725,9 @@ def image_boxes_resize_padding_inverse(image_size, input_size, boxes=None):
     if not boxes is None and len(boxes) > 0:
         boxes[:] = boxes[:] - [left, top, left, top]
         boxes[:] = boxes[:] / scale
+    if not points is None and len(points) > 0:
+        points[:] = points[:] - [left, top]
+        points[:] = points[:] / scale
     return boxes
 
 
@@ -945,11 +960,12 @@ def draw_image_rects(image, rects, color=(0, 0, 255), thickness=-1):
 
 def draw_image_boxes(image, boxes, color=(0, 0, 255), thickness=-1):
     thickness, fontScale = get_linesize(max(image.shape), thickness=thickness, fontScale=-1.0)
-    for box in boxes:
+    if isinstance(color[0], numbers.Number): color = [color] * len(boxes)
+    for i, box in enumerate(boxes):
         x1, y1, x2, y2 = box[:4]
         point1 = (int(x1), int(y1))
         point2 = (int(x2), int(y2))
-        cv2.rectangle(image, point1, point2, color, thickness=thickness)
+        cv2.rectangle(image, point1, point2, color[i], thickness=thickness)
     return image
 
 
@@ -960,7 +976,7 @@ def show_image_rects(title, image, rects, color=(0, 0, 255), delay=0, use_rgb=Fa
     :param rects:[[ x, y, w, h],[ x, y, w, h]]
     :return:
     """
-    image = draw_image_rects(image.copy(), rects, color)
+    image = draw_image_rects(image, rects, color)
     cv_show_image(title, image, delay=delay, use_rgb=use_rgb)
     return image
 
@@ -977,7 +993,7 @@ def show_image_boxes(title, image, boxes, color=(0, 0, 255), delay=0, use_rgb=Fa
     return image
 
 
-def draw_image_bboxes_text(rgb_image, boxes, boxes_name, color=(255, 0, 0), thickness=-1, fontScale=-1.0,
+def draw_image_bboxes_text(image, boxes, boxes_name, color=(255, 0, 0), thickness=-1, fontScale=-1.0,
                            drawType="custom", top=True):
     """
     :param boxes_name:
@@ -986,19 +1002,18 @@ def draw_image_bboxes_text(rgb_image, boxes, boxes_name, color=(255, 0, 0), thic
     :param boxes: [[x1,y1,x2,y2],[x1,y1,x2,y2]]
     :return:
     """
-    rgb_image = rgb_image.copy()
     if isinstance(boxes_name, np.ndarray):
         boxes_name = boxes_name.reshape(-1).tolist()
     for name, box in zip(boxes_name, boxes):
         box = [int(b) for b in box]
-        custom_bbox_line(rgb_image, box, color, name, thickness, fontScale, drawType, top)
-    return rgb_image
+        custom_bbox_line(image, box, color, name, thickness, fontScale, drawType, top)
+    return image
 
 
-def draw_image_bboxes_labels_text(rgb_image, boxes, labels, boxes_name=None, color=None, thickness=2, fontScale=0.8,
+def draw_image_bboxes_labels_text(image, boxes, labels, boxes_name=None, color=None, thickness=2, fontScale=0.8,
                                   drawType="custom", top=True):
     """
-    :param rgb_image:
+    :param image:
     :param boxes:
     :param labels:
     :param boxes_name:
@@ -1007,20 +1022,19 @@ def draw_image_bboxes_labels_text(rgb_image, boxes, labels, boxes_name=None, col
     :param top:
     :return:
     """
-    rgb_image = rgb_image.copy()
     if isinstance(labels, np.ndarray):
         labels = labels.reshape(-1).tolist()
     boxes_name = boxes_name if boxes_name else labels
     for label, box, name in zip(labels, boxes, boxes_name):
         box = [int(b) for b in box]
         color_ = color if color else color_map[int(label) + 1]
-        custom_bbox_line(rgb_image, box, color_, str(name), thickness, fontScale, drawType, top)
-    return rgb_image
+        image = custom_bbox_line(image, box, color_, str(name), thickness, fontScale, drawType, top)
+    return image
 
 
-def draw_image_rects_labels_text(rgb_image, rects, labels, boxes_name=None, color=None, drawType="custom", top=True):
+def draw_image_rects_labels_text(image, rects, labels, boxes_name=None, color=None, drawType="custom", top=True):
     """
-    :param rgb_image:
+    :param image:
     :param rects:
     :param labels:
     :param boxes_name:
@@ -1030,11 +1044,12 @@ def draw_image_rects_labels_text(rgb_image, rects, labels, boxes_name=None, colo
     :return:
     """
     boxes = rects2bboxes(rects)
-    rgb_image = draw_image_bboxes_labels_text(rgb_image, boxes, labels, boxes_name, color, drawType, top)
-    return rgb_image
+    image = draw_image_bboxes_labels_text(image, boxes, labels, boxes_name, color, drawType, top)
+    return image
 
 
-def show_image_bboxes_text(title, rgb_image, boxes, boxes_name, color=None, drawType="custom", delay=0, top=True):
+def show_image_bboxes_text(title, image, boxes, boxes_name, color=None, thickness=-1, fontScale=-1.0,
+                           drawType="custom", delay=0, top=True):
     """
     :param boxes_name:
     :param bgr_image: bgr image
@@ -1042,20 +1057,24 @@ def show_image_bboxes_text(title, rgb_image, boxes, boxes_name, color=None, draw
     :param boxes: [[x1,y1,x2,y2],[x1,y1,x2,y2]]
     :return:
     """
-    bgr_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR)
-    bgr_image = draw_image_bboxes_text(bgr_image, boxes, boxes_name, color, drawType, top)
-    rgb_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2RGB)
-    cv_show_image(title, rgb_image, delay=delay)
-    return rgb_image
+    bgr_image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+    bgr_image = draw_image_bboxes_text(bgr_image, boxes, boxes_name=boxes_name, color=color, thickness=thickness,
+                                       fontScale=fontScale, drawType=drawType, top=top)
+    image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2RGB)
+    cv_show_image(title, image, delay=delay)
+    return image
 
 
-def draw_image_rects_text(rgb_image, rects, rects_name, color=None, drawType="custom", top=True):
+def draw_image_rects_text(image, rects, rects_name, color=None, thickness=-1, fontScale=-1.0,
+                          drawType="custom", top=True):
     boxes = rects2bboxes(rects)
-    rgb_image = draw_image_bboxes_text(rgb_image, boxes, rects_name, color, drawType, top)
-    return rgb_image
+    image = draw_image_bboxes_text(image, boxes, boxes_name=rects_name, color=color, thickness=thickness,
+                                   fontScale=fontScale, drawType=drawType, top=top)
+    return image
 
 
-def show_image_rects_text(title, rgb_image, rects, rects_name, color=None, drawType="custom", delay=0, top=True):
+def show_image_rects_text(title, image, rects, rects_name, color=None, thickness=-1, fontScale=-1.0, drawType="custom",
+                          delay=0, top=True):
     """
     :param rects_name:
     :param bgr_image: bgr image
@@ -1063,39 +1082,40 @@ def show_image_rects_text(title, rgb_image, rects, rects_name, color=None, drawT
     :return:
     """
     boxes = rects2bboxes(rects)
-    rgb_image = show_image_bboxes_text(title, rgb_image, boxes, rects_name, color, drawType, delay, top)
-    return rgb_image
+    image = show_image_bboxes_text(title, image, boxes, boxes_name=rects_name, color=color, thickness=thickness,
+                                   fontScale=fontScale, drawType=drawType, delay=delay, top=top)
+    return image
 
 
-def draw_image_bboxes_labels(rgb_image, bboxes, labels, class_name=None, color=None,
+def draw_image_bboxes_labels(image, bboxes, labels, class_name=None, color=None,
                              thickness=-1, fontScale=-1.0, drawType="custom"):
     """
-    :param rgb_image:
+    :param image:
     :param bboxes:  [[x1,y1,x2,y2],[x1,y1,x2,y2]]
     :param labels:
     :return:
     """
     if isinstance(labels, np.ndarray): labels = labels.astype(np.int32).reshape(-1).tolist()
     for label, box in zip(labels, bboxes):
-        color_ = color if color else color_map[int(label) + 1]
+        color_ = color if color else color_table[int(label) + 1]
         box = [int(b) for b in box]
         if class_name: label = class_name[int(label)]
-        rgb_image = custom_bbox_line(rgb_image, box, color_, str(label), thickness=thickness,
-                                     fontScale=fontScale, drawType=drawType)
-    return rgb_image
+        image = custom_bbox_line(image, box, color_, str(label), thickness=thickness,
+                                 fontScale=fontScale, drawType=drawType)
+    return image
 
 
-def draw_image_rects_labels(rgb_image, rects, labels, class_name=None, color=None, thickness=-1, fontScale=-1.0):
+def draw_image_rects_labels(image, rects, labels, class_name=None, color=None, thickness=-1, fontScale=-1.0):
     """
-    :param rgb_image:
+    :param image:
     :param rects:
     :param labels:
     :return:
     """
     bboxes = rects2bboxes(rects)
-    rgb_image = draw_image_bboxes_labels(rgb_image, bboxes, labels, class_name=class_name, color=color,
-                                         thickness=thickness, fontScale=fontScale)
-    return rgb_image
+    image = draw_image_bboxes_labels(image, bboxes, labels, class_name=class_name, color=color,
+                                     thickness=thickness, fontScale=fontScale)
+    return image
 
 
 def draw_image_detection_rects(image, rects, probs, labels, class_name=None, thickness=-1, fontScale=-1.0,
@@ -1134,7 +1154,7 @@ def draw_image_detection_boxes(image, boxes, probs, labels, class_name=None, thi
     labels = labels if isinstance(labels, list) else np.asarray(labels, dtype=np.int32).reshape(-1)
     probs = np.asarray(probs).reshape(-1)
     for label, box, prob in zip(labels, boxes, probs):
-        color = color_map[1] if isinstance(label, str) else color_map[int(label) + 1]
+        color = color_table[1] if isinstance(label, str) else color_table[int(label) + 1]
         box = [int(b) for b in box]
         if class_name:
             label = class_name[int(label)]
@@ -1188,41 +1208,6 @@ def draw_dt_gt_dets(image, dt_boxes, dt_label, gt_boxes, gt_label, vis_diff=Fals
     return image
 
 
-def custom_bbox_line(image, bbox, color, name, thickness=2, fontScale=0.8, drawType="custom", top=True):
-    """
-    :param image:
-    :param bbox:
-    :param color:
-    :param name:
-    :param drawType:
-    :param top:
-    :return:
-    """
-    thickness, fontScale = get_linesize(max(image.shape), thickness=thickness, fontScale=fontScale)
-    if not name: drawType = "simple"
-    if drawType == "chinese":
-        cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness)
-        cv2_putText(image, str(name), (bbox[0], bbox[1]), color=color, fontScale=fontScale, thickness=thickness)
-    elif drawType == "simple":
-        cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness, 8, 0)
-        cv2.putText(image, str(name), (bbox[0], bbox[1]), cv2.FONT_HERSHEY_SIMPLEX, fontScale, color, thickness)
-    elif drawType == "custom":
-        cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness)
-        text_size, baseline = cv2.getTextSize(str(name), cv2.FONT_HERSHEY_SIMPLEX, fontScale, thickness)
-        if top:
-            text_loc = (bbox[0], bbox[1] - text_size[1])
-        else:
-            # text_loc = (bbox[0], bbox[1])
-            text_loc = (bbox[0], bbox[3])
-            # text_loc = (bbox[2], bbox[1] + text_size[1])
-        cv2.rectangle(image, (text_loc[0] - 2 // 2, text_loc[1] - 2 - baseline),
-                      (text_loc[0] + text_size[0], text_loc[1] + text_size[1]), color, -1)
-        # draw score value
-        cv2.putText(image, str(name), (text_loc[0], text_loc[1] + baseline), cv2.FONT_HERSHEY_SIMPLEX, fontScale,
-                    (255, 255, 255), thickness)
-    return image
-
-
 def draw_landmark(image, landmarks, radius=2, fontScale=1.0, color=(0, 0, 255), vis_id=False):
     """
     :param image:
@@ -1239,7 +1224,7 @@ def draw_landmark(image, landmarks, radius=2, fontScale=1.0, color=(0, 0, 255), 
         for i, landmark in enumerate(lm):
             # 要画的点的坐标
             point = (int(landmark[0]), int(landmark[1]))
-            cv2.circle(image, point, radius, color, thickness=-1)
+            cv2.circle(image, point, radius, color, thickness=-1, lineType=cv2.LINE_AA)
             if vis_id:
                 image = draw_points_text(image, [point], texts=[str(i)], color=color, thickness=radius,
                                          fontScale=fontScale, drawType="simple")
@@ -1283,13 +1268,15 @@ def draw_points_text(image, points, texts=None, color=(255, 0, 0), thickness=-1,
     :return:
     """
     thickness, fontScale = get_linesize(max(image.shape), thickness=thickness, fontScale=fontScale)
-    if texts is None:
-        texts = [""] * len(points)
-    for point, text in zip(points, texts):
+    if texts is None: texts = [""] * len(points)
+    if isinstance(color[0], numbers.Number): color = [color] * len(points)
+    for index, (point, text) in enumerate(zip(points, texts)):
         if not check_point(point): continue
         point = (int(point[0]), int(point[1]))
-        cv2.circle(image, point, thickness * 3, color, -1)
-        draw_text(image, point, text, color=color, fontScale=fontScale, thickness=thickness, drawType=drawType)
+        c = color[index]
+        text = str(text)
+        cv2.circle(image, point, thickness * 3, tuple(c), -1, lineType=cv2.LINE_AA)
+        if text: draw_text(image, point, text, color=c, fontScale=fontScale, thickness=thickness, drawType=drawType)
     return image
 
 
@@ -1308,21 +1295,58 @@ def draw_text(image, point, text, color=(255, 0, 0), fontScale=-1.0, thickness=-
     :return:
     """
     thickness, fontScale = get_linesize(max(image.shape), thickness=thickness, fontScale=fontScale)
-    text_thickness = 1
     fontFace = cv2.FONT_HERSHEY_SIMPLEX
     # fontFace=cv2.FONT_HERSHEY_SIMPLEX
     if drawType == "custom" or drawType == "en":
         text_size, baseline = cv2.getTextSize(str(text), fontFace, fontScale, thickness)
         text_loc = (point[0], point[1] + text_size[1])
         cv2.rectangle(image, (text_loc[0] - 2 // 2, text_loc[1] - 2 - baseline),
-                      (text_loc[0] + text_size[0], text_loc[1] + text_size[1]), color=color, thickness=thickness)
+                      (text_loc[0] + text_size[0], text_loc[1] + text_size[1]), color=color, thickness=-1)
         # draw score value
-        cv2.putText(image, str(text), (text_loc[0], text_loc[1] + baseline), fontFace, fontScale,
-                    (255, 255, 255), text_thickness, 2)
+        cv2.putText(image, str(text), (text_loc[0], text_loc[1] + baseline), fontFace, fontScale, (255, 255, 255),
+                    thickness, 2)
     elif drawType == "simple":
-        cv2.putText(image, str(text), point, fontFace, fontScale, color=color, thickness=thickness)
+        cv2.putText(image, str(text), (point[0], point[1]), fontFace, fontScale, color=color, thickness=thickness)
     if drawType == "chinese" or drawType == "ch":
-        cv2_putText(image, str(text), point, fontFace, fontScale, color=color, thickness=thickness)
+        cv2_putText(image, str(text), (point[0], point[1]), fontFace, fontScale, color=color, thickness=thickness)
+    return image
+
+
+def custom_bbox_line(image, bbox, color, name, thickness=2, fontScale=0.8, drawType="custom", top=True):
+    """
+    :param image:
+    :param bbox:
+    :param color:
+    :param name:
+    :param drawType:
+    :param top:
+    :return:
+    """
+    thickness, fontScale = get_linesize(max(image.shape), thickness=thickness, fontScale=fontScale)
+    text_loc = (bbox[0], bbox[1]) if top else (bbox[0], bbox[3])
+    if not name: drawType = "simple"
+    if drawType == "chinese":
+        cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness)
+        cv2_putText(image, str(name), text_loc, color=color, fontScale=fontScale, thickness=thickness)
+    elif drawType == "simple":
+        cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness, 8, 0)
+        cv2.putText(image, str(name), text_loc, cv2.FONT_HERSHEY_SIMPLEX, fontScale, color, thickness)
+    elif drawType == "custom":
+        cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness)
+        text_size, baseline = cv2.getTextSize(str(name), cv2.FONT_HERSHEY_SIMPLEX, fontScale, thickness)
+        if top:
+            # text_loc = (bbox[0], bbox[1] + text_size[1])  # 在左上角下方绘制文字
+            text_loc = (bbox[0], bbox[1] - baseline // 2)  # 在左上角上方绘制文字
+        else:
+            text_loc = (bbox[0], bbox[3])
+        bg1 = (text_loc[0], text_loc[1] - text_size[1])
+        bg2 = (text_loc[0] + text_size[0], text_loc[1] + baseline // 2)  # 底纹等于字体的宽度
+        # bg2 = (max(bbox[2], text_loc[0] + text_size[0]), text_loc[1] + baseline // 2) # 底纹等于box的宽度
+        cv2.rectangle(image, bg1, bg2, color, thickness)  # 先绘制框，再填充
+        cv2.rectangle(image, bg1, bg2, color, -1)
+        # draw score value
+        cv2.putText(image, str(name), (text_loc[0], text_loc[1]), cv2.FONT_HERSHEY_SIMPLEX, fontScale,
+                    (255, 255, 255), thickness)
     return image
 
 
@@ -1377,16 +1401,18 @@ def cv2_putText(img, text, point, fontFace=None, fontScale=0.8, color=(255, 0, 0
     img[:] = np.asarray(pilimg)
 
 
-def draw_key_point_in_image(image, key_points, pointline=[], boxes=[], vis_id=False, thickness=2):
+def draw_key_point_in_image(image, key_points, pointline=[], boxes=[], colors=None, vis_id=False, thickness=2):
     """
-    :param key_points: list(ndarray(19,2)) or ndarray(n_person,19,2)
     :param image:
+    :param key_points: list(ndarray(19,2)) or ndarray(n_person,19,2)
     :param pointline: `auto`->pointline = circle_line(len(points), iscircle=True)
+    :param boxes: 目标框
+    :param colors: 每个点的颜色
     :return:
     """
     nums = max(len(key_points), len(boxes))
     for p in range(nums):
-        color = color_map[p + 1]
+        color = color_table[p + 1] if not colors else colors
         if len(key_points) > 0:
             points = key_points[p]
             if points is None or len(points) == 0: continue
@@ -1473,14 +1499,15 @@ def draw_image_lines(image, points, pointline=[], color=(0, 0, 255), thickness=2
     # points = np.asarray(points, dtype=np.int32)
     if pointline == "auto" or pointline == []:
         pointline = circle_line(len(points), iscircle=True)
-    for point_index in pointline:
-        point1 = tuple(points[point_index[0]])
-        point2 = tuple(points[point_index[1]])
+    if isinstance(color[0], numbers.Number): color = [color] * len(points)
+    for index in pointline:
+        point1 = tuple(points[index[0]])
+        point2 = tuple(points[index[1]])
         if (not check_point(point1)) or (not check_point(point2)):
             continue
         point1 = (int(point1[0]), int(point1[1]))
         point2 = (int(point2[0]), int(point2[1]))
-        cv2.line(image, point1, point2, color, thickness)  # 绿色，3个像素宽度
+        cv2.line(image, point1, point2, color[index[1]], thickness)  # 绿色，3个像素宽度
     return image
 
 
@@ -1892,6 +1919,48 @@ def center_crop_padding(image, crop_size, color=(0, 0, 0)):
     return roi_image
 
 
+def center_crop_padding_mask_shift(mask, size=(256, 256), center=True, scale=1.0, color=(0, 0, 0)):
+    """
+    实现将白色区域平移到中心，居中显示(区域相对大小不会变化)
+    :param mask:
+    :param size: [crop_w,crop_h]
+    :param center: 是否居中
+    :param scale: 是否缩放
+    :param color: padding的颜色
+    :return:
+    """
+    mask = center_crop_padding(mask, crop_size=size, color=color)
+    if center:
+        box = get_mask_boundrect_cv(mask, binarize=False, shift=0)
+        if len(box) > 0:
+            cx, cy = (box[0] + box[2]) / 2, (box[1] + box[3]) / 2
+            new = (cx - size[0] / 2, cy - size[1] / 2,
+                   cx + size[0] / 2, cy + size[1] / 2)
+            mask = get_bbox_crop_padding(mask, new, color=color)
+    if scale < 1.0:
+        mask = get_scale_image(mask, scale=scale, color=color)
+    return mask
+
+
+def center_crop_padding_mask_resize(mask, size=(256, 256), center=True, scale=1.0, color=(0, 0, 0)):
+    """
+    实现将白色区域调整到中心，居中显示(区域相对大小会变化)
+    :param mask:
+    :param size: [crop_w,crop_h]
+    :param center: 是否居中
+    :param scale: 是否缩放
+    :param color: padding的颜色
+    :return:
+    """
+    if center:
+        box = get_mask_boundrect_cv(mask, binarize=False, shift=0)
+        if box: mask = get_bbox_crop(mask, box)
+    mask = resize_image_padding(mask, size=size, color=color, interpolation=cv2.INTER_LINEAR)
+    if scale < 1.0:
+        mask = get_scale_image(mask, scale=scale, color=color)
+    return mask
+
+
 def points2bbox(keypoints):
     joints_bbox = []
     for joints in keypoints:
@@ -2187,6 +2256,31 @@ def get_mask_erode_dilate(mask, ksize, binarize=False):
     return mask
 
 
+def get_mask_morphology(image, ksize, binarize=False, op=cv2.MORPH_OPEN, itera=1):
+    """
+    形态学计算
+    :param image: 可以是二值化图像，也可以是RGB图像
+    :param ksize:
+    :param binarize:
+    :param op:为形态变换的类型，包括如下取值类型：
+            MORPH_ERODE：腐蚀，与调用腐蚀函数erode效果相同
+            MORPH_DILATE：膨胀，与调用膨胀函数dilate效果相同
+            MORPH_OPEN：开运算，对图像先进行腐蚀再膨胀，等同于dilate(erode(src,kernal))，开运算对图像的边界进行平滑、去掉凸起等
+            MORPH_CLOSE：闭运算，对图像先进行膨胀在腐蚀，等同于erode(dilate(src,kernal))，闭运算用于填充图像内部的小空洞、填充图像的凹陷等
+            MORPH_GRADIENT：梯度图，用膨胀图减腐蚀图，等同于dilate(src,kernal)−erode(src,kernal)，可以用于获得图像中物体的轮廓
+            MORPH_TOPHAT：顶帽，又称礼帽，用原图像减去开运算后的图像，等同于src−open(src,kernal)，可以用于获得原图像中比周围亮的区域
+            MORPH_BLACKHAT：黑帽，闭运算图像减去原图像，等同于close(src,kernal)−src，可以用于获取原图像中比周围暗的区域
+            MORPH_HITMISS：击中击不中变换，用于匹配处理图像中是否存在核对应的图像，匹配时，需要确保核矩阵非0部分和为0部分都能匹配，注意该变换只能处理灰度图像。
+    :param itera:
+    :return:
+    """
+    if binarize: image = get_image_mask(image, inv=False)
+    kernel = np.ones((ksize, ksize), np.uint8)
+    # morphologyEx输入的image可以是RGB图像
+    image = cv2.morphologyEx(image, op=op, kernel=kernel, iterations=itera)
+    return image
+
+
 def get_scale_image(image, scale=0.85, offset=(0, 0), color=(0, 0, 0), interpolation=cv2.INTER_NEAREST):
     """
     同比居中缩小image，以便居中显示
@@ -2264,7 +2358,7 @@ def pointPolygonTest(point, contour, measureDist=False):
     return dist
 
 
-def draw_image_contours(image, contours: List[np.ndarray], color=(0, 255, 0), thickness=2):
+def draw_image_contours(image, contours: List[np.ndarray], color=(), thickness=2):
     """
     :param image:
     :param contours: List[np.ndarray],每个列表是一个轮廓(num_points,1,2)
@@ -2272,7 +2366,10 @@ def draw_image_contours(image, contours: List[np.ndarray], color=(0, 255, 0), th
     :return:
     """
     for i in range(0, len(contours)):
-        image[:] = cv2.drawContours(image, contours[i], contourIdx=-1, color=color, thickness=thickness)
+        c = color if color else color_table[i + 1]
+        p = np.asarray(contours[i], dtype=np.int32)
+        if len(p.shape) == 2: p = [p]
+        image[:] = cv2.drawContours(image, p, contourIdx=-1, color=c, thickness=thickness)
     return image
 
 
@@ -2299,6 +2396,19 @@ def get_mask_boundrect_cv(mask, binarize=False, shift=0):
     xmax = min(w, int(xmax + shift))
     ymax = min(h, int(ymax + shift))
     return [xmin, ymin, xmax, ymax]
+
+
+def binarize(mask, thresh=127, maxval=255, type=cv2.THRESH_BINARY | cv2.THRESH_OTSU):
+    """
+    二值化
+    :param mask:
+    :param thresh:
+    :param maxval:
+    :param type:
+    :return:
+    """
+    ret, mask = cv2.threshold(mask, thresh=thresh, maxval=maxval, type=type)
+    return mask
 
 
 def get_mask_boundrect(mask, binarize=False, shift=0):
@@ -2380,6 +2490,25 @@ def find_mask_contours(mask, mode=cv2.RETR_LIST, method=cv2.CHAIN_APPROX_NONE):
     contours, hierarchy = cv2.findContours(mask, mode=mode, method=method)
     contours = [c.reshape(-1, 2) for c in contours]
     return contours
+
+
+def find_minAreaRect(contours, order=False):
+    """
+    获得旋转矩形框，即最小外接矩形的四个角点
+    :param contours: [shape(n,2),...,]
+    :return:
+    """
+    points = []
+    for i in range(len(contours)):
+        # 得到最小外接矩形的（中心(x,y), (宽,高), 旋转角度）
+        rotatedRect = cv2.minAreaRect(contours[i])  # [center, wh, angle]==>[Point2f, Size, float]
+        pts = cv2.boxPoints(rotatedRect)  # 获取最小外接矩形的4个顶点坐标
+        pts = pts[[1, 2, 3, 0], :]
+        if order:
+            pts = corner_utils.get_order_points(pts)
+            # pts2 = corner_utils.order_points_clockwise(pts)
+        points.append(pts)
+    return points
 
 
 def find_image_contours(mask: np.ndarray, target_label: List[int] = [1, 2]) -> List[List[np.ndarray]]:
@@ -2580,7 +2709,10 @@ def frames2gif_by_imageio(frames, gif_file="test.gif", fps=2, loop=0, use_rgb=Fa
     :return:
     """
     import imageio
-    writer = imageio.get_writer(uri=gif_file, mode='I', fps=fps, loop=loop)
+    "(in ms) instead, e.g. `fps=50` == `duration=20` (1000 * 1/50)."
+    duration = 1000 * 1 / fps
+    # writer = imageio.get_writer(uri=gif_file, mode='I', fps=fps, loop=loop)
+    writer = imageio.get_writer(uri=gif_file, mode='I', duration=duration, loop=loop)
     for image in frames:
         if use_rgb: image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         writer.append_data(image)
@@ -2687,7 +2819,7 @@ def get_video_info(video_cap: cv2.VideoCapture):
     height = int(video_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     num_frames = int(video_cap.get(cv2.CAP_PROP_FRAME_COUNT))
     fps = int(video_cap.get(cv2.CAP_PROP_FPS))
-    print("video:width:{},height:{},fps:{},num_frames:{}".format(width, height, fps, num_frames))
+    print("read video:width:{},height:{},fps:{},num_frames:{}".format(width, height, fps, num_frames))
     return width, height, num_frames, fps
 
 
@@ -2705,7 +2837,7 @@ def get_video_writer(video_file, width, height, fps):
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
     frameSize = (int(width), int(height))
     video_writer = cv2.VideoWriter(video_file, fourcc, fps, frameSize)
-    print("video:width:{},height:{},fps:{}".format(width, height, fps))
+    print("save video:width:{},height:{},fps:{}".format(width, height, fps))
     return video_writer
 
 

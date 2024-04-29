@@ -1,40 +1,44 @@
-<?xml version="1.0" ?>
 <annotation>
- <folder>widerface</folder>
- <filename>000010.jpg</filename>
- <source>
-  <database>wider face Database</database>
-  <annotation>PASCAL VOC2007</annotation>
-  <flikerid>-1</flikerid>
- </source>
- <size>
-  <width>354</width>
-  <height>480</height>
-  <depth>3</depth>
- </size>
- <segmented>0</segmented>
- <object>
-  <name>horse</name>
-  <pose>Unspecified</pose>
-  <truncated>1</truncated>
-  <difficult>0</difficult>
-  <bndbox>
-   <xmin>87.0</xmin>
-   <ymin>97.0</ymin>
-   <xmax>258.0</xmax>
-   <ymax>427.0</ymax>
-  </bndbox>
- </object>
- <object>
-  <name>person</name>
-  <pose>Unspecified</pose>
-  <truncated>1</truncated>
-  <difficult>0</difficult>
-  <bndbox>
-   <xmin>133.0</xmin>
-   <ymin>72.0</ymin>
-   <xmax>245.0</xmax>
-   <ymax>284.0</ymax>
-  </bndbox>
- </object>
+	<folder>VOC2007</folder>
+	<filename>000010.jpg</filename>
+	<source>
+		<database>The VOC2007 Database</database>
+		<annotation>PASCAL VOC2007</annotation>
+		<image>flickr</image>
+		<flickrid>227250080</flickrid>
+	</source>
+	<owner>
+		<flickrid>genewolf</flickrid>
+		<name>whiskey kitten</name>
+	</owner>
+	<size>
+		<width>354</width>
+		<height>480</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>horse</name>
+		<pose>Rear</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>87</xmin>
+			<ymin>97</ymin>
+			<xmax>258</xmax>
+			<ymax>427</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>person</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>133</xmin>
+			<ymin>72</ymin>
+			<xmax>245</xmax>
+			<ymax>284</ymax>
+		</bndbox>
+	</object>
 </annotation>

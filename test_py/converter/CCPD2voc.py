@@ -10,7 +10,7 @@ import os
 import cv2
 import numpy as np
 from tqdm import tqdm
-from pybaseutils.maker import maker_voc
+from pybaseutils.converter import build_voc
 from pybaseutils import file_utils, image_utils, yaml_utils
 
 
@@ -79,7 +79,7 @@ def save_plate_licenses(image, bboxes, plates, out_dir, name=""):
     crops = image_utils.get_bboxes_crop(image, bboxes)
     for i in range(len(crops)):
         label = plates[i]
-        # image_id = file_utils.get_time(format="p")
+        # image_ids = file_utils.get_time(format="p")
         file = os.path.join(out_dir, "{}_{}_{:0=3d}.jpg".format(label, name, i))
         file_utils.create_file_path(file)
         cv2.imwrite(file, crops[i])
@@ -126,9 +126,9 @@ def converter_CCPD2voc(image_dir, out_voc, vis=True):
         image_shape = image.shape
         xml_path = file_utils.create_dir(out_xml_dir, None, "{}.xml".format(image_id))
         dst_file = file_utils.create_dir(out_image_dir, None, "{}.{}".format(image_id, img_postfix))
-        objects = maker_voc.create_objects(bboxes, labels)
+        objects = build_voc.create_objects(bboxes, labels)
         # XML不支持&的文件明，需要将&替换为#
-        maker_voc.write_voc_xml_objects(image_name.replace("&", "#"), image_shape, objects, xml_path)
+        build_voc.write_voc_xml_objects(image_name.replace("&", "#"), image_shape, objects, xml_path)
         file_utils.copy_file(image_file, dst_file)
         cv2.imwrite(dst_file, image)
         if vis:

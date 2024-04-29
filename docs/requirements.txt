@@ -1,0 +1,27 @@
+# python3.8
+numpy==1.21.6
+matplotlib==3.1.0
+Pillow==6.0.0
+easydict==1.9
+onnx==1.14.0
+onnx-simplifier==0.4.33
+onnxruntime==1.15.1
+onnxruntime-gpu==1.15.1
+onnxsim==0.4.33
+opencv-contrib-python==4.8.1.78
+opencv-python==4.8.0.76
+pandas==1.1.5
+PyYAML==5.3.1
+Pillow==9.5.0
+scikit-image==0.21.0
+scikit-learn==1.2.2
+scipy==1.10.1
+seaborn==0.12.2
+tensorboard==2.13.0
+tensorboardX==2.6.1
+torch==1.13.1+cu117
+torchvision==0.14.1+cu117
+tqdm==4.55.1
+xmltodict==0.12.0
+basetrainer==0.7.9
+pybaseutils==0.9.7

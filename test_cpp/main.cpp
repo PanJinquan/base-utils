@@ -4,9 +4,10 @@
 #include "image_utils.h"
 #include "file_utils.h"
 #include "math_utils.h"
+#include "math_utils.h"
+#include "transform.h"
 
 using namespace std;
-
 
 void test_opencv() {
     string path = "../../data/test_image/test1.jpg";
@@ -47,6 +48,42 @@ void test_mosaic() {
     DEBUG_IMSHOW("image", image);
 }
 
+
+void test_transform() {
+    // 测试图片
+    string image_file = "../../data/mask/mask5.jpg";
+    cv::Mat src = cv::imread(image_file);
+
+    cv::Mat mask = get_image_mask(src); // 图像二值化
+    // 获得mask的轮廓
+    vector<vector<cv::Point> > contours;
+    find_contours(mask, contours, 1);
+    // 求轮廓最小外接矩形,返回4个坐标点
+    cv::Point2f points[4];
+    find_minAreaRect(contours.at(0), points);
+    int size = sizeof(points) / sizeof(points[0]);
+    vector<cv::Point2f> src_pts = points2vector(points, size);
+    // 对4个点按顺时针方向进行排序:[top-left, top-right, bottom-right, bottom-left]
+    get_order_points(src_pts, src_pts);
+    vector<cv::Point2f> dst_pts;
+    // 对图像进行仿生变换
+    cv::Mat dst = image_alignment(src, src_pts, dst_pts, cv::Size(-1, -1), cv::Size2f(1.2, 1.2));
+
+    // 显示
+    vector<vector<int>> skeleton = {{0, 1},
+                                    {1, 2},
+                                    {2, 3},
+                                    {3, 0}};
+    vector<string> texts = {"0", "1", "2", "3"};
+    draw_lines(src, src_pts, skeleton, cv::Scalar(0, 0, 255), 2, false);
+    draw_points_texts(src, src_pts, texts, cv::Scalar(0, 0, 255));
+    draw_lines(dst, dst_pts, skeleton, cv::Scalar(0, 255, 0), 2, false);
+    draw_points_texts(dst, dst_pts, texts, cv::Scalar(0, 255, 0));
+    LOGD("src size=(%d,%d)", src.cols, src.rows);
+    LOGD("dst size=(%d,%d)", dst.cols, dst.rows);
+    image_show("src", src, 10, cv::WINDOW_AUTOSIZE);
+    image_show("dst", dst, 0, cv::WINDOW_AUTOSIZE);
+}
 
 void test_rotate_points() {
     string path = "../../data/test_image/test1.jpg";
@@ -93,6 +130,18 @@ void test_image_padding() {
     draw_rects_texts(image, rects3, {}, cv::Scalar(0, 255, 0));
     DEBUG_IMSHOW("image", image, 10);
     DEBUG_IMSHOW("dst", dst, 0);
+}
+
+
+void test_image_boxes() {
+    string path = "../../data/test_image/grid2.png";
+    DEBUG_TIME(t1);
+    cv::Mat image = cv::imread(path);
+    cv::Rect rect1(50, 50, 60, 300);
+    auto rect2 = extend_rect(rect1, 1.2, 1.2, true, true);
+    draw_rect_text(image, rect1, {}, cv::Scalar(255, 0, 0));
+    draw_rect_text(image, rect2, {}, cv::Scalar(0, 255, 0));
+    DEBUG_IMSHOW("image", image, 0);
 }
 
 void test_read_dir() {
@@ -150,6 +199,8 @@ int main() {
     //test_rotate_points();
     //test_math_utils_vector();
     //test_image_padding();
-    test_mosaic();
+    //test_mosaic();
+    //test_image_boxes();
+    test_transform();
     return 0;
 }

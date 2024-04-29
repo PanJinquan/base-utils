@@ -78,6 +78,12 @@ def set_values(content, keys, values):
         # data = toolz.assoc_in(data, keys=k, value=v)
     return content
 
+def set_value(content, key, value):
+    """根据keys路径设置对应的值"""
+    # content = toolz_assoc_in(content, keys=key, value=value)
+    content = toolz.assoc_in(content, keys=key, value=value)
+    return content
+
 
 def toolz_assoc_in(content, keys, value):
     """toolz_assoc_in用来代替toolz.assoc_in"""

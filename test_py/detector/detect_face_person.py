@@ -72,21 +72,21 @@ class ParseDataset(object):
         nums_sample = len(item_list)
         if max_num: nums_sample = min(max_num, nums_sample)
         for i in tqdm(range(nums_sample)):
-            image_file, label = item_list[i]
-            image_path = os.path.join(image_dir, image_file)
-            if not os.path.exists(image_path):
-                print("no path:{}".format(image_path))
+            image_name, label = item_list[i]
+            image_file = os.path.join(image_dir, image_name)
+            if not os.path.exists(image_file):
+                print("no path:{}".format(image_file))
                 continue
-            image = image_utils.read_image(image_path)
+            image = image_utils.read_image(image_file)
             if image is None:
-                print("empty file:{}".format(image_path))
+                print("empty file:{}".format(image_file))
                 continue
             h, w = image.shape[:2]
             rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             bbox_score, labels = self.detector.detect(rgb, vis=False)
             if len(bbox_score) == 0: continue
             dets = np.hstack((bbox_score, labels.reshape(-1, 1)))
-            image_id = "{}_{:0=6d}".format(flag, i) if flag else os.path.basename(image_file).split(".")[0]
+            image_id = "{}_{:0=6d}".format(flag, i) if flag else os.path.basename(image_name).split(".")[0]
             self.save_crops(image, dets, image_id, scale=scale, square=square, padding=padding, out_dir=out_dir,
                             vis=vis)
 
@@ -118,7 +118,7 @@ class ParseDataset(object):
         conf = dets[:, 4:5]
         labels = dets[:, 5]
         if square:
-            boxes = image_utils.get_square_bboxes(boxes, use_max=True, baseline=-1)
+            boxes = image_utils.get_square_boxes(boxes, use_max=True, baseline=-1)
         if scale:
             # boxes = image_utils.extend_xyxy(boxes, scale=scale)
             # boxes = self.faceboxes2bodyup(boxes, scale=scale)
@@ -133,7 +133,7 @@ class ParseDataset(object):
         for i, img in enumerate(crops):
             name = self.names[int(labels[i])] if self.names else labels[i]
             if out_dir:
-                # img_file = file_utils.create_dir(out_dir, name, "{}_{:0=3d}.jpg".format(image_id, i))
+                # img_file = file_utils.create_dir(out_dir, name, "{}_{:0=3d}.jpg".format(image_ids, i))
                 img_file = file_utils.create_dir(out_dir, None, "{}_{:0=3d}.jpg".format(image_id, i))
                 cv2.imwrite(img_file, img)
             if vis: image_utils.cv_show_image("crop", img, use_rgb=False, delay=0)
@@ -152,7 +152,6 @@ def demo_for_image_dir(image_dir="", out_dir=""):
                                    padding=padding, flag=flag, shuffle=False, vis=False)
 
 
-
 def demo_for_image_root():
     root = "/home/dm/nasdata/dataset/tmp/smoking-calling/train"
     out_root = "/home/dm/nasdata/dataset/tmp/smoking/smoking-person/dataset-v4/train"
@@ -164,5 +163,6 @@ def demo_for_image_root():
 
 
 if __name__ == '__main__':
-    demo_for_image_root()
-    # demo_for_image_dir()
+    """检测face person并裁剪"""
+    # demo_for_image_root()
+    demo_for_image_dir()

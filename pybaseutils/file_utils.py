@@ -8,6 +8,7 @@
 """
 import os
 import time
+import re
 import shutil
 import numpy as np
 import json
@@ -78,6 +79,17 @@ def combine_flags(flags: list, use_time=True, info=True):
     return out_flags
 
 
+def write_file(file, data):
+    """写二进制数据"""
+    with open(file, 'wb') as f: f.write(data)
+
+
+def read_file(file):
+    """读取二进制数据"""
+    with open(file, 'rb') as f: key = f.read()
+    return key
+
+
 class WriterTXT(object):
     """ write data in txt files"""
 
@@ -86,18 +98,15 @@ class WriterTXT(object):
         if filename:
             self.f = open(filename, mode=mode)
 
-    def write_line_str(self, line_str, endline="\n"):
+    def write_line(self, line, end='\n'):
         if self.f:
-            line_str = line_str + endline
-            self.f.write(line_str)
+            self.f.write(line + end)
             self.f.flush()
 
-    def write_line_list(self, line_list, endline="\n"):
+    def write_line_list(self, line_list, end='\n'):
         if self.f:
-            for line_list in line_list:
-                # 将list转为string
-                line_str = " ".join('%s' % id for id in line_list)
-                self.write_line_str(line_str, endline=endline)
+            for line in line_list:
+                self.write_line(line, end=end)
             self.f.flush()
 
     def close(self):
@@ -175,7 +184,7 @@ def write_list_data(filename, list_data, mode='w'):
         f.flush()
 
 
-def read_data(filename, split=" ", convertNum=True):
+def read_data(filename, split=",", convertNum=True):
     """
     读取txt数据函数
     :param filename:文件名
@@ -190,6 +199,7 @@ def read_data(filename, split=" ", convertNum=True):
     """
     with open(filename, mode="r", encoding='utf-8') as f:
         content_list = f.readlines()
+        content_list = [line.strip().strip('\ufeff').strip('\xef\xbb\xbf') for line in content_list]
         if split is None:
             content_list = [content.rstrip() for content in content_list]
             return content_list
@@ -211,7 +221,7 @@ def read_data(filename, split=" ", convertNum=True):
 
 def read_line_image_label(line_image_label):
     """
-    line_image_label:[image_id,boxes_nums,x1, y1, w, h, label_id,x1, y1, w, h, label_id,...]
+    line_image_label:[image_ids,boxes_nums,x1, y1, w, h, label_id,x1, y1, w, h, label_id,...]
     :param line_image_label:
     :return:
     """
@@ -245,6 +255,32 @@ def read_lines_image_labels(filename):
             image_id, box, label = read_line_image_label(line)
             boxes_label_lists.append([image_id, box, label])
     return boxes_label_lists
+
+
+def split_letters_and_numbers(string, join=True):
+    """
+    切分字母和数字
+    :param string:
+    :param join:
+    :return:
+    """
+    letters = []
+    numbers = []
+    for char in string:
+        if char.isalpha():  # 判断字符是否是字母
+            letters.append(char)
+        elif char.isdigit():  # 判断字符是否是数字
+            numbers.append(char)
+    if join:
+        letters = "".join(letters)
+        numbers = "".join(numbers)
+    return letters, numbers
+
+
+def is_number(value):
+    if re.match(r'^[-+]?[0-9]+(\.[0-9]+)?$', value):
+        return True
+    return False
 
 
 def is_int(str):
@@ -459,13 +495,21 @@ def copy_dir_delete(src, dst):
     # time.sleep(3 / 1000.)
 
 
-def copy_dir(src, dst, sub=False):
+def copy_dir(src, dst, sub=False, exclude=[]):
     """ copy src-directory to dst-directory, will cover the same files"""
     if not os.path.exists(src):
         print("\nno src path:{}".format(src))
         return
     if sub: dst = os.path.join(dst, os.path.basename(src))
     for root, dirs, files in os.walk(src, topdown=False):
+        isExclude = False
+        if exclude:
+            for p2 in exclude:
+                p2 = p2[2:] if p2.startswith("./") else p2
+                p1 = root[len(src) + 1:]
+                isExclude = p1.startswith(p2)
+                if isExclude: break
+        if isExclude: continue
         dest_path = os.path.join(dst, os.path.relpath(root, src))
         if not os.path.exists(dest_path):
             os.makedirs(dest_path)
@@ -554,6 +598,7 @@ def copy_file_list(file_list, dst_dir):
 def move_file_list(file_list, dst_dir):
     [move_file_to_dir(file, dst_dir) for file in file_list]
 
+
 def merge_dir(src, dst, sub, merge_same):
     src_dir = os.path.join(src, sub)
     dst_dir = os.path.join(dst, sub)
@@ -581,6 +626,7 @@ def create_dir(parent_dir, dir1=None, filename=None):
     out_path = parent_dir
     if dir1:
         out_path = os.path.join(parent_dir, dir1)
+    if not out_path: return out_path
     if not os.path.exists(out_path):
         os.makedirs(out_path)
     if filename:
@@ -632,6 +678,43 @@ def get_sub_list(file_list, dirname: str):
     return sub_list
 
 
+def get_train_test_files(file_dir, ratio=0.2, postfix=IMG_POSTFIX, subname="", shuffle=False, sub=False, save=True):
+    """
+    划分训练集和测试集
+    :param file_dir:
+    :param ratio: 若小于0，则表示test/train的比例；若大于0，则表示test的样本数，剩下的为train数目
+    :param postfix:
+    :param subname:
+    :param shuffle:
+    :param sub:
+    :return:
+    """
+    file_list = get_files_lists(file_dir, postfix=postfix, subname=subname,
+                                shuffle=shuffle, sub=sub)
+    if shuffle:
+        random.seed(100)
+        random.shuffle(file_list)
+    nums = len(file_list)
+    test_nums = ratio if ratio > 1 else int(len(file_list) * ratio)
+    test, train = file_list[0:test_nums], file_list[test_nums:]
+    train.sort()
+    test.sort()
+    if os.path.isdir(file_dir):
+        out = file_dir
+    elif os.path.isfile(file_dir):
+        out = os.path.dirname(file_dir)
+    else:
+        out = file_dir
+    if save:
+        write_list_data(os.path.join(out, f"total-{nums}.txt"), file_list)
+        write_list_data(os.path.join(out, f"train-{len(train)}.txt"), train)
+        write_list_data(os.path.join(out, f"test-{len(test)}.txt"), test)
+    print("total files: {}".format(nums))
+    print("train files: {}".format(len(train)))
+    print("test  files: {}".format(len(test)))
+    return train, test
+
+
 def get_all_files(file_dir):
     """获取file_dir目录下，所有文本路径，包括子目录文件"""
     file_list = []
@@ -642,38 +725,42 @@ def get_all_files(file_dir):
     return file_list
 
 
-def get_files_lists(file_dir, postfix=IMG_POSTFIX, subname="", shuffle=False):
+def get_files_lists(file_dir, postfix=IMG_POSTFIX, subname="", shuffle=False, sub=False):
     """
     读取文件和列表: list,*.txt ,image path, directory
     :param file_dir: list,*.txt ,image path, directory
     :param subname: "JPEGImages"
+    :param sub: 是否去除根路径
     :return:
     """
     if isinstance(file_dir, list):
-        image_list = file_dir
+        file_list = file_dir
     elif file_dir.endswith(".txt"):
         data_root = os.path.dirname(file_dir)
-        image_list = read_data(file_dir, split=None)
-        if subname: image_list = [os.path.join(data_root, subname, n) for n in image_list]
+        file_list = read_data(file_dir, split=None)
+        if subname: file_list = [os.path.join(data_root, subname, n) for n in file_list]
     elif os.path.isdir(file_dir):
-        image_list = get_files_list(file_dir, prefix="", postfix=postfix)
+        file_list = get_files_list(file_dir, prefix="", postfix=postfix)
     elif os.path.isfile(file_dir):
-        image_list = [file_dir]
+        file_list = [file_dir]
     else:
-        raise Exception("Error:{}".format(file_dir))
+        file_list = [file_dir]
+        # raise Exception("Error:{}".format(file_dir))
     if shuffle:
         random.seed(100)
-        random.shuffle(image_list)
-    return image_list
+        random.shuffle(file_list)
+    if sub: file_list = get_sub_list(file_list, dirname=file_dir)
+    return file_list
 
 
-def get_files_list(file_dir, prefix="", postfix=None, basename=False):
+def get_files_list(file_dir, prefix="", postfix=None, basename=False, sub=False):
     """
     获得file_dir目录下，后缀名为postfix所有文件列表，包括子目录所有文件
     :param file_dir:
     :param prefix: 前缀
     :param postfix: 后缀
     :param basename: 返回的列表是文件名（True），还是文件的完整路径(False)
+    :param sub: 是否去除根路径
     :return:
     """
     file_list = []
@@ -691,6 +778,7 @@ def get_files_list(file_dir, prefix="", postfix=None, basename=False):
                 file_list.append(file)
     file_list.sort()
     file_list = get_basename(file_list) if basename else file_list
+    if sub: file_list = get_sub_list(file_list, dirname=file_dir)
     return file_list
 
 
@@ -834,6 +922,36 @@ def print_dict(dict_data, save_path):
         with open(save_path, "w") as f:
             for info in list_config:
                 f.writelines(info + "\n")
+
+
+def get_pair_files(data_root, out_root=None, image_sub="", label_sub="",
+                   postfix=IMG_POSTFIX, label_postfix="txt", shuffle=False):
+    """
+    获得同目录下一对文件
+    :param data_root: 根目录
+    :param out_root:
+    :param image_sub:
+    :param label_sub:
+    :param label_postfix: label文件后缀，如txt,png,json等
+    :return:
+    """
+    image_dir = os.path.join(data_root, image_sub)
+    label_dir = os.path.join(data_root, label_sub)
+    if out_root: create_dir(out_root)
+    file_list = get_files_lists(file_dir=data_root, postfix=postfix, subname="", shuffle=shuffle, sub=False)
+    content_list = []
+    for i, image_name in tqdm(enumerate(file_list)):
+        postfix = image_name.split(".")[-1]
+        lable_name = image_name.replace(f".{postfix}", f".{label_postfix}")
+        image_file = os.path.join(image_dir, image_name)
+        lable_file = os.path.join(label_dir, lable_name)
+        if os.path.exists(image_file) and os.path.exists(lable_file):
+            image_file, lable_file = get_sub_list([image_file, lable_file], dirname=data_root)
+            content_list.append([image_file, lable_file])
+    if out_root:
+        filename = os.path.join(out_root, "file_list.txt")
+        write_data(filename, content_list, split=",", mode='w')
+    return content_list
 
 
 def read_pair_data(filename, split=True):
@@ -1071,6 +1189,75 @@ def copy_move_dir_dir(src, dst, postfix=None, sub_names=None, per_nums=None, shu
                                max_nums=per_nums, shuffle=shuffle, move=move)
     out_list = get_files_list(dst, prefix="", postfix=postfix, basename=False)
     return out_list
+
+
+def get_voc_file_list(voc_root,
+                      image_dir="",
+                      annos_dir="",
+                      prefix="",
+                      postfix=IMG_POSTFIX,
+                      only_id=False,
+                      check=True,
+                      shuffle=False,
+                      max_num=None):
+    """
+    获得VOC数据集的文件列表，并剔除无效的文件
+    :param voc_root:
+    :param prefix:
+    :param postfix:
+    :param only_id:
+    :param check: 检测xml和图片是否存在
+    :param shuffle:
+    :param max_num:
+    :return:
+    """
+    image_dir = image_dir if image_dir else os.path.join(voc_root, "JPEGImages")
+    annos_dir = annos_dir if annos_dir else os.path.join(voc_root, "Annotations")
+    filename = os.path.join(os.path.dirname(image_dir), "file_list.txt")
+    file_list = get_files_list(image_dir, prefix=prefix, postfix=postfix, basename=False)
+    file_list = get_sub_list(file_list, dirname=image_dir)
+    if check:
+        xmls_list = get_files_list(annos_dir, postfix=["*.xml"], basename=True)
+        print("xml file:{},image file:{}".format(len(xmls_list), len(file_list)))
+        xmls_ids = [str(f).split(".")[0] for f in xmls_list]
+        file_list = [f for f in file_list if str(f).split(".")[0] in xmls_ids]
+    if only_id:
+        file_list = [str(f).split(".")[0] for f in file_list]
+    if shuffle:
+        random.seed(100)
+        random.shuffle(file_list)
+    if max_num:
+        max_num = min(max_num, len(file_list))
+        file_list = file_list[0:max_num]
+    write_list_data(filename, file_list)
+    print("num files:{},out_path:{}".format(len(file_list), filename))
+
+
+def copy_move_voc_dataset(data_file, data_root=None, out_root=None, file_map={}, move=False):
+    """
+    :param data_file: voc file.txt
+    :param data_root: voc dataset root path
+    :param out_root:  new output root path
+    :param file_map: {"Annotations": "xml", "json": "json", "JPEGImages": None}
+    :param move: move or copy
+    :return:
+    """
+    if not data_root: data_root = os.path.dirname(data_file)
+    files = read_data(data_file, split=None)
+    for name in tqdm(files):
+        idx, pos = name.split(".")
+        for sub, p in file_map.items():
+            n = name.replace(f".{pos}", f".{p}") if p else name
+            path = os.path.join(data_root, sub, n)
+            if out_root and os.path.exists(path):
+                dest = os.path.join(out_root, sub, n)
+                if move:
+                    move_file(path, dest)
+                else:
+                    copy_file(path, dest)
+            else:
+                print(f"no file:{path}")
+    return files
 
 
 if __name__ == '__main__':

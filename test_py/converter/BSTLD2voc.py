@@ -11,7 +11,7 @@ import cv2
 import scipy.io as scio
 import numpy as np
 from tqdm import tqdm
-from pybaseutils.maker import maker_voc
+from pybaseutils.converter import build_voc
 from pybaseutils import file_utils, image_utils, yaml_utils
 
 
@@ -77,8 +77,8 @@ def converter_BSTLD2voc(image_dir, annot_file, out_voc, vis=True):
             image_name = "{}.{}".format(image_id, img_postfix)
             xml_path = file_utils.create_dir(out_xml_dir, None, "{}.xml".format(image_id))
             dst_file = file_utils.create_dir(out_image_dir, None, image_name)
-        objects = maker_voc.create_objects(bboxes, labels)
-        maker_voc.write_voc_xml_objects(image_name, image_shape, objects, xml_path)
+        objects = build_voc.create_objects(bboxes, labels)
+        build_voc.write_voc_xml_objects(image_name, image_shape, objects, xml_path)
         file_utils.copy_file(image_file, dst_file)
         # cv2.imwrite(dst_file, image)
         if vis:

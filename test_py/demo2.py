@@ -3,15 +3,37 @@
     @Author : PKing
     @E-mail : 390737991@qq.com
     @Date   : 2022-12-31 11:37:30
-    @Brief  :
+    @Brief  : https://blog.csdn.net/qdPython/article/details/121381363
 """
 import cv2
-# 如算法返回angle=5,则需要对原图进行反向旋转对应的角度，可如下调用：
-# image_rotation(image, angle=-5)
-def image_rotation(image, angle):
-    """实现图像旋转"""
-    h, w = image.shape[:2]
-    center = (w / 2., h / 2.)
-    mat = cv2.getRotationMatrix2D(center, angle, 1.0)
-    image = cv2.warpAffine(image, mat, dsize=(w, h))
-    return image
+import random
+import types
+import numpy as np
+from pybaseutils import image_utils, file_utils
+import cv2
+
+
+class RedisQueue(object):
+    """Redis队列，多个POD请求时，通过Redis实现同步数据"""
+
+    def __init__(self, tag, tid, maxsize):
+        self.tag = tag
+        self.tid = tid
+        self.maxsize = maxsize
+        self.key = f"{self.tag}-{self.tid}"
+        # self._queue = [["A"], ["B"]]
+
+    @property
+    def queue(self):
+        pass
+
+    @queue.setter
+    def queue(self, value):
+        self._queue = value
+        print(self._queue)
+
+
+data = RedisQueue(tag="", tid="", maxsize="")
+print(data.queue)
+data.queue = "OK2"
+print(data.queue)

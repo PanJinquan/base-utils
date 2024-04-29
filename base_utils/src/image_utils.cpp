@@ -66,6 +66,55 @@ int VideoCaptureDemo(string video_file) {
 }
 
 
+cv::Mat get_image_mask(cv::Mat image, int inv) {
+    cv::Mat mask;
+    if (image.channels() == 3) {
+        cv::cvtColor(image, image, cv::COLOR_BGR2GRAY);
+    }
+    if (inv) {
+        cv::threshold(image, mask, 0, 255, cv::THRESH_BINARY_INV | cv::THRESH_OTSU);
+    } else {
+        cv::threshold(image, mask, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
+    }
+    return mask;
+}
+
+void find_contours(cv::Mat &mask, vector<vector<cv::Point> > &contours, int max_nums) {
+    vector<cv::Vec4i> hierarchy;
+    cv::findContours(mask, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+    std::sort(contours.begin(), contours.end(),
+              [](vector<cv::Point> a, vector<cv::Point> b) { return a.size() > b.size(); });
+    if (max_nums > 0 && contours.size() > max_nums) {
+        contours.erase(contours.begin() + max_nums, contours.begin() + contours.size());
+    }
+}
+
+
+void draw_contours(cv::Mat &image, vector<vector<cv::Point>> &contours,
+                   cv::Scalar color, float alpha, int thickness, int contourIdx) {
+    cv::drawContours(image, contours, contourIdx, color, thickness, 8);
+    cv::Mat bg = image.clone();
+    cv::fillPoly(bg, contours, color);
+    cv::addWeighted(image, 1 - alpha, bg, alpha, 0, image);
+}
+
+
+void draw_image_mask_color(cv::Mat &image, cv::Mat mask, cv::Scalar color, float alpha) {
+    for (int y = 0; y < image.rows; y++) {
+        uchar *ptr = image.ptr(y);
+        uchar *mask_ptr = mask.ptr<uchar>(y);
+        for (int x = 0; x < image.cols; x++) {
+            if (mask_ptr[x] >= 127) {
+                ptr[0] = cv::saturate_cast<uchar>(ptr[0] * (1 - alpha) + color[0] * alpha);
+                ptr[1] = cv::saturate_cast<uchar>(ptr[1] * (1 - alpha) + color[1] * alpha);
+                ptr[2] = cv::saturate_cast<uchar>(ptr[2] * (1 - alpha) + color[2] * alpha);
+            }
+            ptr += 3;
+        }
+    }
+}
+
+
 cv::Mat image_resize(cv::Mat &image, int resize_width, int resize_height) {
     cv::Mat dst;
     auto width = image.cols;
@@ -125,14 +174,24 @@ vector<cv::Point2f> rotate_points(vector<cv::Point2f> &points, cv::Point2f cente
 }
 
 
-cv::Rect extend_rect(cv::Rect rect, float sx, float sy) {
+cv::Rect extend_rect(cv::Rect rect, float sx, float sy, bool fixed, bool use_max) {
     float cx = (rect.x + rect.x + rect.width) / 2.0f;
     float cy = (rect.y + rect.y + rect.height) / 2.0f;
-    float ew = rect.width * sx;
-    float eh = rect.height * sy;
-    float ex = cx - 0.5 * ew;
-    float ey = cy - 0.5 * eh;
-    cv::Rect r(ex, ey, ew, eh);
+    cv::Rect r(0, 0, 0, 0);
+    float ex, ey, ew, eh;
+    if (fixed) {
+        float dw = rect.width * (sx - 1);
+        float dh = rect.height * (sy - 1);
+        float pd = use_max ? (dw > dh ? dw : dh) : (dw < dh ? dw : dh);
+        ew = rect.width + pd;
+        eh = rect.height + pd;
+    } else {
+        ew = rect.width * sx;
+        eh = rect.height * sy;
+    }
+    ex = cx - 0.5 * ew;
+    ey = cy - 0.5 * eh;
+    r.x = ex, r.y = ey, r.width = ew, r.height = eh;
     return r;
 }
 
@@ -197,9 +256,9 @@ cv::Mat image_center_crop(cv::Mat &image, int crop_width, int crop_height) {
 }
 
 
-void image_show(string name, cv::Mat &image, int waitKey) {
+void image_show(string name, cv::Mat &image, int delay, int flags) {
 #ifndef PLATFORM_ANDROID
-    cv::namedWindow(name, cv::WINDOW_NORMAL);
+    cv::namedWindow(name, flags);
     cv::Mat img_show = image.clone();
     if (img_show.channels() == 1)
         cvtColor(img_show, img_show, cv::COLOR_GRAY2BGR);
@@ -207,7 +266,7 @@ void image_show(string name, cv::Mat &image, int waitKey) {
     //sprintf(str, ",Size:%dx%d", image.rows, image.cols);
     //RESIZE(img_show, 400);
     cv::imshow(name, img_show);
-    cv::waitKey(waitKey);
+    cv::waitKey(delay);
 #endif
 }
 
@@ -222,11 +281,11 @@ void image_save(string name, cv::Mat &image) {
 void draw_point_text(cv::Mat &image, cv::Point2f points, string text, cv::Scalar color) {
     int radius = 4;
     int thickness = -1;//实心点
-    cv::circle(image, points, radius, color, thickness);
+    cv::circle(image, points, radius, color, thickness, cv::LINE_AA);
     if (text != "") {
         cv::putText(image,
                     text,
-                    cv::Point(points.x + 5, points.y+20),
+                    cv::Point(points.x + 5, points.y + 20),
                     cv::FONT_HERSHEY_COMPLEX,
                     0.8,
                     color);
@@ -247,7 +306,28 @@ void draw_points_texts(cv::Mat &image, vector<cv::Point2f> points, vector<string
 }
 
 
-void draw_rect_text(cv::Mat &image, cv::Rect rect, string text, cv::Scalar color, int thickness,double fontScale) {
+void draw_points_texts(cv::Mat &image, cv::Point2f points[], int num, vector<string> texts, cv::Scalar color) {
+    vector<cv::Point2f> tmp = points2vector(points, num);
+    draw_points_texts(image, tmp, texts, color);
+}
+
+
+void draw_points_texts_colors(cv::Mat &image, vector<cv::Point2f> points, vector<string> texts,
+                              vector<cv::Scalar> colors) {
+    int num = points.size();
+    if (texts.size() != num && texts.size() == 0) {
+        for (int i = 0; i < num; ++i) {
+            texts.push_back("");
+        }
+    }
+    for (int i = 0; i < num; ++i) {
+        cv::Scalar color = colors[i % colors.size()];
+        draw_point_text(image, points[i], texts[i], color);
+    }
+}
+
+
+void draw_rect_text(cv::Mat &image, cv::Rect rect, string text, cv::Scalar color, int thickness, double fontScale) {
     cv::rectangle(image, rect, color, thickness);
     if (text != "") {
         cv::putText(image,
@@ -272,20 +352,58 @@ void draw_rects_texts(cv::Mat &image,
         }
     }
     for (int i = 0; i < num; ++i) {
-        draw_rect_text(image, rects[i], texts[i], color, thickness,fontScale);
+        draw_rect_text(image, rects[i], texts[i], color, thickness, fontScale);
+    }
+}
+
+
+void draw_lines(cv::Mat &image,
+                cv::Point2f points[],
+                vector<vector<int>> skeleton,
+                cv::Scalar color,
+                int thickness,
+                bool clip) {
+    for (int i = 0; i < skeleton.size(); ++i) {
+        auto pair = skeleton[i];
+        if (~clip || (points[pair[0]].x > 0. && points[pair[0]].y > 0. &&
+                      points[pair[1]].x > 0. && points[pair[1]].y > 0.)) {
+            cv::Point2d p0 = points[pair[0]];
+            cv::Point2d p1 = points[pair[1]];
+            cv::line(image, p0, p1, color, thickness);
+        }
     }
 }
 
 void draw_lines(cv::Mat &image,
                 vector<cv::Point2f> points,
                 vector<vector<int>> skeleton,
-                cv::Scalar color) {
-    int thickness = 1;
-    for (auto &pair:skeleton) {
-        if (points[pair[0]].x > 0. && points[pair[0]].y > 0. &&
-            points[pair[1]].x > 0. && points[pair[1]].y > 0.) {
+                cv::Scalar color,
+                int thickness,
+                bool clip) {
+    for (int i = 0; i < skeleton.size(); ++i) {
+        auto pair = skeleton[i];
+        if (~clip || (points[pair[0]].x > 0. && points[pair[0]].y > 0. &&
+                      points[pair[1]].x > 0. && points[pair[1]].y > 0.)) {
             cv::Point2d p0 = points[pair[0]];
             cv::Point2d p1 = points[pair[1]];
+            cv::line(image, p0, p1, color, thickness);
+        }
+    }
+}
+
+void draw_lines(cv::Mat &image,
+                vector<cv::Point2f> points,
+                vector<vector<int>> skeleton,
+                vector<cv::Scalar> colors,
+                int thickness,
+                bool clip) {
+    for (int i = 0; i < skeleton.size(); ++i) {
+        auto pair = skeleton[i];
+        if (~clip || (points[pair[0]].x > 0. && points[pair[0]].y > 0. &&
+                      points[pair[1]].x > 0. && points[pair[1]].y > 0.)) {
+            cv::Point2d p0 = points[pair[0]];
+            cv::Point2d p1 = points[pair[1]];
+            cv::Scalar color = colors[pair[1] % colors.size()];
             cv::line(image, p0, p1, color, thickness);
         }
     }
@@ -347,6 +465,11 @@ void draw_yaw_pitch_roll_in_left_axis(cv::Mat &imgBRG, float pitch, float yaw, f
                     0.5,
                     (0, 0, 255));
     }
+}
+
+void find_minAreaRect(vector<cv::Point> contours, cv::Point2f points[]) {
+    cv::RotatedRect rr = cv::minAreaRect(contours);
+    rr.points(points);
 }
 
 
@@ -478,7 +601,7 @@ void image_boxes_resize_padding_inverse(cv::Size image_size, cv::Size input_size
 
 void image_mosaic(cv::Mat &image, cv::Rect rect, int radius) {
     //仅对矩形框区域进行像素修改。遍历矩形框区域像素，并对其进行修改
-    if (radius<=0) return;
+    if (radius <= 0) return;
     int n = image.channels();
     rect &= cv::Rect(0, 0, image.cols, image.rows);
     int xmax = rect.x + rect.width;
@@ -511,7 +634,7 @@ void image_mosaic(cv::Mat &image, vector<cv::Rect> rects, int radius) {
 
 
 void image_blur(cv::Mat &image, cv::Rect rect, int radius, bool gaussian) {
-    if (radius<=0) return;
+    if (radius <= 0) return;
     rect &= cv::Rect(0, 0, image.cols, image.rows);
     cv::Mat roi = image(rect);
     if (gaussian) {
@@ -526,6 +649,14 @@ void image_blur(cv::Mat &image, vector<cv::Rect> rects, int radius, bool gaussia
     for (int i = 0; i < rects.size(); i++) {
         image_blur(image, rects[i], radius, gaussian);
     }
+}
+
+vector<cv::Point2f> points2vector(cv::Point2f pts[], int num) {
+    vector<cv::Point2f> out;
+    for (int i = 0; i < num; ++i) {
+        out.push_back(pts[i]);
+    }
+    return out;
 }
 
 

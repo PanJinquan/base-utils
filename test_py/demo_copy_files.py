@@ -14,9 +14,16 @@ from pybaseutils import file_utils, image_utils
 
 
 def demo_copy_move_by_sub_names_v1():
-    image_dir = "/home/dm/cv/panjinquan/dataset-dmai/handwriting/word-class/word-similar/dataset-clear/train"
-    out_dir = "/home/dm/cv/panjinquan/dataset-dmai/handwriting/word-class/word-similar/dataset-clear/test"
-    file = "/home/dm/cv/panjinquan/dataset-dmai/handwriting/word-class/word-similar/dataset-clear/形近字v1.txt"
+    """
+    按照整个文件夹，复制或者拷贝文件
+    :return:
+    """
+    # image_dir = "/home/dm/cv/panjinquan/dataset-dmai/handwriting/word-class/word-similar/dataset-clear/train"
+    # out_dir = "/home/dm/cv/panjinquan/dataset-dmai/handwriting/word-class/word-similar/dataset-clear/test"
+    # file = "/home/dm/cv/panjinquan/dataset-dmai/handwriting/word-class/word-similar/dataset-clear/形近字v1.txt"
+    image_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-cls/dataset-v1/train"
+    out_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-cls/dataset-v1/test"
+    file = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-cls/dataset-v1/class_name.txt"
     # sub_names = ["玉", "王", "主", "玊", "壬", "玍", "生"]
     # sub_names += ["工", "土", "干", "士"]
     words = file_utils.read_data(file, split=",")
@@ -26,19 +33,23 @@ def demo_copy_move_by_sub_names_v1():
         sub_names += word
     sub_names = list(set(sub_names))
     sub_names = sorted(sub_names)
-    file_utils.copy_move_file_dir(image_dir, out_dir, sub_names=sub_names, max_nums=3000, shuffle=True, move=True)
-    out_file = os.path.join(os.path.dirname(file), "file.txt")
+    file_utils.copy_move_file_dir(image_dir, out_dir, sub_names=sub_names, max_nums=30*6, shuffle=True, move=True)
+    out_file = os.path.join(os.path.dirname(file), "new_class_name.txt")
     file_utils.write_list_data(out_file, sub_names)
 
 
 def demo_copy_move_by_sub_names_v2():
+    """
+    按照每个类别的个数，复制或者拷贝文件
+    :return:
+    """
     # image_dir = "/home/dm/cv/panjinquan/dataset-dmai/handwriting/word-class/trainval/train"
     # out_dir = "/home/dm/cv/panjinquan/dataset-dmai/handwriting/word-class/word-similar/dataset-clear/train"
     # file = "/home/dm/cv/panjinquan/dataset-dmai/handwriting/word-class/word-similar/dataset-clear/loss.txt"
 
-    image_dir = "/home/dm/cv/panjinquan/dataset-dmai/handwriting/word-class/trainval/similar/hardcase"
-    out_dir = "/home/dm/cv/panjinquan/dataset-dmai/handwriting/word-class/trainval/similar/hardcase-test"
-    file = "/home/dm/cv/panjinquan/dataset-dmai/handwriting/word-class/trainval/similar/形近字v2.txt"
+    image_dir = "/home/PKing/nasdata/dataset/tmp/challenge/鸟类品种识别/鸟类品种识别挑战赛训练集/training_set"
+    out_dir = "/home/PKing/nasdata/dataset/tmp/challenge/鸟类品种识别/鸟类品种识别挑战赛训练集/test"
+    file = "/home/PKing/nasdata/dataset/tmp/challenge/鸟类品种识别/鸟类品种识别挑战赛训练集/class_name.txt"
     words = file_utils.read_data(file, split=",")
     sub_names = []
     for word in words:
@@ -47,9 +58,9 @@ def demo_copy_move_by_sub_names_v2():
     sub_names = list(set(sub_names))
     sub_names = sorted(sub_names)
     # file_utils.copy_move_dir_dir(image_dir, out_dir, sub_names=sub_names, per_nums=90, shuffle=True, move=True)
-    file_utils.copy_move_dir_dir(image_dir, out_dir, sub_names=sub_names, per_nums=None, shuffle=True, move=False)
-    # out_file = os.path.join(os.path.dirname(file), "file.txt")
-    # file_utils.write_list_data(out_file, sub_names)
+    file_utils.copy_move_dir_dir(image_dir, out_dir, sub_names=sub_names, per_nums=20, shuffle=True, move=True)
+    out_file = os.path.join(os.path.dirname(file), "new_class_name.txt")
+    file_utils.write_list_data(out_file, sub_names)
 
 
 def demo_copy_move_by_sub_names_v3():
@@ -96,8 +107,8 @@ def copy_files(shuffle=False):
 if __name__ == "__main__":
     # demo_copy_move()
     # demo_copy_move_by_sub_names_v1()
-    # demo_copy_move_by_sub_names_v2()
+    demo_copy_move_by_sub_names_v2()
     # demo_copy_move_by_sub_names_v2()
     # demo_copy_move_by_sub_names_v3()
     # copy_files()
-    demo_copy_move()
+    # demo_copy_move()

@@ -60,6 +60,16 @@ def get_batch_example(data_list, batch_size):
         print("batch:{}".format(batch))
 
 
+def list_batch(data: list, batch_size: int):
+    """
+    :param data:
+    :param batch_size:
+    :return:
+    """
+    batch = zip(*(iter(data),) * batch_size)
+    return batch
+
+
 if __name__ == "__main__":
     image_list = ["{}.jpg".format(i) for i in range(10)]
     batch_size = 4
