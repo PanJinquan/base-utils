@@ -67,7 +67,7 @@ void test_transform() {
     get_order_points(src_pts, src_pts);
     vector<cv::Point2f> dst_pts;
     // 对图像进行仿生变换
-    cv::Mat dst = image_alignment(src, src_pts, dst_pts, cv::Size(-1, -1), cv::Size2f(1.2, 1.2));
+    cv::Mat dst = image_alignment(src, src_pts, dst_pts, cv::Size(200, 300), cv::Size2f(1.2, 1.2));
 
     // 显示
     vector<vector<int>> skeleton = {{0, 1},
