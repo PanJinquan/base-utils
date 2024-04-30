@@ -47,7 +47,6 @@ class VOCDataset(Dataset):
         :param shuffle:
         """
         super(VOCDataset, self).__init__()
-        self.unique = False  # 是否是单一label，如["BACKGROUND", "unique"]
         self.class_name, self.class_dict = self.parser_classes(class_name)
         parser = self.parser_paths(filename, data_root, anno_dir, image_dir)
         self.data_root, self.anno_dir, self.image_dir, self.image_ids = parser
@@ -119,35 +118,6 @@ class VOCDataset(Dataset):
             self.class_dict = {class_name: i for i, class_name in enumerate(class_set)}
         print("have nums image:{},legal image:{}".format(len(image_ids), len(dst_ids)))
         return dst_ids
-
-    def parser_classes(self, class_name):
-        """
-        class_dict = {class_name: i for i, class_name in enumerate(class_name)}
-        :param class_name:
-                    str : class file
-                    list: ["face","person"]
-                    dict: 可以自定义label的id{'BACKGROUND': 0, 'person': 1, 'person_up': 1, 'person_down': 1}
-        :return:
-        """
-        if isinstance(class_name, str):
-            class_name = Dataset.read_files(class_name)
-        elif isinstance(class_name, list) and "unique" in class_name:
-            self.unique = True
-        if isinstance(class_name, list) and len(class_name) > 0:
-            class_dict = {}
-            for i, name in enumerate(class_name):
-                name = name.split(",")
-                for n in name: class_dict[n] = i
-        elif isinstance(class_name, dict) and len(class_name) > 0:
-            class_dict = class_name
-        else:
-            class_dict = None
-        if class_dict:
-            class_name = {}
-            for n, i in class_dict.items():
-                class_name[i] = "{},{}".format(class_name[i], n) if i in class_name else n
-            class_name = list(class_name.values())
-        return class_name, class_dict
 
     def parser_paths(self, filename=None, data_root=None, anno_dir=None, image_dir=None):
         """
@@ -280,7 +250,7 @@ class VOCDataset(Dataset):
         if not isinstance(objects, list):
             objects = [objects]
         for object in objects:
-            name = str(object["name"]) if not self.unique else "unique"
+            name = "unique" if self.unique else str(object["name"])
             name = "BACKGROUND" if str(object["name"]) == 'BACKGROUND' else name
             if self.class_dict and name not in self.class_dict:
                 continue
@@ -438,7 +408,9 @@ def show_target_image(image, boxes, labels, normal=False, transpose=False, class
 if __name__ == "__main__":
     # from models.transforms import data_transforms
     filename = '/media/PKing/新加卷1/SDK/base-utils/data/coco/file_list.txt'
-    class_name = None
+    # class_name = ["car", "person"]
+    class_name = ["car,person"]
+    # class_name = {"car": 1, "person": 0}
     dataset = VOCDatasets(filename=[filename, filename],
                           data_root=None,
                           image_dir=None,

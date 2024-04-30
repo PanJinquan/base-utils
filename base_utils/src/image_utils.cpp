@@ -82,6 +82,7 @@ cv::Mat get_image_mask(cv::Mat image, int inv) {
 void find_contours(cv::Mat &mask, vector<vector<cv::Point> > &contours, int max_nums) {
     vector<cv::Vec4i> hierarchy;
     cv::findContours(mask, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+    // 计算轮廓面积使用cv::contourArea(contours[i]),这里为了简单，直接使用contours[i].size点的个数代替
     std::sort(contours.begin(), contours.end(),
               [](vector<cv::Point> a, vector<cv::Point> b) { return a.size() > b.size(); });
     if (max_nums > 0 && contours.size() > max_nums) {

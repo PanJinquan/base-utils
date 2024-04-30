@@ -10,6 +10,7 @@ import numpy as np
 import cv2
 import glob
 import random
+from pybaseutils import file_utils, json_utils
 
 VOC_NAMES = ["aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat",
              "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person",
@@ -37,6 +38,7 @@ class Dataset(object):
     def __init__(self, **kwargs):
         self.image_ids = []
         self.postfix = "jpg"
+        self.unique = False  # 是否是单一label，如["BACKGROUND", "unique"]
 
     def __getitem__(self, index):
         raise NotImplementedError
@@ -46,6 +48,36 @@ class Dataset(object):
 
     def __len__(self):
         raise NotImplementedError
+
+    def parser_classes(self, class_name):
+        """
+        class_dict = {class_name: i for i, class_name in enumerate(class_name)}
+        :param class_name:
+                    str : class file
+                    list: ["face","person"]
+                    dict: 可以自定义label的id{'BACKGROUND': 0, 'person': 1, 'person_up': 1, 'person_down': 1}
+        :return:
+        """
+        if isinstance(class_name, str):
+            class_name = Dataset.read_files(class_name)
+        elif isinstance(class_name, list) and "unique" in class_name:
+            self.unique = True
+        if isinstance(class_name, list) and len(class_name) > 0:
+            class_dict = {}
+            for i, name in enumerate(class_name):
+                name = name.split(",")
+                for n in name: class_dict[n] = i
+        elif isinstance(class_name, dict) and len(class_name) > 0:
+            class_dict = class_name
+        else:
+            class_dict = None
+        if class_dict:
+            class_dict = json_utils.dict_sort_by_value(class_dict, reverse=False)
+            class_name = {}
+            for n, i in class_dict.items():
+                class_name[i] = "{},{}".format(class_name[i], n) if i in class_name else n
+            class_name = list(class_name.values())
+        return class_name, class_dict
 
     @staticmethod
     def read_files(filename, split=None):

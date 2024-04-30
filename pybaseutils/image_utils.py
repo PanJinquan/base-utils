@@ -2469,7 +2469,7 @@ def get_mask_boundrect_low(mask, binarize=False, shift=0):
     return [xmin, ymin, xmax, ymax]
 
 
-def find_mask_contours(mask, mode=cv2.RETR_LIST, method=cv2.CHAIN_APPROX_NONE):
+def find_mask_contours(mask, max_nums=-1, mode=cv2.RETR_LIST, method=cv2.CHAIN_APPROX_NONE):
     """
     寻找一个二值Mask图像的轮廓
     cv2.findContours(mask，mode, method)
@@ -2485,23 +2485,30 @@ def find_mask_contours(mask, mode=cv2.RETR_LIST, method=cv2.CHAIN_APPROX_NONE):
         CHAIN_APPROX_NONE  :存储所有的轮廓点
         CHAIN_APPROX_SIMPLE:压缩水平，垂直和对角线段，只留下端点,例如矩形轮廓可以用4个点编码。
     :param mask: 输入mask必须是二值Mask图像，注意黑色表示背景，白色表示物体，即在黑色背景里寻找白色物体的轮廓
+    :param max_nums: 按照面积大小进行排序，返回max_nums个轮廓
     :return: contours List[np.ndarray(num_point,2)] 返回二值Mask图像的轮廓
     """
     contours, hierarchy = cv2.findContours(mask, mode=mode, method=method)
     contours = [c.reshape(-1, 2) for c in contours]
+    # contours = sorted(contours, key=lambda c: cv2.contourArea(c), reverse=True)
+    contours = sorted(contours, key=lambda c: len(c), reverse=True)
+    if max_nums > 0:
+        max_nums = min(max_nums, len(contours))
+        contours = contours[0:max_nums]
     return contours
 
 
-def find_minAreaRect(contours, order=False):
+def find_minAreaRect(contours, order=True):
     """
     获得旋转矩形框，即最小外接矩形的四个角点
     :param contours: [shape(n,2),...,]
+    :param order: 对4个点按顺时针方向进行排序:[top-left, top-right, bottom-right, bottom-left]
     :return:
     """
     points = []
     for i in range(len(contours)):
         # 得到最小外接矩形的（中心(x,y), (宽,高), 旋转角度）
-        rotatedRect = cv2.minAreaRect(contours[i])  # [center, wh, angle]==>[Point2f, Size, float]
+        rotatedRect = cv2.minAreaRect(np.array(contours[i],dtype=np.int32))  # [center, wh, angle]==>[Point2f, Size, float]
         pts = cv2.boxPoints(rotatedRect)  # 获取最小外接矩形的4个顶点坐标
         pts = pts[[1, 2, 3, 0], :]
         if order:

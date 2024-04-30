@@ -71,30 +71,6 @@ class LabelMeDataset(Dataset):
     def __len__(self):
         return len(self.image_ids)
 
-    def parser_classes(self, class_name):
-        """
-        class_dict = {class_name: i for i, class_name in enumerate(class_name)}
-        :param class_name:
-                    str : class file
-                    list: ["face","person"]
-                    dict: 可以自定义label的id{'BACKGROUND': 0, 'person': 1, 'person_up': 1, 'person_down': 1}
-        :return:
-        """
-        if isinstance(class_name, str):
-            class_name = super().read_files(class_name)
-        elif isinstance(class_name, numbers.Number):
-            class_name = [str(i) for i in range(int(class_name))]
-        elif isinstance(class_name, list) and "unique" in class_name:
-            self.unique = True
-        if isinstance(class_name, list):
-            class_dict = {str(name): str(name) for name in class_name}
-        elif isinstance(class_name, dict):
-            class_dict = class_name
-            class_name = list(class_dict.keys())
-        else:
-            class_dict = None
-        return class_name, class_dict
-
     def get_image_anno_file(self, index):
         """
         :param index:
@@ -187,13 +163,13 @@ class LabelMeDataset(Dataset):
         image = self.read_image(image_file, use_rgb=self.use_rgb)
         shape = image.shape
         boxes, labels, points, groups = self.parser_annotation(annotation, self.class_dict, shape,
-                                                               min_points=self.min_points)
+                                                               min_points=self.min_points, unique=self.unique)
         data = {"image": image, "points": points, "boxes": boxes, "labels": labels, "groups": groups,
                 "image_file": image_file, "anno_file": anno_file, "size": [shape[1], shape[0]]}
         return data
 
     @staticmethod
-    def parser_annotation(annotation: dict, class_dict={}, shape=None, min_points=-1):
+    def parser_annotation(annotation: dict, class_dict={}, shape=None, min_points=-1, unique=False):
         """
         :param annotation:  labelme标注的数据
         :param class_dict:  label映射
@@ -203,7 +179,7 @@ class LabelMeDataset(Dataset):
         """
         bboxes, labels, points, groups = [], [], [], []
         for anno in annotation:
-            label = anno["label"]
+            label = "unique" if unique else anno["label"]
             if class_dict:
                 if not label in class_dict:
                     continue
@@ -414,8 +390,15 @@ if __name__ == "__main__":
     anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v7/json"
     anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/使用钳形电流表测量低压线路电流/dataset-v1/json"
     # anno_dir = [anno_dir, anno_dir]
-    # names = None
-    names = ['A相电线','B相电线','C相电线','N相电线']
+    names = ['A相电线', 'B相电线', 'C相电线', 'N相电线']
+
+    anno_dir = "/home/PKing/nasdata/tmp/tmp/水表数字识别/水表数据集/Water-Meter-Det1/train/json"
+    anno_dir = "/media/PKing/新加卷1/SDK/base-utils/data/coco/json"
+    # names = ["car", "dog", "person", "unique"]
+    names = ["unique"]
+    # names = ["car", "dog", "person"]
+    # names = ["dog", "car,person"]
+    # names = {"car": 1, "person": 0}
     dataset = LabelMeDatasets(filename=None,
                               data_root=None,
                               anno_dir=anno_dir,

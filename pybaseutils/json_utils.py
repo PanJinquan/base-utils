@@ -20,6 +20,17 @@ class Dict2Obj(object):
         self.__dict__.update(args)
 
 
+def dict_sort_by_value(data: Dict, reverse=False):
+    """
+    按照字典的value值排序
+    :param src:
+    :param reverse: False 升序
+                    True  降序
+    """
+    dst = dict(sorted(data.items(), key=lambda x: x[1], reverse=reverse))
+    return dst
+
+
 def formatting(content):
     """格式化json数据"""
     info = json.dumps(content, indent=1, separators=(', ', ': '), ensure_ascii=False)
@@ -78,6 +89,7 @@ def set_values(content, keys, values):
         # data = toolz.assoc_in(data, keys=k, value=v)
     return content
 
+
 def set_value(content, key, value):
     """根据keys路径设置对应的值"""
     # content = toolz_assoc_in(content, keys=key, value=value)
@@ -125,7 +137,7 @@ if __name__ == "__main__":
     # toolz使用toolz工具或得所有keys的值,values1与values的值是一样的
     # values1 = get_values(content, keys=keys)
     # values1 = get_values(content, keys=[['data1', 'image', 1], ['data', 'file', 'file11']])
-    values1 = get_value(None, key=['data', 'image', 1],default={"data"})
+    values1 = get_value(None, key=['data', 'image', 1], default={"data"})
     print(values1)
     print("===" * 20)
     values = list(range(len(values)))

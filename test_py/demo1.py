@@ -9,7 +9,7 @@ import os
 import cv2
 import numpy as np
 from tqdm import tqdm
-from pybaseutils import image_utils, file_utils
+from pybaseutils import image_utils, file_utils, json_utils
 from pybaseutils.transforms import transform_utils
 from pybaseutils.converter import build_voc
 
@@ -28,5 +28,7 @@ def test_transform(image_file):
 
 
 if __name__ == '__main__':
-    image_file = "../data/mask/mask5.jpg"
-    test_transform(image_file)
+    src = {"A": 0, "B": 3, "C": 1}
+    dst = json_utils.dict_sort_by_value(src, reverse=True)
+    print(src)
+    print(dst)

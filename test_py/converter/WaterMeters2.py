@@ -10,6 +10,7 @@ import cv2
 import numpy as np
 from tqdm import tqdm
 from pybaseutils import image_utils, file_utils
+from pybaseutils.converter import build_labelme
 from pybaseutils.transforms import transform_utils
 from pybaseutils.converter import build_voc
 
@@ -25,36 +26,43 @@ def load_annotation(image_file, lable_file):
     return image, point, label, boxes
 
 
-def WaterMeters(image_dir, label_dir, out_root, use_align=False, vis=True):
-    if out_root: file_utils.create_dir(out_root)
+def WaterMeters(image_dir, label_dir, out_json, crop_root=None, use_align=False, vis=True, delay=10):
+    if crop_root: file_utils.create_dir(crop_root)
+    if out_json: file_utils.create_dir(out_json)
     file_list = file_utils.get_files_lists(image_dir, sub=True)
     for i, image_name in tqdm(enumerate(file_list)):
         postfix = image_name.split(".")[-1]
         lable_name = image_name.replace(f".{postfix}", ".txt")
+        json_name = image_name.replace(f".{postfix}", ".json")
         image_file = os.path.join(image_dir, image_name)
         lable_file = os.path.join(label_dir, lable_name)
         image, point, label, boxes = load_annotation(image_file, lable_file)
-        if use_align:
+        image_h, image_w = image.shape[:2]
+        if crop_root and use_align:
             dst_pts = transform_utils.get_target_corner_points(point)
             crop, M, Minv = transform_utils.get_image_alignment(image, src_pts=point, dst_pts=dst_pts, dsize=None,
                                                                 method="lstsq")
-            crop_file = os.path.join(out_root, "{}_{:0=5d}_alignment.jpg".format(label, i))
+            crop_file = os.path.join(crop_root, "{}_{:0=5d}_alignment.jpg".format(label, i))
             cv2.imwrite(crop_file, crop)
-        else:
+        elif crop_root:
             crop = image_utils.get_bbox_crop(image, bbox=boxes[0])
-            crop_file = os.path.join(out_root, "{}_{:0=5d}_crop.jpg".format(label, i))
+            crop_file = os.path.join(crop_root, "{}_{:0=5d}_crop.jpg".format(label, i))
             h, w = crop.shape[:2]
             if w > 3 * h: cv2.imwrite(crop_file, crop)
+        json_file = os.path.join(out_json, json_name)
+        build_labelme.maker_labelme(json_file, points=[point], labels=[label],
+                                    image_name=image_name, image_size=(image_w, image_h))
         if vis:
             image = image_utils.draw_image_bboxes_text(image, boxes, boxes_name=[label])
             image = image_utils.draw_key_point_in_image(image, [point], vis_id=True)
-            image_utils.cv_show_image("crop", crop, delay=10)
-            image_utils.cv_show_image("image", image)
+            # image_utils.cv_show_image("crop", crop, delay=10)
+            image_utils.cv_show_image("image", image, delay=delay)
     return
 
 
 if __name__ == '__main__':
-    label_dir = "/home/PKing/nasdata/dataset/tmp/水表数字识别/水表读数自动识别数据集/Water-Meter-v1/zip/val_gts"
-    image_dir = "/home/PKing/nasdata/dataset/tmp/水表数字识别/水表读数自动识别数据集/Water-Meter-v1/zip/val_imgs"
-    out_root = "/home/PKing/nasdata/dataset/tmp/水表数字识别/水表读数自动识别数据集/Water-Meter-v1/labels/val"
-    WaterMeters(image_dir, label_dir, out_root=out_root, vis=False)
+    image_dir = "/home/PKing/nasdata/tmp/tmp/水表数字识别/水表数据集/Water-Meter-Det1/val/images"
+    label_dir = "/home/PKing/nasdata/tmp/tmp/水表数字识别/水表数据集/Water-Meter-Det1/val/labels"
+    crop_root = "/home/PKing/nasdata/tmp/tmp/水表数字识别/水表数据集/Water-Meter-Det1/val/crop"
+    out_json = "/home/PKing/nasdata/tmp/tmp/水表数字识别/水表数据集/Water-Meter-Det1/val/json"
+    WaterMeters(image_dir, label_dir, out_json=out_json, crop_root=None, vis=True)

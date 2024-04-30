@@ -10,7 +10,7 @@ import numpy as np
 from pybaseutils.cvutils import corner_utils
 
 
-def get_target_corner_points(src_pts: np.ndarray, diagonal=True):
+def get_target_corner_points(src_pts: np.ndarray):
     """
     根据输入的四个角点，计算其矫正后的目标四个角点,src_pts四个点分布：
         0--(w01)---1
@@ -19,10 +19,9 @@ def get_target_corner_points(src_pts: np.ndarray, diagonal=True):
         |          |
         3--(w23)---2
     :param src_pts:
-    :param diagonal: 是否使用对角线
     :return:
     """
-    return corner_utils.get_target_points(src_pts=src_pts, diagonal=diagonal)
+    return corner_utils.get_target_points(src_pts=src_pts)
 
 
 def get_image_alignment(image, src_pts, dst_pts, dsize=None, method="lstsq"):
@@ -76,7 +75,7 @@ def image_alignment(image: np.ndarray, src_pts, dst_pts=None, dsize=(-1, -1), sc
         tsize = (xmax - xmin, ymax - ymin)
     else:
         tsize = (w, h)
-    if dsize[0] < 0 or dsize[1] < 0:
+    if dsize is None or (dsize[0] < 0 or dsize[1] < 0):
         dsize = tsize
     # 映射居中
     tsize = np.array(tsize)
@@ -181,11 +180,16 @@ def get_inverse_matrix(M):
 def test_transform(image_file):
     from pybaseutils import image_utils
     src = cv2.imread(image_file)
+    # src[:, :] = 0
     mask = image_utils.get_image_mask(src)
-    contours = image_utils.find_mask_contours(mask)
-    src_pts = image_utils.find_minAreaRect(contours, order=True)[0]
-    dst, dst_pts, M, Minv = image_alignment(src, src_pts, dsize=(400, 500), scale=(1.2, 1.2))
-    src = image_utils.draw_image_contours(src, contours)
+    contours = image_utils.find_mask_contours(mask, max_nums=1)
+    src_pts = image_utils.find_minAreaRect(contours, order=True)
+    dst = src.copy()
+    dst_pts = []
+    if len(src_pts) > 0:
+        src_pts = src_pts[0]
+        dst, dst_pts, M, Minv = image_alignment(dst, src_pts, dsize=(-1, -1), scale=(1.2, 1.2))
+    src = image_utils.draw_image_contours(src, [src_pts])
     src = image_utils.draw_landmark(src, [src_pts], color=(255, 0, 0), vis_id=True)
     dst = image_utils.draw_landmark(dst, [dst_pts], color=(0, 255, 0), vis_id=True)
     image_utils.cv_show_image("src", src, delay=10)
@@ -193,5 +197,5 @@ def test_transform(image_file):
 
 
 if __name__ == '__main__':
-    image_file = "../../data/mask/mask5.jpg"
+    image_file = "../../data/mask/mask4.jpg"
     test_transform(image_file)
