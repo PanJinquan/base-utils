@@ -221,6 +221,10 @@ void draw_image_mask_color(cv::Mat &image, cv::Mat mask, cv::Scalar color, float
 
 
 /***
+ * cv::Mat color_mask;
+ * cv::cvtColor(mask,color_mask,cv::COLOR_GRAY2BGR);
+ * draw_image_mask_color(color_mask, mask);
+ * draw_image_mask_color(imgBRG, mask);
  * 在原图绘制半透明的mask区域
  * @param image 原图
  * @param mask mask
