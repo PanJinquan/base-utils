@@ -114,6 +114,22 @@ void draw_image_mask_color(cv::Mat &image, cv::Mat mask, cv::Scalar color, float
         }
     }
 }
+void draw_image_mask_color(cv::Mat &image, cv::Mat mask, vector<cv::Scalar> colors, float alpha) {
+    for (int y = 0; y < image.rows; y++) {
+        uchar *ptr = image.ptr(y);
+        uchar *mask_ptr = mask.ptr<uchar>(y);
+        for (int x = 0; x < image.cols; x++) {
+            uchar v = mask_ptr[x];
+            if (v > 0) {
+                cv::Scalar color = colors[v % colors.size()];
+                ptr[0] = cv::saturate_cast<uchar>(ptr[0] * (1 - alpha) + color[0] * alpha);
+                ptr[1] = cv::saturate_cast<uchar>(ptr[1] * (1 - alpha) + color[1] * alpha);
+                ptr[2] = cv::saturate_cast<uchar>(ptr[2] * (1 - alpha) + color[2] * alpha);
+            }
+            ptr += 3;
+        }
+    }
+}
 
 
 cv::Mat image_resize(cv::Mat &image, int resize_width, int resize_height) {

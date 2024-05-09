@@ -25,8 +25,8 @@ def load_annotation(image_dir, anno_info):
     point = [[d['x'], d['y']] for d in data['data']]
     point = np.array(point) * (w, h)
     boxes = image_utils.polygons2boxes([point])
-    # label = "{:0=10.3f}".format(label)
-    label = str(label)
+    label = "{:0=9.3f}".format(label).replace(".", "")
+    # label = str(label)
     return image, image_name, point, label, boxes
 
 

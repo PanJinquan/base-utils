@@ -221,6 +221,16 @@ void draw_image_mask_color(cv::Mat &image, cv::Mat mask, cv::Scalar color, float
 
 
 /***
+ * 在原图绘制半透明的mask区域
+ * @param image 原图
+ * @param mask mask
+ * @param colors 绘制颜色表(根据mask的像素值映射不同颜色)
+ * @param alpha 绘制颜色的透明度
+ */
+void draw_image_mask_color(cv::Mat &image, cv::Mat mask, vector<cv::Scalar> colors = COLOR_TABLE, float alpha = 0.5);
+
+
+/***
  * 缩放图片，若resize_width或者resize_height，有一个是小于等于0，则进行等比例缩放图片
  * @param image
  * @param resize_width 默认-1

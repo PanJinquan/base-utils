@@ -100,7 +100,7 @@ def show_target_image(image, mask, boxes, labels, points=[], class_name=[], thic
     :return:
     """
     mask = np.asarray(mask, np.uint8)
-    color_image, color_mask = color_utils.decode_color_image_mask(image, mask)
+    color_image, color_mask = color_utils.draw_image_mask_color(image, mask)
     color_image = image_utils.draw_image_bboxes_labels(color_image, boxes, labels, class_name=class_name,
                                                        thickness=thickness, fontScale=fontScale, drawType="chinese")
     if len(points)>0:

@@ -62,7 +62,7 @@ class LabelMeDataset(Dataset):
         print("Dataset data_root     :{}".format(self.data_root))
         print("Dataset anno_dir      :{}".format(self.anno_dir))
         print("Dataset image_dir     :{}".format(self.image_dir))
-        print("Dataset class_name    :{}".format(class_name))
+        print("Dataset class_name    :{}".format(self.class_name))
         print("Dataset class_dict    :{}".format(self.class_dict))
         print("Dataset num images    :{}".format(len(self.image_ids)))
         # print("Dataset num_classes   :{}".format(self.num_classes))
@@ -393,12 +393,12 @@ if __name__ == "__main__":
     names = ['A相电线', 'B相电线', 'C相电线', 'N相电线']
 
     anno_dir = "/home/PKing/nasdata/tmp/tmp/水表数字识别/水表数据集/Water-Meter-Det1/train/json"
-    anno_dir = "/media/PKing/新加卷1/SDK/base-utils/data/coco/json"
-    # names = ["car", "dog", "person", "unique"]
-    names = ["unique"]
-    # names = ["car", "dog", "person"]
-    # names = ["dog", "car,person"]
-    # names = {"car": 1, "person": 0}
+    # anno_dir = "/media/PKing/新加卷1/SDK/base-utils/data/coco/json"
+    # # names = ["car", "dog", "person", "unique"]
+    names = ["BG", "unique"]
+    # # names = ["car", "dog", "person"]
+    # # names = ["dog", "car,person"]
+    # # names = {"car": 1, "person": 0}
     dataset = LabelMeDatasets(filename=None,
                               data_root=None,
                               anno_dir=anno_dir,

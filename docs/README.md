@@ -160,10 +160,10 @@ apt-get install '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev l
 - 解决方法2：使用pyqt5==5.13.2(亲测可用)
 
 ```bash
-# 
-opencv-python==4.8.0.76
-opencv-contrib-python==4.8.1.78
-pip install pyqt5==5.13.2 -i https://pypi.tuna.tsinghua.edu.cn/simple
+# opencv-python==4.8.0.76 
+# opencv-contrib-python==4.8.1.78 
+# pyqt5==5.13.2
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple opencv-python==4.8.0.76 opencv-contrib-python==4.8.1.78 pyqt5==5.13.2
 
 ```
 

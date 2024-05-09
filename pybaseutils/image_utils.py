@@ -23,7 +23,6 @@ from PIL import ImageDraw, ImageFont
 from math import cos, sin
 from pybaseutils import file_utils
 from pybaseutils.coords_utils import *
-from pybaseutils.transforms import affine_transform
 from pybaseutils.cvutils import corner_utils
 
 color_table = [(0, 0, 0), (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 255, 255), (255, 0, 255), (255, 255, 0),
@@ -1097,10 +1096,14 @@ def draw_image_bboxes_labels(image, bboxes, labels, class_name=None, color=None,
     """
     if isinstance(labels, np.ndarray): labels = labels.astype(np.int32).reshape(-1).tolist()
     for label, box in zip(labels, bboxes):
-        color_ = color if color else color_table[int(label) + 1]
         box = [int(b) for b in box]
-        if class_name: label = class_name[int(label)]
-        image = custom_bbox_line(image, box, color_, str(label), thickness=thickness,
+        name = label
+        color_ = color
+        if isinstance(name, numbers.Number) and class_name:
+            color_ = color_table[int(name) + 1]
+            name = class_name[int(name)]
+        if not color_: color_ = color_table[1]
+        image = custom_bbox_line(image, box, color_, str(name), thickness=thickness,
                                  fontScale=fontScale, drawType=drawType)
     return image
 
@@ -1629,22 +1632,6 @@ def image_rotation(image, angle, center=None, scale=1.0, borderValue=(0, 0, 0)):
     mat = cv2.getRotationMatrix2D(center, angle, scale)
     rotated = cv2.warpAffine(image, mat, dsize=(w, h), borderMode=cv2.BORDER_CONSTANT, borderValue=borderValue)
     return rotated
-
-
-def image_points_rotation(image, points, angle, center=None, scale=1.0, borderValue=(0, 0, 0)):
-    h, w = image.shape[:2]
-    if not center:
-        # center = (w // 2, h // 2)
-        center = (w / 2., h / 2.)
-    output_size = [w, h]
-    image, points, trans = affine_transform.AffineTransform.affine_transform_for_image_points(image, points,
-                                                                                              output_size,
-                                                                                              center,
-                                                                                              scale=[scale, scale],
-                                                                                              rot=angle,
-                                                                                              inv=False,
-                                                                                              color=borderValue)
-    return image, points
 
 
 def save_image(image_file, image, uint8=False, use_rgb=False):
@@ -2508,7 +2495,8 @@ def find_minAreaRect(contours, order=True):
     points = []
     for i in range(len(contours)):
         # 得到最小外接矩形的（中心(x,y), (宽,高), 旋转角度）
-        rotatedRect = cv2.minAreaRect(np.array(contours[i],dtype=np.int32))  # [center, wh, angle]==>[Point2f, Size, float]
+        rotatedRect = cv2.minAreaRect(
+            np.array(contours[i], dtype=np.int32))  # [center, wh, angle]==>[Point2f, Size, float]
         pts = cv2.boxPoints(rotatedRect)  # 获取最小外接矩形的4个顶点坐标
         pts = pts[[1, 2, 3, 0], :]
         if order:

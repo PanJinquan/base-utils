@@ -20,6 +20,7 @@ COCO_NAMES = ['background', 'person', 'bicycle', 'car', 'motorcycle', 'airplane'
               'oven', 'toaster', 'sink', 'refrigerator', 'book', 'clock', 'vase', 'scissors',
               'teddy bear', 'hair drier', 'toothbrush']
 
+
 def get_colormap(data_type="custom"):
     if data_type == 'pascal':
         num_classes = 21
@@ -98,13 +99,14 @@ def decode_color_mask(mask, data_type="custom", plot=False) -> np.ndarray:
     return omask
 
 
-def decode_color_image_mask(image, mask, data_type='custom'):
+def draw_image_mask_color(image, mask, data_type='custom'):
     """
     :param image: BGR原始图像
     :param mask: 对应的Mask
     :param data_type: 数据类型
     :return:
     """
+    if mask.max() >= 255: mask = np.array(mask / 255, dtype=np.uint8)
     color_mask = decode_color_mask(mask, data_type=data_type, plot=False)
     alpha = mask.copy()
     alpha[mask > 0] = 255
@@ -116,6 +118,9 @@ def decode_color_image_mask(image, mask, data_type='custom'):
     color_image = color_image * alpha + image * (1 - alpha)
     color_image = np.asarray(np.clip(color_image, 0, 255), dtype=np.uint8)
     return color_image, color_mask
+
+
+decode_color_image_mask = draw_image_mask_color
 
 
 def encode_segmap(mask):
