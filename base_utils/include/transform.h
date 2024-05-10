@@ -9,6 +9,7 @@
 #include <string>
 #include "math_utils.h"
 #include "transform.h"
+#include "image_utils.h"
 
 
 /***
@@ -27,6 +28,13 @@
  * @param dst 返回4个点，按顺时针方向进行排序:[top-left, top-right, bottom-right, bottom-left]
  */
 void get_order_points(vector<cv::Point2f> inp, vector<cv::Point2f> &dst);
+
+/***
+ * 获得四个角点
+ * @param contours
+ * @param dst_pts
+ */
+void get_corner_points(vector<cv::Point> contours, vector<cv::Point2f> &dst_pts);
 
 /***
  * 计算变换矩阵

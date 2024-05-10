@@ -10,7 +10,7 @@ import numpy as np
 from pybaseutils.cvutils import corner_utils
 
 
-def get_target_corner_points(src_pts: np.ndarray):
+def get_corner_points(src_pts: np.ndarray):
     """
     根据输入的四个角点，计算其矫正后的目标四个角点,src_pts四个点分布：
         0--(w01)---1
@@ -67,7 +67,7 @@ def image_alignment(image: np.ndarray, src_pts, dst_pts=None, dsize=(-1, -1), sc
     """
     h, w = image.shape[:2]
     if dst_pts is None:
-        dst_pts = get_target_corner_points(src_pts)
+        dst_pts = get_corner_points(src_pts)
         xmin = min(dst_pts[:, 0])
         ymin = min(dst_pts[:, 1])
         xmax = max(dst_pts[:, 0])

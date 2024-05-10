@@ -483,6 +483,25 @@ void draw_yaw_pitch_roll_in_left_axis(cv::Mat &imgBRG, float pitch, float yaw, f
                                       cv::Point center, int size = 50, int thickness = 2,
                                       bool vis = true);
 
+
+/***
+ * 根据contours绘制旋转矩形框
+ * @param image
+ * @param contours
+ * @param colors
+ * @param vis_id 是否绘制角点ID
+ */
+void draw_obb_image(cv::Mat &image, vector<vector<cv::Point> > contours, vector<cv::Scalar> colors = COLOR_TABLE,
+                    bool vis_id = false);
+
+/***
+ * 根据mask绘制旋转矩形框
+ * @param image
+ * @param mask
+ * @param vis_id 是否绘制角点ID
+ */
+void draw_obb_image(cv::Mat &image, cv::Mat &mask, bool vis_id = false);
+
 /***
  * 求轮廓最小外接矩形,返回4个坐标点
  * @param contours

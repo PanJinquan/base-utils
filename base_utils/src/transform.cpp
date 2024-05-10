@@ -30,6 +30,16 @@ void get_order_points(vector<cv::Point2f> inp, vector<cv::Point2f> &dst) {
     dst.push_back(inp.at(bl));
 }
 
+
+void get_corner_points(vector<cv::Point> contours, vector<cv::Point2f> &dst_pts) {
+    cv::Point2f points[4];
+    find_minAreaRect(contours, points);
+    int size = sizeof(points) / sizeof(points[0]);
+    vector<cv::Point2f> src_pts = points2vector(points, size);
+    // 对4个点按顺时针方向进行排序:[top-left, top-right, bottom-right, bottom-left]
+    get_order_points(src_pts, dst_pts);
+}
+
 void get_transform(vector<cv::Point2f> &src_pts, vector<cv::Point2f> &dst_pts, cv::Mat &M,
                    int method) {
     if (method == 0) {

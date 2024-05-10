@@ -5,6 +5,7 @@
 #include <opencv2/imgproc.hpp>
 #include "image_utils.h"
 #include "math_utils.h"
+#include "transform.h"
 
 
 bool get_video_capture(string video_file, cv::VideoCapture &cap, int width, int height, int fps) {
@@ -114,6 +115,7 @@ void draw_image_mask_color(cv::Mat &image, cv::Mat mask, cv::Scalar color, float
         }
     }
 }
+
 void draw_image_mask_color(cv::Mat &image, cv::Mat mask, vector<cv::Scalar> colors, float alpha) {
     for (int y = 0; y < image.rows; y++) {
         uchar *ptr = image.ptr(y);
@@ -482,6 +484,31 @@ void draw_yaw_pitch_roll_in_left_axis(cv::Mat &imgBRG, float pitch, float yaw, f
                     0.5,
                     (0, 0, 255));
     }
+}
+
+
+void draw_obb_image(cv::Mat &image, vector<vector<cv::Point> > contours, vector<cv::Scalar> colors, bool vis_id) {
+    for (int i = 0; i < contours.size(); ++i) {
+        vector<cv::Point2f> src_pts;
+        get_corner_points(contours.at(i), src_pts);
+        // 显示
+        vector<vector<int>> skeleton = {{0, 1},
+                                        {1, 2},
+                                        {2, 3},
+                                        {3, 0}};
+        cv::Scalar c = colors.at(i % colors.size());
+        draw_lines(image, src_pts, skeleton, c, 2, false);
+        if (vis_id) {
+            vector<string> texts = {"0", "1", "2", "3"};
+            draw_points_texts(image, src_pts, texts, c);
+        }
+    }
+}
+
+void draw_obb_image(cv::Mat &image, cv::Mat &mask, bool vis_id) {
+    vector<vector<cv::Point> > contours;
+    find_contours(mask, contours);
+    draw_obb_image(image, contours, COLOR_TABLE, vis_id);
 }
 
 void find_minAreaRect(vector<cv::Point> contours, cv::Point2f points[]) {
