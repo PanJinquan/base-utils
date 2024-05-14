@@ -12,23 +12,16 @@ from tqdm import tqdm
 from pybaseutils import image_utils, file_utils, json_utils
 from pybaseutils.transforms import transform_utils
 from pybaseutils.converter import build_voc
+from pybaseutils.dataloader import parser_labelme
 
 
-def test_transform(image_file):
-    src = cv2.imread(image_file)
-    mask = image_utils.get_image_mask(src)
-    contours = image_utils.find_mask_contours(mask)
-    src_pts = image_utils.find_minAreaRect(contours, order=True)[0]
-    dst, dst_pts, M, Minv = transform_utils.image_alignment(src, src_pts, dsize=(400, 300), scale=(1.2, 1.2))
-    src = image_utils.draw_image_contours(src, contours)
-    src = image_utils.draw_landmark(src, [src_pts], color=(255, 0, 0), vis_id=True)
-    dst = image_utils.draw_landmark(dst, [dst_pts], color=(0, 255, 0), vis_id=True)
-    image_utils.cv_show_image("src", src, delay=10)
-    image_utils.cv_show_image("dst", dst, delay=0)
+def annotations_image(image_dir):
+    file_list = file_utils.get_files_lists(image_dir)
+    for image_file in tqdm(file_list):
+        image = cv2.imread(image_file)
+        cv2.imwrite(image_file, image)
 
 
 if __name__ == '__main__':
-    src = {"A": 0, "B": 3, "C": 1}
-    dst = json_utils.dict_sort_by_value(src, reverse=True)
-    print(src)
-    print(dst)
+    image_dir = "/home/PKingdddd/nasdata/tmp/tmp/WaterMeter/水表数据集/Water-Meter-Det2/images"
+    annotations_image(image_dir)

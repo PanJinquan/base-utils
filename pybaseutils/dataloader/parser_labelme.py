@@ -113,7 +113,9 @@ class LabelMeDataset(Dataset):
             if not os.path.exists(image_file):
                 continue
             annotation, width, height = self.load_annotations(annotation_file)
-            box, label, point, group = self.parser_annotation(annotation, self.class_dict, min_points=self.min_points)
+            box, label, point, group = self.parser_annotation(annotation, self.class_dict,
+                                                              min_points=self.min_points,
+                                                              unique=self.unique)
             if len(label) == 0:
                 continue
             dst_ids.append(image_id)
@@ -314,6 +316,14 @@ class LabelMeDataset(Dataset):
             width = -1
             height = -1
         return annos, width, height
+
+    @staticmethod
+    def del_annotations_image(anno_dir):
+        file_list = file_utils.get_files_lists(anno_dir, postfix=["*.json"])
+        for anno_file in tqdm(file_list):
+            data_info = json_utils.read_json_data(anno_file)
+            data_info["imageData"] = None
+            json_utils.write_json_path(anno_file, data_info)
 
 
 def LabelMeDatasets(filename=None,

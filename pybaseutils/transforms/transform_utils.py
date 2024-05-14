@@ -10,7 +10,17 @@ import numpy as np
 from pybaseutils.cvutils import corner_utils
 
 
-def get_corner_points(src_pts: np.ndarray):
+def get_obb_points(points, order=True):
+    """
+    获得旋转矩形框，即最小外接矩形的四个角点
+    :param points: [shape(n,2),...,]
+    :param order: 对4个点按顺时针方向进行排序:[top-left, top-right, bottom-right, bottom-left]
+    :return:
+    """
+    return corner_utils.get_obb_points(pts=points, order=order)
+
+
+def get_target_points(src_pts: np.ndarray):
     """
     根据输入的四个角点，计算其矫正后的目标四个角点,src_pts四个点分布：
         0--(w01)---1
@@ -22,6 +32,10 @@ def get_corner_points(src_pts: np.ndarray):
     :return:
     """
     return corner_utils.get_target_points(src_pts=src_pts)
+
+
+def get_order_points(src_pts):
+    return corner_utils.get_order_points(src_pts=src_pts)
 
 
 def get_image_alignment(image, src_pts, dst_pts, dsize=None, method="lstsq"):
@@ -67,7 +81,7 @@ def image_alignment(image: np.ndarray, src_pts, dst_pts=None, dsize=(-1, -1), sc
     """
     h, w = image.shape[:2]
     if dst_pts is None:
-        dst_pts = get_corner_points(src_pts)
+        dst_pts = get_target_points(src_pts)
         xmin = min(dst_pts[:, 0])
         ymin = min(dst_pts[:, 1])
         xmax = max(dst_pts[:, 0])
@@ -179,21 +193,22 @@ def get_inverse_matrix(M):
 
 def test_transform(image_file):
     from pybaseutils import image_utils
-    src = cv2.imread(image_file)
-    # src[:, :] = 0
-    mask = image_utils.get_image_mask(src)
-    contours = image_utils.find_mask_contours(mask, max_nums=1)
-    src_pts = image_utils.find_minAreaRect(contours, order=True)
-    dst = src.copy()
-    dst_pts = []
-    if len(src_pts) > 0:
-        src_pts = src_pts[0]
-        dst, dst_pts, M, Minv = image_alignment(dst, src_pts, dsize=(-1, -1), scale=(1.2, 1.2))
-    src = image_utils.draw_image_contours(src, [src_pts])
-    src = image_utils.draw_landmark(src, [src_pts], color=(255, 0, 0), vis_id=True)
-    dst = image_utils.draw_landmark(dst, [dst_pts], color=(0, 255, 0), vis_id=True)
-    image_utils.cv_show_image("src", src, delay=10)
-    image_utils.cv_show_image("dst", dst, delay=0)
+    image = cv2.imread(image_file)
+    for i in range(360 * 2):
+        src = image_utils.image_rotation(image.copy(), angle=i)
+        mask = image_utils.get_image_mask(src)
+        contours = image_utils.find_mask_contours(mask, max_nums=1)
+        src_pts = image_utils.find_minAreaRect(contours, order=True)
+        dst = src.copy()
+        dst_pts = []
+        if len(src_pts) > 0:
+            src_pts = src_pts[0]
+            dst, dst_pts, M, Minv = image_alignment(dst, src_pts, dsize=(-1, -1), scale=(1.2, 1.2))
+        src = image_utils.draw_image_contours(src, [src_pts])
+        src = image_utils.draw_landmark(src, [src_pts], color=(255, 0, 0), vis_id=True)
+        dst = image_utils.draw_landmark(dst, [dst_pts], color=(0, 255, 0), vis_id=True)
+        image_utils.cv_show_image("src", src, delay=10)
+        image_utils.cv_show_image("dst", dst, delay=0)
 
 
 if __name__ == '__main__':

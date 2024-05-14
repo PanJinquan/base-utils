@@ -144,14 +144,14 @@ def read_json_data(json_path):
     return json_data
 
 
-def write_json_path(out_json_path, json_data):
+def write_json_path(json_file, json_data):
     """
     写入 JSON 数据
-    :param out_json_path:
+    :param json_file:
     :param json_data:
     :return:
     """
-    with open(out_json_path, 'w', encoding="utf-8") as f:
+    with open(json_file, 'w', encoding="utf-8") as f:
         json.dump(json_data, f, indent=4, ensure_ascii=False)
 
 

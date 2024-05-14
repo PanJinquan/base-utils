@@ -6,6 +6,7 @@
 #include "image_utils.h"
 #include "math_utils.h"
 #include "transform.h"
+#include "base.h"
 
 
 bool get_video_capture(string video_file, cv::VideoCapture &cap, int width, int height, int fps) {
@@ -82,6 +83,7 @@ cv::Mat get_image_mask(cv::Mat image, int inv) {
 
 void find_contours(cv::Mat &mask, vector<vector<cv::Point> > &contours, int max_nums) {
     vector<cv::Vec4i> hierarchy;
+    contours.clear();
     cv::findContours(mask, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
     // 计算轮廓面积使用cv::contourArea(contours[i]),这里为了简单，直接使用contours[i].size点的个数代替
     std::sort(contours.begin(), contours.end(),
@@ -326,7 +328,7 @@ void draw_points_texts(cv::Mat &image, vector<cv::Point2f> points, vector<string
 
 
 void draw_points_texts(cv::Mat &image, cv::Point2f points[], int num, vector<string> texts, cv::Scalar color) {
-    vector<cv::Point2f> tmp = points2vector(points, num);
+    vector<cv::Point2f> tmp = array2vector<cv::Point2f>(points, num);
     draw_points_texts(image, tmp, texts, color);
 }
 
@@ -490,7 +492,7 @@ void draw_yaw_pitch_roll_in_left_axis(cv::Mat &imgBRG, float pitch, float yaw, f
 void draw_obb_image(cv::Mat &image, vector<vector<cv::Point> > contours, vector<cv::Scalar> colors, bool vis_id) {
     for (int i = 0; i < contours.size(); ++i) {
         vector<cv::Point2f> src_pts;
-        get_corner_points(contours.at(i), src_pts);
+        get_obb_points(vector_type<cv::Point, cv::Point2f>(contours.at(i)), src_pts);
         // 显示
         vector<vector<int>> skeleton = {{0, 1},
                                         {1, 2},
@@ -693,14 +695,6 @@ void image_blur(cv::Mat &image, vector<cv::Rect> rects, int radius, bool gaussia
     for (int i = 0; i < rects.size(); i++) {
         image_blur(image, rects[i], radius, gaussian);
     }
-}
-
-vector<cv::Point2f> points2vector(cv::Point2f pts[], int num) {
-    vector<cv::Point2f> out;
-    for (int i = 0; i < num; ++i) {
-        out.push_back(pts[i]);
-    }
-    return out;
 }
 
 

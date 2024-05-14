@@ -40,7 +40,21 @@ def myapproxPolyDP(contour, n_corners, max_iter=100, lr=0.1, log=False):
     return corners
 
 
-def get_target_points(src_pts: np.ndarray, method=0):
+def get_obb_points(pts: np.ndarray, order=True):
+    """
+    获得旋转矩形框，即最小外接矩形的四个角点
+    :param pts: [shape(n,2),...,]
+    :param order: 对4个点按顺时针方向进行排序:[top-left, top-right, bottom-right, bottom-left]
+    :return:
+    """
+    # 得到最小外接矩形的（中心(x,y), (宽,高), 旋转角度）,[center, wh, angle]==>[Point2f, Size, float]
+    rotatedRect = cv2.minAreaRect(np.array(pts, dtype=np.int32))
+    pts = cv2.boxPoints(rotatedRect)  # 获取最小外接矩形的4个顶点坐标
+    if order: pts = get_order_points(pts)
+    return pts
+
+
+def get_target_points(src_pts: np.ndarray):
     """
     根据输入的四个角点，计算其矫正后的目标四个角点,src_pts四个点分布：
         0--(w01)---1
@@ -48,8 +62,8 @@ def get_target_points(src_pts: np.ndarray, method=0):
       (h03)      (h21)
         |          |
         3--(w23)---2
-    :param src_pts:
-    :return:
+    :param src_pts:输入四个角点，必须是有序的，[top-left, top-right, bottom-right, bottom-left]
+    :return: 输出矫正后的目标四个角点；如果要获得矫正后的长宽，则使用(W,H)=dst_pts[2]
     """
     # 计算四个角点的边长
     w01 = np.sqrt(np.sum(np.square(src_pts[0] - src_pts[1]), axis=0))
@@ -62,7 +76,7 @@ def get_target_points(src_pts: np.ndarray, method=0):
     return dst_pts
 
 
-def get_order_points(pts_src):
+def get_order_points(src_pts):
     """
     对4个点按顺时针方向进行排序:[top-left, top-right, bottom-right, bottom-left]
     top-left    ：对应y+x之和的最小点
@@ -74,39 +88,17 @@ def get_order_points(pts_src):
           (h30)                    (h21)
             |                       |
         3(bottom-left)--(w23)---2(bottom-right)
-    :param pts_src: pts_dst [top-left, top-right, bottom-right, bottom-left]
+    :param src_pts: pts_dst [top-left, top-right, bottom-right, bottom-left]
     :return:
     """
-    pts_src = np.array(pts_src)
-    pts_dst = np.zeros(shape=(4, 2), dtype=np.float32)
-    s = pts_src.sum(axis=1)
-    # Top-left point will have the smallest sum.
-    pts_dst[0] = pts_src[np.argmin(s)]
-    # Bottom-right point will have the largest sum.
-    pts_dst[2] = pts_src[np.argmax(s)]
-    diff = np.diff(pts_src, axis=1)  # y-x= pts_src[:, 1] - pts_src[:, 0]
-    # Top-right point will have the smallest difference.
-    pts_dst[1] = pts_src[np.argmin(diff)]
-    # Bottom-left will have the largest difference.
-    pts_dst[3] = pts_src[np.argmax(diff)]
-    # Return the ordered coordinates.
-    return pts_dst
-
-
-def get_order_points_v2(pts_src):
-    """
-    参考DBNet.pytorch项目的order_points_clockwise实现
-    :param pts_src:
-    :return:
-    """
-    pts_dst = np.zeros((4, 2), dtype="float32")
-    s = pts_src.sum(axis=1)
-    pts_dst[0] = pts_src[np.argmin(s)]
-    pts_dst[2] = pts_src[np.argmax(s)]
-    diff = np.diff(pts_src, axis=1)
-    pts_dst[1] = pts_src[np.argmin(diff)]
-    pts_dst[3] = pts_src[np.argmax(diff)]
-    return pts_dst
+    dst_pts = np.zeros(shape=(4, 2), dtype=np.float32)
+    s = src_pts.sum(axis=1)
+    dst_pts[0] = src_pts[np.argmin(s)]
+    dst_pts[2] = src_pts[np.argmax(s)]
+    d = np.diff(src_pts, axis=1)
+    dst_pts[1] = src_pts[np.argmin(d)]
+    dst_pts[3] = src_pts[np.argmax(d)]
+    return dst_pts
 
 
 def get_image_four_corners(image, n_corners=4, ksize=5, blur=True, max_iter=10, vis=False):

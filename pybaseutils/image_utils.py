@@ -2494,14 +2494,7 @@ def find_minAreaRect(contours, order=True):
     """
     points = []
     for i in range(len(contours)):
-        # 得到最小外接矩形的（中心(x,y), (宽,高), 旋转角度）
-        rotatedRect = cv2.minAreaRect(
-            np.array(contours[i], dtype=np.int32))  # [center, wh, angle]==>[Point2f, Size, float]
-        pts = cv2.boxPoints(rotatedRect)  # 获取最小外接矩形的4个顶点坐标
-        pts = pts[[1, 2, 3, 0], :]
-        if order:
-            pts = corner_utils.get_order_points(pts)
-            # pts2 = corner_utils.order_points_clockwise(pts)
+        pts = corner_utils.get_obb_points(pts=contours[i], order=order)
         points.append(pts)
     return points
 

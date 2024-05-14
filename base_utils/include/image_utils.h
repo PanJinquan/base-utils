@@ -149,6 +149,7 @@ static vector<cv::Scalar> COLOR_TABLE = {
 };
 
 
+
 /***
  * 读取视频文件
  * @param video_file 视频文件
@@ -605,14 +606,6 @@ void image_blur(cv::Mat &image, cv::Rect rect, int radius = 5, bool gaussian = f
  * @param gaussian 是否使用高斯模糊，默认均值模糊
  */
 void image_blur(cv::Mat &image, vector<cv::Rect> rects, int radius = 5, bool gaussian = false);
-
-
-/***
- * 将坐标数组转为vector形式
- * @param pts
- * @return
- */
-vector<cv::Point2f> points2vector(cv::Point2f pts[], int num);
 
 cv::Box rect2box(cv::Rect &rect);
 

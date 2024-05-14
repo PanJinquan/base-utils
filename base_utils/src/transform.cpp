@@ -3,6 +3,7 @@
 //
 
 #include <debug.h>
+#include <base.h>
 #include "transform.h"
 
 
@@ -31,14 +32,41 @@ void get_order_points(vector<cv::Point2f> inp, vector<cv::Point2f> &dst) {
 }
 
 
-void get_corner_points(vector<cv::Point> contours, vector<cv::Point2f> &dst_pts) {
-    cv::Point2f points[4];
-    find_minAreaRect(contours, points);
-    int size = sizeof(points) / sizeof(points[0]);
-    vector<cv::Point2f> src_pts = points2vector(points, size);
+void get_obb_points(vector<cv::Point2f> src_pts, vector<cv::Point2f> &dst_pts, bool order) {
+    // 求轮廓最小外接矩形,返回4个坐标点
+    cv::Point2f pts[4];
+    find_minAreaRect(vector_type<cv::Point2f, cv::Point>(src_pts), pts);
+    int size = sizeof(pts) / sizeof(pts[0]);
+    dst_pts = array2vector(pts, size);
     // 对4个点按顺时针方向进行排序:[top-left, top-right, bottom-right, bottom-left]
-    get_order_points(src_pts, dst_pts);
+    if (order) {
+        get_order_points(dst_pts, dst_pts);
+    }
 }
+
+void get_obb_points(vector<cv::Point> src_pts, vector<cv::Point2f> &dst_pts, bool order) {
+    // 求轮廓最小外接矩形,返回4个坐标点
+    cv::Point2f pts[4];
+    find_minAreaRect(src_pts, pts);
+    int size = sizeof(pts) / sizeof(pts[0]);
+    dst_pts = array2vector<cv::Point2f>(pts, size);
+    // 对4个点按顺时针方向进行排序:[top-left, top-right, bottom-right, bottom-left]
+    if (order) {
+        get_order_points(dst_pts, dst_pts);
+    }
+}
+
+
+void get_target_points(vector<cv::Point2f> src_pts, vector<cv::Point2f> &dst_pts) {
+    float w10 = cal_distance(src_pts.at(1), src_pts.at(0));
+    float w23 = cal_distance(src_pts.at(2), src_pts.at(3));
+    float h21 = cal_distance(src_pts.at(2), src_pts.at(1));
+    float h30 = cal_distance(src_pts.at(3), src_pts.at(0));
+    cv::Size2f tsize = cv::Size2f((w10 + w23) / 2.f, (h21 + h30) / 2.f); //tsize是变换后目前区域矩形框
+    dst_pts = {cv::Point2f{0, 0}, cv::Point2f{tsize.width, 0},
+               cv::Point2f{tsize.width, tsize.height}, cv::Point2f{0, tsize.height}};
+}
+
 
 void get_transform(vector<cv::Point2f> &src_pts, vector<cv::Point2f> &dst_pts, cv::Mat &M,
                    int method) {
@@ -91,13 +119,8 @@ cv::Mat image_alignment(cv::Mat &image,
     // TODO 若dst_pts为空，则利用src_pts计算dst_pts和tsize，相当于只映射src_pts轮廓的最小外接矩形框
     cv::Size2f tsize;//tsize是变换后目前区域矩形框
     if (dst_pts.empty()) {
-        float w10 = cal_distance(src_pts.at(1), src_pts.at(0));
-        float w23 = cal_distance(src_pts.at(2), src_pts.at(3));
-        float h21 = cal_distance(src_pts.at(2), src_pts.at(1));
-        float h30 = cal_distance(src_pts.at(3), src_pts.at(0));
-        tsize = cv::Size2f((w10 + w23) / 2.f, (h21 + h30) / 2.f);
-        dst_pts = {cv::Point2f{0, 0}, cv::Point2f{tsize.width, 0},
-                   cv::Point2f{tsize.width, tsize.height}, cv::Point2f{0, tsize.height}};
+        get_target_points(src_pts, dst_pts);
+        tsize = cv::Size2f(dst_pts.at(2).x, dst_pts.at(2).y); //tsize是变换后目前区域矩形框
     } else {
         tsize = cv::Size2f(image.cols, image.rows);
     }

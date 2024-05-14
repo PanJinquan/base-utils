@@ -39,7 +39,7 @@ def WaterMeters(image_dir, label_dir, out_json, crop_root=None, use_align=False,
         image, point, label, boxes = load_annotation(image_file, lable_file)
         image_h, image_w = image.shape[:2]
         if crop_root and use_align:
-            dst_pts = transform_utils.get_corner_points(point)
+            dst_pts = transform_utils.get_target_points(point)
             crop, M, Minv = transform_utils.get_image_alignment(image, src_pts=point, dst_pts=dst_pts, dsize=None,
                                                                 method="lstsq")
             crop_file = os.path.join(crop_root, "{}_{:0=5d}_alignment.jpg".format(label, i))

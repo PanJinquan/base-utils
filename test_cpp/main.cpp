@@ -53,18 +53,12 @@ void test_transform() {
     // 测试图片
     string image_file = "../../data/mask/mask5.jpg";
     cv::Mat src = cv::imread(image_file);
-
     cv::Mat mask = get_image_mask(src); // 图像二值化
     // 获得mask的轮廓
     vector<vector<cv::Point> > contours;
     find_contours(mask, contours, 1);
-    // 求轮廓最小外接矩形,返回4个坐标点
-    cv::Point2f points[4];
-    find_minAreaRect(contours.at(0), points);
-    int size = sizeof(points) / sizeof(points[0]);
-    vector<cv::Point2f> src_pts = points2vector(points, size);
-    // 对4个点按顺时针方向进行排序:[top-left, top-right, bottom-right, bottom-left]
-    get_order_points(src_pts, src_pts);
+    vector<cv::Point2f> src_pts;
+    get_obb_points(contours.at(0), src_pts);
     vector<cv::Point2f> dst_pts;
     // 对图像进行仿生变换
     cv::Mat dst = image_alignment(src, src_pts, dst_pts, cv::Size(200, 300), cv::Size2f(1.2, 1.2));
@@ -204,3 +198,4 @@ int main() {
     test_transform();
     return 0;
 }
+

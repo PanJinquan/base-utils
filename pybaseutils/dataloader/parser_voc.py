@@ -175,13 +175,13 @@ class VOCDataset(Dataset):
             image, boxes, labels = self.transform(image, boxes, labels)
         # boxes, labels = self.target_transform(boxes, labels)  # torch.Size([29952, 4]),torch.Size([29952])
         target = self.convert_target(boxes, labels)
-        if num_boxes == 0 or len(labels) == 0:
-            index = int(random.uniform(0, len(self)))
-            return self.__getitem__(index)
         # return image, boxes, labels
         # return image, {"target": target, "image_id": image_id, "size": [width, height]}
         data = {"image": image, "target": target, "boxes": boxes, "labels": labels, "image_id": image_id,
                 "size": [width, height], "image_file": image_file}
+        if num_boxes == 0 or len(labels) == 0:
+            index = int(random.uniform(0, len(self)))
+            data = self.__getitem__(index)
         return data
 
     def get_image_anno_file(self, index):

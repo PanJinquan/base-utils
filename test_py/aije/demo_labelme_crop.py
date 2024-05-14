@@ -12,8 +12,8 @@ from pybaseutils.dataloader import parser_labelme
 from pybaseutils import image_utils, file_utils
 
 
-def save_object_crops(image, out_dir, bboxes, labels, image_name, class_name=None,
-                      scale=[], square=False, padding=False, min_size=20 * 20 * 3, flag="", vis=False):
+def save_object_crops(data_info, out_dir, class_name=None, scale=[], square=False,
+                      padding=False, min_size=20 * 20 * 3, flag="", vis=False):
     """
     对VOC的数据目标进行裁剪
     :param image:
@@ -29,7 +29,11 @@ def save_object_crops(image, out_dir, bboxes, labels, image_name, class_name=Non
     :param vis:
     :return:
     """
-    image_id = os.path.basename(image_name).split(".")[0]
+    image, points, bboxes, labels = data_info["image"], data_info["points"], data_info["boxes"], data_info["labels"]
+    if len(bboxes) == 0: return
+    image_file = data_info["image_file"]
+    h, w = image.shape[:2]
+    image_id = os.path.basename(image_file).split(".")[0]
     if square:
         bboxes = image_utils.get_square_boxes(bboxes, use_max=True, baseline=-1)
     if scale:
@@ -81,10 +85,5 @@ if __name__ == "__main__":
     flag = None
     # scale = None
     for i in tqdm(range(len(dataset))):
-        data = dataset.__getitem__(i)
-        image, points, bboxes, labels = data["image"], data["points"], data["boxes"], data["labels"]
-        image_file = data["image_file"]
-        h, w = image.shape[:2]
-        if len(bboxes) > 0:
-            save_object_crops(image, out_dir, bboxes, labels, image_file, class_name=class_name, scale=scale,
-                              flag=flag, vis=False)
+        data_info = dataset.__getitem__(i)
+        save_object_crops(data_info, out_dir, class_name=class_name, scale=scale, flag=flag, vis=False)

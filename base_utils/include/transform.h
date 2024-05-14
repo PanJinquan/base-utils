@@ -30,13 +30,6 @@
 void get_order_points(vector<cv::Point2f> inp, vector<cv::Point2f> &dst);
 
 /***
- * 获得四个角点
- * @param contours
- * @param dst_pts
- */
-void get_corner_points(vector<cv::Point> contours, vector<cv::Point2f> &dst_pts);
-
-/***
  * 计算变换矩阵
  * @param src_pts 输入原始关键点
  * @param dst_pts 输入目标关键点
@@ -86,5 +79,23 @@ cv::Mat image_alignment(cv::Mat &image,
                         int flags = cv::INTER_LINEAR,
                         int borderMode = cv::BORDER_CONSTANT,
                         cv::Scalar color = COLOR_BLACK);
+
+
+
+/***
+ * 获得旋转矩形框，即最小外接矩形的四个角点
+ * @param src_pts
+ * @param dst_pts
+ * @param order 对4个点按顺时针方向进行排序:[top-left, top-right, bottom-right, bottom-left]
+ */
+void get_obb_points(vector<cv::Point2f> src_pts, vector<cv::Point2f> &dst_pts, bool order = true);
+void get_obb_points(vector<cv::Point> src_pts, vector<cv::Point2f> &dst_pts, bool order = true);
+
+/***
+ * 根据输入的四个角点，计算其矫正后的目标四个角点,src_pts四个点分布：
+ * @param src_pts 输入四个角点，必须是有序的，[top-left, top-right, bottom-right, bottom-left]
+ * @param dst_pts 输出矫正后的目标四个角点；如果要获得矫正后的长宽，则使用dst_pts[2]
+ */
+void get_target_points(vector<cv::Point2f> src_pts, vector<cv::Point2f> &dst_pts);
 
 #endif //DETECTOR_TRANSFORM_H
