@@ -40,7 +40,7 @@ vector<D_TYPE> vector_type(vector<S_TYPE> src) {
     std::transform(src.begin(), src.end(), dst.begin(),
                    [](S_TYPE value) { return D_TYPE(value); });
     return dst;
-}
+};
 
 
 /***
