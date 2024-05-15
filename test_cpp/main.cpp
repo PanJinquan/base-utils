@@ -6,6 +6,7 @@
 #include "math_utils.h"
 #include "math_utils.h"
 #include "transform.h"
+#include "base.h"
 
 using namespace std;
 
@@ -195,7 +196,13 @@ int main() {
     //test_image_padding();
     //test_mosaic();
     //test_image_boxes();
-    test_transform();
+    //test_transform();
+
+    vector<cv::Point2f> src;
+    cv::Point2f p1(1.0,1.0);
+    src.push_back(cv::Point2f(1.1, 1.1));
+    src.push_back(cv::Point2f(2.2, 2.2));
+    vector<cv::Point> dst = vector_type<cv::Point2f, cv::Point>(src);
     return 0;
 }
 

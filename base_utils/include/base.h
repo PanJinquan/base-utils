@@ -28,17 +28,17 @@ void clear_vector(std::vector<T> &vt) {
 
 /***
  * 转换vector的数据类型
- * @tparam S
- * @tparam T
+ * @tparam S_TYPE :原始数据类型
+ * @tparam D_TYPE :目标数据类型
  * @param src
  * @return
  */
-template<class S, class T>
-vector<T> vector_type(vector<S> src) {
-    vector<T> dst;
+template<class S_TYPE, class D_TYPE>
+vector<D_TYPE> vector_type(vector<S_TYPE> src) {
     // 使用std::transform转换类型
+    std::vector<D_TYPE> dst(src.size());
     std::transform(src.begin(), src.end(), dst.begin(),
-                   [](S value) { return T(value); });
+                   [](S_TYPE value) { return D_TYPE(value); });
     return dst;
 }
 
