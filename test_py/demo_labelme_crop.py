@@ -73,7 +73,7 @@ def save_object_crops_aligment(data_info, out_dir, class_name=None, vis=False, d
     :param vis:
     :return:
     """
-    if out_dir:  file_utils.create_dir(out_dir)
+    file_utils.create_dir(out_dir)
     image, points, bboxes, labels = data_info["image"], data_info["points"], data_info["boxes"], data_info["labels"]
     if len(bboxes) == 0: return
     image_file = data_info["image_file"]
@@ -86,13 +86,13 @@ def save_object_crops_aligment(data_info, out_dir, class_name=None, vis=False, d
         crop, M, Minv = transform_utils.get_image_alignment(image, src_pts=src_pts, dst_pts=dst_pts, dsize=None,
                                                             method="lstsq")
         # crop_file = os.path.join(out_dir, "{}_{:0=5d}_alignment.jpg".format(label, i))
-        crop_file = os.path.join(out_dir, "{}_{}_alignment.jpg".format(label, image_id))
         h, w = crop.shape[:2]
         if w > 3 * h:
-            cv2.imwrite(crop_file, crop)
+            crop_file = os.path.join(out_dir, "labels", "{}_{}_alignment_v1.jpg".format(label, image_id))
         else:
-            print(image_file)
-            vis, delay = True, 0
+            crop_file = os.path.join(out_dir, "others", "{}_{}_alignment_v1.jpg".format(label, image_id))
+        file_utils.create_file_path(crop_file)
+        cv2.imwrite(crop_file, crop)
         if vis:
             image = image_utils.draw_image_bboxes_text(image, [box], boxes_name=[label])
             image = image_utils.draw_key_point_in_image(image, [src_pts], vis_id=True)
@@ -120,7 +120,6 @@ if __name__ == "__main__":
     flag = None
     # /home/PKing/nasdata/tmp/tmp/WaterMeter/水表数据集/Water-Meter-Det2/train/images/id_1161_value_71_024.jpg
     for i in tqdm(range(len(dataset))):
-        i = 176+2
         data_info = dataset.__getitem__(i)
         # save_object_crops(data_info, out_dir, class_name=class_name, scale=scale, flag=flag, vis=False)
         save_object_crops_aligment(data_info, out_dir, class_name=class_name, vis=False)

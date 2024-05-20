@@ -64,8 +64,9 @@ if __name__ == "__main__":
           '绝缘手套', '绝缘鞋', '脚扣', '螺丝', '身穿工作服', '遮拦杆', '铁架', '铝扎线']
     室外: []
     """
-    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v9/json"
+    # anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v9/json"
     anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v7/json"
+    # anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v10/json"
     # anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-person-coco/json"
     # class_name = ['身穿工作服', '未穿工作服', '表箱关', '表箱开', "手", "绝缘手套", "绝缘鞋", "长筒靴", "其他鞋"]  # 室内
     class_name = None  # 室内

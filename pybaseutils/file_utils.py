@@ -18,6 +18,7 @@ import subprocess
 import concurrent.futures
 import numbers
 import pickle
+import argparse
 from datetime import datetime
 from tqdm import tqdm
 
@@ -26,7 +27,12 @@ VIDEO_POSTFIX = ['*.mp4', '*.avi']
 
 
 def str2bool(v):
-    return v.lower() in ('yes', 'true', 't', 'y', '1')
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Unsupported value encountered.')
 
 
 def get_time(format="p"):
