@@ -117,7 +117,7 @@ class ProcessPool(object):
         result = [r.get(timeout=timeout) for r in result]
         return result
 
-    def mul_tasks(self, tasks: List, inputs: List, timeout=None):
+    def multi_tasks(self, tasks: List, inputs: List, timeout=None):
         """多进程多任务，返回结果有序"""
         result = [self.pool.apply_async(t, args=(i,)) for t, i in zip(tasks, inputs)]
         result = [r.get(timeout=timeout) for r in result]
@@ -201,6 +201,18 @@ class ThreadPool(object):
             task_list = [task_list[i] for i in index]
         return result
 
+    def multi_tasks(self, tasks: List, inputs: List, timeout=None):
+        """多线程多任务，返回结果无序"""
+        task_list = [self.pool.submit(t, p) for t, p in zip(tasks, inputs)]
+        result = []
+        try:
+            for task in as_completed(task_list, timeout=timeout):
+                result.append(task.result(timeout=timeout))
+        except Exception as e:
+            result = []
+            print("Error:{}".format(e))
+        return result
+
     def shutdown(self, wait=True):
         self.pool.shutdown(wait=wait)
 
@@ -244,7 +256,7 @@ def performanceProcessPool():
     #     result2 = tp.task_apply_async(func=consumer, inputs=contents)
     with time_utils.Performance("mul_tasks") as p:
         mul_tasks = [consumer] * len(contents)
-        result3 = tp.mul_tasks(mul_tasks, contents)
+        result3 = tp.multi_tasks(mul_tasks, contents)
     # print(result1)
     # print(result2)
     print(result3)
