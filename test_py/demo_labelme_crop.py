@@ -90,6 +90,7 @@ def save_object_crops_aligment(data_info, out_dir, class_name=None, vis=False, d
         if w > 3 * h:
             crop_file = os.path.join(out_dir, "labels", "{}_{}_alignment_v1.jpg".format(label, image_id))
         else:
+            crop = cv2.rotate(crop, cv2.ROTATE_90_CLOCKWISE)
             crop_file = os.path.join(out_dir, "others", "{}_{}_alignment_v1.jpg".format(label, image_id))
         file_utils.create_file_path(crop_file)
         cv2.imwrite(crop_file, crop)
@@ -102,7 +103,7 @@ def save_object_crops_aligment(data_info, out_dir, class_name=None, vis=False, d
 
 if __name__ == "__main__":
     """"""
-    anno_dir = "/home/PKing/nasdata/tmp/tmp/WaterMeter/水表数据集/Water-Meter-Det2/train/json"
+    anno_dir = "/home/PKing/nasdata/tmp/tmp/WaterMeter/水表数据集/Water-Meter-Det3/train/json"
     class_name = None
     out_dir = os.path.join(os.path.dirname(anno_dir), "crops")
     dataset = parser_labelme.LabelMeDataset(filename=None,

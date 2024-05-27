@@ -48,6 +48,7 @@ pip install  --no-cache-dir torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaud
 
 ## 安装TensorRT
 
+#### 方法1
 - 下载：TensorRT-8.4.1.5.Linux.x86_64-gnu.cuda-11.6.cudnn8.4，然后进入文件进行拷贝
 
 ```bash
@@ -78,6 +79,15 @@ sudo ldconfig # 修改完成后，让配置生效
 pip install tensorrt
 pip install nvidia-pyindex
 pip install nvidia-tensorrt==8.4.1.5 (版本與TensorRT-8.4.1.5.Linux.x86_64-gnu.cuda-11.6.cudnn8.4匹配即可)
+```
+
+#### 方法2
+
+```bash
+cd <tensorrt installation path>/python
+pip install cuda-python
+pip install tensorrt-8.6.0-cp310-none-win_amd64.whl
+pip install opencv-python
 ```
 
 ## 制定GPU

@@ -8,7 +8,8 @@
 import os
 import numpy as np
 import cv2
-from pybaseutils import image_utils, file_utils, coords_utils
+from tqdm import tqdm
+from pybaseutils import image_utils, file_utils, json_utils
 
 
 def maker_labelme(json_file, points, labels, image_name, image_size, image_bs64=None):
@@ -45,3 +46,39 @@ def maker_labelme(json_file, points, labels, image_name, image_size, image_bs64=
     if os.path.exists(image_name): file_utils.copy_file_to_dir(image_name, os.path.dirname(json_file))
     file_utils.write_json_path(json_file, data)
     return data
+
+
+def del_labelme_imagedata(anno_dir):
+    """
+    删除labelme标注文件的imageData字段
+    :param anno_dir:
+    :return:
+    """
+    file_list = file_utils.get_files_lists(anno_dir, postfix=["*.json"])
+    for anno_file in tqdm(file_list):
+        data_info = json_utils.read_json_data(anno_file)
+        data_info["imageData"] = None
+        json_utils.write_json_path(anno_file, data_info)
+
+
+def copy_labelme_files(image_dir, anno_dir, out_root):
+    """
+    复制labelme标注文件和图片文件
+    :param image_dir:
+    :param anno_dir:
+    :param out_root:
+    :return:
+    """
+    json_list = file_utils.get_files_list(anno_dir, postfix=["*.json"])
+    out_images = file_utils.create_dir(out_root, "images")
+    out_json = file_utils.create_dir(out_root, "json")
+    for json_file in tqdm(json_list):
+        json_data = json_utils.read_json_data(json_file)
+        image_name = json_data['imagePath']
+        shapes = json_data.get('shapes', [])
+        image_file = os.path.join(image_dir, image_name)
+        if len(shapes) > 0 and os.path.exists(image_file):
+            file_utils.copy_file_to_dir(image_file, out_images)
+            file_utils.copy_file_to_dir(json_file, out_json)
+        else:
+            print("bad json file:{}".format(json_file))

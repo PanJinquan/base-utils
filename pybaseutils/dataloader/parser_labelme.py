@@ -317,15 +317,6 @@ class LabelMeDataset(Dataset):
             height = -1
         return annos, width, height
 
-    @staticmethod
-    def del_annotations_image(anno_dir):
-        file_list = file_utils.get_files_lists(anno_dir, postfix=["*.json"])
-        for anno_file in tqdm(file_list):
-            data_info = json_utils.read_json_data(anno_file)
-            data_info["imageData"] = None
-            json_utils.write_json_path(anno_file, data_info)
-
-
 def LabelMeDatasets(filename=None,
                     data_root=None,
                     anno_dir=None,

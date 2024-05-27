@@ -17,7 +17,7 @@ import threading
 import time
 from typing import List, Tuple, Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from multiprocessing import Pool
+from multiprocessing import Pool, Process
 
 # 创建线程锁
 thread_lock = threading.Lock()
@@ -69,6 +69,27 @@ def consumer_multi(image_path: str, data):
     return image_path, data
 
 
+class TaskProcess():
+    def tasks(self, tasks: List, params: List):
+        """
+        返回结果无序
+        :param tasks:
+        :param params:
+        :return:
+        """
+        p_list = []
+        for t, p in zip(tasks, params):
+            p = Process(target=t, args=(p,))
+            p.daemon = True
+            p.start()
+            p_list.append(p)
+        r_list = []
+        for p in p_list:
+            r = p.join()
+            r_list.append(r)
+        return r_list
+
+
 class ProcessPool(object):
     """
     进程池
@@ -93,6 +114,12 @@ class ProcessPool(object):
     def task_apply_async(self, func: Callable, inputs: List, timeout=None):
         """进程任务，返回结果有序"""
         result = [self.pool.apply_async(func, args=(i,)) for i in inputs]
+        result = [r.get(timeout=timeout) for r in result]
+        return result
+
+    def mul_tasks(self, tasks: List, inputs: List, timeout=None):
+        """多进程多任务，返回结果有序"""
+        result = [self.pool.apply_async(t, args=(i,)) for t, i in zip(tasks, inputs)]
         result = [r.get(timeout=timeout) for r in result]
         return result
 
@@ -208,16 +235,35 @@ def performanceProcessPool():
     from pybaseutils import time_utils
     tp = ProcessPool(max_workers=4)
     # contents = ["1.jpg", "4.jpg", "4.jpg", "4.jpg", "2.jpg"]
-    contents = ["1.jpg", "5.jpg", "4.jpg", "3.jpg", "2.jpg"]
+    # contents = ["1.jpg", "5.jpg", "4.jpg", "3.jpg", "2.jpg"]
+    contents = ["1.jpg", "5.jpg", "1.jpg", "1.jpg", "1.jpg"]
     print(contents)
-    with time_utils.Performance("task_map") as p:
-        result1 = tp.task_map(func=consumer, inputs=contents)
-    with time_utils.Performance("task_apply_async") as p:
-        result2 = tp.task_apply_async(func=consumer, inputs=contents)
-    print(result1)
-    print(result2)
+    # with time_utils.Performance("task_map") as p:
+    #     result1 = tp.task_map(func=consumer, inputs=contents)
+    # with time_utils.Performance("task_apply_async") as p:
+    #     result2 = tp.task_apply_async(func=consumer, inputs=contents)
+    with time_utils.Performance("mul_tasks") as p:
+        mul_tasks = [consumer] * len(contents)
+        result3 = tp.mul_tasks(mul_tasks, contents)
+    # print(result1)
+    # print(result2)
+    print(result3)
+
+
+def performanceProcess():
+    from pybaseutils import time_utils
+    tp = ProcessPool(max_workers=4)
+    # contents = ["1.jpg", "4.jpg", "4.jpg", "4.jpg", "2.jpg"]
+    contents = ["1.jpg", "5.jpg", "4.jpg", "3.jpg", "2.jpg"]
+    contents = ["1.jpg", "5.jpg", "1.jpg", "1.jpg", "1.jpg"]
+    tasks = [consumer] * len(contents)
+    t = TaskProcess()
+    r = t.tasks(tasks, contents)
+    print(r)
 
 
 if __name__ == "__main__":
-    performanceThreadPool()
+    # performanceThreadPool()
     # performanceProcessPool()
+    # performanceProcess()
+    performanceProcessPool()
