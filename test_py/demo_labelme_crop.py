@@ -9,7 +9,7 @@ import os
 import cv2
 from tqdm import tqdm
 from pybaseutils.dataloader import parser_labelme
-from pybaseutils import image_utils, file_utils
+from pybaseutils import image_utils, file_utils, coords_utils
 from pybaseutils.transforms import transform_utils
 
 
@@ -57,7 +57,7 @@ def save_object_crops(data_info, out_dir, class_name=None, scale=[], square=Fals
         if vis: image_utils.cv_show_image("crop", img, use_rgb=False, delay=0)
 
 
-def save_object_crops_aligment(data_info, out_dir, class_name=None, vis=False, delay=0):
+def save_object_crops_aligment(data_info, out_dir, class_name=None, scale=(1.0, 1.0), vis=False, delay=0):
     """
     对VOC的数据目标进行裁剪
     :param image:
@@ -73,6 +73,7 @@ def save_object_crops_aligment(data_info, out_dir, class_name=None, vis=False, d
     :param vis:
     :return:
     """
+    flag = str(scale[0]).replace(".", "p")
     file_utils.create_dir(out_dir)
     image, points, bboxes, labels = data_info["image"], data_info["points"], data_info["boxes"], data_info["labels"]
     if len(bboxes) == 0: return
@@ -82,16 +83,14 @@ def save_object_crops_aligment(data_info, out_dir, class_name=None, vis=False, d
     for i in range(len(points)):
         point, label, box = points[i], labels[i], bboxes[i]
         src_pts = transform_utils.get_obb_points(point)
-        dst_pts = transform_utils.get_target_points(src_pts)
-        crop, M, Minv = transform_utils.get_image_alignment(image, src_pts=src_pts, dst_pts=dst_pts, dsize=None,
-                                                            method="lstsq")
-        # crop_file = os.path.join(out_dir, "{}_{:0=5d}_alignment.jpg".format(label, i))
+        crop, dst_pts, M, Minv = transform_utils.image_alignment(image, src_pts, dst_pts=None, scale=scale)
         h, w = crop.shape[:2]
-        if w > 3 * h:
-            crop_file = os.path.join(out_dir, "labels", "{}_{}_alignment_v1.jpg".format(label, image_id))
+        name = "{}_{}".format(image_id, flag) if flag else image_id
+        if w > 2.5 * h:
+            crop_file = os.path.join(out_dir, "labels", "{}_{}_v1.jpg".format(label, name))
         else:
             crop = cv2.rotate(crop, cv2.ROTATE_90_CLOCKWISE)
-            crop_file = os.path.join(out_dir, "others", "{}_{}_alignment_v1.jpg".format(label, image_id))
+            crop_file = os.path.join(out_dir, "others", "{}_{}_v1.jpg".format(label, name))
         file_utils.create_file_path(crop_file)
         cv2.imwrite(crop_file, crop)
         if vis:
@@ -115,12 +114,14 @@ if __name__ == "__main__":
                                             phase="val",
                                             shuffle=False)
     print("have num:{}".format(len(dataset)))
+    rati = 1.0
     class_name = dataset.class_name
-    scale = [1.0, 1.0]
-    flag = str(scale[0]).replace(".", "p")
-    flag = None
+    scale = [1.05, 1.1]
+
+    # scale = [1.00, 1.00]
+    # flag = None
     # /home/PKing/nasdata/tmp/tmp/WaterMeter/水表数据集/Water-Meter-Det2/train/images/id_1161_value_71_024.jpg
     for i in tqdm(range(len(dataset))):
         data_info = dataset.__getitem__(i)
         # save_object_crops(data_info, out_dir, class_name=class_name, scale=scale, flag=flag, vis=False)
-        save_object_crops_aligment(data_info, out_dir, class_name=class_name, vis=False)
+        save_object_crops_aligment(data_info, out_dir, scale=scale, class_name=class_name, vis=False)

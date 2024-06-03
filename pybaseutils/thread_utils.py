@@ -17,6 +17,7 @@ import threading
 import time
 from typing import List, Tuple, Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ProcessPoolExecutor, wait
 from multiprocessing import Pool, Process
 
 # 创建线程锁
@@ -272,6 +273,9 @@ def performanceProcess():
     t = TaskProcess()
     r = t.tasks(tasks, contents)
     print(r)
+
+
+
 
 
 if __name__ == "__main__":

@@ -165,6 +165,8 @@ def extend_xyxy_similar_square(xyxy, use_max=True, weight=1.0, valid_range=[]):
 def shrink_polygon_pyclipper(polygon, ratio):
     """
     使用Polygon库计算多边形区域的周长和面积，使用pyclipper库进行shrink
+    https://blog.csdn.net/shyjhyp11/article/details/126396170
+    https://www.cnblogs.com/01black-white/p/15292193.html
     :param polygon: 
     :param ratio: 
     :return: 
@@ -175,6 +177,8 @@ def shrink_polygon_pyclipper(polygon, ratio):
     distance = polygon_shape.area * (1 - np.power(ratio, 2)) / polygon_shape.length
     subject = [tuple(l) for l in polygon]
     padding = pyclipper.PyclipperOffset()
+    # padding.MiterLimit = 100 # 多边形的尖角是否用圆角代替
+    # padding.AddPath(subject, pyclipper.JT_MITER, pyclipper.ET_CLOSEDPOLYGON)
     padding.AddPath(subject, pyclipper.JT_ROUND, pyclipper.ET_CLOSEDPOLYGON)
     shrinked = padding.Execute(-distance)
     if shrinked == []:

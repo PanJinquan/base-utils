@@ -9,7 +9,7 @@ import os
 import cv2
 import numpy as np
 from tqdm import tqdm
-from pybaseutils import image_utils, file_utils, json_utils
+from pybaseutils import image_utils, file_utils, json_utils, base64_utils, time_utils
 from pybaseutils.transforms import transform_utils
 from pybaseutils.converter import build_voc, build_labelme
 from pybaseutils.dataloader import parser_labelme
@@ -34,7 +34,32 @@ def read_image(image_file: str, use_rgb=True):
     return image
 
 
-if __name__ == '__main__':
-    image_file = "/home/PKing/nasdata/tmp/tmp/WaterMeter/水表数据集/Water-Meter-Det3/train/image_00006.jpg"
-    image = read_image(image_file)
+@time_utils.performance()
+def test_time1(image_file):
+    image = cv2.imread(image_file, cv2.IMREAD_REDUCED_COLOR_2)
+    # image = cv2.imread(image_file)
+    print("image1 size:{}".format(image.shape))
     image_utils.cv_show_image("image", image)
+    return image
+
+
+@time_utils.performance()
+def test_time2(image_file):
+    image = cv2.imread(image_file)
+    print("image2 size:{}".format(image.shape))
+    image_utils.cv_show_image("image", image)
+    return image
+
+
+if __name__ == '__main__':
+    image_file1 = "/home/PKing/Downloads/images/test.jpg"
+    image_file2 = "/home/PKing/Downloads/images/test.png"
+    for i in range(500):
+        test_time2(image_file1)
+        test_time1(image_file1)
+
+
+    def task(file):
+        return file
+
+
