@@ -1630,7 +1630,7 @@ def image_rotation(image, angle, center=None, scale=1.0, borderValue=(0, 0, 0)):
         # center = (w // 2, h // 2)
         center = (w / 2., h / 2.)
     mat = cv2.getRotationMatrix2D(center, angle, scale)
-    rotated = cv2.warpAffine(image, mat, dsize=(w, h), borderMode=cv2.BORDER_CONSTANT, borderValue=borderValue)
+    rotated = cv2.warpAffine(image, mat, dsize=(w, h), borderMode=cv2.BORDER_REFLECT_101, borderValue=borderValue)
     return rotated
 
 

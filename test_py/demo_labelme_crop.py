@@ -102,7 +102,7 @@ def save_object_crops_aligment(data_info, out_dir, class_name=None, scale=(1.0, 
 
 if __name__ == "__main__":
     """"""
-    anno_dir = "/home/PKing/nasdata/tmp/tmp/WaterMeter/水表数据集/Water-Meter-Det3/train/json"
+    anno_dir = "/home/PKing/nasdata/tmp/tmp/WaterMeter/水表数据集/Water-Meter-Det3/train/data-frame/json"
     class_name = None
     out_dir = os.path.join(os.path.dirname(anno_dir), "crops")
     dataset = parser_labelme.LabelMeDataset(filename=None,
@@ -116,7 +116,7 @@ if __name__ == "__main__":
     print("have num:{}".format(len(dataset)))
     rati = 1.0
     class_name = dataset.class_name
-    scale = [1.05, 1.1]
+    scale = [1.00, 1.0]
 
     # scale = [1.00, 1.00]
     # flag = None

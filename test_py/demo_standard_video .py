@@ -26,8 +26,15 @@ def resize_video():
     video_utils.resize_video(video_file, save_video, size=(None, 640), interval=1, vis=True, delay=10)
 
 
+def rotate_video():
+    video_file1 = "/home/PKing/Downloads/20240605-155224.mp4"
+    video_file2 = "/home/PKing/Downloads/result.mp4"
+    video_utils.video2video(video_file1, video_file2, task=video_utils.rotation_task, delay=10)
+
+
 if __name__ == "__main__":
     root = "/media/dm/新加卷/SDK/project/Camera-Calibration-Reconstruct-Cpp/data/lenacv-video"
     out = "/media/dm/新加卷/SDK/project/Camera-Calibration-Reconstruct-Cpp/data/lenacv-video1"
     # video_converter(root, out)
-    resize_video()
+    # resize_video()
+    rotate_video()

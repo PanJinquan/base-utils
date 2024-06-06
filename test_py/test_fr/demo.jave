@@ -1,0 +1,173 @@
+import java.io.File;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+
+public class FaceVerificationDemo {
+	
+	public static void main(String[] args) throws Exception {
+		// 统一资源定位符
+		String url = "http://127.0.0.1:7002/2ds2ew/identity/image_verification/stateless";	
+		// 统一资源标识符
+		String uri = "/2ds2ew/identity/image_verification/stateless";	
+		// AppKey
+		String ak = "demoak";
+		
+		// SecretKey
+		String sk = "demosk";
+		//业务系统对接并注册到4A系统时，由4A生成的应用ID
+		String appId = "ff8080816c77c01b01eae234ji3k2j2i2i";	
+		String time = String.valueOf(System.currentTimeMillis()/1000);
+		
+		// 请求头
+		Map<String, String> headParams = FaceVerificationDemo.setHeaders(uri, ak, sk, appId, time);
+		
+		// 请求体
+		File first_image_file = new File("D://face1.jpg");
+		File second_image_file = new File("D://face2.jpg");
+		
+		Map<String, File> fileParams = new HashMap<String, File>();
+		fileParams.put("first_image_file", first_image_file);
+		fileParams.put("second_image_file", second_image_file);
+		
+		// 请求并获取结果
+		HttpClientResult result = FaceVerificationDemo.HttpClientPost(url, headParams, fileParams);
+		
+		// 识别结果
+		int statusCode = result.getCode();
+		if(null != result && String.valueOf(statusCode).startsWith("2")){
+            String resultContent = result.getContent();
+            System.out.println("人脸识别结果为："+ resultContent);
+        }
+	}
+	
+	/**
+	 * 获取访问令牌的加密算法
+	 */
+	public static String getAccessToken(String uri, String accessId, String accessSecret, String useId, String time) throws Exception{
+		String one = uri + accessId + useId + "#" + time;
+		Base64.Encoder encoder = Base64.getEncoder();
+		String two = encoder.encodeToString(one.getBytes("UTF-8"));
+		StringBuilder sb = null;
+		Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
+		SecretKeySpec secret_key = new SecretKeySpec(accessSecret.getBytes("UTF-8"), "HmacSHA256");
+		sha256_HMAC.init(secret_key);
+		byte[] array = sha256_HMAC.doFinal(two.getBytes("UTF-8"));
+		sb = new StringBuilder();
+		for (byte item : array) {
+			sb.append(Integer.toHexString((item & 0xFF) | 0x100).substring(1, 3));
+		}
+		String three = sb.toString().toUpperCase();
+		return encoder.encodeToString(three.getBytes("UTF-8"));
+	}
+	
+	/**
+	 * 设置鉴权请求头
+	 */
+	public static Map<String,String> setHeaders(String uri, String ak, String sk, String appId, String time) throws Exception{
+		Map<String,String> headParams = new HashMap<String,String>();
+		headParams.put("accessId", ak);
+		headParams.put("applicationId", appId);
+		headParams.put("accessToken", FaceVerificationDemo.getAccessToken(uri, ak, sk, appId, time));
+		headParams.put("time", time);
+		headParams.put("content-type", "application/json");
+		return headParams;
+	}
+	
+	/**
+	 * 请求客户端
+	 */
+	public static HttpClientResult HttpClientPost(String url, Map<String, String> headParams, Map<String, File> fileParams) throws Exception {
+        HttpClient httpclient = new DefaultHttpClient();
+        HttpPost post = new HttpPost(url);
+        MultipartEntity entity = new MultipartEntity();
+        Set<Entry<String, File>> fileSet = fileParams.entrySet();
+        for (Entry<String, File> param : fileSet) {
+            entity.addPart(param.getKey(), new FileBody(param.getValue()));
+        }
+        post.setEntity(entity);
+        if (headParams != null) {
+            Set<Entry<String, String>> entrySet = headParams.entrySet();
+            for (Entry<String, String> entry : entrySet) {
+            	post.setHeader(entry.getKey(), entry.getValue());
+            }
+        }
+        HttpResponse response = httpclient.execute(post);
+        if (response != null && response.getStatusLine() != null) {
+            String content = "";
+            if (response.getEntity() != null) {
+                content = EntityUtils.toString(response.getEntity(), "UTF-8");
+            }
+            int statusCode = response.getStatusLine().getStatusCode();
+            httpclient.getConnectionManager().shutdown();
+            return new HttpClientResult(statusCode, content);
+        }
+        httpclient.getConnectionManager().shutdown();
+        return new HttpClientResult(HttpStatus.SC_INTERNAL_SERVER_ERROR);
+    }
+	
+    public static class FaceReqBean  {
+		private File firstImageFile;	// 图片1
+		private File secondImageFile;	//	图片2
+		private boolean autoRotate;		// 是否旋转
+		
+		public File getFirstImageFile() {
+			return firstImageFile;
+		}
+		public void setFirstImageFile(File firstImageFile) {
+			this.firstImageFile = firstImageFile;
+		}
+		public File getSecondImageFile() {
+			return secondImageFile;
+		}
+		public void setSecondImageFile(File secondImageFile) {
+			this.secondImageFile = secondImageFile;
+		}
+		public boolean getAutoRotate() {
+			return autoRotate;
+		}
+		public void setAutoRotate(boolean autoRotate) {
+			this.autoRotate = autoRotate;
+		}
+	}
+    
+    public static class HttpClientResult {
+    	public HttpClientResult(int code, String content){
+    		this.code = code;
+    		this.content = content;
+    	}
+    	public HttpClientResult(int code) {
+    		this.code = code;
+		}
+    	// 响应状态码
+        private int code;
+        // 响应数据
+        private String content;
+        public int getCode() {
+			return code;
+		}
+        public String getContent() {
+			return content;
+		}
+        public void setCode(int code) {
+			this.code = code;
+		}
+        public void setContent(String content) {
+			this.content = content;
+		}
+    }
+}

@@ -131,7 +131,7 @@ def video2frames_similarity(video_file, out_dir=None, func=None, interval=1, thr
                 text = "TH={},diff={:3.3f}".format(thresh, diff)
                 image = image_utils.draw_text(curr_frame, point=(10, 70), color=(0, 255, 0),
                                               text=text, drawType="simple")
-                image = image_utils.cv_show_image("image", image, delay=10)
+                image = image_utils.cv_show_image("image", image, delay=5)
         count += 1
     video_cap.release()
     cv2.destroyAllWindows()
@@ -181,7 +181,7 @@ def convert_video_format(video_file, save_video, start=0, interval=1):
     return video2video(video_file, save_video, start=start, interval=interval)
 
 
-def video2video(video_file, save_video, start=0, interval=1, vis=True, delay=20):
+def video2video(video_file, save_video, task=None, start=0, interval=1, vis=True, delay=20):
     """
     转换视频格式
     :param video_file: *.avi,*.mp4,...
@@ -191,7 +191,8 @@ def video2video(video_file, save_video, start=0, interval=1, vis=True, delay=20)
     """
     video_cap = get_video_capture(video_file)
     width, height, num_frames, fps = get_video_info(video_cap)
-    video_writer = get_video_writer(save_video, width, height, fps)
+    # video_writer = get_video_writer(save_video, width, height, fps)
+    video_writer = None
     # freq = int(fps / detect_freq)
     count = start
     while True:
@@ -201,6 +202,9 @@ def video2video(video_file, save_video, start=0, interval=1, vis=True, delay=20)
             video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
             isSuccess, frame = video_cap.read()
             if not isSuccess or 0 < num_frames < count: break
+            if task: frame = task(frame, count=count)
+            height, width = frame.shape[:2]
+            if not video_writer: video_writer = get_video_writer(save_video, width, height, fps)
             if vis: image_utils.cv_show_image("frame", frame, use_rgb=False, delay=delay)
             video_writer.write(frame)
         count += 1
@@ -325,8 +329,20 @@ class CVVideo():
         return frame
 
 
-def target_task(frame):
+def resize_task(frame, **kwargs):
     frame = image_utils.resize_image(frame, size=(960, None))
+    return frame
+
+
+def rotation_task(frame, **kwargs):
+    count = kwargs.get("count", 0)
+    num = 200
+    alpha = 0.1
+    angle = [-i for i in range(num)][::-1] + [i for i in range(num)]
+    angle = angle + angle[::-1]
+    h, w = frame.shape[:2]
+    frame = image_utils.image_rotation(frame, angle=alpha * angle[count % len(angle)])
+    frame = image_utils.get_bbox_crop(frame, bbox=[0, 70, w, h - 70])
     return frame
 
 
@@ -336,5 +352,5 @@ if __name__ == "__main__":
     # dst_file = "/home/dm/视频/双目测距Demo视频(Python)1.mp4"
     # video2frames(video_file, interval=10, vis=True)
     # frames2video(image_dir, interval=1, vis=True)
-    video2gif(video_file, interval=15, func=target_task, fps=3, use_pil=False, vis=True)
+    video2gif(video_file, interval=15, func=resize_task, fps=3, use_pil=False, vis=True)
     # video2video(video_file, dst_file, vis=True)
