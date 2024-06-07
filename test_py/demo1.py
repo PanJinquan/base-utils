@@ -52,14 +52,12 @@ def test_time2(image_file):
 
 
 if __name__ == '__main__':
-    image_file1 = "/home/PKing/Downloads/images/test.jpg"
-    image_file2 = "/home/PKing/Downloads/images/test.png"
-    for i in range(500):
-        test_time2(image_file1)
-        test_time1(image_file1)
+    import re
 
-
-    def task(file):
-        return file
-
-
+    text = "好，A,，？.,B1.2"
+    repl = " "
+    res = re.sub('[^\w\s]', repl, text)
+    print(res)
+    res = re.sub('[,，。/？；;:：#￥！!]', repl, text)
+    text = text.strip()
+    print(res)
