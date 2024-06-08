@@ -149,7 +149,6 @@ static vector<cv::Scalar> COLOR_TABLE = {
 };
 
 
-
 /***
  * 读取视频文件
  * @param video_file 视频文件
@@ -196,6 +195,12 @@ cv::Mat get_image_mask(cv::Mat image, int inv = false);
  */
 void find_contours(cv::Mat &mask, vector<vector<cv::Point> > &contours, int max_nums = -1);
 
+/***
+ * 将轮廓转为矩形框
+ * @param points
+ * @return
+ */
+cv::Rect points2rect(vector<cv::Point> points);
 
 /***
  * 绘制轮廓区域

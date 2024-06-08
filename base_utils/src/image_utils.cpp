@@ -93,6 +93,10 @@ void find_contours(cv::Mat &mask, vector<vector<cv::Point> > &contours, int max_
     }
 }
 
+cv::Rect points2rect(vector<cv::Point> points) {
+    cv::Rect rect = cv::boundingRect(points);
+    return rect;
+}
 
 void draw_contours(cv::Mat &image, vector<vector<cv::Point>> &contours,
                    cv::Scalar color, float alpha, int thickness, int contourIdx) {

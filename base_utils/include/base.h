@@ -57,5 +57,20 @@ vector<T> array2vector(T *pts, int num) {
     return out;
 };
 
+/**
+ * 将数值转换为string
+ * @param format
+ * @param i
+ * @return
+ */
+template<class T>
+static string tostring(string format, T i) {
+    char t[256];
+    sprintf(t, format.c_str(), i);
+    string s(t);
+    return s;
+};
+
+
 
 #endif //DETECTOR_BASE_H
