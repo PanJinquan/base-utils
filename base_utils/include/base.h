@@ -64,7 +64,7 @@ vector<T> array2vector(T *pts, int num) {
  * @return
  */
 template<class T>
-static string tostring(string format, T i) {
+string tostring(string format, T i) {
     char t[256];
     sprintf(t, format.c_str(), i);
     string s(t);
