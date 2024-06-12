@@ -7,32 +7,26 @@
 """
 
 import numpy as np
+import xmltodict
 from pybaseutils import image_utils
 import cv2
 
 
-def get_smoking_roi(xyxy, scale=(), cut=0.3):
+def read_xml2json(xml_file):
     """
-    获得吸烟检测区
-    :param xyxy: shape is (num-boxes,4),box is (xmin,ymin,xmax,ymax)
-    :param scale: boxes缩放大小
-    :param cut: 裁剪比例
+    import xmltodict
+    :param xml_file:
     :return:
     """
-    up_boxes = []
-    for i in range(len(xyxy)):
-        xmin, ymin, xmax, ymax = xyxy[i]
-        w, h = (xmax - xmin), (ymax - ymin)
-        ymax = max(ymin + h * cut, ymin + w)
-        up_boxes.append([xmin, ymin, xmax, ymax])
-    up_boxes = np.asarray(up_boxes)
-    if scale: up_boxes = image_utils.extend_xyxy(up_boxes, scale=scale)
-    return up_boxes
+    with open(xml_file, encoding='utf-8') as fd:  # 将XML文件装载到dict里面
+        content = xmltodict.parse(fd.read())
+    return content
+
+def parse_labelmexml(anno_file):
+    data = read_xml2json(anno_file)
+    return None
 
 
 if __name__ == '__main__':
-    label = ["A", "B", "C", 222]
-    class_dict = {"A": 0, "B": 1}
-    for i in range(len(label)):
-        n = class_dict.get(label[i], label[i])
-        print(n)
+    anno_file = "/home/PKing/Downloads/labelme/default/hard_hat_workers7.xml"
+    parse_labelmexml(anno_file)

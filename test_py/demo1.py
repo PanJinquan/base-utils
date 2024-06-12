@@ -52,12 +52,4 @@ def test_time2(image_file):
 
 
 if __name__ == '__main__':
-    import re
-
-    text = "好，A,，？.,B1.2"
-    repl = " "
-    res = re.sub('[^\w\s]', repl, text)
-    print(res)
-    res = re.sub('[,，。/？；;:：#￥！!]', repl, text)
-    text = text.strip()
-    print(res)
+    pass

@@ -87,13 +87,12 @@ def video2frames_demo(root, out, prefix="", thresh=0.2):
         if name in thresh_dict:
             thresh = thresh_dict[name]
         prefix_ = "{}_{}".format(prefix, os.path.basename(os.path.dirname(video_file)))
-        video2frames_similarity(video_file, out_dir=out, func=None, interval=100,
+        video2frames_similarity(video_file, out_dir=out, func=None, interval=20,
                                 thresh=thresh, prefix=prefix_, vis=True)
 
 
 if __name__ == "__main__":
-    image_utils.find_mask_contours()
-    root = "/home/PKing/nasdata/dataset-dmai/AIJE/岗评项目数据/使用钳形电流表测量低压线路电流/天河数据/2024-04-12-8"
-    prefix = "天河"
+    root = "/home/PKing/nasdata/dataset-dmai/AIJE/技能人才系统_数据集管理/归档/20240607_数企_jinquan采集的多样性样本-train/shuqi_20240607yanshi111346"
+    prefix = "数企"
     out = root + "-train"
     video2frames_demo(root, out, prefix=prefix)

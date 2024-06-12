@@ -310,17 +310,6 @@ class VOCDataset(Dataset):
             image_idx.append(id)
         return image_idx
 
-    @staticmethod
-    def read_xml2json(xml_file):
-        """
-        import xmltodict
-        :param xml_file:
-        :return:
-        """
-        with open(xml_file, encoding='utf-8') as fd:  # 将XML文件装载到dict里面
-            content = xmltodict.parse(fd.read())
-        return content
-
     def read_image(self, image_file: str, use_rgb=True):
         """
         :param image_file:

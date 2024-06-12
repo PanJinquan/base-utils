@@ -10,6 +10,8 @@ import numpy as np
 import cv2
 import glob
 import random
+import xmltodict
+import json
 from pybaseutils import file_utils, json_utils
 
 VOC_NAMES = ["aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat",
@@ -37,6 +39,11 @@ class Dataset(object):
 
     def __init__(self, **kwargs):
         self.image_ids = []
+        # TODO: self.class_name, self.class_dict = self.parser_classes(class_name)
+        self.class_name = []
+        self.class_dict = []
+        # TODO: self.classes = list(self.class_dict.values()) if self.class_dict else None
+        self.classes = []
         self.postfix = "jpg"
         self.unique = False  # 是否是单一label，如["BACKGROUND", "unique"]
 
@@ -78,6 +85,28 @@ class Dataset(object):
                 class_name[i] = "{},{}".format(class_name[i], n) if i in class_name else n
             class_name = list(class_name.values())
         return class_name, class_dict
+
+    @staticmethod
+    def read_xml2json(file):
+        """
+        import xmltodict
+        :param file:
+        :return:
+        """
+        with open(file, encoding='utf-8') as fd:  # 将XML文件装载到dict里面
+            content = xmltodict.parse(fd.read())
+        return content
+
+    @staticmethod
+    def read_json_data(file):
+        """
+        读取数据
+        :param file:
+        :return:
+        """
+        with open(file, 'rb') as f:
+            json_data = json.load(f)
+        return json_data
 
     @staticmethod
     def read_files(filename, split=None):
