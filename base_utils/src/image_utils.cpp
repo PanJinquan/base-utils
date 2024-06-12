@@ -98,8 +98,8 @@ cv::Rect points2rect(vector<cv::Point> points) {
     return rect;
 }
 
-void draw_contours(cv::Mat &image, vector<vector<cv::Point>> &contours,
-                   cv::Scalar color, float alpha, int thickness, int contourIdx) {
+void draw_image_contours(cv::Mat &image, vector<vector<cv::Point>> &contours,
+                         cv::Scalar color, float alpha, int thickness, int contourIdx) {
     cv::drawContours(image, contours, contourIdx, color, thickness, 8);
     cv::Mat bg = image.clone();
     cv::fillPoly(bg, contours, color);

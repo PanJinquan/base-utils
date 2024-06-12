@@ -212,8 +212,8 @@ cv::Rect points2rect(vector<cv::Point> points);
  * @param thickness 线宽(-1)cv::FILLED表示实心的轮廓
  * @param contourIdx 所要绘制的轮廓的编号，-1 表示绘制所有轮廓
  */
-void draw_contours(cv::Mat &image, vector<vector<cv::Point>> &contours, cv::Scalar color = COLOR_GREEN,
-                   float alpha = 0.5, int thickness = 2, int contourIdx = -1);
+void draw_image_contours(cv::Mat &image, vector<vector<cv::Point>> &contours, cv::Scalar color = COLOR_GREEN,
+                         float alpha = 0.5, int thickness = 2, int contourIdx = -1);
 
 
 /***

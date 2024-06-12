@@ -2347,6 +2347,7 @@ def pointPolygonTest(point, contour, measureDist=False):
 
 def draw_image_contours(image, contours: List[np.ndarray], color=(), alpha=0.5, thickness=2):
     """
+    参考：draw_image_mask_color
     :param image:
     :param contours: List[np.ndarray],每个列表是一个轮廓(num_points,1,2)
     :param color:绘制轮廓的颜色
@@ -2365,7 +2366,6 @@ def draw_image_contours(image, contours: List[np.ndarray], color=(), alpha=0.5, 
     return image
 
 
-draw_contours = draw_image_contours
 draw_image_mask_color = color_utils.draw_image_mask_color
 
 
