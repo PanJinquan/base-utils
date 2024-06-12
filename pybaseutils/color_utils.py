@@ -1,7 +1,6 @@
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-import torch
 
 VOC_NAMES = ["aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat",
              "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person",
@@ -37,15 +36,6 @@ def get_colormap(data_type="custom"):
     else:
         raise NotImplementedError
     return colormap, num_classes
-
-
-def decode_seg_map_sequence(label_masks, data_type='custom'):
-    rgb_masks = []
-    for label_mask in label_masks:
-        rgb_mask = decode_segmap(label_mask, data_type)
-        rgb_masks.append(rgb_mask)
-    rgb_masks = torch.from_numpy(np.array(rgb_masks).transpose([0, 3, 1, 2]))
-    return rgb_masks
 
 
 def decode_segmap(label_mask, data_type="custom", plot=False):

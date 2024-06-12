@@ -21,7 +21,7 @@ import PIL.Image as Image
 from typing import List, Dict, Tuple
 from PIL import ImageDraw, ImageFont
 from math import cos, sin
-from pybaseutils import file_utils
+from pybaseutils import file_utils, color_utils
 from pybaseutils.coords_utils import *
 from pybaseutils.cvutils import corner_utils
 
@@ -2345,11 +2345,13 @@ def pointPolygonTest(point, contour, measureDist=False):
     return dist
 
 
-def draw_image_contours(image, contours: List[np.ndarray], color=(), thickness=2):
+def draw_image_contours(image, contours: List[np.ndarray], color=(), alpha=0.5, thickness=2):
     """
     :param image:
     :param contours: List[np.ndarray],每个列表是一个轮廓(num_points,1,2)
     :param color:绘制轮廓的颜色
+    :param alpha:绘制颜色的透明度
+    :param thickness:轮廓线宽
     :return:
     """
     for i in range(0, len(contours)):
@@ -2357,7 +2359,14 @@ def draw_image_contours(image, contours: List[np.ndarray], color=(), thickness=2
         p = np.asarray(contours[i], dtype=np.int32)
         if len(p.shape) == 2: p = [p]
         image[:] = cv2.drawContours(image, p, contourIdx=-1, color=c, thickness=thickness)
+        bgimg = image.copy()
+        bgimg = cv2.fillPoly(bgimg, p, color=c)
+        image = cv2.addWeighted(src1=image, alpha=1 - alpha, src2=bgimg, beta=alpha, gamma=0)
     return image
+
+
+draw_contours = draw_image_contours
+draw_image_mask_color = color_utils.draw_image_mask_color
 
 
 def get_mask_boundrect_cv(mask, binarize=False, shift=0):
