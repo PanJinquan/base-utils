@@ -195,6 +195,8 @@ cv::Mat get_image_mask(cv::Mat image, int inv = false);
  */
 void find_contours(cv::Mat &mask, vector<vector<cv::Point> > &contours, int max_nums = -1);
 
+void find_contours(cv::Mat &mask, vector<vector<cv::Point2f> > &contours, int max_nums = -1);
+
 /***
  * 将轮廓转为矩形框
  * @param points

@@ -992,7 +992,7 @@ def show_image_boxes(title, image, boxes, color=(0, 0, 255), delay=0, use_rgb=Fa
     return image
 
 
-def draw_image_bboxes_text(image, boxes, boxes_name, color=(255, 0, 0), thickness=-1, fontScale=-1.0,
+def draw_image_bboxes_text(image, boxes, boxes_name, color=(), thickness=-1, fontScale=-1.0,
                            drawType="custom", top=True):
     """
     :param boxes_name:
@@ -1003,9 +1003,10 @@ def draw_image_bboxes_text(image, boxes, boxes_name, color=(255, 0, 0), thicknes
     """
     if isinstance(boxes_name, np.ndarray):
         boxes_name = boxes_name.reshape(-1).tolist()
-    for name, box in zip(boxes_name, boxes):
+    for i, (name, box) in enumerate(zip(boxes_name, boxes)):
         box = [int(b) for b in box]
-        custom_bbox_line(image, box, color, name, thickness, fontScale, drawType, top)
+        c = color if color else color_table[i + 1]
+        custom_bbox_line(image, box, c, name, thickness, fontScale, drawType, top)
     return image
 
 

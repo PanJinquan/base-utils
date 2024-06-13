@@ -93,6 +93,14 @@ void find_contours(cv::Mat &mask, vector<vector<cv::Point> > &contours, int max_
     }
 }
 
+void find_contours(cv::Mat &mask, vector<vector<cv::Point2f> > &contours, int max_nums) {
+    vector<vector<cv::Point> > tmp;
+    find_contours(mask, tmp, max_nums);
+    for (int i = 0; i < tmp.size(); ++i) {
+        contours.push_back(vector_type<cv::Point, cv::Point2f>(tmp.at(i)));
+    }
+}
+
 cv::Rect points2rect(vector<cv::Point> points) {
     cv::Rect rect = cv::boundingRect(points);
     return rect;

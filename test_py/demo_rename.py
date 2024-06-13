@@ -23,10 +23,11 @@ def rename_image_file(image_dir, output, prefix=""):
 
 
 if __name__ == '__main__':
-    image_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v12/黄埔数企"
+    # image_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v12/黄埔数企"
+    image_dir = "/home/PKing/nasdata/release/AIJE/aije-algorithm/aije-component-cv/test/test-data"
     output = image_dir + "-train"
     prefix = os.path.basename(image_dir)
     # image_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-cls2/手与表箱门有接触/手与表箱门无接触/南沙工匠"
     # output = "/home/PKing/nasdata/dataset-dmai/AIJE/岗评项目数据/室内考题/南沙视频/室内/南沙基地视频3/南沙工匠"
     # prefix = os.path.basename(output)
-    rename_image_file(image_dir, output, prefix=prefix)
+    rename_image_file(image_dir, output, prefix="")
