@@ -493,13 +493,22 @@ void draw_yaw_pitch_roll_in_left_axis(cv::Mat &imgBRG, float pitch, float yaw, f
 
 
 /***
+ * 根据contour绘制旋转矩形框
+ * @param image
+ * @param contour
+ * @param color
+ * @param vis_id 是否绘制角点ID
+ */
+void draw_obb_image(cv::Mat &image, vector<cv::Point> contour, cv::Scalar color = COLOR_GREEN, bool vis_id = false);
+
+/***
  * 根据contours绘制旋转矩形框
  * @param image
  * @param contours
  * @param colors
  * @param vis_id 是否绘制角点ID
  */
-void draw_obb_image(cv::Mat &image, vector<vector<cv::Point> > contours, vector<cv::Scalar> colors = COLOR_TABLE,
+void draw_obb_image(cv::Mat &image, vector<vector<cv::Point>> contours, vector<cv::Scalar> colors = COLOR_TABLE,
                     bool vis_id = false);
 
 /***

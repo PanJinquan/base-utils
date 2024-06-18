@@ -57,6 +57,19 @@ vector<T> array2vector(T *pts, int num) {
     return out;
 };
 
+/***
+ * 将数组string转为vector形式
+ * @param pts
+ * @return
+ */
+inline vector<string> string2vector(string str) {
+    vector<string> out;
+    for (int i = 0; i < str.size(); ++i) {
+        out.push_back(str.substr(i,1));
+    }
+    return out;
+};
+
 /**
  * 将数值转换为string
  * @param format
@@ -70,7 +83,6 @@ string tostring(string format, T i) {
     string s(t);
     return s;
 };
-
 
 
 #endif //DETECTOR_BASE_H

@@ -108,6 +108,7 @@ cv::Rect points2rect(vector<cv::Point> points) {
 
 void draw_image_contours(cv::Mat &image, vector<vector<cv::Point>> &contours,
                          cv::Scalar color, float alpha, int thickness, int contourIdx) {
+    if (contours.empty())return;
     cv::drawContours(image, contours, contourIdx, color, thickness, 8);
     cv::Mat bg = image.clone();
     cv::fillPoly(bg, contours, color);
@@ -500,22 +501,26 @@ void draw_yaw_pitch_roll_in_left_axis(cv::Mat &imgBRG, float pitch, float yaw, f
     }
 }
 
+void draw_obb_image(cv::Mat &image, vector<cv::Point> contour, cv::Scalar color, bool vis_id) {
+    vector<cv::Point2f> src_pts;
+    get_obb_points(vector_type<cv::Point, cv::Point2f>(contour), src_pts);
+    // 显示
+    vector<vector<int>> skeleton = {{0, 1},
+                                    {1, 2},
+                                    {2, 3},
+                                    {3, 0}};
+    draw_lines(image, src_pts, skeleton, color, 2, false);
+    if (vis_id) {
+        vector<string> texts = {"0", "1", "2", "3"};
+        draw_points_texts(image, src_pts, texts, color);
+    }
 
-void draw_obb_image(cv::Mat &image, vector<vector<cv::Point> > contours, vector<cv::Scalar> colors, bool vis_id) {
+}
+
+void draw_obb_image(cv::Mat &image, vector<vector<cv::Point>> contours, vector<cv::Scalar> colors, bool vis_id) {
     for (int i = 0; i < contours.size(); ++i) {
-        vector<cv::Point2f> src_pts;
-        get_obb_points(vector_type<cv::Point, cv::Point2f>(contours.at(i)), src_pts);
-        // 显示
-        vector<vector<int>> skeleton = {{0, 1},
-                                        {1, 2},
-                                        {2, 3},
-                                        {3, 0}};
         cv::Scalar c = colors.at(i % colors.size());
-        draw_lines(image, src_pts, skeleton, c, 2, false);
-        if (vis_id) {
-            vector<string> texts = {"0", "1", "2", "3"};
-            draw_points_texts(image, src_pts, texts, c);
-        }
+        draw_obb_image(image, contours.at(i), c, vis_id);
     }
 }
 
