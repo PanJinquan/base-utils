@@ -20,7 +20,7 @@ using namespace std;
  * @param max_index 输出SoftMaX最大值的index
  * @param max_value 输出SoftMaX最大值，max_value = dst[max_index]
  */
-void softmax(vector<float> src, vector<float> dst, int &max_index, float &max_value);
+void softmax(vector<float> src, vector<float> &dst, int &max_index, float &max_value);
 
 
 inline float fast_exp(float x) {

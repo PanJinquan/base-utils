@@ -7,7 +7,7 @@
 
 using namespace std;
 
-void softmax(vector<float> src, vector<float> dst, int &max_index, float &max_value) {
+void softmax(vector<float> src, vector<float> &dst, int &max_index, float &max_value) {
     dst.clear();
     int length = src.size();
     max_index = max_element(src.begin(), src.end()) - src.begin();
