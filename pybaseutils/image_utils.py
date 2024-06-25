@@ -1006,7 +1006,27 @@ def draw_image_bboxes_text(image, boxes, boxes_name, color=(), thickness=-1, fon
     for i, (name, box) in enumerate(zip(boxes_name, boxes)):
         box = [int(b) for b in box]
         c = color if color else color_table[i + 1]
-        custom_bbox_line(image, box, c, name, thickness, fontScale, drawType, top)
+        draw_image_box_text(image, box, c, name, thickness, fontScale, drawType=drawType, top=top)
+    return image
+
+
+def draw_image_boxes_texts(image, boxes, texts, color=(), thickness=-1, fontScale=-1.0,
+                           drawType="custom", top=True):
+    """
+    :param image:
+    :param boxes:
+    :param texts:
+    :param color:
+    :param thickness:
+    :param fontScale:
+    :param drawType:
+    :param top:
+    :return:
+    """
+    for i, (box, text) in enumerate(zip(boxes, texts)):
+        box = [int(b) for b in box]
+        c = color if color else color_table[i + 1]
+        draw_image_box_text(image, box, c, text, thickness, fontScale, drawType=drawType, top=top)
     return image
 
 
@@ -1028,7 +1048,7 @@ def draw_image_bboxes_labels_text(image, boxes, labels, boxes_name=None, color=N
     for label, box, name in zip(labels, boxes, boxes_name):
         box = [int(b) for b in box]
         color_ = color if color else color_map[int(label) + 1]
-        image = custom_bbox_line(image, box, color_, str(name), thickness, fontScale, drawType, top)
+        image = draw_image_box_text(image, box, color_, str(name), thickness, fontScale, drawType, top)
     return image
 
 
@@ -1104,8 +1124,8 @@ def draw_image_bboxes_labels(image, bboxes, labels, class_name=None, color=None,
             color_ = color_table[int(name) + 1]
             name = class_name[int(name)]
         if not color_: color_ = color_table[1]
-        image = custom_bbox_line(image, box, color_, str(name), thickness=thickness,
-                                 fontScale=fontScale, drawType=drawType)
+        image = draw_image_box_text(image, box, color_, str(name), thickness=thickness,
+                                    fontScale=fontScale, drawType=drawType)
     return image
 
 
@@ -1163,7 +1183,7 @@ def draw_image_detection_boxes(image, boxes, probs, labels, class_name=None, thi
         if class_name:
             label = class_name[int(label)]
         boxes_name = "{}:{:3.2f}".format(label, prob)
-        custom_bbox_line(image, box, color, boxes_name, thickness=thickness, fontScale=fontScale, drawType=drawType)
+        draw_image_box_text(image, box, color, boxes_name, thickness=thickness, fontScale=fontScale, drawType=drawType)
     return image
 
 
@@ -1298,6 +1318,7 @@ def draw_text(image, point, text, color=(255, 0, 0), fontScale=-1.0, thickness=-
     :param drawType: custom or simple
     :return:
     """
+    point = (int(point[0]), int(point[1]))
     thickness, fontScale = get_linesize(max(image.shape), thickness=thickness, fontScale=fontScale)
     fontFace = cv2.FONT_HERSHEY_SIMPLEX
     # fontFace=cv2.FONT_HERSHEY_SIMPLEX
@@ -1312,32 +1333,32 @@ def draw_text(image, point, text, color=(255, 0, 0), fontScale=-1.0, thickness=-
     elif drawType == "simple":
         cv2.putText(image, str(text), (point[0], point[1]), fontFace, fontScale, color=color, thickness=thickness)
     if drawType == "chinese" or drawType == "ch":
-        cv2_putText(image, str(text), (point[0], point[1]), fontFace, fontScale, color=color, thickness=thickness)
+        cv2_putText(image, str(text), point, color=color, fontScale=fontScale, thickness=thickness)
     return image
 
 
-def custom_bbox_line(image, bbox, color, name, thickness=2, fontScale=0.8, drawType="custom", top=True):
+def draw_image_box_text(image, bbox, color, text, thickness=2, fontScale=0.8, drawType="custom", top=True):
     """
     :param image:
     :param bbox:
     :param color:
-    :param name:
+    :param text:
     :param drawType:
     :param top:
     :return:
     """
     thickness, fontScale = get_linesize(max(image.shape), thickness=thickness, fontScale=fontScale)
     text_loc = (bbox[0], bbox[1]) if top else (bbox[0], bbox[3])
-    if not name: drawType = "simple"
-    if drawType == "chinese":
+    if not text: drawType = "simple"
+    if drawType == "chinese" or drawType == "ch":
         cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness)
-        cv2_putText(image, str(name), text_loc, color=color, fontScale=fontScale, thickness=thickness)
-    elif drawType == "simple":
+        cv2_putText(image, str(text), text_loc, color=color, fontScale=fontScale, thickness=thickness)
+    elif drawType == "simple" or drawType == "en":
         cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness, 8, 0)
-        cv2.putText(image, str(name), text_loc, cv2.FONT_HERSHEY_SIMPLEX, fontScale, color, thickness)
+        cv2.putText(image, str(text), text_loc, cv2.FONT_HERSHEY_SIMPLEX, fontScale, color, thickness)
     elif drawType == "custom":
         cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness)
-        text_size, baseline = cv2.getTextSize(str(name), cv2.FONT_HERSHEY_SIMPLEX, fontScale, thickness)
+        text_size, baseline = cv2.getTextSize(str(text), cv2.FONT_HERSHEY_SIMPLEX, fontScale, thickness)
         if top:
             # text_loc = (bbox[0], bbox[1] + text_size[1])  # 在左上角下方绘制文字
             text_loc = (bbox[0], bbox[1] - baseline // 2)  # 在左上角上方绘制文字
@@ -1349,7 +1370,7 @@ def custom_bbox_line(image, bbox, color, name, thickness=2, fontScale=0.8, drawT
         cv2.rectangle(image, bg1, bg2, color, thickness)  # 先绘制框，再填充
         cv2.rectangle(image, bg1, bg2, color, -1)
         # draw score value
-        cv2.putText(image, str(name), (text_loc[0], text_loc[1]), cv2.FONT_HERSHEY_SIMPLEX, fontScale,
+        cv2.putText(image, str(text), (text_loc[0], text_loc[1]), cv2.FONT_HERSHEY_SIMPLEX, fontScale,
                     (255, 255, 255), thickness)
     return image
 
@@ -2344,11 +2365,12 @@ def pointPolygonTest(point, contour, measureDist=False):
     return dist
 
 
-def draw_image_contours(image, contours: List[np.ndarray], color=(), alpha=0.5, thickness=2):
+def draw_image_contours(image, contours: List[np.ndarray], texts=[], color=(), alpha=0.5, thickness=2, drawType="ch"):
     """
     参考：draw_image_mask_color
     :param image:
     :param contours: List[np.ndarray],每个列表是一个轮廓(num_points,1,2)
+    :param texts:轮廓文本
     :param color:绘制轮廓的颜色
     :param alpha:绘制颜色的透明度
     :param thickness:轮廓线宽
@@ -2356,12 +2378,15 @@ def draw_image_contours(image, contours: List[np.ndarray], color=(), alpha=0.5, 
     """
     for i in range(0, len(contours)):
         c = color if color else color_table[i + 1]
+        t = texts[i] if texts else ""
         p = np.asarray(contours[i], dtype=np.int32)
+        b = (min(p[:, 0]), min(p[:, 1]), max(p[:, 0]), max(p[:, 1]))
         if len(p.shape) == 2: p = [p]
         image[:] = cv2.drawContours(image, p, contourIdx=-1, color=c, thickness=thickness)
         bgimg = image.copy()
         bgimg = cv2.fillPoly(bgimg, p, color=c)
         image = cv2.addWeighted(src1=image, alpha=1 - alpha, src2=bgimg, beta=alpha, gamma=0)
+        if t: image = draw_image_box_text(image, bbox=b, color=c, text=t, thickness=thickness, drawType=drawType)
     return image
 
 

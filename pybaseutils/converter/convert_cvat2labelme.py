@@ -38,25 +38,29 @@ def parser_annotations(xml_file):
     return filename, annos, width, height
 
 
-def convert_cvat2labelme(image_dir, anno_dir, vis=True):
+def convert_cvat2labelme(anno_dir, image_dir="", vis=False):
     """
     将CVAT标注格式(LabelMe 3.0)转换labelme通用格式
-    :param image_dir:
     :param anno_dire:
+    :param image_dir:
     :param vis:
     :return:
     """
     xml_list = file_utils.get_files_lists(anno_dir, postfix=["*.xml"])
     for xml_file in xml_list:
-        image_name, annos, width, height = parser_annotations(xml_file)
+        image_name, annos, w, h = parser_annotations(xml_file)
         points = [an['points'] for an in annos if len(an['points']) > 0]
         labels = [an['label'] for an in annos if an['label']]
         if len(points) == 0 or len(labels) == 0:
             print("empty:{}".format(xml_file))
             continue
-        image_file = os.path.join(image_dir, image_name)
-        image = cv2.imread(image_file)
-        h, w = image.shape[:2]
+        if image_dir or vis:
+            image_file = os.path.join(image_dir, image_name)
+            image = cv2.imread(image_file)
+            h, w = image.shape[:2]
+            if vis:
+                image = image_utils.draw_image_contours(image, points, texts=labels)
+                image_utils.cv_show_image("det", image)
         image_id = image_name.split(".")[0]
         json_file = os.path.join(anno_dir, f"{image_id}.json")
         build_labelme.maker_labelme(json_file, points, labels, image_name, image_size=[w, h], image_bs64=None)

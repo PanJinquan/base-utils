@@ -65,6 +65,11 @@ def get_kwargs_name(**kwargs):
     return prefix
 
 
+def get_file_size(file, rate=1024):
+    """获得文件大小"""
+    return os.path.getsize(file) / rate
+
+
 def combine_flags(flags: list, use_time=True, info=True):
     """
     :param flags:

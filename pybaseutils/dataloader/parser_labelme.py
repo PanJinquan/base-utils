@@ -304,7 +304,7 @@ class LabelMeDataset(Dataset):
                 objects = json_utils.set_value(objects, key=[group_id],
                                                value={"labels": label, "boxes": box, "segs": segs})
         return objects
-    
+
     @staticmethod
     def load_annotations(anno_file: str):
         try:
@@ -381,10 +381,11 @@ def parser_labelme(anno_file, class_dict={}, shape=None):
 
 
 def show_target_image(image, bboxes, labels, points):
-    image = image_utils.draw_image_bboxes_text(image, bboxes, labels, color=(255, 0, 0),
-                                               thickness=2, fontScale=1.2, drawType="chinese")
+    # image = image_utils.draw_image_bboxes_text(image, bboxes, labels, color=(255, 0, 0),
+    #                                            thickness=2, fontScale=1.2, drawType="chinese")
     # image = image_utils.draw_landmark(image, points, color=(0, 255, 0))
-    image = image_utils.draw_key_point_in_image(image, points)
+    # image = image_utils.draw_key_point_in_image(image, points)
+    image = image_utils.draw_image_contours(image, points, labels)
     image_utils.cv_show_image("det", image)
 
 
