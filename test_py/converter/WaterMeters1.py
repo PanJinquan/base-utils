@@ -51,7 +51,7 @@ def WaterMeters(image_dir, ann_file, out_json, crop_root=None, use_align=True, v
             crop_file = os.path.join(crop_root, "{}_{:0=5d}_alignment.jpg".format(label, i))
             if w > 3 * h: cv2.imwrite(crop_file, crop)
         elif crop_root:
-            crop = image_utils.get_bbox_crop(image, bbox=boxes[0])
+            crop = image_utils.get_box_crop(image, box=boxes[0])
             crop_file = os.path.join(crop_root, "{}_{:0=5d}_crop.jpg".format(label, i))
             h, w = crop.shape[:2]
             if w > 3 * h: cv2.imwrite(crop_file, crop)

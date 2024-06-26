@@ -342,7 +342,7 @@ def rotation_task(frame, **kwargs):
     angle = angle + angle[::-1]
     h, w = frame.shape[:2]
     frame = image_utils.image_rotation(frame, angle=alpha * angle[count % len(angle)])
-    frame = image_utils.get_bbox_crop(frame, bbox=[0, 70, w, h - 70])
+    frame = image_utils.get_box_crop(frame, box=[0, 70, w, h - 70])
     return frame
 
 

@@ -106,7 +106,7 @@ class Labelme2VOC(object):
         for i, item in enumerate(objects):
             label = item["name"]
             box = item["bndbox"]
-            img = image_utils.get_bbox_crop(image, bbox=box)
+            img = image_utils.get_box_crop(image, box=box)
             file = os.path.join(out_dir, str(label), "{}_{}_{:0=3d}.jpg".format(image_id, label, i))
             file_utils.create_file_path(file)
             cv2.imwrite(file, img)

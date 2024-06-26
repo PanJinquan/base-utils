@@ -328,7 +328,7 @@ def show_image(name, image, boxes, labels, center2bboxes=False, untranspose=Fals
         boxes = cxcywh2xyxy(boxes)
     if untranspose:
         image = image_utils.untranspose(image)
-    image = image_utils.show_image_bboxes_text(name, image, boxes, labels, delay=waitKey)
+    image = image_utils.show_image_boxes_texts(name, image, boxes, labels, delay=waitKey)
     return image
 
 

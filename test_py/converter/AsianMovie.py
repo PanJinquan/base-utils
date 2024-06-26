@@ -78,7 +78,7 @@ class ParseAsian(object):
                 orig_file = file_utils.create_dir(os.path.join(out_dir, "origin"), label, name)
                 crop_file = file_utils.create_dir(os.path.join(out_dir, "crops"), label, name)
                 file_utils.copy_file(image_path, orig_file)
-                crop = image_utils.get_bbox_crop(image, boxes[0])
+                crop = image_utils.get_box_crop(image, boxes[0])
                 cv2.imwrite(crop_file, crop)
             if vis:
                 image = image_utils.draw_image_boxes(image, boxes)

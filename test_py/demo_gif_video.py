@@ -12,7 +12,7 @@ from pybaseutils.cvutils import video_utils
 def crop_fun(frame):
     """1920 × 1080"""
     h, w = frame.shape[:2]
-    frame = image_utils.get_bbox_crop(frame, bbox=[60, 5, 1280, 815])
+    frame = image_utils.get_box_crop(frame, box=[60, 5, 1280, 815])
     return frame
 
 

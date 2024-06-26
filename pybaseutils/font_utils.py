@@ -122,7 +122,7 @@ def draw_font(text, style="楷体", scale=1.0, size=20, c1=(255, 255, 255), c2=(
         if np.sum(image) < 1: return None
         mask = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         box = image_utils.get_mask_boundrect_cv(mask, binarize=True, shift=10)
-        image = image_utils.get_bbox_crop(image, box)
+        image = image_utils.get_box_crop(image, box)
         image = image_utils.resize_image_padding(image, size=(size, size), color=(0, 0, 0))
     else:
         image = image_utils.create_image(shape=(size, size, 3), color=c2)

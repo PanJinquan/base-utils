@@ -106,7 +106,7 @@ def points_protection(points, height, width):
     return points
 
 
-def bboxes_protection(boxes, width, height):
+def boxes_protection(boxes, width, height):
     """
     :param boxes:
     :param width:
@@ -246,7 +246,7 @@ def show_images_list(name, images_list, delay=0):
     cv2.waitKey(delay)
 
 
-def resize_image_like(image_list, dst_img, is_rgb=False):
+def resize_image_like(image_list, dst_img, is_rgb=False, use_pad=False, interpolation=cv2.INTER_NEAREST):
     """
     按dst_img的图像大小对image_list所有图片进行resize
     :param image_list: 图片列表
@@ -258,16 +258,19 @@ def resize_image_like(image_list, dst_img, is_rgb=False):
     is_rgb = len(shape) == 3 or is_rgb
     for i in range(len(image_list)):
         if not shape[:2] == image_list[i].shape[:2]:
-            image_list[i] = cv2.resize(image_list[i], dsize=(shape[1], shape[0]), interpolation=cv2.INTER_NEAREST)
+            if use_pad:
+                image_list[i] = resize_image_padding(image_list[i], (shape[1], shape[0]), interpolation=interpolation)
+            else:
+                image_list[i] = cv2.resize(image_list[i], dsize=(shape[1], shape[0]), interpolation=interpolation)
         if is_rgb and len(image_list[i].shape) == 2:
             image_list[i] = cv2.cvtColor(image_list[i], cv2.COLOR_GRAY2BGR)
     return image_list
 
 
-def image_hstack(images, split_line=False, is_rgb=False, texts=[], fontScale=-1.0, thickness=-1):
+def image_hstack(images, split_line=False, is_rgb=False, texts=[], fontScale=-1.0, thickness=-1, use_pad=False):
     """图像左右拼接"""
     if len(images) == 0: return images
-    dst_images = resize_image_like(image_list=images, dst_img=images[0], is_rgb=is_rgb)
+    dst_images = resize_image_like(image_list=images, dst_img=images[0], is_rgb=is_rgb, use_pad=use_pad)
     thickness, fontScale = get_linesize(max(images[0].shape), thickness=thickness, fontScale=fontScale)
     dst_images = np.hstack(dst_images)
     if len(dst_images.shape) == 2:
@@ -285,10 +288,10 @@ def image_hstack(images, split_line=False, is_rgb=False, texts=[], fontScale=-1.
     return dst_images
 
 
-def image_vstack(images, split_line=False, is_rgb=False, texts=[], fontScale=-1.0, thickness=-1):
+def image_vstack(images, split_line=False, is_rgb=False, texts=[], fontScale=-1.0, thickness=-1, use_pad=False):
     """图像上下拼接"""
     if len(images) == 0: return images
-    dst_images = resize_image_like(image_list=images, dst_img=images[0], is_rgb=is_rgb)
+    dst_images = resize_image_like(image_list=images, dst_img=images[0], is_rgb=is_rgb, use_pad=use_pad)
     thickness, fontScale = get_linesize(max(images[0].shape), thickness=thickness, fontScale=fontScale)
     dst_images = np.vstack(dst_images)
     if len(dst_images.shape) == 2:
@@ -616,18 +619,19 @@ def resize_scale_image(image, size: int, use_length=True, interpolation=cv2.INTE
     return dimage
 
 
-def resize_image_padding(image, size: Tuple, use_length=True, color=(0, 0, 0), interpolation=cv2.INTER_LINEAR):
+def resize_image_padding(image, size, color=(0, 0, 0), interpolation=cv2.INTER_LINEAR):
     """
-    按照长/短边进行等比例缩放，短边会进行填充,长边会被裁剪，避免出现形变
+    为保证图像无形变，需要进行等比例缩放和填充
     :param image:
-    :param size: (width,height)
-    :param use_length: True长边对齐缩放,短边会进行填充;False短边对齐缩放，长边会被裁剪
     :param color: 短边进行填充的color value
     :return:
     """
-    height, width = image.shape[:2]
-    _size = max(size) if use_length else min(size)
-    image = resize_scale_image(image, size=int(_size), use_length=use_length, interpolation=interpolation)
+    h, w = image.shape[:2]
+    if w / h > size[0] / size[1] > 0:
+        dsize = (size[0], None)
+    else:
+        dsize = (None, size[1])
+    image = resize_image(image, size=dsize, interpolation=interpolation)
     image = center_crop_padding(image, crop_size=size, color=color)
     return image
 
@@ -730,17 +734,17 @@ def image_boxes_resize_padding_inverse(image_size, input_size, boxes=None, point
     return boxes
 
 
-def resize_image_bboxes(image, size, bboxes=None):
+def resize_image_boxes(image, size, boxes=None):
     """
     :param image:
     :param size: (W,H)
-    :param bboxes:
+    :param boxes:
     :return:
     """
     resize_width, resize_height = size
     height, width, _ = image.shape
     if (resize_height is None) and (resize_width is None):  # 错误写法：resize_height and resize_width is None
-        return image, bboxes
+        return image, boxes
     if resize_height is None:
         scale = [resize_width / width, resize_width / width]
         resize_height = int(height * resize_width / width)
@@ -749,9 +753,9 @@ def resize_image_bboxes(image, size, bboxes=None):
         resize_width = int(width * resize_height / height)
     else:
         scale = [resize_width / width, resize_height / height]
-    bboxes = scale * 2 * bboxes
+    boxes = scale * 2 * boxes
     image = cv2.resize(image, dsize=(resize_width, resize_height))
-    return image, bboxes
+    return image, boxes
 
 
 def scale_image(image, scale):
@@ -797,86 +801,101 @@ def get_rects_image(image, rects_list, size):
     return rect_images
 
 
-def get_bboxes_image(image, bboxes_list, size):
+def get_boxes_image(image, boxes, size):
     """
     获得裁剪区域
     :param image:
-    :param bboxes_list:
+    :param boxes:
     :param size:
     :return:
     """
-    rects_list = bboxes2rects(bboxes_list)
-    rect_images = get_rects_image(image, rects_list, size=size)
-    return rect_images
+    rects = boxes2rects(boxes)
+    crops = get_rects_image(image, rects, size=size)
+    return crops
 
 
-def bboxes2rects(bboxes_list):
+get_bboxes_image = get_boxes_image
+
+
+def boxes2rects(boxes):
     """
-    将bboxes=[x1,y1,x2,y2] 转为rect=[x1,y1,w,h]
-    :param bboxes_list:
+    将boxes=[x1,y1,x2,y2] 转为rect=[x1,y1,w,h]
+    :param boxes:
     :return:
     """
     rects_list = []
-    for bbox in bboxes_list:
-        x1, y1, x2, y2 = bbox
+    for box in boxes:
+        x1, y1, x2, y2 = box
         rect = [x1, y1, (x2 - x1), (y2 - y1)]
         rects_list.append(rect)
     return rects_list
 
 
-def rects2bboxes(rects_list):
+bboxes2rects = boxes2rects
+
+
+def rects2boxes(rects):
     """
-    将rect=[x1,y1,w,h]转为bboxes=[x1,y1,x2,y2]
-    :param rects_list:
+    将rect=[x1,y1,w,h]转为boxes=[x1,y1,x2,y2]
+    :param rects:
     :return:
     """
-    bboxes_list = []
-    for rect in rects_list:
+    boxes = []
+    for rect in rects:
         x1, y1, w, h = rect
         x2 = x1 + w
         y2 = y1 + h
         b = (x1, y1, x2, y2)
-        bboxes_list.append(b)
-    return bboxes_list
+        boxes.append(b)
+    return boxes
 
 
-def bboxes2center(bboxes_list):
+rects2bboxes = rects2boxes
+
+
+def boxes2center(boxes):
     """
     center = (boxes[:, [0, 1]] + boxes[:, [2, 3]]) / 2
-    将bboxes=[x1,y1,x2,y2] 转为center_list=[cx,cy,w,h]
-    :param bboxes_list:
+    将boxes=[x1,y1,x2,y2] 转为center_list=[cx,cy,w,h]
+    :param boxes:
     :return:
     """
     center_list = []
-    for bbox in bboxes_list:
-        x1, y1, x2, y2 = bbox
+    for box in boxes:
+        x1, y1, x2, y2 = box
         center = [(x1 + x2) / 2, (y1 + y2) / 2, (x2 - x1), (y2 - y1)]
         center_list.append(center)
     return center_list
 
 
-def center2bboxes(center_list):
+bboxes2center = boxes2center
+
+
+def center2boxes(center):
     """
-    将center_list=[cx,cy,w,h] 转为bboxes=[x1,y1,x2,y2]
-    :param bboxes_list:
+    将center_list=[cx,cy,w,h] 转为boxes=[x1,y1,x2,y2]
+    :param center
     :return:
     """
-    bboxes_list = []
-    for c in center_list:
+    boxes = []
+    for c in center:
         cx, cy, w, h = c
-        bboxes = [cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2]
-        bboxes_list.append(bboxes)
-    return bboxes_list
+        box = [cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2]
+        boxes.append(box)
+    return boxes
 
 
-def center2rects(center_list):
+center2bboxes = center2boxes
+
+
+def center2rects(center):
     """
     将center_list=[cx,cy,w,h] 转为rect=[x,y,w,h]
-    :param bboxes_list:
+    :param center:
     :return:
     """
     rect_list = []
-    for c in center_list:
+    for c in center:
         cx, cy, w, h = c
         rect = [cx - w / 2, cy - h / 2, w, h]
         rect_list.append(rect)
@@ -920,8 +939,8 @@ def get_rect_intersection(rec1, rec2):
     :param rec2:
     :return:
     """
-    xmin1, ymin1, xmax1, ymax1 = rects2bboxes([rec1])[0]
-    xmin2, ymin2, xmax2, ymax2 = rects2bboxes([rec2])[0]
+    xmin1, ymin1, xmax1, ymax1 = rects2boxes([rec1])[0]
+    xmin2, ymin2, xmax2, ymax2 = rects2boxes([rec2])[0]
     x1 = max(xmin1, xmin2)
     y1 = max(ymin1, ymin2)
     x2 = min(xmax1, xmax2)
@@ -931,7 +950,7 @@ def get_rect_intersection(rec1, rec2):
     return (x1, y1, w, h)
 
 
-def get_bbox_intersection(box1, box2):
+def get_box_intersection(box1, box2):
     """
     计算两个boxes的交集坐标
     :param rec1:
@@ -995,6 +1014,7 @@ def show_image_boxes(title, image, boxes, color=(0, 0, 255), delay=0, use_rgb=Fa
 def draw_image_bboxes_text(image, boxes, boxes_name, color=(), thickness=-1, fontScale=-1.0,
                            drawType="custom", top=True):
     """
+    已经废弃，使用draw_image_boxes_texts代替
     :param boxes_name:
     :param bgr_image: bgr image
     :param color: BGR color:[B,G,R]
@@ -1010,8 +1030,7 @@ def draw_image_bboxes_text(image, boxes, boxes_name, color=(), thickness=-1, fon
     return image
 
 
-def draw_image_boxes_texts(image, boxes, texts, color=(), thickness=-1, fontScale=-1.0,
-                           drawType="custom", top=True):
+def draw_image_boxes_texts(image, boxes, texts, color=(), thickness=-1, fontScale=-1.0, drawType="custom", top=True):
     """
     :param image:
     :param boxes:
@@ -1032,16 +1051,7 @@ def draw_image_boxes_texts(image, boxes, texts, color=(), thickness=-1, fontScal
 
 def draw_image_bboxes_labels_text(image, boxes, labels, boxes_name=None, color=None, thickness=2, fontScale=0.8,
                                   drawType="custom", top=True):
-    """
-    :param image:
-    :param boxes:
-    :param labels:
-    :param boxes_name:
-    :param color:
-    :param drawType:
-    :param top:
-    :return:
-    """
+    """已废弃，使用draw_image_boxes_labels_texts代替"""
     if isinstance(labels, np.ndarray):
         labels = labels.reshape(-1).tolist()
     boxes_name = boxes_name if boxes_name else labels
@@ -1052,43 +1062,63 @@ def draw_image_bboxes_labels_text(image, boxes, labels, boxes_name=None, color=N
     return image
 
 
-def draw_image_rects_labels_text(image, rects, labels, boxes_name=None, color=None, drawType="custom", top=True):
-    """
-    :param image:
-    :param rects:
-    :param labels:
-    :param boxes_name:
-    :param color:
-    :param drawType:
-    :param top:
-    :return:
-    """
-    boxes = rects2bboxes(rects)
-    image = draw_image_bboxes_labels_text(image, boxes, labels, boxes_name, color, drawType, top)
+def draw_image_boxes_labels_texts(image, boxes, labels, texts=None, color=None, thickness=2, fontScale=0.8,
+                                  drawType="custom", top=True):
+    if isinstance(labels, np.ndarray):
+        labels = labels.reshape(-1).tolist()
+    texts = texts if texts else labels
+    for label, box, name in zip(labels, boxes, texts):
+        box = [int(b) for b in box]
+        color_ = color if color else color_map[int(label) + 1]
+        image = draw_image_box_text(image, box, color_, str(name), thickness, fontScale, drawType, top)
     return image
 
 
-def show_image_bboxes_text(title, image, boxes, boxes_name, color=None, thickness=-1, fontScale=-1.0,
+def draw_image_rects_labels_text(image, rects, labels, boxes_name=None, color=None, thickness=2, fontScale=0.8,
+                                 drawType="custom", top=True):
+    """已废弃，使用draw_image_rects_labels_texts代替"""
+    boxes = rects2boxes(rects)
+    image = draw_image_boxes_labels_texts(image, boxes, labels, texts=boxes_name, color=color, thickness=thickness,
+                                          fontScale=fontScale, drawType=drawType, top=top)
+    return image
+
+
+def draw_image_rects_labels_texts(image, rects, labels, texts=None, color=None, thickness=2, fontScale=0.8,
+                                  drawType="custom", top=True):
+    boxes = rects2boxes(rects)
+    image = draw_image_boxes_labels_texts(image, boxes, labels, texts=texts, color=color, thickness=thickness,
+                                          fontScale=fontScale, drawType=drawType, top=top)
+    return image
+
+
+def show_image_boxes_texts(title, image, boxes, texts, color=None, thickness=-1, fontScale=-1.0,
                            drawType="custom", delay=0, top=True):
     """
-    :param boxes_name:
+    :param texts:
     :param bgr_image: bgr image
     :param color: BGR color:[B,G,R]
     :param boxes: [[x1,y1,x2,y2],[x1,y1,x2,y2]]
     :return:
     """
-    bgr_image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-    bgr_image = draw_image_bboxes_text(bgr_image, boxes, boxes_name=boxes_name, color=color, thickness=thickness,
-                                       fontScale=fontScale, drawType=drawType, top=top)
-    image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2RGB)
+    image = draw_image_boxes_texts(image, boxes, texts=texts, color=color, thickness=thickness,
+                                   fontScale=fontScale, drawType=drawType, top=top)
     cv_show_image(title, image, delay=delay)
     return image
 
 
-def draw_image_rects_text(image, rects, rects_name, color=None, thickness=-1, fontScale=-1.0,
+def draw_image_rects_text(image, rects, texts, color=None, thickness=-1, fontScale=-1.0,
                           drawType="custom", top=True):
-    boxes = rects2bboxes(rects)
-    image = draw_image_bboxes_text(image, boxes, boxes_name=rects_name, color=color, thickness=thickness,
+    """已经废弃，使用draw_image_rects_texts代替"""
+    boxes = rects2boxes(rects)
+    image = draw_image_boxes_texts(image, boxes, texts=texts, color=color, thickness=thickness,
+                                   fontScale=fontScale, drawType=drawType, top=top)
+    return image
+
+
+def draw_image_rects_texts(image, rects, texts, color=None, thickness=-1, fontScale=-1.0,
+                           drawType="custom", top=True):
+    boxes = rects2boxes(rects)
+    image = draw_image_boxes_texts(image, boxes, texts=texts, color=color, thickness=thickness,
                                    fontScale=fontScale, drawType=drawType, top=top)
     return image
 
@@ -1096,27 +1126,42 @@ def draw_image_rects_text(image, rects, rects_name, color=None, thickness=-1, fo
 def show_image_rects_text(title, image, rects, rects_name, color=None, thickness=-1, fontScale=-1.0, drawType="custom",
                           delay=0, top=True):
     """
+    已经废弃，使用show_image_rects_texts代替
     :param rects_name:
     :param bgr_image: bgr image
     :param rects: [[x1,y1,w,h],[x1,y1,w,h]]
     :return:
     """
-    boxes = rects2bboxes(rects)
-    image = show_image_bboxes_text(title, image, boxes, boxes_name=rects_name, color=color, thickness=thickness,
+    boxes = rects2boxes(rects)
+    image = show_image_boxes_texts(title, image, boxes, texts=rects_name, color=color, thickness=thickness,
                                    fontScale=fontScale, drawType=drawType, delay=delay, top=top)
     return image
 
 
-def draw_image_bboxes_labels(image, bboxes, labels, class_name=None, color=None,
+def show_image_rects_texts(title, image, rects, texts, color=None, thickness=-1, fontScale=-1.0, drawType="custom",
+                           delay=0, top=True):
+    """
+    :param texts:
+    :param image: image
+    :param rects: [[x1,y1,w,h],[x1,y1,w,h]]
+    :return:
+    """
+    boxes = rects2boxes(rects)
+    image = show_image_boxes_texts(title, image, boxes, texts=texts, color=color, thickness=thickness,
+                                   fontScale=fontScale, drawType=drawType, delay=delay, top=top)
+    return image
+
+
+def draw_image_bboxes_labels(image, boxes, labels, class_name=None, color=None,
                              thickness=-1, fontScale=-1.0, drawType="custom"):
     """
     :param image:
-    :param bboxes:  [[x1,y1,x2,y2],[x1,y1,x2,y2]]
+    :param boxes:  [[x1,y1,x2,y2],[x1,y1,x2,y2]]
     :param labels:
     :return:
     """
     if isinstance(labels, np.ndarray): labels = labels.astype(np.int32).reshape(-1).tolist()
-    for label, box in zip(labels, bboxes):
+    for label, box in zip(labels, boxes):
         box = [int(b) for b in box]
         name = label
         color_ = color
@@ -1129,6 +1174,9 @@ def draw_image_bboxes_labels(image, bboxes, labels, class_name=None, color=None,
     return image
 
 
+draw_image_boxes_labels = draw_image_bboxes_labels
+
+
 def draw_image_rects_labels(image, rects, labels, class_name=None, color=None, thickness=-1, fontScale=-1.0):
     """
     :param image:
@@ -1136,9 +1184,9 @@ def draw_image_rects_labels(image, rects, labels, class_name=None, color=None, t
     :param labels:
     :return:
     """
-    bboxes = rects2bboxes(rects)
-    image = draw_image_bboxes_labels(image, bboxes, labels, class_name=class_name, color=color,
-                                     thickness=thickness, fontScale=fontScale)
+    boxes = rects2boxes(rects)
+    image = draw_image_boxes_labels(image, boxes, labels, class_name=class_name, color=color,
+                                    thickness=thickness, fontScale=fontScale)
     return image
 
 
@@ -1155,7 +1203,7 @@ def draw_image_detection_rects(image, rects, probs, labels, class_name=None, thi
     :param drawType:
     :return:
     """
-    boxes = rects2bboxes(rects)
+    boxes = rects2boxes(rects)
     image = draw_image_detection_boxes(image, boxes, probs, labels, class_name,
                                        thickness=thickness, fontScale=fontScale, drawType=drawType)
     return image
@@ -1221,14 +1269,14 @@ def draw_dt_gt_dets(image, dt_boxes, dt_label, gt_boxes, gt_label, vis_diff=Fals
         assert len(gt_boxes) == len(dt_boxes)
         for i in range(len(gt_label)):
             if dt_label[i] == gt_label[i]:
-                image = draw_image_bboxes_text(image, [gt_boxes[i]], [gt_label[i]], color=(0, 255, 0))
-                image = draw_image_bboxes_text(image, [dt_boxes[i]], [dt_label[i]], color=(0, 255, 0))
+                image = draw_image_boxes_texts(image, [gt_boxes[i]], [gt_label[i]], color=(0, 255, 0))
+                image = draw_image_boxes_texts(image, [dt_boxes[i]], [dt_label[i]], color=(0, 255, 0))
             else:
-                image = draw_image_bboxes_text(image, [gt_boxes[i]], [gt_label[i]], color=(0, 255, 0))
-                image = draw_image_bboxes_text(image, [dt_boxes[i]], [dt_label[i]], color=(255, 0, 0))
+                image = draw_image_boxes_texts(image, [gt_boxes[i]], [gt_label[i]], color=(0, 255, 0))
+                image = draw_image_boxes_texts(image, [dt_boxes[i]], [dt_label[i]], color=(255, 0, 0))
     else:
-        image = draw_image_bboxes_text(image, gt_boxes, gt_label, color=(0, 255, 0))
-        image = draw_image_bboxes_text(image, dt_boxes, dt_label, color=(255, 0, 0))
+        image = draw_image_boxes_texts(image, gt_boxes, gt_label, color=(0, 255, 0))
+        image = draw_image_boxes_texts(image, dt_boxes, dt_label, color=(255, 0, 0))
     return image
 
 
@@ -1302,6 +1350,9 @@ def draw_points_text(image, points, texts=None, color=(255, 0, 0), thickness=-1,
         cv2.circle(image, point, thickness * 3, tuple(c), -1, lineType=cv2.LINE_AA)
         if text: draw_text(image, point, text, color=c, fontScale=fontScale, thickness=thickness, drawType=drawType)
     return image
+
+
+draw_points_texts = draw_points_text
 
 
 def draw_texts(image, points, texts, color=(255, 0, 0), fontScale=-1.0, thickness=-1, drawType="simple"):
@@ -1672,12 +1723,12 @@ def save_image(image_file, image, uint8=False, use_rgb=False):
     cv2.imwrite(image_file, image)
 
 
-def nms_boxes_cv2(bboxes: np.ndarray, scores: np.ndarray, labels: np.ndarray, image_size=(),
+def nms_boxes_cv2(boxes: np.ndarray, scores: np.ndarray, labels: np.ndarray, image_size=(),
                   score_threshold=0.5, nms_threshold=0.45, eta=None, top_k=None):
     """
     NMS
     fix a bug: cv2.dnn.NMSBoxe bboxes, scores params must be list and float data,can not be float32 or int
-    :param bboxes: List or np.ndarray,shape is（nums-boxes,4）is (x,y,w,h)
+    :param boxes: List or np.ndarray,shape is（nums-boxes,4）is (x,y,w,h)
     :param scores: List or np.ndarray,shape is（nums-boxes,）
     :param labels: List or np.ndarray,shape is（nums-boxes,）
     :param image_size: (width,height)
@@ -1685,17 +1736,17 @@ def nms_boxes_cv2(bboxes: np.ndarray, scores: np.ndarray, labels: np.ndarray, im
     :param nms_threshold:
     :return:
     """
-    if isinstance(bboxes, np.ndarray): bboxes = bboxes.tolist()
+    if isinstance(boxes, np.ndarray): boxes = boxes.tolist()
     if isinstance(scores, np.ndarray): scores = scores.tolist()
-    indices = cv2.dnn.NMSBoxes(bboxes, scores, score_threshold=score_threshold, nms_threshold=nms_threshold,
+    indices = cv2.dnn.NMSBoxes(boxes, scores, score_threshold=score_threshold, nms_threshold=nms_threshold,
                                eta=eta, top_k=top_k)
-    if isinstance(bboxes, list): bboxes = np.asarray(bboxes)
+    if isinstance(boxes, list): boxes = np.asarray(boxes)
     if isinstance(scores, list): scores = np.asarray(scores)
     if isinstance(labels, list): labels = np.asarray(labels)
-    dest_bboxes = bboxes[indices]
-    dest_scores = scores[indices]
-    dest_labels = labels[indices]
-    return dest_bboxes, dest_scores, dest_labels
+    dst_boxes = boxes[indices]
+    dst_score = scores[indices]
+    dst_label = labels[indices]
+    return dst_boxes, dst_score, dst_label
 
 
 def file2base64(file):
@@ -1829,25 +1880,25 @@ def get_rect_crop_padding(image, rect, color=(0, 0, 0)):
     return roi_image
 
 
-def get_bbox_crop_padding(image, bbox, color=(0, 0, 0)):
+def get_box_crop_padding(image, box, color=(0, 0, 0)):
     """
     :param image:
-    :param bbox:
+    :param box:
     :return:
     """
-    rect = bboxes2rects([bbox])[0]
+    rect = boxes2rects([box])[0]
     roi_image = get_rect_crop_padding(image, rect, color=color)
     return roi_image
 
 
-def get_bbox_crop(image, bbox):
+def get_box_crop(image, box):
     """
     :param image:
-    :param bbox:
+    :param box:
     :return:
     """
     h, w = image.shape[:2]
-    xmin, ymin, xmax, ymax = bbox[:4]
+    xmin, ymin, xmax, ymax = box[:4]
     xmin, ymin = max(0, int(xmin)), max(0, int(ymin))
     xmax, ymax = min(w, int(xmax)), min(h, int(ymax))
     roi = image[ymin:ymax, xmin:xmax]
@@ -1856,23 +1907,52 @@ def get_bbox_crop(image, bbox):
 
 def get_bboxes_crop(image, bboxes):
     """
+    已经废弃，使用get_boxes_crop代替
     :param image:
     :param bbox:
     :return:
     """
-    crops = [get_bbox_crop(image, box) for box in bboxes]
+    crops = [get_box_crop(image, box) for box in bboxes]
+    return crops
+
+
+def get_boxes_crop(image, boxes):
+    """
+    :param image:
+    :param boxes:
+    :return:
+    """
+    crops = [get_box_crop(image, box) for box in boxes]
     return crops
 
 
 def get_bboxes_crop_padding(image, bboxes, size=(), color=(0, 0, 0)):
     """
+    已经废弃，使用get_boxes_crop_padding代替
     :param image:
     :param bboxes:
     :param size:
     :param color:
     :return:
     """
-    rects = bboxes2rects(bboxes)
+    rects = boxes2rects(bboxes)
+    crops = []
+    for rect in rects:
+        roi = get_rect_crop_padding(image, rect, color=color)
+        if size: roi = resize_image(roi, size=size)
+        crops.append(roi)
+    return crops
+
+
+def get_boxes_crop_padding(image, boxes, size=(), color=(0, 0, 0)):
+    """
+    :param image:
+    :param boxes:
+    :param size:
+    :param color:
+    :return:
+    """
+    rects = boxes2rects(boxes)
     crops = []
     for rect in rects:
         roi = get_rect_crop_padding(image, rect, color=color)
@@ -1943,7 +2023,7 @@ def center_crop_padding_mask_shift(mask, size=(256, 256), center=True, scale=1.0
             cx, cy = (box[0] + box[2]) / 2, (box[1] + box[3]) / 2
             new = (cx - size[0] / 2, cy - size[1] / 2,
                    cx + size[0] / 2, cy + size[1] / 2)
-            mask = get_bbox_crop_padding(mask, new, color=color)
+            mask = get_box_crop_padding(mask, new, color=color)
     if scale < 1.0:
         mask = get_scale_image(mask, scale=scale, color=color)
     return mask
@@ -1961,26 +2041,11 @@ def center_crop_padding_mask_resize(mask, size=(256, 256), center=True, scale=1.
     """
     if center:
         box = get_mask_boundrect_cv(mask, binarize=False, shift=0)
-        if box: mask = get_bbox_crop(mask, box)
+        if box: mask = get_box_crop(mask, box)
     mask = resize_image_padding(mask, size=size, color=color, interpolation=cv2.INTER_LINEAR)
     if scale < 1.0:
         mask = get_scale_image(mask, scale=scale, color=color)
     return mask
-
-
-def points2bbox(keypoints):
-    joints_bbox = []
-    for joints in keypoints:
-        joints = np.asarray(joints)
-        shape = joints.shape
-        if len(shape) == 1:
-            joints = joints.reshape(-1, 2)
-        xmin = min(joints[:, 0])
-        ymin = min(joints[:, 1])
-        xmax = max(joints[:, 0])
-        ymax = max(joints[:, 1])
-        joints_bbox.append([xmin, ymin, xmax, ymax])
-    return joints_bbox
 
 
 def draw_yaws_pitchs_rolls_axis_in_image(image,
@@ -2119,11 +2184,12 @@ def polygons2boxes(polygons: List[np.ndarray]):
     :return: boxes:[num_polygons,4], box is [xmin, ymin, xmax, ymax]
     """
     boxes = []
-    for p in polygons:
-        xmin = min(p[:, 0])
-        ymin = min(p[:, 1])
-        xmax = max(p[:, 0])
-        ymax = max(p[:, 1])
+    for pts in polygons:
+        if not isinstance(pts, np.ndarray): pts = np.asarray(pts)
+        xmin = min(pts[:, 0])
+        ymin = min(pts[:, 1])
+        xmax = max(pts[:, 0])
+        ymax = max(pts[:, 1])
         boxes.append([xmin, ymin, xmax, ymax])
     boxes = np.asarray(boxes)
     return boxes
@@ -2139,8 +2205,8 @@ def boxes2polygons(boxes: np.ndarray or List[np.ndarray]):
     polygons = []
     for box in boxes:
         xmin, ymin, xmax, ymax = box
-        p = [[xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax]]
-        polygons.append(p)
+        pts = [[xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax]]
+        polygons.append(pts)
     polygons = np.asarray(polygons)
     return polygons
 
@@ -2564,7 +2630,7 @@ def get_image_points_valid_range(image, points, valid_range, crop=True, color=(2
     """
     valid_point, valid_index = get_points_valid_range(points, valid_range)
     if crop:
-        image = get_bbox_crop_padding(image, valid_range, color=color)
+        image = get_box_crop_padding(image, valid_range, color=color)
         valid_point = valid_point - (valid_range[0], valid_range[1])
     return image, valid_point, valid_index
 

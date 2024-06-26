@@ -17,7 +17,7 @@ def crop_images(image_dir, out_dir, box=[], vis=True):
         image = image_utils.read_image(image_file)
         h, w = image.shape[:2]  # (1080,1920)
         bbox = box if len(box) == 4 else [0, 0, w, h]
-        crop = image_utils.get_bbox_crop(image, bbox=bbox)
+        crop = image_utils.get_box_crop(image, box=bbox)
         if out_file:
             cv2.imwrite(out_file, crop)
         if vis:
