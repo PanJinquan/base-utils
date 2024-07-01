@@ -296,7 +296,7 @@ def video_iterator(video_file: int or str, save_video: str or int = None, interv
     :param video_file: String 视频文件，如*.avi,*.mp4,...
                        Int 摄像头ID，如0，1，2
     :param save_video: 保存task视频处理后的结果
-    :param interval: 抽帧处理间隔
+    :param interval: 抽帧处理间隔，当interval=-1，表示当interval=fps,即一秒一帧
     :param task: 回调函数： def task(frame, **kwargs)
     :param kwargs:回调函数输入参数,
                  delay: 控制显示延时,默认10S
@@ -308,13 +308,13 @@ def video_iterator(video_file: int or str, save_video: str or int = None, interv
     """
     video_cap = image_utils.get_video_capture(video_file)
     w, h, num_frames, fps = image_utils.get_video_info(video_cap)
-    # video_writer = get_video_writer(save_video, width, height, fps)
-    video_writer = None
-    fps = max(kwargs.get("speed", 1) * fps // interval, 1)
     start = int(kwargs.get("start", 0) * fps)
     end = int(kwargs.get("end", num_frames / fps) * fps)
     end = min(end, num_frames)
+    interval = fps if interval == -1 else interval  # 当interval=-1，表示当interval=fps,即一秒一帧
+    save_fps = max(kwargs.get("speed", 1) * fps // interval, 1)
     count = start
+    video_writer = None
     while True:
         # if count % interval == 0:
         if count % interval == 0 and count >= 0:
@@ -330,7 +330,7 @@ def video_iterator(video_file: int or str, save_video: str or int = None, interv
             h, w = frame.shape[:2]
             if vis: image_utils.cv_show_image(kwargs.get("title", "video"), frame, delay=kwargs.get("delay", 10))
             if save_video:
-                if not video_writer: video_writer = image_utils.get_video_writer(save_video, w, h, fps)
+                if not video_writer: video_writer = image_utils.get_video_writer(save_video, w, h, save_fps)
                 video_writer.write(frame)
         count += 1
     video_cap.release()
