@@ -41,13 +41,13 @@ def parser_annotations(xml_file):
 def convert_cvat2labelme(anno_dir, image_dir="", vis=False):
     """
     将CVAT标注格式(LabelMe 3.0)转换labelme通用格式
-    :param anno_dire:
-    :param image_dir:
+    :param anno_dir: 标注文件目录，输出json文件与anno_dir同目录
+    :param image_dir: 图片文件目录
     :param vis:
     :return:
     """
     xml_list = file_utils.get_files_lists(anno_dir, postfix=["*.xml"])
-    for xml_file in xml_list:
+    for xml_file in tqdm(xml_list):
         image_name, annos, w, h = parser_annotations(xml_file)
         points = [an['points'] for an in annos if len(an['points']) > 0]
         labels = [an['label'] for an in annos if an['label']]

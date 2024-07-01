@@ -244,17 +244,8 @@ def resize_video(video_file, save_video, size=(), start=0, interval=1, vis=True,
     video_writer.release()
 
 
-def video_task(frame, **kwargs):
-    # TODO
-    delay = kwargs.get("delay", 0)
-    title = kwargs.get("title", "image")
-    cv2.imshow(title, frame)
-    cv2.moveWindow(title, 0, 0)
-    cv2.waitKey(delay)
-    return frame
-
-
-def video_capture(video_file: int or str, save_video: str = None, interval=1, task: Callable = video_task, **kwargs):
+def video_capture(video_file: int or str, save_video: str or int = None, interval=1, task: Callable = None,
+                  vis=True, **kwargs):
     """
     读取摄像头或者视频流
     :param video_file: String 视频文件，如*.avi,*.mp4,...
@@ -267,66 +258,85 @@ def video_capture(video_file: int or str, save_video: str = None, interval=1, ta
                  title: 控制显示窗口名
     :return:
     """
-    # cv2.moveWindow("test", 1000, 100)
-    video_cap = get_video_capture(video_file)
-    width, height, num_frames, fps = get_video_info(video_cap)
+    video_cap = image_utils.get_video_capture(video_file)
+    width, height, num_frames, fps = image_utils.get_video_info(video_cap)
+    # video_writer = get_video_writer(save_video, width, height, fps)
     video_writer = None
-    # fps = max((fps + interval - 1) // interval, 2)
     fps = max(fps // interval, 2)
-    if save_video: video_writer = get_video_writer(save_video, width, height, fps)
-    # freq = int(fps / detect_freq)
-    count = 0
+    count = int(kwargs.get("start", 0) * fps)
     while True:
-        if count % interval == 0:
+        # if count % interval == 0:
+        if count % interval == 0 and count >= 0:
             # 设置抽帧的位置
             if isinstance(video_file, str): video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
             isSuccess, frame = video_cap.read()
             if not isSuccess or 0 < num_frames < count: break
             if task: frame = task(frame, **kwargs)
+            height, width = frame.shape[:2]
+            if vis: image_utils.cv_show_image(kwargs.get("title", "video"), frame, delay=kwargs.get("delay", 10))
             if save_video:
+                if not video_writer: video_writer = image_utils.get_video_writer(save_video, width, height, fps)
                 video_writer.write(frame)
         count += 1
     video_cap.release()
+    if video_writer:
+        print("save video:{}".format(save_video))
+        video_writer.release()
 
 
-class CVVideo():
-    def __init__(self):
-        pass
-
-    def video_capture(self, video_file, save_video=None, interval=1):
-        """
-        start capture video
-        :param video_file: *.avi,*.mp4,...
-        :param save_video: *.avi
-        :param interval:
-        :return:
-        """
-        # cv2.moveWindow("test", 1000, 100)
-        video_cap = get_video_capture(video_file)
-        width, height, num_frames, fps = get_video_info(video_cap)
-        video_writer = None
-        if save_video: video_writer = get_video_writer(save_video, width, height, fps)
-        # freq = int(fps / detect_freq)
-        count = 0
-        while True:
-            if count % interval == 0:
-                # 设置抽帧的位置
-                if isinstance(video_file, str): video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
-                isSuccess, frame = video_cap.read()
-                if not isSuccess or 0 < num_frames < count: break
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                frame = self.task(frame)
-                if save_video:
-                    video_writer.write(frame)
-            count += 1
-        video_cap.release()
-
-    def task(self, frame):
-        # TODO
-        cv2.imshow("image", frame)
-        cv2.moveWindow("image", 0, 0)
-        cv2.waitKey(10)
-        return frame
+def video_iterator(video_file: int or str, save_video: str or int = None, interval=1, task: Callable = None,
+                   vis=True, **kwargs):
+    """
+    读取摄像头或者视频流迭代器
+    Usage:
+        video_cap = video_utils.video_iterator(video_file, save_file, start=4, end=10)
+        for data_info in video_cap:
+            frame = data_info["frame"]
+            ...
+    :param video_file: String 视频文件，如*.avi,*.mp4,...
+                       Int 摄像头ID，如0，1，2
+    :param save_video: 保存task视频处理后的结果
+    :param interval: 抽帧处理间隔
+    :param task: 回调函数： def task(frame, **kwargs)
+    :param kwargs:回调函数输入参数,
+                 delay: 控制显示延时,默认10S
+                 title: 控制显示窗口名，默认video
+                 start: 开始播放时间，单位S
+                 end: 结束播放时间，单位S
+                 speed: 播放速度
+    :return: frame, count, w, h, fps =data_info['frame'],data_info['count'],data_info['w'],data_info['h'],data_info['fps']
+    """
+    video_cap = image_utils.get_video_capture(video_file)
+    w, h, num_frames, fps = image_utils.get_video_info(video_cap)
+    # video_writer = get_video_writer(save_video, width, height, fps)
+    video_writer = None
+    fps = max(kwargs.get("speed", 1) * fps // interval, 1)
+    start = int(kwargs.get("start", 0) * fps)
+    end = int(kwargs.get("end", num_frames / fps) * fps)
+    end = min(end, num_frames)
+    count = start
+    while True:
+        # if count % interval == 0:
+        if count % interval == 0 and count >= 0:
+            # 设置抽帧的位置
+            if isinstance(video_file, str): video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
+            isSuccess, frame = video_cap.read()
+            if not isSuccess or 0 < end < count or frame is None: break
+            if task: frame = task(frame, **kwargs)
+            data_info = {"frame": frame, "count": count, "w": w, "h": h, "fps": fps}
+            # TODO 返回data_info
+            yield data_info
+            frame = data_info["frame"]
+            h, w = frame.shape[:2]
+            if vis: image_utils.cv_show_image(kwargs.get("title", "video"), frame, delay=kwargs.get("delay", 10))
+            if save_video:
+                if not video_writer: video_writer = image_utils.get_video_writer(save_video, w, h, fps)
+                video_writer.write(frame)
+        count += 1
+    video_cap.release()
+    if video_writer:
+        print("save video:{}".format(save_video))
+        video_writer.release()
 
 
 def resize_task(frame, **kwargs):
