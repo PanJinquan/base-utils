@@ -147,6 +147,7 @@ class VOCDataset(Dataset):
 
         files = self.get_file_list(image_dir, postfix=file_utils.IMG_POSTFIX, basename=False)
         self.postfix = os.path.basename(files[0]).split(".")[-1] if files else "jpg"
+        assert len(image_ids) > 0, f"image_dir={image_dir} is empty"
         return data_root, anno_dir, image_dir, image_ids
 
     def convert_target(self, boxes, labels):

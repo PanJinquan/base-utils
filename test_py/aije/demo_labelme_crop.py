@@ -66,11 +66,11 @@ if __name__ == "__main__":
     """
     # anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v9/json"
     anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v0/json"
-    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-test/json"
+    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det-fix/dataset-v12/json"
     # anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v10/json"
     # anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-person-coco/json"
-    # class_name = ['身穿工作服', '未穿工作服', '表箱关', '表箱开', "手", "绝缘手套", "绝缘鞋", "长筒靴", "其他鞋"]  # 室内
-    class_name = None  # 室内
+    class_name = ['手', '绝缘手套', '手穿绝缘手套', '棉纱手套', '手穿棉纱手套']
+    # class_name = None  # 室内
     out_dir = os.path.join(os.path.dirname(anno_dir), "crops")
     dataset = parser_labelme.LabelMeDatasets(filename=None,
                                              data_root=None,
@@ -82,7 +82,7 @@ if __name__ == "__main__":
                                              shuffle=False)
     print("have num:{}".format(len(dataset)))
     class_name = dataset.class_name
-    scale = [1.0, 1.0]
+    scale = [2.0, 2.0]
     flag = str(scale[0]).replace(".", "p")
     flag = None
     # scale = None

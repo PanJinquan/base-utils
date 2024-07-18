@@ -204,6 +204,7 @@ class YOLODataset(Dataset):
             image_ids = [os.path.basename(f) for f in image_ids]
         # assert os.path.exists(image_dir), Exception("no directory:{}".format(image_dir))
         # assert os.path.exists(anno_dir), Exception("no directory:{}".format(anno_dir))
+        assert len(image_ids) > 0, f"image_dir={image_dir} is empty"
         return data_root, anno_dir, image_dir, image_ids
 
     def __getitem__(self, index):

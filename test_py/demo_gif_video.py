@@ -24,7 +24,8 @@ def resize_android(frame):
 
 def resize_fun(frame):
     h, w = frame.shape[:2]
-    frame = image_utils.resize_image(frame, size=(224, None))
+    # frame = image_utils.resize_image(frame, size=(224, None))
+    frame = image_utils.resize_image(frame, size=(512, None))
     # frame = image_utils.resize_image(frame, size=(960, None))
     # frame = image_utils.resize_image(frame, size=(None, 640))  # android-video
     return frame
@@ -37,7 +38,7 @@ def android_gif():
 
 
 def python_gif():
-    video_file = "/home/PKing/nasdata/tmp/tmp/WaterMeter/code/python-demo.avi"
+    video_file = "/home/PKing/nasdata/tmp/tmp/WaterMeter/code/water-meter-dets.avi"
     video_utils.video2gif(video_file, interval=6, func=resize_fun, fps=8, use_pil=False, vis=True)
 
 
@@ -51,5 +52,5 @@ def image_gif():
 
 if __name__ == "__main__":
     # image_gif()
-    android_gif()
-    # python_gif()
+    # android_gif()
+    python_gif()

@@ -155,6 +155,7 @@ class LabelMeDataset(Dataset):
             image_ids = [os.path.basename(f) for f in image_ids]
         # assert os.path.exists(image_dir), Exception("no directory:{}".format(image_dir))
         # assert os.path.exists(anno_dir), Exception("no directory:{}".format(anno_dir))
+        assert len(image_ids) > 0, f"image_dir={image_dir} is empty"
         return data_root, anno_dir, image_dir, image_ids
 
     def __getitem__(self, index):
@@ -380,12 +381,12 @@ def parser_labelme(anno_file, class_dict={}, shape=None):
     return bboxes, labels, points, groups
 
 
-def show_target_image(image, bboxes, labels, points):
+def show_target_image(image, bboxes, labels, points, color=()):
     # image = image_utils.draw_image_bboxes_text(image, bboxes, labels, color=(255, 0, 0),
     #                                            thickness=2, fontScale=1.2, drawType="chinese")
     # image = image_utils.draw_landmark(image, points, color=(0, 255, 0))
     # image = image_utils.draw_key_point_in_image(image, points)
-    image = image_utils.draw_image_contours(image, points, labels)
+    image = image_utils.draw_image_contours(image, points, labels, color=color, thickness=1)
     image_utils.cv_show_image("det", image)
 
 

@@ -19,7 +19,8 @@ if __name__ == "__main__":
 
     # anno_dir = "/home/PKing/nasdata/tmp/tmp/WaterMeter/水表数据集/Water-Meter-Det3/train/json"
     # names = ["BG", "unique"]
-    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-action-det/aije-action-train-v02-add/json"
+    anno_dir = "/home/PKing/nasdata/tmp/tmp/WaterMeter/水表数据集/Water-Meter-Det1/val/json"
+    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v06/json"
     names = None
     dataset = parser_labelme.LabelMeDatasets(filename=None,
                                              data_root=None,

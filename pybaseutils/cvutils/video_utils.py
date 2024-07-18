@@ -285,11 +285,12 @@ def video_capture(video_file: int or str, save_video: str or int = None, interva
 
 
 def video_iterator(video_file: int or str, save_video: str or int = None, interval=1, task: Callable = None,
-                   vis=True, **kwargs):
+                   vis=False, **kwargs):
     """
     读取摄像头或者视频流迭代器
     Usage:
-        video_cap = video_utils.video_iterator(video_file, save_file, start=4, end=10)
+        from pybaseutils.cvutils import video_utils
+        video_cap = video_utils.video_iterator(video_file, save_video, start=4, end=10)
         for data_info in video_cap:
             frame = data_info["frame"]
             ...
@@ -311,7 +312,7 @@ def video_iterator(video_file: int or str, save_video: str or int = None, interv
     start = int(kwargs.get("start", 0) * fps)
     end = int(kwargs.get("end", num_frames / fps) * fps)
     end = min(end, num_frames)
-    interval = fps if interval == -1 else interval  # 当interval=-1，表示当interval=fps,即一秒一帧
+    interval = fps if interval == -1 else interval  # 当interval=-1，表示interval=fps,即一秒一帧
     save_fps = max(kwargs.get("speed", 1) * fps // interval, 1)
     count = start
     video_writer = None

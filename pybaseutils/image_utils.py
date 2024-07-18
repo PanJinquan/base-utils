@@ -2452,7 +2452,7 @@ def draw_image_contours(image, contours: List[np.ndarray], texts=[], color=(), a
         bgimg = image.copy()
         bgimg = cv2.fillPoly(bgimg, p, color=c)
         image = cv2.addWeighted(src1=image, alpha=1 - alpha, src2=bgimg, beta=alpha, gamma=0)
-        if t: image = draw_image_box_text(image, bbox=b, color=c, text=t, thickness=thickness, drawType=drawType)
+        if t: image = draw_text(image, point=(b[0],b[1]), color=c, text=t, thickness=thickness, drawType=drawType)
     return image
 
 
