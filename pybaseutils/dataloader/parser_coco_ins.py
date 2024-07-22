@@ -40,7 +40,8 @@ class CocoInstance(CocoDataset):
         anns_info, file_info = self.get_object_annotations(image_id)
         image, width, height, image_file = self.get_object_image(file_info)
         boxes, labels, mask, segs = self.get_object_instance(anns_info, h=height, w=width, decode=self.decode)
-        data = {"segs": segs, "mask": mask, "image": image, "boxes": boxes, "labels": labels,
+        data = {"image": image, "boxes": boxes, "labels": labels,
+                "segs": segs, "mask": mask, "keypoints": [], "target": [],
                 "image_id": image_id, "annotations": anns_info, "file_info": file_info,
                 "image_file": image_file, "size": [width, height], "class_name": self.class_name}
         return data
@@ -103,7 +104,7 @@ def show_target_image(image, mask, boxes, labels, points=[], class_name=[], thic
     color_image, color_mask = color_utils.draw_image_mask_color(image, mask)
     color_image = image_utils.draw_image_bboxes_labels(color_image, boxes, labels, class_name=class_name,
                                                        thickness=thickness, fontScale=fontScale, drawType="chinese")
-    if len(points)>0:
+    if len(points) > 0:
         color_mask = image_utils.draw_image_contours(color_mask, contours=points)
         color_image = image_utils.draw_image_contours(color_image, contours=points)
     vis_image = image_utils.image_hstack([image, mask, color_image, color_mask])

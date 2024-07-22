@@ -11,6 +11,7 @@ import numpy as np
 import random
 from tqdm import tqdm
 from pybaseutils import image_utils, file_utils, json_utils, base64_utils, time_utils
+from pybaseutils.cvutils import video_utils
 from pybaseutils.transforms import transform_utils
 from pybaseutils.converter import build_voc, build_labelme
 from pybaseutils.dataloader import parser_labelme
@@ -72,11 +73,13 @@ def maker_cvat(xml_file, points, labels, image_name, image_size):
 
 
 if __name__ == '__main__':
-    xml_file = "/home/PKing/Downloads/dataset-label/image/暗物16楼_20240624_091310_5350_0042.xml"
-    points = [
-        [[10, 10], [10, 100], [100, 100], [100, 10]]
-    ]
-    labels = ["person"]
-    image_name = "暗物16楼_20240624_091310_5350_0042.jpg"
-    image_size = [1920, 1080]
-    maker_cvat(xml_file, points, labels, image_name, image_size)
+    image_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/技能人才系统_数据集管理/江门四维2024-07-16/DAV"
+    outpt_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/技能人才系统_数据集管理/江门四维2024-07-16/video"
+    video_list = file_utils.get_files_list(image_dir, postfix=["*.dav"])
+    for video_file in video_list:
+        basename = os.path.basename(video_file).replace(".dav", ".mp4")
+        save_video = file_utils.create_dir(outpt_dir, None, basename)
+        print(video_file)
+        # video_file = "/home/PKing/nasdata/dataset-dmai/AIJE/技能人才系统_数据集管理/江门四维2024-07-16/DAV/NVR_ch4_main_20240717084907_20240717084908.dav"
+        # print(video_file,save_video)
+        video_utils.video2video(video_file=video_file, save_video=save_video)

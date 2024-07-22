@@ -6,6 +6,7 @@
     @Brief  : pip install pyarmor==7.7.4
               https://pyarmor.readthedocs.io/en/v5.4.0/project.html#managing-obfuscated-scripts-with-project
               https://pyarmor.readthedocs.io/en/v7.3.0/project.html#project-configuration-file
+              https://pyarmor.readthedocs.io/zh/v8.5.0/part-1.html
               https://docs.python.org/2/distutils/sourcedist.html#commands (Commands)
               https://baijiahao.baidu.com/s?id=1775756280786745996&wfr=spider&for=pc
               https://www.jianshu.com/p/c1d3d79e3545/
@@ -32,6 +33,8 @@ def build_pyarmor_project(root,
     :param entry: 主函数/入口函数
     :param build: 编译输出目录
     :param manifest: 用于指定需要处理的文件，默认global-include *.py
+              prune  ：去除某个目录的所有文件
+              exclude：去除某个文件
     :param exclude_dirs: 不需要处理的文件
     :return:
     """

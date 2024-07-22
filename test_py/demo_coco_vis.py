@@ -6,6 +6,7 @@
     @Brief  :
 """
 import os
+import numpy as np
 from pybaseutils import image_utils, file_utils
 from pybaseutils.dataloader import parser_coco_ins, parser_coco_kps, parser_coco_det
 
@@ -37,7 +38,7 @@ def demo_vis_CocoInstances():
     class_name = dataset.class_name
     for i in range(len(dataset)):
         data = dataset.__getitem__(i)
-        image, boxes, labels, mask = data['image'], data["boxes"], data["label"], data["mask"]
+        image, boxes, labels, mask = data['image'], data["boxes"], data["labels"], data["mask"]
         segs = data["segs"]
         points = [image_utils.find_minAreaRect(seg)[0] for seg in segs]
         print("i={},image_file={}".format(i, data["image_file"]))
@@ -48,16 +49,22 @@ def demo_vis_CocoInstances():
 def demo_vis_CocoKeypoints():
     # anno_file = "/home/PKing/nasdata/dataset/tmp/hand-pose/HandPose-v2/train/train_anno.json"
     # class_name = ['hand']
-    anno_file = "/home/PKing/nasdata/dataset/tmp/pen/dataset-pen2/train/coco_kps.json"
+    # anno_file = "/home/PKing/nasdata/dataset/tmp/pen/dataset-pen2/train/coco_kps.json"
+    anno_file = "/home/PKing/nasdata/tmp/tmp/pen/dataset-pen1/train/coco_kps.json"
     # class_name = ['pen_tip']
     class_name = []
+    class_name=["hand_pen"]
     # class_name = {"pen": "hand"}
     dataset = parser_coco_kps.CocoKeypoints(anno_file, image_dir="", class_name=class_name, shuffle=True)
     bones = dataset.bones
     for i in range(len(dataset)):
         # i=4
         data = dataset.__getitem__(i)
-        image, boxes, labels, keypoints = data['image'], data["boxes"], data["label"], data["keypoints"]
+        image, boxes, labels, keypoints = data['image'], data["boxes"], data["labels"], data["keypoints"]
+        h,w = image.shape[:2]
+        kpts = [s / (w, h) for s in keypoints] if len(keypoints) > 0 else []
+        kpts = np.asarray(kpts)
+        keypoints = np.asarray(keypoints)
         print("i={},image_file={}".format(i, data['image_file']))
         parser_coco_kps.show_target_image(image, keypoints, boxes, colors=bones["colors"],
                                           skeleton=bones["skeleton"], thickness=4)
@@ -78,6 +85,6 @@ def demo_vis_CocoDetections():
 
 
 if __name__ == "__main__":
-    demo_vis_CocoInstances()
-    # demo_vis_CocoKeypoints()
+    # demo_vis_CocoInstances()
+    demo_vis_CocoKeypoints()
     # demo_vis_CocoDetections()

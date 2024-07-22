@@ -53,9 +53,9 @@ class CocoDetection(CocoDataset):
 
     def __getitem__(self, index):
         image_id = self.image_ids[index]
-        anno_info, file_info = self.get_object_annotations(image_id)
+        anns_info, file_info = self.get_object_annotations(image_id)
         image, width, height, image_file = self.get_object_image(file_info)
-        boxes, labels = self.get_object_detection(anno_info)
+        boxes, labels = self.get_object_detection(anns_info)
         if self.transform and len(boxes) > 0:
             image, boxes, labels = self.transform(image, boxes, labels)
         num_boxes = len(boxes)
@@ -65,7 +65,9 @@ class CocoDetection(CocoDataset):
         if num_boxes == 0:
             index = int(random.uniform(0, len(self)))
             return self.__getitem__(index)
-        data = {"image": image, "target": target, "labels": labels, "image_id": image_id,
+        data = {"image": image, "boxes": boxes, "labels": labels,
+                "segs": [], "mask": [], "keypoints": [], "target": target,
+                "image_id": image_id, "annotations": anns_info, "file_info": file_info,
                 "image_file": image_file, "size": [width, height], "class_name": self.class_name}
         return data
 

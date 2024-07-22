@@ -1905,6 +1905,9 @@ def get_box_crop(image, box):
     return roi
 
 
+get_bbox_crop =get_box_crop
+
+
 def get_bboxes_crop(image, bboxes):
     """
     已经废弃，使用get_boxes_crop代替
@@ -2195,6 +2198,10 @@ def polygons2boxes(polygons: List[np.ndarray]):
     return boxes
 
 
+points2bbox = polygons2boxes
+points2boxes = polygons2boxes
+
+
 def boxes2polygons(boxes: np.ndarray or List[np.ndarray]):
     """
     将矩形框转为多边形轮廓
@@ -2452,7 +2459,7 @@ def draw_image_contours(image, contours: List[np.ndarray], texts=[], color=(), a
         bgimg = image.copy()
         bgimg = cv2.fillPoly(bgimg, p, color=c)
         image = cv2.addWeighted(src1=image, alpha=1 - alpha, src2=bgimg, beta=alpha, gamma=0)
-        if t: image = draw_text(image, point=(b[0],b[1]), color=c, text=t, thickness=thickness, drawType=drawType)
+        if t: image = draw_text(image, point=(b[0], b[1]), color=c, text=t, thickness=thickness, drawType=drawType)
     return image
 
 
@@ -2923,7 +2930,7 @@ def get_video_writer(video_file, width, height, fps):
         os.makedirs(os.path.dirname(video_file))
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
     frameSize = (int(width), int(height))
-    video_writer = cv2.VideoWriter(video_file, fourcc, fps, frameSize)
+    video_writer = cv2.VideoWriter(video_file, fourcc, int(fps), frameSize)
     print("save video:width:{},height:{},fps:{}".format(width, height, fps))
     return video_writer
 

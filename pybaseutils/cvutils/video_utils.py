@@ -177,11 +177,8 @@ def frames2video(image_dir, video_file=None, func=None, size=None, postfix=["*.p
     cv2.destroyAllWindows()
 
 
-def convert_video_format(video_file, save_video, start=0, interval=1):
-    return video2video(video_file, save_video, start=start, interval=interval)
-
-
-def video2video(video_file, save_video, task=None, start=0, interval=1, vis=True, delay=20):
+def video2video(video_file: int or str, save_video: str or int, interval=1, task: Callable = None,
+                vis=True, **kwargs):
     """
     转换视频格式
     :param video_file: *.avi,*.mp4,...
@@ -189,27 +186,10 @@ def video2video(video_file, save_video, task=None, start=0, interval=1, vis=True
     :param interval: 间隔
     :return:
     """
-    video_cap = get_video_capture(video_file)
-    width, height, num_frames, fps = get_video_info(video_cap)
-    # video_writer = get_video_writer(save_video, width, height, fps)
-    video_writer = None
-    # freq = int(fps / detect_freq)
-    count = start
-    while True:
-        # if count % interval == 0:
-        if count % interval == 0 and count > 0:
-            # 设置抽帧的位置
-            video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
-            isSuccess, frame = video_cap.read()
-            if not isSuccess or 0 < num_frames < count: break
-            if task: frame = task(frame, count=count)
-            height, width = frame.shape[:2]
-            if not video_writer: video_writer = get_video_writer(save_video, width, height, fps)
-            if vis: image_utils.cv_show_image("frame", frame, use_rgb=False, delay=delay)
-            video_writer.write(frame)
-        count += 1
-    video_cap.release()
-    video_writer.release()
+    video_capture(video_file=video_file, save_video=save_video, interval=interval, task=task, vis=vis, **kwargs)
+
+
+convert_video_format = video2video
 
 
 def resize_video(video_file, save_video, size=(), start=0, interval=1, vis=True, delay=20):
@@ -259,23 +239,26 @@ def video_capture(video_file: int or str, save_video: str or int = None, interva
     :return:
     """
     video_cap = image_utils.get_video_capture(video_file)
-    width, height, num_frames, fps = image_utils.get_video_info(video_cap)
-    # video_writer = get_video_writer(save_video, width, height, fps)
+    w, h, num_frames, fps = image_utils.get_video_info(video_cap)
+    start = int(kwargs.get("start", 0) * fps)
+    end = int(kwargs.get("end", num_frames / fps) * fps) if fps > 0 else 0
+    end = min(end, num_frames)  # TODO 当num_frames<0时，使用0<end<count继续播放
+    interval = fps if interval == -1 else interval  # 当interval=-1，表示interval=fps,即一秒一帧
+    save_fps = max(kwargs.get("speed", 1) * fps // interval, 1)
+    count = start
     video_writer = None
-    fps = max(fps // interval, 2)
-    count = int(kwargs.get("start", 0) * fps)
     while True:
-        # if count % interval == 0:
+        ret, frame = video_cap.read()
         if count % interval == 0 and count >= 0:
-            # 设置抽帧的位置
-            if isinstance(video_file, str): video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
-            isSuccess, frame = video_cap.read()
-            if not isSuccess or 0 < num_frames < count: break
+            # TODO 设置抽帧的位置，但某些格式视频容易出现问题
+            # if isinstance(video_file, str): video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
+            # ret, frame = video_cap.read()
+            if not ret or 0 < end < count or frame is None: break
             if task: frame = task(frame, **kwargs)
-            height, width = frame.shape[:2]
+            h, w = frame.shape[:2]
             if vis: image_utils.cv_show_image(kwargs.get("title", "video"), frame, delay=kwargs.get("delay", 10))
             if save_video:
-                if not video_writer: video_writer = image_utils.get_video_writer(save_video, width, height, fps)
+                if not video_writer: video_writer = image_utils.get_video_writer(save_video, w, h, save_fps)
                 video_writer.write(frame)
         count += 1
     video_cap.release()
@@ -310,19 +293,19 @@ def video_iterator(video_file: int or str, save_video: str or int = None, interv
     video_cap = image_utils.get_video_capture(video_file)
     w, h, num_frames, fps = image_utils.get_video_info(video_cap)
     start = int(kwargs.get("start", 0) * fps)
-    end = int(kwargs.get("end", num_frames / fps) * fps)
-    end = min(end, num_frames)
+    end = int(kwargs.get("end", num_frames / fps) * fps) if fps > 0 else 0
+    end = min(end, num_frames)  # TODO 当num_frames<0时，使用0<end<count继续播放
     interval = fps if interval == -1 else interval  # 当interval=-1，表示interval=fps,即一秒一帧
     save_fps = max(kwargs.get("speed", 1) * fps // interval, 1)
     count = start
     video_writer = None
     while True:
-        # if count % interval == 0:
+        ret, frame = video_cap.read()
         if count % interval == 0 and count >= 0:
-            # 设置抽帧的位置
-            if isinstance(video_file, str): video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
-            isSuccess, frame = video_cap.read()
-            if not isSuccess or 0 < end < count or frame is None: break
+            # TODO 设置抽帧的位置，但某些格式视频容易出现问题
+            # if isinstance(video_file, str): video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
+            # ret, frame = video_cap.read()
+            if not ret or 0 < end < count or frame is None: break
             if task: frame = task(frame, **kwargs)
             data_info = {"frame": frame, "count": count, "w": w, "h": h, "fps": fps}
             # TODO 返回data_info

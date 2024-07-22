@@ -32,6 +32,7 @@ class CocoKeypoint(base_coco.CocoDataset):
                                            target_transform=target_transform, use_rgb=use_rgb,
                                            shuffle=shuffle, decode=decode, **kwargs)
         if not class_name: class_name = [self.class_name[1]]
+        if isinstance(class_name, dict): class_name = list(class_name.keys())
         self.kps_info = self.load_keypoints_info(target=class_name)
         self.num_joints = num_joints
         if class_name[0] in BONES:
@@ -70,9 +71,10 @@ class CocoKeypoint(base_coco.CocoDataset):
         anns_info, file_info = self.get_object_annotations(image_id)
         image, width, height, image_file = self.get_object_image(file_info)
         boxes, labels, keypoints = self.get_keypoint_info(anns_info, self.num_joints)
-        data = {"keypoints": keypoints, "image": image, "boxes": boxes, "labels": labels, "image_id": image_id,
-                "annotations": anns_info, "file_info": file_info, "image_file": image_file,
-                "size": [width, height], "class_name": self.class_name}
+        data = {"image": image, "boxes": boxes, "labels": labels,
+                "segs": [], "mask": [], "keypoints": keypoints, "target": [],
+                "image_id": image_id, "annotations": anns_info, "file_info": file_info,
+                "image_file": image_file, "size": [width, height], "class_name": self.class_name}
         return data
 
 
@@ -116,7 +118,7 @@ def CocoKeypoints(anno_file=None,
     return datasets
 
 
-def show_target_image(image, keypoints, boxes, skeleton, colors=None,thickness=2, vis_id=False, use_rgb=True):
+def show_target_image(image, keypoints, boxes, skeleton, colors=None, thickness=2, vis_id=False, use_rgb=True):
     image = image_utils.draw_key_point_in_image(image,
                                                 keypoints,
                                                 pointline=skeleton,
