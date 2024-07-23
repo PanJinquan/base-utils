@@ -31,18 +31,31 @@ if __name__ == '__main__':
     aije_root = "/home/PKing/nasdata/release/AIJE/aije-release"
     url = "https://gitlab.dm-ai.cn/aije/aije-algorithm"
     runtime = "/home/PKing/nasdata/release/AIJE/aije-algorithm/aije-algorithm-deployment/.runtime-structure.json"
-    services = file_utils.read_json_data(runtime)["services"]
-    for service in services:
+    runtime_data = file_utils.read_json_data(runtime)["services"]
+    branch = "obfuscation"
+    match = ["aije-equipment-detection"]
+    use_tag = False  #
+    # match = []
+    for service in runtime_data:
+        name: str = service["name"]
+        if name.endswith("deployment"): continue
+        if match and name not in match: continue
         tag = list(service["versions"].keys())[0]
-        name = service["name"]
         path = os.path.join(aije_root, name)
         repo = os.path.join(url, name)
         tool = os.path.join(aije_root, "build_pyarmor.py")
-        comd = []
+        comd = [f"echo obfuscation repository:{repo}"]
         if not os.path.exists(path):
             comd.append(f"cd {aije_root} && git clone {repo}")
-        comd.append(f"cd {path} && git checkout obfuscation && git reset --hard {tag}")
-        comd.append(f"cp {tool} ./")
-        comd.append(f"pwd && python build_pyarmor.py")
+        if use_tag:
+            comd.append(f"cd {path} && git checkout dev && git pull && git checkout {branch} && git reset --hard {tag}")
+            info = f"代码混淆:{tag}"
+        else:
+            comd.append(f"cd {path} && git checkout dev && git pull && git checkout {branch} && git reset --hard dev")
+            info = f"代码混淆:dev"
+        comd.append(f"cd {path} && cp {tool} ./")
+        comd.append(f"cd {path} && python build_pyarmor.py && cp -r  build/* ./ && rm -rf build")
+        comd.append(f"cd {path} && git add . && git commit -m '{info}' && git push origin {branch} --force ")
+        # comd.append(f"cd {path} && PORT=40001 python app/main.py")
         run_command(comd)
-        exit(0)
+        # exit(0)

@@ -27,6 +27,8 @@ if __name__ == '__main__':
                "prune app/infercore/human_pose/hrnet/yolov5/utils," \
                "prune app/infercore/equipment_detector/yolov5/utils," \
                "prune app/infercore/equipment_detector/yolov8/ultralytics," \
+               "prune app/infercore/base," \
+               "prune app/infercore/modules," \
                "exclude app/infercore/modules/indoor_component.py," \
                "exclude app/infercore/modules/outdoor_component.py,"
     pyarmor_utils.build_pyarmor_project(root, entry, build, manifest=manifest, exclude_dirs=IGNORE_DIRS)
