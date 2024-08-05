@@ -19,6 +19,7 @@ def clip_xyxy(xyxy: np.ndarray, valid_range):
     :param valid_range:有效范围(xmin,ymin,xmax,ymax)
     :return:
     """
+    if len(xyxy) == 0: return xyxy
     xmin, ymin, xmax, ymax = valid_range
     xyxy[:, [0, 2]] = np.clip(xyxy[:, [0, 2]], xmin, xmax)
     xyxy[:, [1, 3]] = np.clip(xyxy[:, [1, 3]], ymin, ymax)
@@ -33,6 +34,7 @@ def clip_cxcywh_minmax(cxcywh, wh_thresh, use_max=True):
     :param use_max: True：最大值限制, False: 最小值限制
     :return:
     """
+    if len(cxcywh) == 0: return cxcywh
     if isinstance(wh_thresh, numbers.Number): wh_thresh = [wh_thresh, wh_thresh]
     if not isinstance(cxcywh, np.ndarray): cxcywh = np.asarray(cxcywh)
     centers = cxcywh.copy()
@@ -51,6 +53,7 @@ def clip_cxcywh_minmax(cxcywh, wh_thresh, use_max=True):
 
 def xyxy2xywh(xyxy: np.ndarray):
     """(xmin,ymin,xmax,ymax)==>(xmin,ymin,w,h)"""
+    if len(xyxy) == 0: return xyxy
     if not isinstance(xyxy, np.ndarray): xyxy = np.asarray(xyxy)
     xywh = xyxy.copy()
     xywh[:, 2] = xywh[:, 2] - xywh[:, 0]  # w=xmax-xmin
@@ -60,6 +63,7 @@ def xyxy2xywh(xyxy: np.ndarray):
 
 def xywh2xyxy(xywh: np.ndarray):
     """(xmin,ymin,w,h)==>(xmin,ymin,xmax,ymax)"""
+    if len(xywh) == 0: return xywh
     if not isinstance(xywh, np.ndarray): xywh = np.asarray(xywh)
     xyxy = xywh.copy()
     xyxy[:, 2] = xyxy[:, 0] + xyxy[:, 2]  # xmax=xmin+w
@@ -69,6 +73,7 @@ def xywh2xyxy(xywh: np.ndarray):
 
 def xyxy2cxcywh(xyxy: np.ndarray, width=None, height=None, normalized=False):
     """(xmin, ymin, xmax, ymax)==>(cx,cy,w,h)"""
+    if len(xyxy) == 0: return xyxy
     if not isinstance(xyxy, np.ndarray): xyxy = np.asarray(xyxy)
     cxcywh = xyxy.copy()
     cxcywh[:, 0] = (xyxy[:, 2] + xyxy[:, 0]) / 2  # cx
@@ -82,6 +87,7 @@ def xyxy2cxcywh(xyxy: np.ndarray, width=None, height=None, normalized=False):
 
 def cxcywh2xyxy(cxcywh: np.ndarray, width=None, height=None, normalized=False):
     """(cx,cy,w,h)==>xmin, ymin, xmax, ymax)"""
+    if len(cxcywh) == 0: return cxcywh
     if not isinstance(cxcywh, np.ndarray): cxcywh = np.asarray(cxcywh)
     xyxy = cxcywh.copy()
     xyxy[:, 0] = cxcywh[:, 0] - cxcywh[:, 2] / 2  # top left x
@@ -103,6 +109,7 @@ def extend_xyxy(xyxy: np.ndarray, scale=[1.0, 1.0], valid_range=[], fixed=False,
                  使用fixed的长宽会按照相同大小扩展
     :return:
     """
+    if len(xyxy) == 0: return xyxy
     if not isinstance(xyxy, np.ndarray): xyxy = np.asarray(xyxy)
     cxcywh = xyxy.copy()
     if fixed:
@@ -130,6 +137,7 @@ def extend_xywh(xywh: np.ndarray, scale=[1.0, 1.0], valid_range=[], fixed=False,
     :param scale: [sx,sy]==>(W,H)
     :return:
     """
+    if len(xywh) == 0: return xywh
     if not isinstance(xywh, np.ndarray): xywh = np.asarray(xywh)
     xyxy = xywh2xyxy(xywh)
     xyxy = extend_xyxy(xyxy, scale, valid_range=valid_range, fixed=fixed, use_max=use_max)
@@ -148,6 +156,7 @@ def extend_xyxy_similar_square(xyxy, use_max=True, weight=1.0, valid_range=[]):
     :param valid_range:有效范围(xmin,ymin,xmax,ymax)
     :return:
     """
+    if len(xyxy) == 0: return xyxy
     if not isinstance(xyxy, np.ndarray): xyxy = np.asarray(xyxy)
     center = xyxy2cxcywh(xyxy)
     if use_max:
@@ -161,6 +170,7 @@ def extend_xyxy_similar_square(xyxy, use_max=True, weight=1.0, valid_range=[]):
     _boxes = cxcywh2xyxy(center)
     if valid_range: _boxes = clip_xyxy(_boxes, valid_range=valid_range)
     return _boxes
+
 
 def shrink_polygon_pyclipper(polygon, ratio):
     """
@@ -196,6 +206,7 @@ def get_square_boxes(boxes, use_max=True, baseline=-1):
     :param baseline: 当baseline>0，表示正方形最小边长
     :return:
     """
+    if len(boxes) == 0: return boxes
     if not isinstance(boxes, np.ndarray): boxes = np.asarray(boxes)
     center = xyxy2cxcywh(boxes)
     if use_max:
@@ -222,6 +233,7 @@ def get_square_rects(rects, use_max=True, baseline=-1):
     :param baseline: 当baseline>0，表示正方形最小边长
     :return:
     """
+    if len(rects) == 0: return rects
     boxes = xywh2xyxy(rects)
     boxes = get_square_boxes(boxes, use_max=use_max, baseline=baseline)
     rects = xyxy2xywh(boxes)

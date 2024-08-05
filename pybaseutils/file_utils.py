@@ -550,15 +550,15 @@ def move_dir(src, dst, sub=False):
 
 def move_file(srcfile, dstfile):
     """ 移动文件或重命名"""
-    if not os.path.isfile(srcfile):
-        print("%s not exist!" % (srcfile))
-    else:
+    if os.path.exists(srcfile) and os.path.isfile(srcfile):
         fpath, fname = os.path.split(dstfile)  # 分离文件名和路径
         if not os.path.exists(fpath):
             os.makedirs(fpath)  # 创建路径
         shutil.move(srcfile, dstfile)
         # print("copy %s -> %s"%( srcfile,dstfile))
         # time.sleep(1 / 1000.)
+    else:
+        print("%s not exist!" % (srcfile))
 
 
 def copy_file(srcfile, dstfile):

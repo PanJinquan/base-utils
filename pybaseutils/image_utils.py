@@ -1905,7 +1905,7 @@ def get_box_crop(image, box):
     return roi
 
 
-get_bbox_crop =get_box_crop
+get_bbox_crop = get_box_crop
 
 
 def get_bboxes_crop(image, bboxes):
@@ -2466,6 +2466,20 @@ def draw_image_contours(image, contours: List[np.ndarray], texts=[], color=(), a
 draw_image_mask_color = color_utils.draw_image_mask_color
 
 
+def draw_mask_contours(contours: List[np.ndarray], size, value=255):
+    """
+    参考：draw_image_mask_color
+    :param contours: List[np.ndarray],每个列表是一个轮廓(num_points,1,2)
+    :return:
+    """
+    mask = np.zeros(shape=(size[1], size[0]), dtype=np.uint8)
+    for i in range(0, len(contours)):
+        p = np.asarray(contours[i], dtype=np.int32)
+        if len(p.shape) == 2: p = [p]
+        mask[:] = cv2.drawContours(mask, p, contourIdx=-1, color=value, thickness=-1)
+    return mask
+
+
 def get_mask_boundrect_cv(mask, binarize=False, shift=0):
     """
     获得mask的最大外接矩形框(其速度比get_mask_boundrect快2倍左右)
@@ -2903,7 +2917,7 @@ def get_video_capture(video, width=None, height=None, fps=None):
     return video_cap
 
 
-def get_video_info(video_cap: cv2.VideoCapture):
+def get_video_info(video_cap: cv2.VideoCapture, vis=True):
     """
     获得视频的基础信息
     :param video_cap:视频对象
@@ -2913,7 +2927,7 @@ def get_video_info(video_cap: cv2.VideoCapture):
     height = int(video_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     num_frames = int(video_cap.get(cv2.CAP_PROP_FRAME_COUNT))
     fps = int(video_cap.get(cv2.CAP_PROP_FPS))
-    print("read video:width:{},height:{},fps:{},num_frames:{}".format(width, height, fps, num_frames))
+    if vis: print("read video:width:{},height:{},fps:{},num_frames:{}".format(width, height, fps, num_frames))
     return width, height, num_frames, fps
 
 

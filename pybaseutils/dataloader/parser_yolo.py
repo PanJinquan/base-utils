@@ -217,13 +217,13 @@ class YOLODataset(Dataset):
         image = self.read_image(image_file, use_rgb=self.use_rgb)
         shape = image.shape
         annotation = self.load_annotations(anno_file)
-        boxes, labels, points = self.parser_annotation(annotation, shape, self.class_dict)
+        boxes, labels, points = self.parser_annotation_segs(annotation, shape, self.class_dict)
         data = {"image": image, "boxes": boxes, "labels": labels, "points": points,
                 "image_file": image_file, "anno_file": anno_file}
         return data
 
     @staticmethod
-    def parser_annotation(annotation: dict, shape, class_dict):
+    def parser_annotation_boxes(annotation: dict, shape, class_dict):
         """
         :param annotation:  labelme标注的数据
         :param class_dict:  label映射
@@ -247,6 +247,28 @@ class YOLODataset(Dataset):
             points = points.reshape(-1, 4, 2)
             points = points * [w, h]
             bboxes = image_utils.points2bbox(points)
+        return bboxes, labels, points
+
+    @staticmethod
+    def parser_annotation_segs(annotation: dict, shape, class_dict):
+        """
+        :param annotation:  labelme标注的数据
+        :param class_dict:  label映射
+        :param shape: 图片shape(H,W,C),可进行坐标点的维度检查，避免越界
+        :return:
+        """
+        # dim=5,annotation is [class_index, cx, cy, w,  h]
+        # dim=9,annotation is [class_index, x1, y1, x2, y2, x3, y3, x4, y4],四个角点
+        h, w = shape[:2]
+        bboxes, labels, points = [], [], []
+        for anno in annotation:
+            label = anno[0]
+            polys = np.asarray(anno[1:]).reshape(-1, 2)
+            polys = polys * [w, h]
+            boxes = image_utils.polygons2boxes([polys])[0]
+            labels.append(label)
+            points.append(polys)
+            bboxes.append(boxes)
         return bboxes, labels, points
 
     def index2id(self, index):
@@ -319,16 +341,17 @@ def show_target_image(image, bboxes, labels, points=[], class_name=None, use_rgb
     :param use_rgb:
     :return:
     """
-    image = image_utils.draw_image_contours(image, contours=points)
-    # image = image_utils.draw_image_bboxes_labels(image, bboxes, labels, class_name=class_name)
-    image_utils.cv_show_image("det", image, use_rgb=use_rgb)
+    dst = image.copy()
+    dst = image_utils.draw_image_contours(dst, contours=points, alpha=0.1, thickness=1)
+    dst = image_utils.image_hstack([image, dst])
+    image_utils.cv_show_image("det", dst, use_rgb=use_rgb)
 
 
 if __name__ == "__main__":
     # filename = "/home/dm/nasdata/dataset/csdn/helmet/helmet-dataset-v2/train.txt"
     # filename = "/home/dm/nasdata/dataset/csdn/helmet/helmet-asian/total.txt"
     # filename = "/home/dm/nasdata/dataset/csdn/helmet/helmet-asian/total.txt"
-    filename = "/home/PKing/Downloads/dota8/dota8/images/train/train.txt"
+    filename = "/home/PKing/nasdata/tmp/tmp/medical/肾结石CT/valid/sample.txt"
     dataset = YOLODataset(filename=filename,
                           data_root=None,
                           anno_dir=None,
@@ -341,8 +364,8 @@ if __name__ == "__main__":
     for i in range(len(dataset)):
         print(i)  # i=20
         data = dataset.__getitem__(i)
-        image, bboxes, labels = data["image"], data["box"], data["label"]
-        points = data["point"]
+        image, bboxes, labels = data["image"], data["boxes"], data["labels"]
+        points = data["points"]
         h, w = image.shape[:2]
         image_file = data["image_file"]
         show_target_image(image, bboxes, labels, points=points)
