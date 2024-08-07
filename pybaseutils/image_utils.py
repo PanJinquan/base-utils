@@ -2438,7 +2438,8 @@ def pointPolygonTest(point, contour, measureDist=False):
     return dist
 
 
-def draw_image_contours(image, contours: List[np.ndarray], texts=[], color=(), alpha=0.5, thickness=2, drawType="ch"):
+def draw_image_contours(image, contours: List[np.ndarray], texts=[], color=(), alpha=0.5, thickness=1, fontScale=0.8,
+                        drawType="ch"):
     """
     参考：draw_image_mask_color
     :param image:
@@ -2459,7 +2460,8 @@ def draw_image_contours(image, contours: List[np.ndarray], texts=[], color=(), a
         bgimg = image.copy()
         bgimg = cv2.fillPoly(bgimg, p, color=c)
         image = cv2.addWeighted(src1=image, alpha=1 - alpha, src2=bgimg, beta=alpha, gamma=0)
-        if t: image = draw_text(image, point=(b[0], b[1]), color=c, text=t, thickness=thickness, drawType=drawType)
+        if t: image = draw_text(image, point=(b[0], b[1]), color=c, text=t, thickness=thickness,
+                                fontScale=fontScale, drawType=drawType)
     return image
 
 

@@ -38,7 +38,7 @@ def parser_annotations(xml_file):
     return filename, annos, width, height
 
 
-def convert_cvat2labelme(anno_dir, image_dir="", vis=False):
+def convert_cvat2labelme(anno_dir, image_dir="", thickness=1, fontScale=1.0, vis=False):
     """
     将CVAT标注格式(LabelMe 3.0)转换labelme通用格式
     :param anno_dir: 标注文件目录，输出json文件与anno_dir同目录
@@ -59,7 +59,7 @@ def convert_cvat2labelme(anno_dir, image_dir="", vis=False):
             image = cv2.imread(image_file)
             h, w = image.shape[:2]
             if vis:
-                image = image_utils.draw_image_contours(image, points, texts=labels)
+                image = image_utils.draw_image_contours(image, points, texts=labels, thickness=thickness, fontScale=fontScale)
                 image_utils.cv_show_image("det", image)
         image_id = image_name.split(".")[0]
         json_file = os.path.join(anno_dir, f"{image_id}.json")
