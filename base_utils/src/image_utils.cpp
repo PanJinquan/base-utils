@@ -106,15 +106,24 @@ cv::Rect points2rect(vector<cv::Point> points) {
     return rect;
 }
 
-void draw_image_contours(cv::Mat &image, vector<vector<cv::Point>> &contours,
+void draw_image_contours(cv::Mat &image, vector<vector<cv::Point>> &contours, vector<string> texts,
                          cv::Scalar color, float alpha, int thickness, int contourIdx) {
     if (contours.empty())return;
     cv::drawContours(image, contours, contourIdx, color, thickness, 8);
     cv::Mat bg = image.clone();
     cv::fillPoly(bg, contours, color);
     cv::addWeighted(image, 1 - alpha, bg, alpha, 0, image);
+    for (int i = 0; i < texts.size(); ++i) {
+        cv::Rect r = points2rect(contours.at(i));
+        cv::putText(image, texts.at(i), cv::Point(r.x + 5, r.y),
+                    cv::FONT_HERSHEY_COMPLEX, 1.0, color, thickness);
+    }
 }
 
+void draw_image_contours(cv::Mat &image, vector<vector<cv::Point>> &contours,
+                         cv::Scalar color, float alpha, int thickness, int contourIdx) {
+    draw_image_contours(image, contours, {}, color, alpha, thickness, contourIdx);
+}
 
 void draw_image_mask_color(cv::Mat &image, cv::Mat mask, cv::Scalar color, float alpha) {
     for (int y = 0; y < image.rows; y++) {
@@ -512,7 +521,7 @@ void draw_obb_image(cv::Mat &image, vector<cv::Point> contour, string text, cv::
     draw_lines(image, src_pts, skeleton, color, 2, false);
     if (~text.empty()) {
         cv::Rect r = points2rect(contour);
-        cv::putText(image, text, cv::Point(r.x + 5, r.y + 20),
+        cv::putText(image, text, cv::Point(r.x + 5, r.y),
                     cv::FONT_HERSHEY_COMPLEX, 1.0, color, 2);
     }
     if (vis_id) {

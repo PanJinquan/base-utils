@@ -209,14 +209,17 @@ cv::Rect points2rect(vector<cv::Point> points);
  * 如果已经mask,可以调研draw_image_mask_color直接绘制
  * @param image
  * @param contours 输入的轮廓列表，每个轮廓由边界点坐标 (x,y) 向量构成
+ * @param texts
  * @param color
  * @param alpha 绘制颜色的透明度
  * @param thickness 线宽(-1)cv::FILLED表示实心的轮廓
  * @param contourIdx 所要绘制的轮廓的编号，-1 表示绘制所有轮廓
  */
-void draw_image_contours(cv::Mat &image, vector<vector<cv::Point>> &contours, cv::Scalar color = COLOR_GREEN,
-                         float alpha = 0.5, int thickness = 2, int contourIdx = -1);
+void draw_image_contours(cv::Mat &image, vector<vector<cv::Point>> &contours, vector<string> texts,
+                         cv::Scalar color = COLOR_GREEN, float alpha = 0.5, int thickness = 2, int contourIdx = -1);
 
+void draw_image_contours(cv::Mat &image, vector<vector<cv::Point>> &contours,
+                         cv::Scalar color = COLOR_GREEN, float alpha = 0.5, int thickness = 2, int contourIdx = -1);
 
 /***
  * 在原图绘制半透明的mask区域
