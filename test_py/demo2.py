@@ -15,11 +15,15 @@ from pybaseutils.cvutils import video_utils
 import cv2
 
 if __name__ == '__main__':
-    video_file = "/home/PKing/Downloads/kunkun_cut.mp4"
-    saves_file = "/home/PKing/Downloads/kunkun_res.mp4"
-    video_cap = video_utils.video_iterator(video_file, saves_file, start=4, end=10)
-    for data_info in video_cap:
-        frame = data_info["frame"]
-        frame = cv2.resize(frame, dsize=(100, 100))
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        data_info["frame"] = frame
+    from pybaseutils.converter import convert_voc2yolo
+
+    # 定义类别数
+    class_name = ["aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat",
+                  "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person",
+                  "pottedplant", "sheep", "sofa", "train", "tvmonitor"]
+    # VOC数据目录
+    data_root = "/path/to/VOC2007"
+    # 保存输出yolo格式数据目录
+    out_text_dir = os.path.join(data_root, "labels")
+    # 开始转换,vis=True进行可视化
+    convert_voc2yolo.convert_voc2yolo(data_root, out_text_dir, class_name=class_name, vis=True)

@@ -80,7 +80,7 @@ def convert_voc2yolo_file(filename, out_text_dir, out_image_dir=None, class_name
             format = "jpg"
         newname = "{}.{}".format(image_id, format)
         text_path = file_utils.create_dir(out_text_dir, None, "{}.txt".format(image_id))
-        labels = np.asarray(labels).astype(np.int).reshape(-1)
+        labels = np.asarray(labels).astype(np.int32).reshape(-1)
         contents = create_yolo_dets(bboxes, labels, width=w, height=h)
         file_utils.write_data(text_path, contents)
         if out_image_dir:
@@ -131,7 +131,7 @@ def convert_voc2yolo(data_root, out_text_dir, out_image_dir=None, class_name=Non
             format = "jpg"
         newname = "{}.{}".format(image_id, format)
         text_path = file_utils.create_dir(out_text_dir, None, "{}.txt".format(image_id))
-        labels = np.asarray(labels).astype(np.int).reshape(-1)
+        labels = np.asarray(labels).astype(np.int32).reshape(-1)
         contents = create_yolo_dets(bboxes, labels, width=w, height=h)
         file_utils.write_data(text_path, contents, split=" ")
         if out_image_dir:
@@ -183,7 +183,7 @@ def convert_voc2yolo_segment(data_root, out_text_dir, out_image_dir=None, class_
             format = "jpg"
         newname = "{}.{}".format(image_id, format)
         text_path = file_utils.create_dir(out_text_dir, None, "{}.txt".format(image_id))
-        labels = np.asarray(labels).astype(np.int).reshape(-1)
+        labels = np.asarray(labels).astype(np.int32).reshape(-1)
         contents = create_yolo_segs(bboxes, labels, width=w, height=h)
         file_utils.write_data(text_path, contents, split=" ")
         if out_image_dir:

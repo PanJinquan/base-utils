@@ -50,7 +50,7 @@ def convert_yolo2voc(filename, out_xml_dir=None, out_image_dir=None, class_name=
             format = "jpg"
         newname = "{}.{}".format(image_id, format)
         xml_path = file_utils.create_dir(out_xml_dir, None, "{}.xml".format(image_id))
-        labels = np.asarray(labels).astype(np.int).reshape(-1)
+        labels = np.asarray(labels).astype(np.int32).reshape(-1)
         objects = build_voc.create_objects(bboxes, labels, keypoints=None, class_name=class_name)
         build_voc.write_voc_xml_objects(newname, image_shape, objects, xml_path)
         if out_image_dir:

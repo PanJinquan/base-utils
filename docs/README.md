@@ -173,10 +173,13 @@ git config --global credential.helper store
 
 ```
 
-## 解决Hugggingface.co下载问题
+## 解决Github克隆失败的问题
+
 - https://hf-mirror.com/
 - https://blog.csdn.net/weixin_43431218/article/details/135403324
-
+- https://blog.csdn.net/weixin_43431218/article/details/135544365
+- 如果是github.com的地址，则直接替换为github.com
+- 如果是huggingface.co的地址，则直接替换为hf-mirror.com
 ```bash
 # Linux
 export HF_ENDPOINT=https://hf-mirror.com
