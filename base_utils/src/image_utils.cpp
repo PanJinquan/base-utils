@@ -501,7 +501,7 @@ void draw_yaw_pitch_roll_in_left_axis(cv::Mat &imgBRG, float pitch, float yaw, f
     }
 }
 
-void draw_obb_image(cv::Mat &image, vector<cv::Point> contour, cv::Scalar color, bool vis_id) {
+void draw_obb_image(cv::Mat &image, vector<cv::Point> contour, string text, cv::Scalar color, bool vis_id) {
     vector<cv::Point2f> src_pts;
     get_obb_points(vector_type<cv::Point, cv::Point2f>(contour), src_pts);
     // 显示
@@ -510,6 +510,11 @@ void draw_obb_image(cv::Mat &image, vector<cv::Point> contour, cv::Scalar color,
                                     {2, 3},
                                     {3, 0}};
     draw_lines(image, src_pts, skeleton, color, 2, false);
+    if (~text.empty()) {
+        cv::Rect r = points2rect(contour);
+        cv::putText(image, text, cv::Point(r.x + 5, r.y + 20),
+                    cv::FONT_HERSHEY_COMPLEX, 1.0, color, 2);
+    }
     if (vis_id) {
         vector<string> texts = {"0", "1", "2", "3"};
         draw_points_texts(image, src_pts, texts, color);
@@ -517,17 +522,19 @@ void draw_obb_image(cv::Mat &image, vector<cv::Point> contour, cv::Scalar color,
 
 }
 
-void draw_obb_image(cv::Mat &image, vector<vector<cv::Point>> contours, vector<cv::Scalar> colors, bool vis_id) {
+void draw_obb_image(cv::Mat &image, vector<vector<cv::Point>> contours, vector<string> texts, vector<cv::Scalar> colors,
+                    bool vis_id) {
     for (int i = 0; i < contours.size(); ++i) {
         cv::Scalar c = colors.at(i % colors.size());
-        draw_obb_image(image, contours.at(i), c, vis_id);
+        string t = texts.empty() ? "" : texts.at(i);
+        draw_obb_image(image, contours.at(i), t, c, vis_id);
     }
 }
 
 void draw_obb_image(cv::Mat &image, cv::Mat &mask, bool vis_id) {
     vector<vector<cv::Point> > contours;
     find_contours(mask, contours);
-    draw_obb_image(image, contours, COLOR_TABLE, vis_id);
+    draw_obb_image(image, contours, {}, COLOR_TABLE, vis_id);
 }
 
 void find_minAreaRect(vector<cv::Point> contours, cv::Point2f points[]) {

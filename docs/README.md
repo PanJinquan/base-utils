@@ -1,8 +1,5 @@
 # 常用的工具使用方法
 
-PyPI recovery codes daa596d242587202 12fac17d7698478c 33553d161c290b60 e3f1a0684e48cefc a43eb1f0d0de6736
-d377d440e6b45eb3 352ee03b086aa982 e648c218903f3b4c
-
 ## memory profiler性能分析工具
 
 - https://zhuanlan.zhihu.com/p/121003986
@@ -176,7 +173,21 @@ git config --global credential.helper store
 
 ```
 
+## 解决Hugggingface.co下载问题
+- https://hf-mirror.com/
+- https://blog.csdn.net/weixin_43431218/article/details/135403324
+
+```bash
+# Linux
+export HF_ENDPOINT=https://hf-mirror.com
+# 如果要下载 https://huggingface.co/BAAI/DIVA/blob/main/OpenAICLIP/OpenAI-ViT-L-14-224.pth
+# 则只需要把huggingface.co改为hf-mirror.com，即可在浏览器正常访问
+./hfd.sh BAAI/DIVA --tool aria2c -x 4
+```
+
 ## xdg-open打开文件夹/文件
+
+- xdg-open ./
 
 ## 表格
 
@@ -186,6 +197,7 @@ git config --global credential.helper store
 | YOLOv5m | 640 | 44.5 |
 
 ## huggingface.co资源下载
+
 - https://huggingface.co/
 - 方法1：https://blog.csdn.net/gmmmmmmmm/article/details/135953651 (将下载连接huggingface.co`替换为 hf-mirror.com)
 - 方法2：https://modelscope.cn/my/overview

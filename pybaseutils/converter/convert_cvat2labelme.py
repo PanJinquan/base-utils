@@ -38,14 +38,15 @@ def parser_annotations(xml_file):
     return filename, annos, width, height
 
 
-def convert_cvat2labelme(anno_dir, image_dir="", thickness=1, fontScale=1.0, vis=False):
+def convert_cvat2labelme(anno_dir, image_dir="", out_dir="", thickness=1, fontScale=1.0, vis=False):
     """
     将CVAT标注格式(LabelMe 3.0)转换labelme通用格式
-    :param anno_dir: 标注文件目录，输出json文件与anno_dir同目录
+    :param anno_dir: 标注文件目录，默认输出json文件与anno_dir同目录
     :param image_dir: 图片文件目录
     :param vis:
     :return:
     """
+    if not out_dir: out_dir = os.path.join(os.path.dirname(anno_dir), "json")
     xml_list = file_utils.get_files_lists(anno_dir, postfix=["*.xml"])
     for xml_file in tqdm(xml_list):
         image_name, annos, w, h = parser_annotations(xml_file)
@@ -56,13 +57,15 @@ def convert_cvat2labelme(anno_dir, image_dir="", thickness=1, fontScale=1.0, vis
             continue
         if image_dir or vis:
             image_file = os.path.join(image_dir, image_name)
+            print(image_file, "labels:{}".format(labels))
             image = cv2.imread(image_file)
             h, w = image.shape[:2]
             if vis:
-                image = image_utils.draw_image_contours(image, points, texts=labels, thickness=thickness, fontScale=fontScale)
+                image = image_utils.draw_image_contours(image, points, texts=labels, thickness=thickness,
+                                                        fontScale=fontScale)
                 image_utils.cv_show_image("det", image)
         image_id = image_name.split(".")[0]
-        json_file = os.path.join(anno_dir, f"{image_id}.json")
+        json_file = os.path.join(out_dir, f"{image_id}.json")
         build_labelme.maker_labelme(json_file, points, labels, image_name, image_size=[w, h], image_bs64=None)
 
 

@@ -14,6 +14,7 @@ from pybaseutils.converter import build_voc, build_labelme, convert_cvat2labelme
 from pybaseutils import file_utils, image_utils, json_utils
 
 if __name__ == "__main__":
-    image_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-outdoor-det-fix/dataset-v20/JPEGImages"
-    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-outdoor-det-fix/dataset-v20/xml"
-    convert_cvat2labelme.convert_cvat2labelme(anno_dir=anno_dir, image_dir=image_dir,  thickness=2, fontScale=1.2,vis=True)
+    image_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-action-det/aije-action-train-v20/JPEGImages"
+    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-action-det/aije-action-train-v20/xml"
+    convert_cvat2labelme.convert_cvat2labelme(anno_dir=anno_dir, image_dir=image_dir,
+                                              thickness=2, fontScale=1.2, vis=False)
