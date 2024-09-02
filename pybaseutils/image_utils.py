@@ -2452,7 +2452,7 @@ def draw_image_contours(image, contours: List[np.ndarray], texts=[], color=(), a
     """
     for i in range(0, len(contours)):
         c = color if color else color_table[i + 1]
-        t = texts[i] if texts else ""
+        t = str(texts[i]) if texts else ""
         p = np.asarray(contours[i], dtype=np.int32)
         b = (min(p[:, 0]), min(p[:, 1]), max(p[:, 0]), max(p[:, 1]))
         if len(p.shape) == 2: p = [p]
@@ -2480,6 +2480,29 @@ def draw_mask_contours(contours: List[np.ndarray], size, value=255):
         if len(p.shape) == 2: p = [p]
         mask[:] = cv2.drawContours(mask, p, contourIdx=-1, color=value, thickness=-1)
     return mask
+
+
+def contours_interpolation(contours, n=1000):
+    """
+    对图像轮廓或者对直线进行线性差值，来源于ultralytics/utils/ops.py
+    轮廓插值，线性插值，直线插值
+    Inputs a list of contours (n,2) and returns a list of contours (n,2) up-sampled to n points each.
+
+    Args:
+        contours (list): a list of (n,2) arrays, where n is the number of points in the segment.
+        n (int): number of points to resample the segment to. Defaults to 1000
+
+    Returns:
+        contours (list): the resampled contours.
+    """
+    for i, s in enumerate(contours):
+        s = np.concatenate((s, s[0:1, :]), axis=0)
+        x = np.linspace(0, len(s) - 1, n)
+        xp = np.arange(len(s))
+        contours[i] = (
+            np.concatenate([np.interp(x, xp, s[:, i]) for i in range(2)], dtype=np.float32).reshape(2, -1).T
+        )  # segment xy
+    return contours
 
 
 def get_mask_boundrect_cv(mask, binarize=False, shift=0):

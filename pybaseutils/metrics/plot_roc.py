@@ -39,9 +39,9 @@ def plot_roc_curve(true_labels, pred_scores, vis=True):
     # 绘制ROC曲线
     if vis:
         plt_roc_curve([fpr], [tpr], [roc_auc], names=[""])
-        print("FPR           :{}".format(fpr))
-        print("TPR           :{}".format(tpr))
-        print("Threshold     :{}".format(threshold))
+        # print("FPR           :{}".format(fpr))
+        # print("TPR           :{}".format(tpr))
+        # print("Threshold     :{}".format(threshold))
         print("AUC(ROC)      :{}".format(roc_auc))
         print("best_threshold:{} ".format(threshold[optimal_index]))
     return fpr, tpr, roc_auc, threshold, optimal_index
@@ -134,8 +134,61 @@ def custom_roc_curve(y_true, y_score):
     plt.show()
 
 
+def get_best_accuracy(true_labels, pred_scores, threshold=(0, 1.0, 0.05), vis=False):
+    """
+    计算最佳准确率和阈值
+    :param true_labels:
+    :param pred_scores:
+    :param vis:
+    :return: best_acc, best_th
+    """
+    true_labels, pred_scores = np.asarray(true_labels), np.asarray(pred_scores)
+    threshold = np.arange(threshold[0], threshold[1], threshold[2])
+    acc_list = []
+    for th in threshold:
+        pred_labels = np.asarray(pred_scores > th, dtype=np.int32)
+        acc = metrics.accuracy_score(y_true=true_labels, y_pred=pred_labels)
+        acc_list.append(acc)
+    index = np.argmax(acc_list)
+    best_th = threshold[index]
+    best_acc = acc_list[index]
+    if vis:
+        print("best threshold           :{}".format(best_th))
+        print("best Accuracy            :{}".format(best_acc))
+        plt_curve(x=threshold, y=acc_list, xlabel="threshold", ylabel="Accuracy",
+                  line=f"Acc={best_acc:1.3f}", title="", grid=True)
+    return best_acc, best_th
+
+
+def plt_curve(x, y, line="", xlabel="", ylabel="", title="", grid=True):
+    """
+    绘制PR-threshold曲线
+    :param x: Precision
+    :param recall: Recall
+    :param y
+    :param title:曲线名称
+    :return:
+    """
+    lw = 2
+    plt.figure(figsize=(10, 10))
+    colors = ["b", "r", "c", "m", "g", "y", "k", "w"]
+    plt.plot(x, y, color=colors[0], lw=lw, label=line)
+    plt.xlim([0.0, 1.05])
+    plt.ylim([0.0, 1.05])
+    # 设置横纵坐标的名称以及对应字体格式
+    font = {'weight': 'normal', 'size': 20}
+    plt.xlabel(xlabel, font)
+    plt.ylabel(ylabel, font)
+    plt.title(title, font)
+    plt.legend(loc="lower right")  # "upper right"
+    # plt.legend(loc="upper right")#"upper right"
+    plt.grid(grid)  # 显示网格;
+    plt.show()
+
+
 if __name__ == "__main__":
     true_labels = [0, 0, 0, 0, 0, 1, 1, 1, 1, 1]  # 真实类别
-    pred_scores = [0.1, 0.2, 0.7, 0.3, 0.4, 0.5, 0.2, 0.7, 0.8, 0.9]  # 预测类别分数
+    pred_scores = [0.1, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]  # 预测类别分数
     # pred_scores = [0.11, 0.21, 0.71, 0.31, 0.41, 0.51, 0.21, 0.71, 0.81, 0.91]  # 预测类别分数
-    plot_roc_curve(true_labels, pred_scores)
+    # plot_roc_curve(true_labels, pred_scores)
+    print(get_best_accuracy(true_labels, pred_scores, vis=True))

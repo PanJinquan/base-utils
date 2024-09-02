@@ -2,6 +2,7 @@
 
 ## 镜像
 
+- 登录docker: sudo docker login docker.dm-ai.cn
 
 ```bash
 docker images # 查看所有镜像

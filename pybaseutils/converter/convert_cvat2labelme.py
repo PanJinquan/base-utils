@@ -43,6 +43,7 @@ def convert_cvat2labelme(anno_dir, image_dir="", out_dir="", thickness=1, fontSc
     将CVAT标注格式(LabelMe 3.0)转换labelme通用格式
     :param anno_dir: 标注文件目录，默认输出json文件与anno_dir同目录
     :param image_dir: 图片文件目录
+    :param out_dir: 输出labelme *.json文件目录
     :param vis:
     :return:
     """
@@ -57,10 +58,10 @@ def convert_cvat2labelme(anno_dir, image_dir="", out_dir="", thickness=1, fontSc
             continue
         if image_dir or vis:
             image_file = os.path.join(image_dir, image_name)
-            print(image_file, "labels:{}".format(labels))
             image = cv2.imread(image_file)
             h, w = image.shape[:2]
             if vis:
+                print(image_file, "labels:{}".format(labels))
                 image = image_utils.draw_image_contours(image, points, texts=labels, thickness=thickness,
                                                         fontScale=fontScale)
                 image_utils.cv_show_image("det", image)
@@ -70,6 +71,6 @@ def convert_cvat2labelme(anno_dir, image_dir="", out_dir="", thickness=1, fontSc
 
 
 if __name__ == "__main__":
-    image_dir = "/home/PKing/Downloads/default"
-    anno_dir = image_dir
+    image_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det-fix/dataset-v01/JPEGImages"
+    anno_dir = os.path.join(os.path.dirname(image_dir), "xml")
     convert_cvat2labelme(image_dir=image_dir, anno_dir=anno_dir, vis=False)

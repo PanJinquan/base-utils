@@ -9,6 +9,7 @@ import os
 import cv2
 import numpy as np
 import random
+import json
 from typing import Dict
 from tqdm import tqdm
 from pybaseutils import image_utils, file_utils, json_utils, base64_utils, time_utils
@@ -32,14 +33,23 @@ class MultiViewer(object):
         return "exit"
 
 
-def demo():
-    key = "multiview"
-    frame_info = {"multiview": ["ABCD"]}
-    with MultiViewer(frame_info=frame_info, key=key) as v:
-        pass
-    print("data")
-    return "Z"
+class Promote():
+    def __init__(self, promote):
+        self.promote = file_utils.read_data(promote, split=None)
+        print("promote:{}".format(self.promote))
+
+    def __len__(self):
+        return len(self.promote)
+
+    def __getitem__(self, index):
+        data: str = self.promote[random.randint(0, len(self.promote) - 1)]
+        data = data.format("ddd")
+        return data
 
 
 if __name__ == '__main__':
-    print(demo())
+    file = "/home/PKing/nasdata/tmp/tmp/Natural/图片描述.json"
+    data = json_utils.read_json_data(file)
+    for i in range(len(data)):
+        data[i]["result"] = json.loads(data[i]["result"])
+    print(data)

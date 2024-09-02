@@ -67,10 +67,11 @@ if __name__ == "__main__":
     # anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v9/json"
     anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v0/json"
     anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det-fix/dataset-v12/json"
+    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-action-det/aije-action-train-v20/json"
     # anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v10/json"
     # anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-person-coco/json"
-    class_name = ['手', '绝缘手套', '手穿绝缘手套', '棉纱手套', '手穿棉纱手套']
-    # class_name = None  # 室内
+    # class_name = ['手', '绝缘手套', '手穿绝缘手套', '棉纱手套', '手穿棉纱手套']
+    class_name = None  # 室内
     out_dir = os.path.join(os.path.dirname(anno_dir), "crops")
     dataset = parser_labelme.LabelMeDatasets(filename=None,
                                              data_root=None,

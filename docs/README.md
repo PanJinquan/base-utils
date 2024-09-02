@@ -157,6 +157,7 @@ apt-get install '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev l
 - 解决方法2：使用pyqt5==5.13.2(亲测可用)
 
 ```bash
+# 以下python3.8有效
 # opencv-python==4.8.0.76 
 # opencv-contrib-python==4.8.1.78 
 # pyqt5==5.13.2
@@ -178,8 +179,9 @@ git config --global credential.helper store
 - https://hf-mirror.com/
 - https://blog.csdn.net/weixin_43431218/article/details/135403324
 - https://blog.csdn.net/weixin_43431218/article/details/135544365
-- 如果是github.com的地址，则直接替换为github.com
+- 如果是github.com的地址，则直接替换为githubfast.com
 - 如果是huggingface.co的地址，则直接替换为hf-mirror.com
+
 ```bash
 # Linux
 export HF_ENDPOINT=https://hf-mirror.com
@@ -204,3 +206,4 @@ export HF_ENDPOINT=https://hf-mirror.com
 - https://huggingface.co/
 - 方法1：https://blog.csdn.net/gmmmmmmmm/article/details/135953651 (将下载连接huggingface.co`替换为 hf-mirror.com)
 - 方法2：https://modelscope.cn/my/overview
+-  import huggingface_hub.constants 可以修改访问路径

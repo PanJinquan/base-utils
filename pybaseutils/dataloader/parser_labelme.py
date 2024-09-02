@@ -107,8 +107,7 @@ class LabelMeDataset(Dataset):
         """
         print("Please wait, it's in checking")
         dst_ids = []
-        # image_ids = image_ids[:100]
-        # image_ids = image_ids[100:]
+        class_name = []
         for image_id in tqdm(image_ids):
             image_file, anno_file, image_id = self.get_image_anno_file(image_id)
             if not os.path.exists(anno_file):
@@ -122,6 +121,10 @@ class LabelMeDataset(Dataset):
             if len(label) == 0:
                 continue
             dst_ids.append(image_id)
+            class_name += label
+        if self.class_name is None:
+            class_name = list(set(class_name))
+            self.class_name, self.class_dict = self.parser_classes(class_name)
         print("have nums image:{},legal image:{}".format(len(image_ids), len(dst_ids)))
         return dst_ids
 
@@ -381,12 +384,12 @@ def parser_labelme(anno_file, class_dict={}, shape=None):
     return bboxes, labels, points, groups
 
 
-def show_target_image(image, bboxes, labels, points, color=()):
+def show_target_image(image, bboxes, labels, points, color=(), thickness=1):
     # image = image_utils.draw_image_bboxes_text(image, bboxes, labels, color=(255, 0, 0),
     #                                            thickness=2, fontScale=1.2, drawType="chinese")
     # image = image_utils.draw_landmark(image, points, color=(0, 255, 0))
     # image = image_utils.draw_key_point_in_image(image, points)
-    image = image_utils.draw_image_contours(image, points, labels, color=color, thickness=1)
+    image = image_utils.draw_image_contours(image, points, labels, color=color, thickness=thickness)
     image_utils.cv_show_image("det", image)
 
 
