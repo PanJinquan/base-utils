@@ -24,9 +24,9 @@ if __name__ == "__main__":
     # anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-outdoor-det-fix/dataset-v01/json"
     # anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-outdoor-det-fix/dataset-v20/json"
     anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-test/json"
-    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/dataset-v24/json"
+    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-action-cvlm-v2/aije-action-train-v01/json"
     names = None
-    # names = ['身穿工作服,未穿工作服', '手', '手穿绝缘手套,手穿棉纱手套,手穿其他手套']
+    # names = ['身穿工作服,未穿工作服', '手,手穿绝缘手套,手穿棉纱手套,手穿其他手套']
     dataset = parser_labelme.LabelMeDatasets(filename=None,
                                              data_root=None,
                                              anno_dir=anno_dir,

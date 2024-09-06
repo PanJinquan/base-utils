@@ -53,6 +53,7 @@ def example():
     box = [0, 0, 800, 800]
     image_file = "pose.jpg"
     image = cv2.imread(image_file)
+    image = np.zeros_like(image)+255
     skeleton = BONES["coco_person"]["skeleton"]
     image = image_utils.draw_key_point_in_image(image,
                                                 key_points=[kpt],

@@ -123,7 +123,7 @@ class LabelMeDataset(Dataset):
             dst_ids.append(image_id)
             class_name += label
         if self.class_name is None:
-            class_name = list(set(class_name))
+            class_name = sorted(list(set(class_name)))
             self.class_name, self.class_dict = self.parser_classes(class_name)
         print("have nums image:{},legal image:{}".format(len(image_ids), len(dst_ids)))
         return dst_ids

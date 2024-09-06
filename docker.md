@@ -1,5 +1,24 @@
 # Docker使用方法
 
+- docker安装
+
+- 这支持GPU版本
+```bash
+# https://bbs.deepin.org/zh/post/262226
+# https://bbs.deepin.org/zh/post/193717
+# 有nvidia显卡，安装了cuda，需要补充安装
+curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
+  && curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
+    sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+    sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+
+
+sudo apt-get update
+sudo apt-get install -y nvidia-container-toolkit
+sudo nvidia-ctk runtime configure --runtime=docker
+sudo systemctl restart docker
+```
+
 ## 镜像
 
 - 登录docker: sudo docker login docker.dm-ai.cn
