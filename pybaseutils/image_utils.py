@@ -141,7 +141,7 @@ def get_image_tensor(image_path, image_size, transpose=False):
     # torch_image = transform(image).detach().numpy()
     image = resize_image(image, size=(int(128 * image_size[0] / 112), int(128 * image_size[1] / 112)))
     image = center_crop(image, crop_size=image_size)
-    image_tensor = image_normalization(image, mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
+    image_tensor = image_normalize(image, mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
     if transpose:
         image_tensor = image_tensor.transpose(2, 0, 1)  # NHWC->NCHW
     image_tensor = image_tensor[np.newaxis, :]
@@ -332,7 +332,7 @@ def get_prewhiten_image(x):
     return y
 
 
-def image_normalization(image, mean=None, std=None):
+def image_normalize(image, mean=None, std=None):
     '''
     正则化，归一化
     image[channel] = (image[channel] - mean[channel]) / std[channel]
@@ -355,15 +355,16 @@ def image_normalization(image, mean=None, std=None):
     return image
 
 
-def image_unnormalization(image, mean=None, std=None):
-    '''
+def image_unnormalize(image, mean=None, std=None):
+    """
     正则化，归一化
+    image = image/255.0
     image[channel] = (image[channel] - mean[channel]) / std[channel]
     :param image: numpy image
     :param mean: [0.5,0.5,0.5]
     :param std:  [0.5,0.5,0.5]
     :return:
-    '''
+    """
     # 不能写成:image=image/255
     if isinstance(mean, list):
         mean = np.asarray(mean, dtype=np.float32)
@@ -371,11 +372,15 @@ def image_unnormalization(image, mean=None, std=None):
         std = np.asarray(std, dtype=np.float32)
     image = np.multiply(image, std)
     image = (image + mean) * 255
+    image = np.clip(image, 0, 255)
     image = np.array(image, dtype=np.uint8)
     return image
 
 
-def data_normalization(data, omin, omax, imin=None, imax=None):
+image_unnormalization = image_unnormalize
+
+
+def data_unnormalize(data, omin, omax, imin=None, imax=None):
     """
     NORMALIZATION 将数据x归一化到任意区间[ymin,omax]范围的方法
     :param data:  输入参数x：需要被归一化的数据,numpy
@@ -391,7 +396,7 @@ def data_normalization(data, omin, omax, imin=None, imax=None):
     return y
 
 
-def cv_image_normalization(image, min_val=0.0, max_val=1.0):
+def cv_image_normalize(image, min_val=0.0, max_val=1.0):
     """
     :param image:
     :param min_val:
@@ -417,7 +422,7 @@ def get_prewhiten_images(images_list, norm=False):
     """
     out_images = []
     for image in images_list:
-        if norm: image = image_normalization(image)
+        if norm: image = image_normalize(image)
         image = get_prewhiten_image(image)
         out_images.append(image)
     return out_images
@@ -443,7 +448,7 @@ def read_image(filename, size=None, norm=False, use_rgb=False):
     if use_rgb:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # 将BGR转为RGB
     if size: image = resize_image(image, size=size)
-    if norm: image = image_normalization(image)
+    if norm: image = image_normalize(image)
     return image
 
 
@@ -466,7 +471,7 @@ def read_image_ch(filename, size=None, norm=False, use_rgb=False):
     if use_rgb:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # 将BGR转为RGB
     if size: image = resize_image(image, size=size)
-    if norm: image = image_normalization(image)
+    if norm: image = image_normalize(image)
     return image
 
 
@@ -487,7 +492,7 @@ def read_image_pil(filename, size=None, norm=False, use_rgb=False):
     if not use_rgb:
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)  # 将BGR转为RGB
     if size: image = resize_image(image, size=size)
-    if norm: image = image_normalization(image)
+    if norm: image = image_normalize(image)
     return image
 
 
@@ -536,7 +541,7 @@ def read_images_url(url: str, size=None, norm=False, use_rgb=False, timeout=5):
     if use_rgb:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # 将BGR转为RGB
     if size: image = resize_image(image, size=size)
-    if norm: image = image_normalization(image)
+    if norm: image = image_normalize(image)
     return image
 
 
@@ -599,7 +604,7 @@ def fast_read_image_roi(filename, orig_rect, ImreadModes=cv2.IMREAD_COLOR, norm=
         image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
     if use_rgb:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # 将BGR转为RGB
-    if norm: image = image_normalization(image)
+    if norm: image = image_normalize(image)
     roi_image = get_rect_image(image, rect)
     return roi_image
 
@@ -1816,7 +1821,7 @@ def bin2image(bin_data, size, norm=False, use_rgb=True):
     if use_rgb:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # 将BGR转为RGB
     image = resize_image(image, size=size)
-    if norm: image = image_normalization(image)
+    if norm: image = image_normalize(image)
     return image
 
 

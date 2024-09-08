@@ -66,7 +66,7 @@ class Dataset(object):
         :return:
         """
         if isinstance(class_name, str):
-            class_name = Dataset.read_files(class_name)
+            class_name = Dataset.read_file(class_name)
         elif isinstance(class_name, list) and "unique" in class_name:
             self.unique = True
         if isinstance(class_name, list) and len(class_name) > 0:
@@ -109,7 +109,7 @@ class Dataset(object):
         return json_data
 
     @staticmethod
-    def read_files(filename, split=None):
+    def read_file(filename, split=None):
         """
         :param filename:
         :param split:分割

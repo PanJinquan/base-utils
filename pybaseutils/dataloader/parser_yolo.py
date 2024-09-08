@@ -100,7 +100,7 @@ class YOLODataset(Dataset):
         :return:
         """
         if isinstance(class_name, str):
-            class_name = super().read_files(class_name)
+            class_name = super().read_file(class_name)
         elif isinstance(class_name, numbers.Number):
             class_name = [str(i) for i in range(int(class_name))]
         elif isinstance(class_name, list) and "unique" in class_name:
@@ -189,7 +189,7 @@ class YOLODataset(Dataset):
             image_dir = os.path.join(data_root, "images") if not image_dir else image_dir
         image_ids = []
         if isinstance(filename, str) and filename:
-            image_ids = self.read_files(filename, split=",")
+            image_ids = self.read_file(filename, split=",")
             data_root = os.path.dirname(filename)
         if not anno_dir:  # 如果anno_dir为空，则自动搜寻可能存在图片目录
             image_sub = ["labels"]

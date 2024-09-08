@@ -19,6 +19,7 @@ import concurrent.futures
 import numbers
 import pickle
 import argparse
+import itertools
 from datetime import datetime
 from tqdm import tqdm
 
@@ -935,6 +936,45 @@ def print_dict(dict_data, save_path):
                 f.writelines(info + "\n")
 
 
+def get_pair_data(image_dir, pair_num=-1):
+    """
+    获得图片对数据
+    :param image_dir:
+    :param pair_num:-1 表示所有对
+    :return:
+    """
+    max_nums = int(pair_num / 2)
+    image_list = get_files_lists(image_dir)
+    image_list = get_sub_list(image_list, dirname=image_dir)
+    nums = len(image_list)
+    print("have {} images and {} combinations".format(nums, nums * (nums - 1) / 2))
+    pairs = []
+    for paths in itertools.combinations(image_list, 2):
+        file1, file2 = paths
+        label1 = file1.split(os.sep)[0]
+        label2 = file2.split(os.sep)[0]
+        if label1 == label2:
+            pairs.append([file1, file2, 1])
+        else:
+            pairs.append([file1, file2, 0])
+    pairs = np.asarray(pairs)
+    pairs = pairs[np.lexsort(pairs.T)]
+    pair0 = pairs[pairs[:, -1] == "0", :]
+    pair1 = pairs[pairs[:, -1] == "1", :]
+    nums1 = len(pair1)
+    nums0 = len(pair0)
+    if pair_num < 0: max_nums = nums1
+    if max_nums > nums1:
+        raise Exception("pair_nums({}) must be less than num_pair1({})".format(max_nums, nums1))
+    index_0 = np.random.permutation(nums0)[:max_nums]  # 打乱后的行号
+    index_1 = np.random.permutation(nums1)[:max_nums]  # 打乱后的行号
+    pair0 = pair0[index_0, :]  # 获取打乱后的训练数据
+    pair1 = pair1[index_1, :]  # 获取打乱后的训练数据
+    pairs = np.concatenate([pair0, pair1], axis=0).tolist()
+    print("have {} pairs，pair0 nums:{}，pair1 nums:{}".format(len(pairs), len(pair0), len(pair1)))
+    return pairs
+
+
 def get_pair_files(data_root, out_root=None, image_sub="", label_sub="",
                    postfix=IMG_POSTFIX, label_postfix="txt", shuffle=False):
     """
@@ -950,7 +990,7 @@ def get_pair_files(data_root, out_root=None, image_sub="", label_sub="",
     label_dir = os.path.join(data_root, label_sub)
     if out_root: create_dir(out_root)
     file_list = get_files_lists(file_dir=data_root, postfix=postfix, subname="", shuffle=shuffle, sub=False)
-    content_list = []
+    pair_list = []
     for i, image_name in tqdm(enumerate(file_list)):
         postfix = image_name.split(".")[-1]
         lable_name = image_name.replace(f".{postfix}", f".{label_postfix}")
@@ -958,33 +998,33 @@ def get_pair_files(data_root, out_root=None, image_sub="", label_sub="",
         lable_file = os.path.join(label_dir, lable_name)
         if os.path.exists(image_file) and os.path.exists(lable_file):
             image_file, lable_file = get_sub_list([image_file, lable_file], dirname=data_root)
-            content_list.append([image_file, lable_file])
+            pair_list.append([image_file, lable_file])
     if out_root:
         filename = os.path.join(out_root, "file_list.txt")
-        write_data(filename, content_list, split=",", mode='w')
-    return content_list
+        write_data(filename, pair_list, split=",", mode='w')
+    return pair_list
 
 
 def read_pair_data(filename, split=True):
-    '''
+    """
     read pair data,data:[image1.jpg image2.jpg 0]
     :param filename:
     :param split:
     :return:
-    '''
-    content_list = read_data(filename)
+    """
+    pair_list = read_data(filename)
     if split:
-        content_list = np.asarray(content_list)
-        faces_list1 = content_list[:, :1].reshape(-1)
-        faces_list2 = content_list[:, 1:2].reshape(-1)
+        pair_list = np.asarray(pair_list)
+        pair1 = pair_list[:, :1].reshape(-1)
+        pair2 = pair_list[:, 1:2].reshape(-1)
         # convert to 0/1
-        issames_data = np.asarray(content_list[:, 2:3].reshape(-1), dtype=np.int)
+        issames_data = np.asarray(pair_list[:, 2:3].reshape(-1), dtype=np.int)
         issames_data = np.where(issames_data > 0, 1, 0)
-        faces_list1 = faces_list1.tolist()
-        faces_list2 = faces_list2.tolist()
+        pair1 = pair1.tolist()
+        pair2 = pair2.tolist()
         issames_data = issames_data.tolist()
-        return faces_list1, faces_list2, issames_data
-    return content_list
+        return pair1, pair2, issames_data
+    return pair_list
 
 
 def check_files(files_list, sizeTh=1 * 1024, isRemove=False):

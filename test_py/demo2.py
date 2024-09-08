@@ -10,20 +10,15 @@ import random
 import types
 import numpy as np
 from typing import Callable
-from pybaseutils import image_utils, file_utils
+from pybaseutils import image_utils, file_utils, text_utils
 from pybaseutils.cvutils import video_utils
 import cv2
+import re
 
 if __name__ == '__main__':
-    from pybaseutils.converter import convert_voc2yolo
-
-    # 定义类别数
-    class_name = ["aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat",
-                  "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person",
-                  "pottedplant", "sheep", "sofa", "train", "tvmonitor"]
-    # VOC数据目录
-    data_root = "/path/to/VOC2007"
-    # 保存输出yolo格式数据目录
-    out_text_dir = os.path.join(data_root, "labels")
-    # 开始转换,vis=True进行可视化
-    convert_voc2yolo.convert_voc2yolo(data_root, out_text_dir, class_name=class_name, vis=True)
+    # 示例使用
+    subs = ["拿", '手*']  #
+    texts = ["拿着", "手拿安全帽", "手拿绝缘手套", "手拿工具袋"]
+    # 使用通配符查找子串
+    matches = text_utils.find_match_texts(texts, subs, org=True)
+    print(matches)

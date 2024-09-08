@@ -200,7 +200,7 @@ class CocoDataset(object):
         :return:
         """
         if isinstance(class_name, str):
-            class_name = Dataset.read_files(class_name)
+            class_name = Dataset.read_file(class_name)
         elif isinstance(class_name, list) and "unique" in class_name:
             self.unique = True
         if isinstance(class_name, list) and len(class_name) > 0:

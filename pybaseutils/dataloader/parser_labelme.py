@@ -141,7 +141,7 @@ class LabelMeDataset(Dataset):
             image_dir = os.path.join(data_root, "images") if not image_dir else image_dir
         image_ids = []
         if isinstance(filename, str) and filename:
-            image_ids = self.read_files(filename, split=",")
+            image_ids = self.read_file(filename, split=",")
             data_root = os.path.dirname(filename)
         if not anno_dir:  # 如果anno_dir为空，则自动搜寻可能存在图片目录
             anno_dir = self.search_path(data_root, sub_dir=["json"])
