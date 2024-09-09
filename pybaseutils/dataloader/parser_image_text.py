@@ -91,8 +91,8 @@ class TextDataset(Dataset):
         """
         data_list = self.load_dataset(filename, data_root=data_root)
         if not self.class_name:
-            class_name = list(set([d[1] for d in data_list]))
-            self.class_name, self.class_dict = self.parser_classes(class_name)
+            self.class_name = list(set([d[1] for d in data_list]))
+            self.class_name, self.class_dict = self.parser_classes(self.class_name)
         item_list = []
         for data in data_list:
             label = data[1]
@@ -100,6 +100,8 @@ class TextDataset(Dataset):
             data[1] = self.class_dict[label]
             item_list.append(data)
         if check: item_list = self.check_item(item_list)
+        assert self.class_name, f"class_name={self.class_name},类别为空，请检查class_name"
+        assert item_list, f"文件列表为空，请检查输入数据，filename={filename}"
         if shuffle:
             random.seed(100)
             random.shuffle(item_list)
@@ -156,7 +158,7 @@ class TextDataset(Dataset):
     def __getitem__(self, index):
         """
         :param index:
-        :return: image,label
+        :return: {"image": image, "label": label}
         """
         item = self.item_list[index]
         bbox = item[2:] if len(item) == 6 else []
@@ -244,6 +246,7 @@ if __name__ == '__main__':
         # '/home/PKing/nasdata/tmp/tmp/RealFakeFace/anti-spoofing-images-v1/CelebA-Spoof/CelebA_Spoof/test.txt',
         '/home/PKing/nasdata/tmp/tmp/RealFakeFace/anti-spoofing-images-v1/CelebA-Spoof/CelebA_Spoof/Data/train.txt',
     ]
+    class_name = None
     input_size = [224, 224]
     rgb_mean = [0., 0., 0.]
     rgb_std = [1.0, 1.0, 1.0]
@@ -254,9 +257,9 @@ if __name__ == '__main__':
     ])
     dataset = TextDataset(filename=filenames,
                           transform=transform,
-                          resample=True,
+                          class_name=class_name,
+                          resample=False,
                           shuffle=True,
-                          class_name=None,
                           disp=True)
     for i in range(len(dataset)):
         data_info = dataset.__getitem__(i)
