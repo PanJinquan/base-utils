@@ -23,7 +23,7 @@ from pybaseutils.dataloader import data_resample
 
 class TextDataset(Dataset):
 
-    def __init__(self, filename, data_root=None, class_name=None, transform=None, shuffle=True, use_rgb=True,
+    def __init__(self, filename, data_root=None, class_name=None, transform=None, shuffle=False, use_rgb=False,
                  phase="test", disp=False, check=False, **kwargs):
         """
         :param filename:
@@ -82,7 +82,7 @@ class TextDataset(Dataset):
 
     def parser_dataset(self, filename, data_root="", shuffle=False, check=False):
         """
-        保存格式：[path,label] 或者 [path,label,xmin,ymin,xmax,,ymax]
+        保存格式：[path,label] 或者 [path,label,xmin,ymin,xmax,ymax]
         :param filename:
         :param data_root:
         :param shuffle:
@@ -107,10 +107,10 @@ class TextDataset(Dataset):
 
     def load_dataset(self, filename, data_root=""):
         """
-        保存格式：[path,label] 或者 [path,label,xmin,ymin,xmax,,ymax]
+        保存格式：[path,label] 或者 [path,label,xmin,ymin,xmax,ymax]
         :param filename:
         :param data_root:
-        :return: [path,label] 或者 [path,label,xmin,ymin,xmax,,ymax]
+        :return: [path,label] 或者 [path,label,xmin,ymin,xmax,ymax]
         """
         if isinstance(filename, str): filename = [filename]
         item_list = []
@@ -177,6 +177,7 @@ class TextDataset(Dataset):
         return len(self.item_list)
 
     def crop_image(self, image, bbox):
+        """采集图片"""
         if not bbox: return image
         boxes = image_utils.extend_xyxy([bbox], scale=[1.2, 1.2])
         image = image_utils.get_boxes_crop(image, boxes)[0]
@@ -185,6 +186,7 @@ class TextDataset(Dataset):
     @staticmethod
     def read_image(path, use_rgb=True):
         """
+        读取图片
         :param path:
         :param use_rgb:
         :return:
@@ -197,7 +199,7 @@ class TextDataset(Dataset):
     @staticmethod
     def read_image_fast(path, use_rgb=True, use_fast=True, kb_th=100):
         """
-        读取图片的函数
+        读取图片
         :param path:
         :param use_rgb:
         :param use_fast:
@@ -257,8 +259,8 @@ if __name__ == '__main__':
                           class_name=None,
                           disp=True)
     for i in range(len(dataset)):
-        data = dataset.__getitem__(i)
-        image, label = data["image"], data["label"]
+        data_info = dataset.__getitem__(i)
+        image, label = data_info["image"], data_info["label"]
         image = np.asarray(image).transpose(1, 2, 0)  # 通道由[c,h,w]->[h,w,c]
         image = np.asarray(image * 255, dtype=np.uint8)
         label = np.asarray(label, dtype=np.int32)

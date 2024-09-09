@@ -16,7 +16,7 @@ from pybaseutils.dataloader import parser_image_text
 
 
 class FolderDataset(parser_image_text.TextDataset):
-    def __init__(self, image_dir, class_name=None, transform=None, use_rgb=True, shuffle=True,
+    def __init__(self, image_dir, class_name=None, transform=None, use_rgb=False, shuffle=False,
                  phase="test", disp=False, check=False, **kwargs):
         """
         :param image_dir: [image_dir]->list or `path/to/image_dir`->str
@@ -94,8 +94,8 @@ if __name__ == '__main__':
                             resample=True,
                             disp=True)
     for i in range(len(dataset)):
-        data = dataset.__getitem__(i)
-        image, label = data["image"], data["label"]
+        data_info = dataset.__getitem__(i)
+        image, label = data_info["image"], data_info["label"]
         image = np.asarray(image).transpose(1, 2, 0)  # 通道由[c,h,w]->[h,w,c]
         image = np.asarray(image * 255, dtype=np.uint8)
         label = np.asarray(label, dtype=np.int32)
