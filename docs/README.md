@@ -149,6 +149,8 @@ alias countdir='ls -lR|grep "^d"|wc -l'
 - 解决方法1：
 
 ```bash
+apt-get update
+#apt-get upgrade
 sudo apt-get install libopencv-dev python-opencv
 sudo apt-get install '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev    
 apt-get install '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev
@@ -176,6 +178,7 @@ git config --global credential.helper store
 
 ## 解决Github克隆失败的问题
 
+- 解决hugging face终端无法访问问题： https://zhuanlan.zhihu.com/p/676420788
 - https://hf-mirror.com/
 - https://blog.csdn.net/weixin_43431218/article/details/135403324
 - https://blog.csdn.net/weixin_43431218/article/details/135544365
@@ -184,7 +187,7 @@ git config --global credential.helper store
 
 ```bash
 # Linux
-export HF_ENDPOINT=https://hf-mirror.com
+export HF_ENDPOINT=https://hf-mirror.com # 或者写入~/.bashrc中
 # 如果要下载 https://huggingface.co/BAAI/DIVA/blob/main/OpenAICLIP/OpenAI-ViT-L-14-224.pth
 # 则只需要把huggingface.co改为hf-mirror.com，即可在浏览器正常访问
 ./hfd.sh BAAI/DIVA --tool aria2c -x 4
@@ -206,4 +209,4 @@ export HF_ENDPOINT=https://hf-mirror.com
 - https://huggingface.co/
 - 方法1：https://blog.csdn.net/gmmmmmmmm/article/details/135953651 (将下载连接huggingface.co`替换为 hf-mirror.com)
 - 方法2：https://modelscope.cn/my/overview
--  import huggingface_hub.constants 可以修改访问路径
+- import huggingface_hub.constants 可以修改访问路径

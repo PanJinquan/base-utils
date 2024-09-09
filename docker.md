@@ -93,3 +93,7 @@ docker run --shm-size = 256m ...
 #（2）另一种方法就是启动命令上添加 --ipc=host，让容器与主机共享内存。
 docker run --ipc=host ...
 ```
+
+
+## docker添加环境变量失效问题
+- 建议在 ~/.bashrc设置，不要在/etc/profile配置

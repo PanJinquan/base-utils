@@ -100,7 +100,7 @@ class TextDataset(Dataset):
             data[1] = self.class_dict[label]
             item_list.append(data)
         if check: item_list = self.check_item(item_list)
-        assert self.class_name, f"class_name={self.class_name},类别为空，请检查class_name"
+        assert self.class_name, f"类别为空，请检查，class_name={self.class_name}"
         assert item_list, f"文件列表为空，请检查输入数据，filename={filename}"
         if shuffle:
             random.seed(100)
