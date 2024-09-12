@@ -35,8 +35,9 @@ class TextDataset(Dataset):
         :param phase:
         :param disp:
         :param check:
-        :param kwargs:
+        :param kwargs: use_max,use_mean,crop_scale,resample,save_info
         """
+        self.kwargs = kwargs
         self.use_rgb = use_rgb
         self.transform = transform
         self.phase = phase
@@ -55,9 +56,9 @@ class TextDataset(Dataset):
         self.num_images = len(self.item_list)
         self.classes = list(self.class_dict.values())
         self.num_classes = max(self.classes) + 1
-        self.info(save=kwargs.get("save", ""))
+        self.info(save_info=kwargs.get("save_info", ""))
 
-    def info(self, save=""):
+    def info(self, save_info=""):
         print("----------------------- {} DATASET INFO -----------------------".format(self.phase.upper()))
         print("Dataset have images   :{}".format(len(self.item_list)))
         print("Dataset class_name    :{}".format(self.class_name))
@@ -66,17 +67,17 @@ class TextDataset(Dataset):
         print("Dataset num images    :{}".format(len(self.item_list)))
         print("Dataset num_classes   :{}".format(self.num_classes))
         print("Dataset resample      :{}".format(self.resample))
-        if save:
-            if not os.path.exists(save): os.makedirs(save)
+        if save_info:
+            if not os.path.exists(save_info): os.makedirs(save_info)
             m = np.mean(list(self.class_count.values()))
             class_lack = {n: c for n, c in self.class_count.items() if c < m * 0.5}
             class_lack = sorted(class_lack.items(), key=lambda x: x[1], reverse=True)
             class_lack = {n[0]: n[1] for n in class_lack}
             class_lack.update({"mean": m})
-            file_utils.write_json_path(os.path.join(save, f"{self.phase}_class_dict.json"), self.class_dict)
-            file_utils.write_json_path(os.path.join(save, f"{self.phase}_class_count.json"), self.class_count)
-            file_utils.write_list_data(os.path.join(save, f"{self.phase}_class_name.txt"), self.class_name)
-            file_utils.write_json_path(os.path.join(save, f"{self.phase}_class_lack.json"), class_lack)
+            file_utils.write_json_path(os.path.join(save_info, f"{self.phase}_class_dict.json"), self.class_dict)
+            file_utils.write_json_path(os.path.join(save_info, f"{self.phase}_class_count.json"), self.class_count)
+            file_utils.write_list_data(os.path.join(save_info, f"{self.phase}_class_name.txt"), self.class_name)
+            file_utils.write_json_path(os.path.join(save_info, f"{self.phase}_class_lack.json"), class_lack)
             print("loss_labels: {}".format(class_lack))
         print("------------------------------------------------------------------")
 
@@ -164,7 +165,7 @@ class TextDataset(Dataset):
         bbox = item[2:] if len(item) == 6 else []
         image_file, label = item[0], item[1]
         image = self.read_image(image_file, use_rgb=self.use_rgb)
-        image = self.crop_image(image, bbox=bbox) if bbox else image
+        image = self.crop_image(image, bbox=bbox, **self.kwargs) if bbox else image
         if self.transform:
             image = Image.fromarray(image)
             image = self.transform(image)
@@ -178,10 +179,13 @@ class TextDataset(Dataset):
             self.item_list = self.data_resample.update(True)
         return len(self.item_list)
 
-    def crop_image(self, image, bbox):
-        """采集图片"""
+    def crop_image(self, image, bbox, **kwargs):
+        """裁剪图片"""
         if not bbox: return image
-        boxes = image_utils.extend_xyxy([bbox], scale=[1.2, 1.2])
+        boxes = image_utils.get_square_boxes(boxes=[bbox],
+                                             use_max=kwargs.get("use_max", True),
+                                             use_mean=kwargs.get("use_mean", True))
+        boxes = image_utils.extend_xyxy(boxes, scale=kwargs.get("crop_scale", []))
         image = image_utils.get_boxes_crop(image, boxes)[0]
         return image
 
@@ -243,11 +247,10 @@ if __name__ == '__main__':
     from torchvision import transforms
 
     filenames = [
-        # '/home/PKing/nasdata/tmp/tmp/RealFakeFace/anti-spoofing-images-v1/CelebA-Spoof/CelebA_Spoof/test.txt',
-        '/home/PKing/nasdata/tmp/tmp/RealFakeFace/anti-spoofing-images-v1/CelebA-Spoof/CelebA_Spoof/Data/train.txt',
+        '/home/PKing/nasdata/tmp/tmp/RealFakeFace/anti-spoofing-images-v1/train.txt',
     ]
     class_name = None
-    input_size = [224, 224]
+    input_size = [112, 112]
     rgb_mean = [0., 0., 0.]
     rgb_std = [1.0, 1.0, 1.0]
     transform = transforms.Compose([
@@ -260,6 +263,7 @@ if __name__ == '__main__':
                           class_name=class_name,
                           resample=False,
                           shuffle=True,
+                          crop_scale=(1.5, 1.5),
                           disp=True)
     for i in range(len(dataset)):
         data_info = dataset.__getitem__(i)

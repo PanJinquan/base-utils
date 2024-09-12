@@ -1,5 +1,16 @@
 # 常用的工具使用方法
 
+## Linux常见命令
+```bash
+# xdg-open打开文件夹/文件
+xdg-open ./
+# 查找某个文件
+find /usr -name libnvidia-ml* 
+
+```
+
+
+
 ## memory profiler性能分析工具
 
 - https://zhuanlan.zhihu.com/p/121003986
@@ -192,10 +203,6 @@ export HF_ENDPOINT=https://hf-mirror.com # 或者写入~/.bashrc中
 # 则只需要把huggingface.co改为hf-mirror.com，即可在浏览器正常访问
 ./hfd.sh BAAI/DIVA --tool aria2c -x 4
 ```
-
-## xdg-open打开文件夹/文件
-
-- xdg-open ./
 
 ## 表格
 

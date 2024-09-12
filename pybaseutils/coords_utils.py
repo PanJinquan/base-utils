@@ -198,11 +198,12 @@ def shrink_polygon_pyclipper(polygon, ratio):
     return shrinked
 
 
-def get_square_boxes(boxes, use_max=True, baseline=-1):
+def get_square_boxes(boxes, use_max=True, use_mean=False, baseline=-1):
     """
     将boxes转换为正方形的boxes
     :param boxes:
-    :param use_max: 是否按照每个box(w,h)最大值进行转换
+    :param use_max: 是否按照每个box(w,h)最大值(True)/最小值(False)进行转换(默认)
+    :param use_mean: 是否按照每个box(w,h)平均值进行转换(优先级比use_mean高)
     :param baseline: 当baseline>0，表示正方形最小边长
     :return:
     """
@@ -213,6 +214,8 @@ def get_square_boxes(boxes, use_max=True, baseline=-1):
         b = np.max(center[:, 2:4], axis=1)
     else:
         b = np.min(center[:, 2:4], axis=1)
+    if use_mean:
+        b = np.mean(center[:, 2:4], axis=1)
     if baseline > 0:
         index = b < baseline
         b[index] = baseline

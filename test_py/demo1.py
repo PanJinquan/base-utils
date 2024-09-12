@@ -48,8 +48,10 @@ class Promote():
 
 
 if __name__ == '__main__':
-    file = "/home/PKing/nasdata/tmp/tmp/Natural/图片描述.json"
-    data = json_utils.read_json_data(file)
-    for i in range(len(data)):
-        data[i]["result"] = json.loads(data[i]["result"])
-    print(data)
+    image_file = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-action-cvlm-v2/第3批数据/aije-action-train-v22/江门_检查工器具_20240910_172411_6606_0000.jpg"
+    boxe1 = [[600, 300, 850, 800]]
+    image = image_utils.read_image(image_file)
+    boxe2 = image_utils.get_square_boxes(boxe1, use_max=True, use_mean=True)
+    image = image_utils.draw_image_boxes(image, boxe1, color=(255, 0, 0))
+    image = image_utils.draw_image_boxes(image, boxe2, color=(0, 255, 0))
+    image_utils.cv_show_image("image", image)

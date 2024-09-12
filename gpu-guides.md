@@ -1,5 +1,5 @@
 # CUDA，cuDNN安装方法
-
+- CUDA_VISIBLE_DEVICES=7,6,5,4 python train.py
 ## 常用的命令
 
 ```bash
