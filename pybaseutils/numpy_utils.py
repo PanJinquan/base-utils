@@ -11,30 +11,54 @@ from sklearn import metrics, preprocessing
 import heapq
 
 
-def matching_embedding(inputs, target, use_max=False):
+def feature_norm(x, axis=-1):
     """
-    按照最小L2距离进行特征匹配
+    特征归一化:
+    y = x / x.norm(dim=-1, keepdim=True)               # torch
+    y = x / np.linalg.norm(x, axis=-1, keepdims=True)  # numpy
+    :param x: 输入二维矩阵(N,embedding-size)，每行是一个样本，样本特征维度为embedding-size
+    :param axis:
+    :return:
+    """
+    y = x / np.linalg.norm(x, axis=axis, keepdims=True)
+    return y
+
+
+def feature_similarity(inputs, target):
+    """
+    计算特征相似性
+    similarity = inputs @ target.T                 # torch
+    similarity = np.sum(inputs * target, axis=-1)  # numpy
     :param inputs: 输入待匹配的特点，shape=(n,D),其中n表示样本个数，D表示特征维度
     :param target: 目标匹配数据库,shape=(N,D),其中N表示数据库样本个数，D表示特征维度
-    :param use_max: False:按照最小距离进行匹配,True:按照最大距离进行匹配
-    :return: indexes： 与target匹配的索引
-             distance：与target匹配的最小L2距离(欧式距离=np.sqrt(L2)=np.sqrt(distance))
+    :return: similarity
     """
     assert inputs.shape[1] == target.shape[1]  # 特征维度必须一致
-    data = np.expand_dims(inputs, axis=-1)  # (n,512)->(n,512,1)
-    dataset = target.image_demo(1, 0)  # (N, 512)->(512, N)
-    dataset = np.expand_dims(dataset, axis=0)  # (1,512, N)
-    diff = data - dataset  # (n, 512, 1) - (1, 512, N) = (n, 512, N)
-    dist = np.sum(np.power(diff, 2), axis=1)  # (n, N)
+    inputs_ = np.expand_dims(inputs, axis=1)  # (b,512)->(b,1,512)
+    target_ = np.expand_dims(target, axis=0)  # (n, 512)->(1, n, 512)
+    similarity = np.sum(inputs_ * target_, axis=-1)  # (b,1,512) * (1, n, 512)
+    return similarity
+
+
+def feature_matching(inputs, target, use_max=True):
+    """
+    按照相似程度进行特征匹配，输入特征数据必须进行特征归一化:
+    y = x / x.norm(dim=-1, keepdim=True)               # torch
+    y = x / np.linalg.norm(x, axis=-1, keepdims=True)  # numpy
+    :param inputs: 输入待匹配的特点，shape=(n,D),其中n表示样本个数，D表示特征维度
+    :param target: 目标匹配数据库,shape=(N,D),其中N表示数据库样本个数，D表示特征维度
+    :param use_max:按照相似程度进行匹配
+    :return: index： 与target匹配的索引
+             score：与target匹配的最小L2距离(欧式距离=np.sqrt(L2)=np.sqrt(distance))
+    """
+    similarity = feature_similarity(inputs, target)
     if use_max:
-        indexes = np.argmax(dist, axis=1)
-        distance = np.max(dist, axis=1)
-        # distance = np.asarray([dist[i][c] for i, c in enumerate(indexes)])
+        index = np.argmax(similarity, axis=1)
+        score = np.max(similarity, axis=1)
     else:
-        indexes = np.argmin(dist, axis=1)
-        distance = np.min(dist, axis=1)
-        # distance = np.asarray([dist[i][c] for i, c in enumerate(indexes)])
-    return indexes, distance
+        index = np.argmin(similarity, axis=1)
+        score = np.min(similarity, axis=1)
+    return index, score
 
 
 def get_nearest_point(points, center, axis=1, use_max=False):
@@ -296,8 +320,31 @@ def __print(data, info=""):
         print("{}".format(data[index]))
 
 
+def euclidean_distance(p1, p2, axis=1):
+    """
+    计算欧氏距离
+    point1 = [[3, 4], [4, 3], [4, 3]]
+    center = [[0, 0]]
+    point1 = np.asarray(point1)
+    center = np.asarray(center)
+
+    L2-norm=np.sqrt(np.sum(np.square(x), axis=axis))
+    L1-norm=np.sum(np.abs(x), axis=axis))
+    # 下面三个计算是等价的
+    d1 = np.sqrt(numpy_tools.l2(point1 - center, axis=1)) # L2开根号就是欧式距离
+    d2 = numpy_utils.norm(point1 - center, p=2, axis=1)
+    d3 = numpy_utils.euclidean_distance(point1, center, axis=1)
+    """
+    d = np.sqrt(np.sum(np.square(p1 - p2), axis=axis))
+    return d
+
+
 def norm(x, p=1, axis=0):
-    """L-p范数"""
+    """
+    L-p范数
+    L2-norm=np.sqrt(np.sum(np.square(x), axis=axis))
+    L1-norm=np.sum(np.abs(x), axis=axis))
+    """
     y = np.linalg.norm(x, ord=p, axis=axis, keepdims=True)
     return y
 
@@ -308,8 +355,14 @@ def l2(x, axis=0):
     return y
 
 
+def l2_norm(x, axis=0):
+    """L-2范数"""
+    y = np.sqrt(l2(x, axis=axis))
+    return y
+
+
 def l1(x, axis=0):
-    """L-1范数"""
+    """L-1范数:"""
     y = np.sum(np.abs(x), axis=axis)
     return y
 
@@ -332,22 +385,6 @@ def mean_absolute_error(y_true, y_pre):
     """MAE(Mean Absolute Error)平均绝对差值(L1),也等于MAD(Mean Absolute Difference)"""
     l1 = np.sum(np.abs(y_true - y_pre))
     return l1 / y_true.size
-
-
-def euclidean_distance(p1, p2, axis=1):
-    """
-    计算欧氏距离
-    point1 = [[3, 4], [4, 3], [4, 3]]
-    center = [[0, 0]]
-    point1 = np.asarray(point1)
-    center = np.asarray(center)
-    # 下面三个计算是等价的
-    d1 = np.sqrt(numpy_tools.l2(point1 - center, axis=1)) # L2开根号就是欧式距离
-    d2 = numpy_utils.norm(point1 - center, p=2, axis=1)
-    d3 = numpy_utils.euclidean_distance(point1, center, axis=1)
-    """
-    d = np.sqrt(np.sum(np.square(p1 - p2), axis=axis))
-    return d
 
 
 def mean(data):
@@ -608,19 +645,8 @@ class Preprocessing(object):
 if __name__ == "__main__":
     from pybaseutils import numpy_utils
 
-    x = np.array([[1., -1., 2.],
-                  [2., 0., 0.],
-                  [0., 1., -1.]])
-    y = numpy_utils.Preprocessing.feature_norm(x)
-    print(y)
-    # y = Preprocessing.minmax_scaler(x)
-    # y = Preprocessing.normalization(x)
-
-    value_list = [
-        [1, 2, 3, 4, 5, 6],
-        [5, 6, 1, 2, 3, 4],
-    ]
-    print(value_list)
-    top_k_value, top_k_index = get_topK(value_list, k=3, reverse=False)
-    print(top_k_value)
-    print(top_k_index)
+    y = np.array([[0., 0.1, 0], [0, 0.1, 1], [0, 0.1, 2]])
+    x = np.array([[0, 0.1, 1], [0, 0.1, 2], [0., 0.1, 0]])
+    x = feature_norm(x)
+    y = feature_norm(y)
+    print(feature_matching(x, y))

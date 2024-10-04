@@ -109,7 +109,7 @@ def extend_xyxy(xyxy: np.ndarray, scale=[1.0, 1.0], valid_range=[], fixed=False,
                  使用fixed的长宽会按照相同大小扩展
     :return:
     """
-    if len(xyxy) == 0: return xyxy
+    if len(xyxy) == 0 or len(scale) == 0: return xyxy
     if not isinstance(xyxy, np.ndarray): xyxy = np.asarray(xyxy)
     cxcywh = xyxy.copy()
     if fixed:
@@ -137,7 +137,7 @@ def extend_xywh(xywh: np.ndarray, scale=[1.0, 1.0], valid_range=[], fixed=False,
     :param scale: [sx,sy]==>(W,H)
     :return:
     """
-    if len(xywh) == 0: return xywh
+    if len(xywh) == 0 or len(scale) == 0: return xywh
     if not isinstance(xywh, np.ndarray): xywh = np.asarray(xywh)
     xyxy = xywh2xyxy(xywh)
     xyxy = extend_xyxy(xyxy, scale, valid_range=valid_range, fixed=fixed, use_max=use_max)

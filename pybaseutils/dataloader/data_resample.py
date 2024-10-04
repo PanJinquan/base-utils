@@ -12,7 +12,7 @@ import math
 class ResampleExample(object):
     """样本均衡，重采样DataResampler的使用方法"""
 
-    def __init__(self, item_list, label_index=1, shuffle=True, disp=False):
+    def __init__(self, item_list, label_index, shuffle=True, disp=False):
         """
         :param item_list: item_list=[item_0,item_1,...,item_n],
                           item_n= [path/to/image,label]
@@ -28,14 +28,14 @@ class ResampleExample(object):
                                       disp=self.disp)
 
     def __len__(self):
+        print("start resampler, data will shuffle and update")
         # 更新resampler，实现每个epoch重新采样，避免样本数比较多的类别，没有加入训练
         self.item_list = self.resampler.update(self.shuffle)
         return len(self.item_list)
 
-    def __getitem__(self, idx):
-        image_path = self.item_list[idx][0]
-        label_id = self.item_list[idx][1]
-        return image_path, label_id
+    def __getitem__(self, index):
+        data_info = self.item_list[index]
+        return data_info
 
 
 class DataResample(object):
@@ -195,9 +195,71 @@ class DataResample(object):
         return class_weight
 
 
+class DataLabelResample(object):
+    """样本均衡，重采样的方法"""
+
+    def __init__(self, data, label, balance="mean", shuffle=True, disp=False):
+        """
+        Usage:
+        参考：ResampleExample例子的使用方法
+        :param item_list:
+        :param label_index:
+        :param balance:实现样本均衡策略,均衡力度：mean > log > sqrt > y
+                        "y": 每个label样本数跟原来一样
+                        "sqrt": 每个label样本取sqrt数，实现样本均衡
+                        "log": 每个label样本取log数，实现样本均衡
+                        "mean": 每个label样本取样本平均数，每个label的个数一样
+        """
+        self.shuffle = shuffle
+        self.item_list = list(zip(data, label))
+        self.resample = DataResample(item_list=self.item_list, label_index=1, balance=balance,
+                                     shuffle=shuffle, disp=disp)
+
+    def __len__(self):
+        data, label = self.update(shuffle=self.shuffle)
+        return len(data)
+
+    def update(self, shuffle=False):
+        item_list = self.resample.update(shuffle=shuffle)
+        data = [item[0] for item in item_list]
+        label = [item[1] for item in item_list]
+        return data, label
+
+
+def get_class_count(item_list, label_index):
+    """
+    统计每个类别的个数
+    :param item_list: List[list,list]
+    :param label_index: label在item中的序号
+    :return:
+    """
+    count_info = {}
+    for item in item_list:
+        label = item[label_index]
+        try:
+            # if label in class_count:  # 比较慢，相当于需要查询label是否存在
+            count_info[label] += 1
+        except Exception as e:
+            count_info[label] = 1
+    return count_info
+
+
+def get_label_count(label):
+    """
+    统计每个类别的个数
+    :param label: [int,int,...]
+    :return:
+    """
+    count = np.bincount(label).tolist()
+    label = list(range(max(count)))
+    count_info = {l: c for l, c in zip(label, count) if c > 0}
+    return count_info
+
+
 if __name__ == "__main__":
+    from tqdm import tqdm
     from torch.utils.data import Dataset, DataLoader, Sampler
-    from utils import torch_tools
+    from basetrainer.utils import torch_tools
 
     torch_tools.set_env_random_seed()
     label0 = [["0.1.jpg", 0], ["0.2.jpg", 0], ["0.3.jpg", 0]]
@@ -206,15 +268,16 @@ if __name__ == "__main__":
               ["2.5.jpg", 2], ["2.6.jpg", 2], ["2.7.jpg", 2], ["2.8.jpg", 2]]
     label3 = [["3.1.jpg", 3], ["3.2.jpg", 3], ["3.3.jpg", 3]]
     item_list = label0 + label1 + label2 + label3
-    item_list = item_list * 1000000
+    item_list = item_list * 1
+    item_list = [{"file": item[0], "label": item[1]} for item in item_list]
     print("have item_list:{}".format(len(item_list)))
-    dataset_train = ResampleExample(item_list=item_list, label_index=1, shuffle=True, disp=True)
+    dataset_train = ResampleExample(item_list=item_list, label_index="label", shuffle=True, disp=True)
     # dataset_train = ResampleExample(item_list=item_list, label_index=1, disp=False)
     # dataset_train = ResampleExample(item_list=item_list, label_index=1, disp=False)
-    batch_size = 4
+    batch_size = 20
     dataloader = DataLoader(dataset_train, batch_size, num_workers=0)
     epochs = 2
     for epoch in range(epochs):
         print("{}===".format(epoch) * 10)
-        for batch_image, batch_label in iter(dataloader):
-            print(batch_image, batch_label)
+        for step, data in enumerate(tqdm(dataloader)):
+            print(step, data)

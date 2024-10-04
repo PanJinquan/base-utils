@@ -380,19 +380,19 @@ def image_unnormalize(image, mean=None, std=None):
 image_unnormalization = image_unnormalize
 
 
-def data_unnormalize(data, omin, omax, imin=None, imax=None):
+def data_normalize(x, ymin=0, ymax=1.0, xmin=None, xmax=None):
     """
-    NORMALIZATION 将数据x归一化到任意区间[ymin,omax]范围的方法
-    :param data:  输入参数x：需要被归一化的数据,numpy
-    :param omin: 输入参数omin：归一化的区间[omin,omax]下限
-    :param omax: 输入参数ymax：归一化的区间[omin,omax]上限
-    :param imin: 输入参数imin的最小值
-    :param imax: 输入参数ymax的最大值
+    NORMALIZATION 将数据x归一化到任意区间[ymin,ymax]范围的方法
+    :param x:  输入参数x：需要被归一化的数据,numpy
+    :param ymin: 输入参数ymin：归一化的区间[ymin,ymax]下限
+    :param ymax: 输入参数ymax：归一化的区间[ymin,ymax]上限
+    :param xmin: 输入参数xmin的最小值
+    :param xmax: 输入参数xmax的最大值
     :return: 输出参数y：归一化到区间[omin,omax]的数据
     """
-    imax = imax if imax is not None else np.max(data)  # %计算最大值
-    imin = imin if imin is not None else np.min(data)  # %计算最小值
-    y = (omax - omin) * (data - imin) / (imax - imin) + omin
+    xmax = np.max(x) if xmax is None else xmax  # %计算最大值
+    xmin = np.min(x) if xmin is None else xmin  # %计算最小值
+    y = (ymax - ymin) * (x - xmin) / (xmax - xmin) + ymin
     return y
 
 

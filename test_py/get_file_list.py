@@ -17,22 +17,20 @@ import cv2
 import re
 
 
-def get_file_list_dataset(data_dir, subs=[]):
-    files = file_utils.get_files_lists(data_dir, sub=True, postfix=file_utils.IMG_POSTFIX)
-    # files = file_utils.get_files_lists(data_dir, sub=True, postfix=file_utils.VIDEO_POSTFIX)
-    sub = os.path.basename(data_dir)
+def get_file_list_dataset(image_dir, subs=[]):
+    files = file_utils.get_files_lists(image_dir, sub=True)
+    sub = os.path.basename(image_dir)
     content = []
     for path in files:
         label = path.split("/")[0]
-        if subs and label not in subs: continue
+        if label not in subs: continue
         text = [os.path.join(sub, path), label]
         content.append(text)
     content = sorted(content)
-    print(f"have {len(content)} files")
-    filename = os.path.join(os.path.dirname(data_dir), f"{sub}.txt")
+    filename = os.path.join(os.path.dirname(image_dir), f"{sub}.txt")
     file_utils.write_data(filename, content, split=",")
 
 
 if __name__ == '__main__':
-    data_dir = "/home/PKing/nasdata/tmp/tmp/RealFakeFace/anti-spoofing-images-v1/train"
-    get_file_list_dataset(data_dir)
+    image_dir = "/home/PKing/nasdata/tmp/tmp/RealFakeFace/anti-spoofing-images-v1/test"
+    get_file_list_dataset(image_dir)

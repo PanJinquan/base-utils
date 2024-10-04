@@ -24,5 +24,5 @@ torch==1.13.1+cu117
 torchvision==0.14.1+cu117
 tqdm==4.55.1
 xmltodict==0.12.0
-basetrainer==0.7.9
-pybaseutils==0.9.7
+basetrainer
+pybaseutils

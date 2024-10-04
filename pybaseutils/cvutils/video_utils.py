@@ -13,7 +13,7 @@ from tqdm import tqdm
 from pybaseutils import image_utils, file_utils
 from pybaseutils.cvutils import monitor
 
-VIDEO_POSTFIX = ['*.mp4', '*.avi']
+VIDEO_POSTFIX = ['*.mp4', '*.avi', '*.mov', "*.flv"]
 
 get_video_capture = image_utils.get_video_capture
 get_video_info = image_utils.get_video_info

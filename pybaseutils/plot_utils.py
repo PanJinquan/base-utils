@@ -106,7 +106,50 @@ def plot_bar(x, y, xlabel="X", ylabel="Y", title="bar", bin_width=1, vis=True, s
     if vis: plt.savefig('out.png')
 
 
-def plot_multi_line(x_data_list, y_data_list, line_names=None, title="", xlabel="", ylabel=""):
+def plot_line(x, y, name=None, title="", xlabel="", ylabel="", color="b"):
+    """
+    :param x: List[]
+    :param y: List[]
+    :param names: List[]
+    :param title:
+    :param xlabel:
+    :param ylabel:
+    :return:
+    """
+    # 绘图
+    # plt.figure()
+    if x is None: x = list(range(0, len(y)))
+    lw = 2
+    plt.figure(figsize=(10, 10))
+    plt.plot(x, y, color=color, lw=lw, label=name)  # 假正率为横坐标，真正率为纵坐标做曲线
+    # plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+    # plt.plot([0, 1], [1, 0], color='navy', lw=lw, linestyle='--')  # 绘制y=1-x的直线
+    # plt.xlim([xlim_min - 0.01 * x_deta, xlim_max + 0.1 * x_deta])
+    # plt.ylim([ylim_min - 0.01 * y_deta, ylim_max + 0.1 * y_deta])
+    # 设置横纵坐标的名称以及对应字体格式
+    font = {'family': 'Times New Roman',
+            'weight': 'normal',
+            'size': 20,
+            }
+    plt.xlabel(xlabel, font)
+    plt.ylabel(ylabel, font)
+    plt.title(title)
+    plt.legend(loc="lower right")  # "upper right"
+    # plt.legend(loc="upper right")#"upper right"
+    plt.grid(True)  # 显示网格;
+    plt.show()
+
+
+def plot_lines(X, Y, names=None, title="", xlabel="", ylabel=""):
+    """
+    :param X: List[List]
+    :param Y: List[List]
+    :param names: List[]
+    :param title:
+    :param xlabel:
+    :param ylabel:
+    :return:
+    """
     # 绘图
     # plt.figure()
     lw = 2
@@ -117,10 +160,9 @@ def plot_multi_line(x_data_list, y_data_list, line_names=None, title="", xlabel=
 
     xlim_min = 0
     ylim_min = 0
-    if not line_names:
-        line_names = " " * len(x_data_list)
-    for x, y, color, line_name in zip(x_data_list, y_data_list, colors, line_names):
-        plt.plot(x, y, color=color, lw=lw, label=line_name)  # 假正率为横坐标，真正率为纵坐标做曲线
+    if not names: names = " " * len(X)
+    for x, y, color, label in zip(X, Y, colors, names):
+        plt.plot(x, y, color=color, lw=lw, label=label)  # 假正率为横坐标，真正率为纵坐标做曲线
         if xlim_max < max(x):
             xlim_max = max(x)
         if ylim_max < max(y):
@@ -148,6 +190,9 @@ def plot_multi_line(x_data_list, y_data_list, line_names=None, title="", xlabel=
     # plt.legend(loc="upper right")#"upper right"
     plt.grid(True)  # 显示网格;
     plt.show()
+
+
+plot_multi_line = plot_lines
 
 
 def plot_skew_kurt(data, name="Title"):

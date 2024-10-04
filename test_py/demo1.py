@@ -10,6 +10,7 @@ import cv2
 import numpy as np
 import random
 import json
+from PIL import Image
 from typing import Dict
 from tqdm import tqdm
 from pybaseutils import image_utils, file_utils, json_utils, base64_utils, time_utils
@@ -48,10 +49,8 @@ class Promote():
 
 
 if __name__ == '__main__':
-    image_file = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-action-cvlm-v2/第3批数据/aije-action-train-v22/江门_检查工器具_20240910_172411_6606_0000.jpg"
-    boxe1 = [[600, 300, 850, 800]]
-    image = image_utils.read_image(image_file)
-    boxe2 = image_utils.get_square_boxes(boxe1, use_max=True, use_mean=True)
-    image = image_utils.draw_image_boxes(image, boxe1, color=(255, 0, 0))
-    image = image_utils.draw_image_boxes(image, boxe2, color=(0, 255, 0))
-    image_utils.cv_show_image("image", image)
+    data = ["1.jpg", "2.jpg"]
+    label = [0, 1]
+    item_list = list(zip(data, label))
+    item_list = zip()
+    print(item_list)

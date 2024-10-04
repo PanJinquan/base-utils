@@ -24,7 +24,7 @@ from datetime import datetime
 from tqdm import tqdm
 
 IMG_POSTFIX = ['*.jpg', '*.jpeg', '*.png', '*.tif', "*.JPG", "*.bmp"]
-VIDEO_POSTFIX = ['*.mp4', '*.avi']
+VIDEO_POSTFIX = ['*.mp4', '*.avi', '*.mov', "*.flv"]
 
 
 def str2bool(v):
