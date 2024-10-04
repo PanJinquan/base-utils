@@ -41,35 +41,24 @@ class FolderDataset(parser_image_text.TextDataset):
         :param index:
         :return: {"image": image, "label": label}
         """
-        item = self.item_list[index]
-        bbox = item[2:] if len(item) == 6 else []
-        image_file, label = item[0], item[1]
-        image = self.read_image(image_file, use_rgb=self.use_rgb)
-        image = self.crop_image(image, bbox=bbox) if bbox else image
-        if self.transform:
-            image = Image.fromarray(image)
-            image = self.transform(image)
-        if image is None:
-            index = int(random.uniform(0, self.num_images))
-            return self.__getitem__(index)
-        return {"image": image, "label": label}
+        return super(FolderDataset, self).__getitem__(index)
 
     def load_dataset(self, filename, data_root="", use_sub=False):
         """
         保存格式：[path,label] 或者 [path,label,xmin,ymin,xmax,,ymax]
         :param filename:
         :param data_root:
-        :return: item_list [path,label] 或者 [path,label,xmin,ymin,xmax,,ymax]
+        :return: item_list [{"file":file,"label":label}]
         """
         if isinstance(filename, str): filename = [filename]
         item_list = []
         for i, dir in enumerate(filename):
-            print("loading image from:{}".format(dir))
             if not os.path.exists(dir): raise Exception("文件不存在，image_dir:{}".format(dir))
             paths, labels = file_utils.get_files_labels(dir, postfix=file_utils.IMG_POSTFIX)
+            print("loading data from:{},have {}".format(dir, len(paths)))
             # TODO # 避免多个数据集的相同的label
             if use_sub:  labels = [os.path.join(str(i), l) for l in labels]
-            data = [[p, l] for p, l in zip(paths, labels)]
+            data = [{"file": p, "label": l} for p, l in zip(paths, labels)]
             item_list += data
         return item_list
 

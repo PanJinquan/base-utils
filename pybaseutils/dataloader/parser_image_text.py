@@ -117,7 +117,7 @@ class TextDataset(Dataset):
         保存格式：[path,label] 或者 [path,label,xmin,ymin,xmax,ymax]
         :param filename:
         :param data_root:
-        :return: [path,label] 或者 [path,label,xmin,ymin,xmax,ymax]
+        :return: item_list [{"file":file,"label":label},"bbox":[]]
         """
         if isinstance(filename, str): filename = [filename]
         item_list = []
@@ -130,6 +130,7 @@ class TextDataset(Dataset):
                     data.append({"file": os.path.join(root, line[0]), "label": line[1]})
                 elif len(line) == 6:
                     data.append({"file": os.path.join(root, line[0]), "label": line[1], "bbox": line[2:]})
+            print("loading data from:{},have {}".format(file, len(data)))
             item_list += data
         return item_list
 
