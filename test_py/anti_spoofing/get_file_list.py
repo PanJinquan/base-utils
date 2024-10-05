@@ -20,16 +20,16 @@ import re
 def get_file_list_dataset(data_dir, subs=[]):
     files = file_utils.get_files_lists(data_dir, sub=True, postfix=file_utils.IMG_POSTFIX)
     # files = file_utils.get_files_lists(data_dir, sub=True, postfix=file_utils.VIDEO_POSTFIX)
-    sub = os.path.basename(data_dir)
+    phase = os.path.basename(data_dir)
     content = []
     for path in files:
         label = path.split("/")[0]
         if subs and label not in subs: continue
-        text = [os.path.join(sub, path), label]
+        text = [os.path.join(phase, path), label]
         content.append(text)
     content = sorted(content)
     print(f"have {len(content)} files")
-    filename = os.path.join(os.path.dirname(data_dir), f"{sub}.txt")
+    filename = os.path.join(os.path.dirname(data_dir), f"{phase}-new.txt")
     file_utils.write_data(filename, content, split=",")
 
 

@@ -25,7 +25,7 @@ class FolderDataset(parser_image_text.TextDataset):
         :param shuffle:
         :param disp:
         """
-        super(FolderDataset, self).__init__(filename=image_dir,
+        super(FolderDataset, self).__init__(data_file=image_dir,
                                             data_root=None,
                                             class_name=class_name,
                                             transform=transform,
@@ -43,16 +43,16 @@ class FolderDataset(parser_image_text.TextDataset):
         """
         return super(FolderDataset, self).__getitem__(index)
 
-    def load_dataset(self, filename, data_root="", use_sub=False):
+    def load_dataset(self, data_files, data_root="", use_sub=False):
         """
         保存格式：[path,label] 或者 [path,label,xmin,ymin,xmax,,ymax]
-        :param filename:
+        :param data_files:
         :param data_root:
         :return: item_list [{"file":file,"label":label}]
         """
-        if isinstance(filename, str): filename = [filename]
+        if isinstance(data_files, str): data_files = [data_files]
         item_list = []
-        for i, dir in enumerate(filename):
+        for i, dir in enumerate(data_files):
             if not os.path.exists(dir): raise Exception("文件不存在，image_dir:{}".format(dir))
             paths, labels = file_utils.get_files_labels(dir, postfix=file_utils.IMG_POSTFIX)
             print("loading data from:{},have {}".format(dir, len(paths)))

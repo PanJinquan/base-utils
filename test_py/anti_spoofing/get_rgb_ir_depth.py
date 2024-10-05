@@ -48,11 +48,12 @@ def get_file_list_dataset(data_dir, image_name="color", other_name=["ir", "depth
         pairs_path = [os.path.join(data_dir, file) for file in pairs_list]
         if check and not check_file_exit(pairs_path):
             continue
+        pairs_list = [os.path.join(phase, path) for path in pairs_list]
         data = pairs_list + [label]
         content.append(data)
     content = sorted(content)
     print(f"have {len(content)} files")
-    filename = os.path.join(os.path.dirname(data_dir), f"{phase}-new.txt")
+    filename = os.path.join(os.path.dirname(data_dir), f"{phase}.txt")
     file_utils.write_data(filename, content, split=",")
 
 

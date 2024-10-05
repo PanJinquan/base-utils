@@ -23,10 +23,10 @@ from pybaseutils.dataloader import data_resample
 
 class TextDataset(Dataset):
 
-    def __init__(self, filename, data_root=None, class_name=None, transform=None, shuffle=False, use_rgb=False,
+    def __init__(self, data_file, data_root=None, class_name=None, transform=None, shuffle=False, use_rgb=False,
                  phase="test", disp=False, check=False, **kwargs):
         """
-        :param filename:
+        :param data_file:
         :param data_root:
         :param class_name:
         :param transform:
@@ -43,7 +43,7 @@ class TextDataset(Dataset):
         self.phase = phase
         self.label_index = "label"
         self.class_name, self.class_dict = self.parser_classes(class_name)
-        self.item_list = self.parser_dataset(filename, data_root=data_root, label_index=self.label_index,
+        self.item_list = self.parser_dataset(data_file, data_root=data_root, label_index=self.label_index,
                                              shuffle=shuffle, check=check)
         self.resample = kwargs.get("resample", False)
         if self.resample:
@@ -84,17 +84,17 @@ class TextDataset(Dataset):
             print("loss_labels: {}".format(class_lack))
         print("------------------------------------------------------------------")
 
-    def parser_dataset(self, filename, data_root="", label_index="label", shuffle=False, check=False):
+    def parser_dataset(self, data_file, data_root="", label_index="label", shuffle=False, check=False):
         """
         保存格式：[path,label] 或者 [path,label,xmin,ymin,xmax,ymax]
-        :param filename:
+        :param data_file:
         :param data_root:
         :param label_index: label index
         :param shuffle:
         :param check:
         :return:
         """
-        data_list = self.load_dataset(filename, data_root=data_root)
+        data_list = self.load_dataset(data_file, data_root=data_root)
         if not self.class_name:
             self.class_name = list(set([d[label_index] for d in data_list]))
             self.class_name, self.class_dict = self.parser_classes(self.class_name)
@@ -106,22 +106,22 @@ class TextDataset(Dataset):
             item_list.append(data)
         if check: item_list = self.check_item(item_list)
         assert self.class_name, f"类别为空，请检查，class_name={self.class_name}"
-        assert item_list, f"文件列表为空，请检查输入数据，filename={filename}"
+        assert item_list, f"文件列表为空，请检查输入数据，data_file={data_file}"
         if shuffle:
             random.seed(100)
             random.shuffle(item_list)
         return item_list
 
-    def load_dataset(self, filename, data_root=""):
+    def load_dataset(self, data_file, data_root="", **kwargs):
         """
         保存格式：[path,label] 或者 [path,label,xmin,ymin,xmax,ymax]
-        :param filename:
+        :param data_file:
         :param data_root:
         :return: item_list [{"file":file,"label":label},"bbox":[]]
         """
-        if isinstance(filename, str): filename = [filename]
+        if isinstance(data_file, str): data_file = [data_file]
         item_list = []
-        for file in filename:
+        for file in data_file:
             root = data_root if data_root else os.path.dirname(file)
             content = file_utils.read_data(file, split=",")
             data = []
@@ -238,7 +238,7 @@ class TextDataset(Dataset):
     def count_class_info(item_list, class_name=None, label_index="label"):
         """
         统计类别信息
-        item_list=[[filename,label,...],[filename,label,...]]
+        item_list=[[file,label,...],[file,label,...]]
         :param item_list:
         :param class_name:
         :return:
@@ -255,7 +255,7 @@ if __name__ == '__main__':
     from pybaseutils import image_utils
     from torchvision import transforms
 
-    filenames = [
+    data_files = [
         '/home/PKing/nasdata/tmp/tmp/RealFakeFace/anti-spoofing-images-v2/train.txt',
     ]
     class_name = None
@@ -268,7 +268,7 @@ if __name__ == '__main__':
         transforms.Normalize(mean=rgb_mean, std=rgb_std),
     ])
     class_name = ['fake', 'real']
-    dataset = TextDataset(filename=filenames,
+    dataset = TextDataset(data_file=data_files,
                           transform=transform,
                           class_name=class_name,
                           resample=True,
