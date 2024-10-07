@@ -57,14 +57,14 @@ class TextDataset(Dataset):
             balance_nums = self.data_resample.balance_nums  # resample后，每个类别的分布
         self.class_count = self.count_class_info(self.item_list, class_name=self.class_name,
                                                  label_index=self.label_index)
-        self.num_sample = len(self.item_list)
         self.classes = list(self.class_dict.values())
         self.num_classes = max(self.classes) + 1
+        self.num_samples = len(self.item_list)
         self.info(save_info=kwargs.get("save_info", ""))
 
     def info(self, save_info=""):
         print("----------------------- {} DATASET INFO -----------------------".format(self.phase.upper()))
-        print("Dataset num sample    :{}".format(len(self.item_list)))
+        print("Dataset num_samples   :{}".format(len(self.item_list)))
         print("Dataset num_classes   :{}".format(self.num_classes))
         print("Dataset class_name    :{}".format(self.class_name))
         print("Dataset class_dict    :{}".format(self.class_dict))
@@ -163,7 +163,7 @@ class TextDataset(Dataset):
                 print("no file:{}".format(file))
                 continue
             dst_list.append(item)
-        print("have nums sample:{},legal sample:{}".format(len(item_list), len(dst_list)))
+        print("have nums samples:{},legal samples:{}".format(len(item_list), len(dst_list)))
         return dst_list
 
     def __getitem__(self, index):
@@ -179,7 +179,7 @@ class TextDataset(Dataset):
             image = Image.fromarray(image)
             image = self.transform(image)
         if image is None:
-            index = int(random.uniform(0, self.num_sample))
+            index = int(random.uniform(0, self.num_samples))
             return self.__getitem__(index)
         return {"image": image, "label": label, "file": file}
 
