@@ -19,8 +19,9 @@ class FolderDataset(parser_image_text.TextDataset):
     def __init__(self, image_dir, class_name=None, transform=None, use_rgb=False, shuffle=False,
                  phase="test", disp=False, check=False, **kwargs):
         """
+        文件夹数据集，要求相同类别的数据放在同一个文件夹，文件名为类别名称
         :param image_dir: [image_dir]->list or `path/to/image_dir`->str
-        :param class_name:
+        :param class_name: 类别文件/列表/字典
         :param transform: torch transform
         :param shuffle:
         :param disp:
@@ -43,16 +44,16 @@ class FolderDataset(parser_image_text.TextDataset):
         """
         return super(FolderDataset, self).__getitem__(index)
 
-    def load_dataset(self, data_files, data_root="", use_sub=False):
+    def load_dataset(self, data_file, data_root="", use_sub=False):
         """
         保存格式：[path,label] 或者 [path,label,xmin,ymin,xmax,,ymax]
-        :param data_files:
+        :param data_file:
         :param data_root:
         :return: item_list [{"file":file,"label":label}]
         """
-        if isinstance(data_files, str): data_files = [data_files]
+        if isinstance(data_file, str): data_file = [data_file]
         item_list = []
-        for i, dir in enumerate(data_files):
+        for i, dir in enumerate(data_file):
             if not os.path.exists(dir): raise Exception("文件不存在，image_dir:{}".format(dir))
             paths, labels = file_utils.get_files_labels(dir, postfix=file_utils.IMG_POSTFIX)
             print("loading data from:{},have {}".format(dir, len(paths)))

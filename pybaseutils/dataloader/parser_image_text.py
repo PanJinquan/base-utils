@@ -26,9 +26,10 @@ class TextDataset(Dataset):
     def __init__(self, data_file, data_root=None, class_name=None, transform=None, shuffle=False, use_rgb=False,
                  phase="test", disp=False, check=False, **kwargs):
         """
-        :param data_file:
-        :param data_root:
-        :param class_name:
+        数据文件保存格式：[path,label] 或者 [path,label,xmin,ymin,xmax,ymax]
+        :param data_file: 数据文件路径，List[str] or str
+        :param data_root: 数据文件根目录
+        :param class_name: 类别文件/列表/字典
         :param transform:
         :param shuffle:
         :param use_rgb:
@@ -41,7 +42,7 @@ class TextDataset(Dataset):
         self.use_rgb = use_rgb
         self.transform = transform
         self.phase = phase
-        self.label_index = "label"
+        self.label_index = kwargs.get("label_index", "label")  # 类别字段key
         self.class_name, self.class_dict = self.parser_classes(class_name)
         self.item_list = self.parser_dataset(data_file, data_root=data_root, label_index=self.label_index,
                                              shuffle=shuffle, check=check)
@@ -56,19 +57,18 @@ class TextDataset(Dataset):
             balance_nums = self.data_resample.balance_nums  # resample后，每个类别的分布
         self.class_count = self.count_class_info(self.item_list, class_name=self.class_name,
                                                  label_index=self.label_index)
-        self.num_images = len(self.item_list)
+        self.num_sample = len(self.item_list)
         self.classes = list(self.class_dict.values())
         self.num_classes = max(self.classes) + 1
         self.info(save_info=kwargs.get("save_info", ""))
 
     def info(self, save_info=""):
         print("----------------------- {} DATASET INFO -----------------------".format(self.phase.upper()))
-        print("Dataset have images   :{}".format(len(self.item_list)))
+        print("Dataset num sample    :{}".format(len(self.item_list)))
+        print("Dataset num_classes   :{}".format(self.num_classes))
         print("Dataset class_name    :{}".format(self.class_name))
         print("Dataset class_dict    :{}".format(self.class_dict))
         print("Dataset class_count   :{}".format(self.class_count))
-        print("Dataset num images    :{}".format(len(self.item_list)))
-        print("Dataset num_classes   :{}".format(self.num_classes))
         print("Dataset resample      :{}".format(self.resample))
         if save_info:
             if not os.path.exists(save_info): os.makedirs(save_info)
@@ -163,7 +163,7 @@ class TextDataset(Dataset):
                 print("no file:{}".format(file))
                 continue
             dst_list.append(item)
-        print("have nums image:{},legal image:{}".format(len(item_list), len(dst_list)))
+        print("have nums sample:{},legal sample:{}".format(len(item_list), len(dst_list)))
         return dst_list
 
     def __getitem__(self, index):
@@ -179,7 +179,7 @@ class TextDataset(Dataset):
             image = Image.fromarray(image)
             image = self.transform(image)
         if image is None:
-            index = int(random.uniform(0, self.num_images))
+            index = int(random.uniform(0, self.num_sample))
             return self.__getitem__(index)
         return {"image": image, "label": label, "file": file}
 

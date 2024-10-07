@@ -58,6 +58,7 @@ def get_file_list_dataset(data_dir, image_name="color", other_name=["ir", "depth
 
 
 if __name__ == '__main__':
-    data_dir = "/home/PKing/nasdata/FaceDataset/anti-spoofing/CASIA-SURF-CROP/test"
+    data_dir = "/home/PKing/nasdata/FaceDataset/anti-spoofing/CASIA-SURF-CROP/train"
+    # data_dir = "/home/PKing/nasdata/FaceDataset/anti-spoofing/CASIA-SURF-CROP/test"
     # data_dir = "/home/PKing/nasdata/FaceDataset/anti-spoofing/CASIA-SURF-CROP/val"
     get_file_list_dataset(data_dir)
