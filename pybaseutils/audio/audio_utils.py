@@ -20,6 +20,7 @@ import matplotlib.pyplot as plt
 from scipy.fft import fft
 from IPython.display import Audio, display
 from playsound import playsound
+from scipy.io import wavfile
 
 import numpy as np
 
@@ -158,6 +159,45 @@ def save_pcm_from_numpy(audio_data: np.ndarray, pcm_file, data_type=np.int16):
     return bytes
 
 
+def librosa_load(audio_file, sr=None, mono=True):
+    """
+    默认将多声道音频文件转换为单声道，并返回一维数组；
+    如果你需要处理多声道音频文件，可以使用 mono=False,参数来保留所有声道，并返回二维数组。
+    :param audio_file:
+    :param sr: sampling rate 16000
+    :param mono: 设置为true是单通道，否则是双通道
+    :return:
+    """
+    audio_data, sr = librosa.load(audio_file, sr=sr, mono=mono)  # 非常耗时
+    return audio_data, sr
+
+
+def soundfile_load(audio_file, sr=None, mono=True):
+    """
+    默认会将多声道音频文件的每个声道分别存储在二维数组的不同列中，因此返回的是一个二维数组
+    :param audio_file:
+    :param sr: sampling rate 当设置的采样率与音频原始采样率不一致时，会进行重采样，导致非常耗时
+    :param mono: 设置为true是单通道，否则是双通道
+    :return:
+    """
+    audio_data, orig_sr = sf.read(audio_file, samplerate=None, dtype="float32")  # 不能直接修改samplerate
+    if mono and audio_data.ndim == 2:
+        audio_data = np.mean(audio_data, axis=-1)
+    if sr is None or orig_sr == sr:
+        sr = orig_sr
+    else:
+        audio_data = librosa.resample(y=audio_data, orig_sr=orig_sr, target_sr=sr)  # 使用librosa进行重采样至目标采样率
+    return audio_data, sr
+
+
+def wavfile_load(audio_file):
+    sr, wav_data = wavfile.read(audio_file)  # int16类型
+    # 转为float64类型
+    wav_data = wav_data / (32768)
+    # wav_data:[-0.03305054 -0.03561401 -0.038114697]
+    return wav_data, sr
+
+
 def read_audio(audio_file, sr=16000, mono=True):
     """
     默认将多声道音频文件转换为单声道，并返回一维数组；
@@ -167,18 +207,8 @@ def read_audio(audio_file, sr=16000, mono=True):
     :param mono: 设置为true是单通道，否则是双通道
     :return:
     """
-    audio_data, sr = librosa.load(audio_file, sr=sr, mono=mono)
-    return audio_data, sr
-
-
-def read_audio_sf(audio_file, sr=16000):
-    """
-    默认会将多声道音频文件的每个声道分别存储在二维数组的不同列中，因此返回的是一个二维数组
-    :param audio_file:
-    :param sr: sampling rate
-    :return:
-    """
-    audio_data, sr = sf.read(audio_file, samplerate=sr)
+    audio_data, sr = librosa_load(audio_file, sr=sr, mono=mono)  # 巨慢
+    # audio_data, sr = soundfile_load(audio_file, sr=sr, mono=mono)  # 巨慢
     return audio_data, sr
 
 
@@ -412,6 +442,16 @@ def display_freq_domain(audio, sr=16000):
     plt.show()
 
 
+def test_time(audio_file, sr=None):
+    from pybaseutils import time_utils
+    for i in range(10):
+        with time_utils.Performance("soundfile_load") as p:
+            audio_data1, sr1 = soundfile_load(audio_file, sr=sr)
+        with time_utils.Performance("librosa_load") as p:
+            audio_data2, sr2 = librosa_load(audio_file, sr=sr)
+    print(np.sum(np.abs(audio_data2 - audio_data1)))
+
+
 if __name__ == '__main__':
     # video_file = "../data/video/kunkun_cut.mp4"
     # audio_file = "../data/video/kunkun_cut.mp3"
@@ -420,8 +460,10 @@ if __name__ == '__main__':
     audio_file = "../../data/video/kunkun_cut.mp3"
     video_out = "../../data/video/test-video-result.mp4"
     audio_file = "../../data/audio/bus_chinese.wav"
+
+    test_time(audio_file)
     # playsound(audio_file)
     # playsound(audio_file)
-    display_time_domain(audio_file)
-    display_freq_domain(audio_file)
+    # display_time_domain(audio_file)
+    # display_freq_domain(audio_file)
     # merge_video_audio(video_file, audio_file, video_out)

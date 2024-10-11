@@ -1728,8 +1728,8 @@ def save_image(image_file, image, uint8=False, use_rgb=False):
     cv2.imwrite(image_file, image)
 
 
-def nms_boxes_cv2(boxes: np.ndarray, scores: np.ndarray, labels: np.ndarray, image_size=(),
-                  score_threshold=0.5, nms_threshold=0.45, eta=None, top_k=None):
+def nms_boxes_cv2(boxes: np.ndarray, scores: np.ndarray, labels: np.ndarray, score_threshold=0.5, nms_threshold=0.45,
+                  eta=None, top_k=None, use_class=True):
     """
     NMS
     fix a bug: cv2.dnn.NMSBoxe bboxes, scores params must be list and float data,can not be float32 or int
@@ -1741,17 +1741,18 @@ def nms_boxes_cv2(boxes: np.ndarray, scores: np.ndarray, labels: np.ndarray, ima
     :param nms_threshold:
     :return:
     """
-    if isinstance(boxes, np.ndarray): boxes = boxes.tolist()
-    if isinstance(scores, np.ndarray): scores = scores.tolist()
-    indices = cv2.dnn.NMSBoxes(boxes, scores, score_threshold=score_threshold, nms_threshold=nms_threshold,
-                               eta=eta, top_k=top_k)
-    if isinstance(boxes, list): boxes = np.asarray(boxes)
-    if isinstance(scores, list): scores = np.asarray(scores)
-    if isinstance(labels, list): labels = np.asarray(labels)
-    dst_boxes = boxes[indices]
-    dst_score = scores[indices]
-    dst_label = labels[indices]
-    return dst_boxes, dst_score, dst_label
+    if use_class:
+        # TODO opencv4.7.0版本中增加了NMSBoxesBatched函数，可分类做nms
+        index = cv2.dnn.NMSBoxesBatched(boxes.tolist(), scores.tolist(), labels.tolist(),
+                                        score_threshold=score_threshold, nms_threshold=nms_threshold,
+                                        eta=eta, top_k=top_k)
+    else:
+        # TODO NMSBoxes没有区分类别
+        index = cv2.dnn.NMSBoxes(boxes.tolist(), scores.tolist(), score_threshold=score_threshold,
+                                 nms_threshold=nms_threshold, eta=eta, top_k=top_k)
+    return index
+
+
 
 
 def file2base64(file):

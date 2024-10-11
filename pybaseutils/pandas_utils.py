@@ -74,6 +74,19 @@ def construct_pd(index, columns_name, content, filename=None):
     return df
 
 
+def dict2pd(data: dict, T=False):
+    """
+    :param data:
+    :param T:
+    :return:
+    """
+    if T:
+        df = pd.DataFrame.from_dict(data)  # 键按照列进行转换
+    else:
+        df = pd.DataFrame.from_dict(data, orient='index')  # 键按照行进行转换
+    return df
+
+
 if __name__ == "__main__":
     class_name = ['C1', 'C2', 'C3']
     labels = [100, 200, 300]
@@ -85,3 +98,11 @@ if __name__ == "__main__":
     filename = "my_test.csv"
     df = construct_pd(index, columns_name, content, filename)
     print(df)
+
+    data = {
+        'name1': ["A0", "A1", "A2"],
+        'name2': ["B0", "B1", "B2"],
+        'name3': ["C0", "C1", "C2"]
+    }
+    df = dict2pd(data)
+    save_csv("data.csv", df)
