@@ -245,11 +245,11 @@ def video_capture(video_file: int or str, save_video: str or int = None, interva
     end = min(end, num_frames)  # TODO 当num_frames<0时，使用0<end<count继续播放
     interval = fps if interval == -1 else interval  # 当interval=-1，表示interval=fps,即一秒一帧
     save_fps = max(kwargs.get("speed", 1) * fps // interval, 1)
-    count = start
+    count = 0
     video_writer = None
     while True:
         ret, frame = video_cap.read()
-        if count % interval == 0 and count >= 0:
+        if count % interval == 0 and count >= start:
             # TODO 设置抽帧的位置，但某些格式视频容易出现问题
             # if isinstance(video_file, str): video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
             # ret, frame = video_cap.read()
@@ -297,11 +297,11 @@ def video_iterator(video_file: int or str, save_video: str or int = None, interv
     end = min(end, num_frames)  # TODO 当num_frames<0时，使用0<end<count继续播放
     interval = fps if interval == -1 else interval  # 当interval=-1，表示interval=fps,即一秒一帧
     save_fps = max(kwargs.get("speed", 1) * fps // interval, 1)
-    count = start
+    count = 0
     video_writer = None
     while True:
         ret, frame = video_cap.read()
-        if count % interval == 0 and count >= 0:
+        if count % interval == 0 and count >= start:
             # TODO 设置抽帧的位置，但某些格式视频容易出现问题
             # if isinstance(video_file, str): video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
             # ret, frame = video_cap.read()

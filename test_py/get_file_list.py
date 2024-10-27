@@ -18,12 +18,21 @@ import re
 
 
 def get_file_list_dataset(image_dir, subs=[]):
-    files = file_utils.get_files_lists(image_dir, sub=True)
+    """
+    获得数据列表，格式
+    file/path/image1 label-name1
+    file/path/image2 label-name2
+    :param image_dir:
+    :param subs:
+    :return:
+    """
+    # files = file_utils.get_files_lists(image_dir, sub=True, postfix=file_utils.IMG_POSTFIX)
+    files = file_utils.get_files_lists(image_dir, sub=True, postfix=file_utils.AUDIO_POSTFIX)
     sub = os.path.basename(image_dir)
     content = []
     for path in files:
         label = path.split("/")[0]
-        if label not in subs: continue
+        if subs and label not in subs: continue
         text = [os.path.join(sub, path), label]
         content.append(text)
     content = sorted(content)
@@ -32,5 +41,5 @@ def get_file_list_dataset(image_dir, subs=[]):
 
 
 if __name__ == '__main__':
-    image_dir = "/home/PKing/nasdata/tmp/tmp/RealFakeFace/anti-spoofing-images-v1/test"
+    image_dir = "/home/PKing/nasdata/tmp/tmp/challenge/旋转机械故障诊断挑战赛/旋转机械故障诊断挑战赛公开数据/test"
     get_file_list_dataset(image_dir)

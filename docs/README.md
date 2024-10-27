@@ -1,6 +1,7 @@
 # 常用的工具使用方法
 
 ## Linux常见命令
+
 ```bash
 # xdg-open打开文件夹/文件
 xdg-open ./
@@ -9,7 +10,13 @@ find /usr -name libnvidia-ml*
 
 ```
 
+- tmux 快捷键
 
+```bash
+tmux ls # 查看有多少个窗口
+Crtl + Shift + Alt + B + { # 浏览LOG记录[
+Crtl + Shift + Alt + B + S # 浏览窗口
+```
 
 ## memory profiler性能分析工具
 

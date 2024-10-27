@@ -56,7 +56,8 @@ class FolderDataset(parser_image_text.TextDataset):
         for i, dir in enumerate(data_file):
             if not os.path.exists(dir): raise Exception("文件不存在，image_dir:{}".format(dir))
             paths, labels = file_utils.get_files_labels(dir, postfix=file_utils.IMG_POSTFIX)
-            print("loading data from:{},have {}".format(dir, len(paths)))
+            if len(paths) == 0: raise Exception("文件为空:{}".format(dir))
+            print("loading data from:{},have {},label:{}".format(dir, len(paths), len(set(labels))))
             # TODO # 避免多个数据集的相同的label
             if use_sub:  labels = [os.path.join(str(i), l) for l in labels]
             data = [{"file": p, "label": l} for p, l in zip(paths, labels)]
@@ -69,7 +70,7 @@ if __name__ == '__main__':
     from torchvision import transforms
 
     image_dir = ['/home/PKing/nasdata/release/infrastructure/DMClassification/data/dataset/train']
-    class_name = None
+    class_name = []
     input_size = [224, 224]
     rgb_mean = [0., 0., 0.]
     rgb_std = [1.0, 1.0, 1.0]

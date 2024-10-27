@@ -34,14 +34,15 @@ git remote add ultralytics https://githubfast.com/ultralytics/ultralytics
 # 拉取另一个仓库的更改:git fetch other-repo
 git fetch ultralytics
 
-# 创建并切换到新分支：git checkout -b other-repo-branch other-repo/main
+# 创建并切换到新分支：git checkout -b other-repo-branch other-repo/master
 git checkout -b ultralytics ultralytics/main
- 
+git push origin ultralytics
+
 # 切换回目标仓库的主分支
 git checkout main
 
-# 合并新分支到目标仓库的主分支
-git merge other-repo-branch
+# 合并新分支到目标仓库的主分支main
+git merge other-repo-branch --allow-unrelated-histories
  
 # 如果一切顺利，你可以将合并后的更改推送到远程目标仓库
 git push origin main

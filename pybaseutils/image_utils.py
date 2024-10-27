@@ -631,6 +631,7 @@ def resize_image_padding(image, size, color=(0, 0, 0), interpolation=cv2.INTER_L
     :param color: 短边进行填充的color value
     :return:
     """
+    if not size: return image
     h, w = image.shape[:2]
     if w / h > size[0] / size[1] > 0:
         dsize = (size[0], None)
@@ -1751,8 +1752,6 @@ def nms_boxes_cv2(boxes: np.ndarray, scores: np.ndarray, labels: np.ndarray, sco
         index = cv2.dnn.NMSBoxes(boxes.tolist(), scores.tolist(), score_threshold=score_threshold,
                                  nms_threshold=nms_threshold, eta=eta, top_k=top_k)
     return index
-
-
 
 
 def file2base64(file):
@@ -2880,15 +2879,15 @@ def frames2gif_by_pil(frames, gif_file="test.gif", fps=2, loop=0, use_rgb=False)
                        optimize=False, loop=loop)
 
 
-def image_dir2gif(image_dir, size=None, gif_file=None, interval=1, fps=4, loop=0, padding=True, use_pil=True):
+def image_dir2gif(image_dir, size=None, gif_file=None, interval=1, fps=4, loop=0, padding=False, crop=[], use_pil=True):
     if not gif_file: gif_file = os.path.join(os.path.dirname(image_dir), os.path.basename(image_dir) + ".gif")
     file_list = file_utils.get_images_list(image_dir)
     image_file2gif(file_list, size=size, gif_file=gif_file, interval=interval, fps=fps, loop=loop,
-                   padding=padding, use_pil=use_pil)
+                   padding=padding, crop=crop, use_pil=use_pil)
 
 
 def image_file2gif(file_list, size=None, gif_file="test.gif", interval=1, fps=4, loop=0,
-                   padding=True, use_pil=False):
+                   padding=True, crop=[], use_pil=False):
     """
     pip install imageio
     uri：合成后的gif动图的名字，可以随意更改。
@@ -2902,6 +2901,7 @@ def image_file2gif(file_list, size=None, gif_file="test.gif", interval=1, fps=4,
     :param size:gif图片的大小
     :param gif_file: 输出的GIF图的路径
     :param fps: 刷新频率
+    :param crop: 裁剪(xmin,ymin,xmax,ymax)
     :param loop: 循环次数
     :param use_pil: True使用PIL库生成GIF图，文件小，但质量较差
                     False使用imageio库生成GIF图，文件大，但质量较好
@@ -2912,6 +2912,7 @@ def image_file2gif(file_list, size=None, gif_file="test.gif", interval=1, fps=4,
         if count % interval == 0:
             bgr = cv2.imread(file)
             image = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
+            if len(crop) == 4: image = get_box_crop(image, box=crop)
             if padding:
                 image = resize_image_padding(image, size=size)
             else:

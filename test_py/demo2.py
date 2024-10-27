@@ -16,9 +16,6 @@ import cv2
 import re
 
 if __name__ == '__main__':
-    # 示例使用
-    subs = ["拿", '手*']  #
-    texts = ["拿着", "手拿安全帽", "手拿绝缘手套", "手拿工具袋"]
-    # 使用通配符查找子串
-    matches = text_utils.find_match_texts(texts, subs, org=True)
-    print(matches)
+    file = "/home/PKing/nasdata/dataset-dmai/AIJE/方案图/pose2/result.mp4"
+    video_utils.video2frames(file)
+

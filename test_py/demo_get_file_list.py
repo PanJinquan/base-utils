@@ -15,6 +15,7 @@ from pybaseutils import file_utils, image_utils
 
 def save_file_list_labels(image_dir, class_file="", out_path=None, shuffle=False, add_sub=True):
     """
+     [image_path, label]
     :param image_dir: 一类一个文件夹
     :param class_file: 如果含有class_file，会进行映射ID
     :param out_path:  保存格式[path/to/image,label]

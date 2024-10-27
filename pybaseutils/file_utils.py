@@ -25,6 +25,7 @@ from tqdm import tqdm
 
 IMG_POSTFIX = ['*.jpg', '*.jpeg', '*.png', '*.tif', "*.JPG", "*.bmp"]
 VIDEO_POSTFIX = ['*.mp4', '*.avi', '*.mov', "*.flv"]
+AUDIO_POSTFIX = ['*.mp3', '*.wav']
 
 
 def str2bool(v):

@@ -43,7 +43,7 @@ def python_gif():
 
 
 def image_gif():
-    image_dir = "/home/dm/nasdata/dataset/tmp/Face-Recognition/demo/Cpp-demo/cpp-fr-demo"
+    image_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/方案图/开关检测/images"
     gif_file = image_dir + ".gif"
     frames = file_utils.get_images_list(image_dir)
     image_utils.image_file2gif(frames, size=(416, 416), padding=True, interval=1, gif_file=gif_file, fps=1,
@@ -51,6 +51,6 @@ def image_gif():
 
 
 if __name__ == "__main__":
-    # image_gif()
+    image_gif()
     # android_gif()
-    python_gif()
+    # python_gif()

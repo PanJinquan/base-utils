@@ -41,10 +41,10 @@ class LabelMeDataset(Dataset):
         :param data_root:
         :param anno_dir:
         :param image_dir:
-        :param class_name: 当为name时，会获得由于类别
+        :param class_name: 当class_name=None且check=True,将自动获取所有class,当class_name=[]会直接返回name
         :param use_rgb:
         :param shuffle:
-        :param check:
+        :param check: 当class_name=None且check=True,将自动获取所有class
         :param min_points: 当标注的轮廓点的个数小于min_points，会被剔除；负数不剔除
         :param kwargs:
         """
@@ -391,6 +391,7 @@ def show_target_image(image, bboxes, labels, points, color=(), thickness=1):
     # image = image_utils.draw_key_point_in_image(image, points)
     image = image_utils.draw_image_contours(image, points, labels, color=color, thickness=thickness)
     image_utils.cv_show_image("det", image)
+    return image
 
 
 if __name__ == "__main__":

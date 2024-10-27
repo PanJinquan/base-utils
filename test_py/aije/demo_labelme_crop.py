@@ -64,7 +64,7 @@ if __name__ == "__main__":
           '绝缘手套', '绝缘鞋', '脚扣', '螺丝', '身穿工作服', '遮拦杆', '铁架', '铝扎线']
     室外: []
     """
-    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/dataset-v25/json"
+    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/dataset-v21/json"
     class_name = None  # 室内\
     out_dir = os.path.join(os.path.dirname(anno_dir), "crops")
     dataset = parser_labelme.LabelMeDatasets(filename=None,

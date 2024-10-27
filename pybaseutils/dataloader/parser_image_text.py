@@ -87,7 +87,7 @@ class TextDataset(Dataset):
     def parser_dataset(self, data_file, data_root="", label_index="label", shuffle=False, check=False):
         """
         保存格式：[path,label] 或者 [path,label,xmin,ymin,xmax,ymax]
-        :param data_file:
+        :param data_file: List([])
         :param data_root:
         :param label_index: label index
         :param shuffle:
