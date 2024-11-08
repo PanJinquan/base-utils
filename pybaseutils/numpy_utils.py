@@ -13,7 +13,7 @@ import heapq
 
 def feature_norm(x, axis=-1):
     """
-    特征归一化:
+    特征归一化,会使得特征L2之和为1, 即||y||=L2(y,axis=-1)
     y = x / x.norm(dim=-1, keepdim=True)               # torch
     y = x / np.linalg.norm(x, axis=-1, keepdims=True)  # numpy
     :param x: 输入二维矩阵(N,embedding-size)，每行是一个样本，样本特征维度为embedding-size
@@ -21,6 +21,21 @@ def feature_norm(x, axis=-1):
     :return:
     """
     y = x / np.linalg.norm(x, axis=axis, keepdims=True)
+    return y
+
+
+def torch_norm(x, axis=-1):
+    """
+    特征归一化:
+    y = x / x.norm(dim=-1, keepdim=True)               # torch
+    y = x / np.linalg.norm(x, axis=-1, keepdims=True)  # numpy
+    :param x: 输入二维矩阵(N,embedding-size)，每行是一个样本，样本特征维度为embedding-size
+    :param axis:
+    :return:
+    """
+    import torch
+    x = torch.from_numpy(x)
+    y = x / x.norm(dim=-1, keepdim=True)  # torch
     return y
 
 
@@ -645,8 +660,11 @@ class Preprocessing(object):
 if __name__ == "__main__":
     from pybaseutils import numpy_utils
 
-    y = np.array([[0., 0.1, 0], [0, 0.1, 1], [0, 0.1, 2]])
-    x = np.array([[0, 0.1, 1], [0, 0.1, 2], [0., 0.1, 0]])
-    x = feature_norm(x)
+    y = np.array([[0., 0.1, 0, 1], [0, 0.1, 1, 1], [0, 0.1, 2, 1]])
+    x = np.array([[0, 0.1, 1, 1], [0, 0.1, 2, 1], [0., 0.1, 0, 1]])
+    x1 = feature_norm(x)
+    x2 = torch_norm(x).numpy()
+    print(l2(x1, axis=-1))
+    print(l2(x2, axis=-1))
     y = feature_norm(y)
-    print(feature_matching(x, y))
+    print(feature_matching(x1, y))

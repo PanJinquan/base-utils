@@ -25,7 +25,7 @@ if __name__ == "__main__":
     # anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-outdoor-det-fix/dataset-v23/json"
     anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-test/json"
     anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/dataset-v25/json"
-    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/方案图/绝缘挡板/json"
+    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/dataset-v29/json"
     names = None
     # names = ['身穿工作服,未穿工作服', '手,手穿绝缘手套,手穿棉纱手套,手穿其他手套']
     dataset = parser_labelme.LabelMeDatasets(filename=None,
@@ -48,5 +48,5 @@ if __name__ == "__main__":
         if class_name: labels = [class_name[l] for l in labels]
         image_file = data["image_file"]
         anno_file = os.path.join("masker", "{}.json".format(os.path.basename(image_file).split(".")[0]))
-        result = parser_labelme.show_target_image(image, bboxes, labels, points, thickness=2)
-        image_utils.save_image("./"+os.path.basename(image_file), result)
+        # result = parser_labelme.show_target_image(image, bboxes, labels, points, thickness=2)
+        # image_utils.save_image("./"+os.path.basename(image_file), result)

@@ -20,37 +20,36 @@ from pybaseutils.converter import build_voc, build_labelme
 from pybaseutils.dataloader import parser_labelme
 import xmltodict
 
-
-class MultiViewer(object):
-    def __init__(self, frame_info: Dict, key):
-        self.key = key
-        self.frame_info = frame_info
-
-    def __enter__(self):
-        return self.frame_info.get(self.key, [])
-
-    def __exit__(self, type, value, trace):
-        print("exit", type, value, trace)
-        return "exit"
+import torch
+import torch.nn as nn
 
 
-class Promote():
-    def __init__(self, promote):
-        self.promote = file_utils.read_data(promote, split=None)
-        print("promote:{}".format(self.promote))
+class CMDLoss(nn.Module):
+    """计算两个分布的中心矩差差异的Loss函数"""
 
-    def __len__(self):
-        return len(self.promote)
+    def __init__(self, num_channels, use_gpu=True):
+        super(CMDLoss, self).__init__()
+        self.use_gpu = use_gpu
+        self.num_channels = num_channels
+        self.register_buffer('one', torch.tensor(1.0))
 
-    def __getitem__(self, index):
-        data: str = self.promote[random.randint(0, len(self.promote) - 1)]
-        data = data.format("ddd")
-        return data
+    def forward(self, input, target):
+        # 计算均值
+        input_mean = torch.mean(input, dim=[2, 3], keepdim=True)
+        target_mean = torch.mean(target, dim=[2, 3], keepdim=True)
 
+        # 计算方差
+        input_var = torch.mean((input - input_mean) ** 2, dim=[2, 3], keepdim=True)
+        target_var = torch.mean((target - target_mean) ** 2, dim=[2, 3], keepdim=True)
 
-if __name__ == '__main__':
-    data = ["1.jpg", "2.jpg"]
-    label = [0, 1]
-    item_list = list(zip(data, label))
-    item_list = zip()
-    print(item_list)
+        # 计算协方差
+        input_mean_expand = input_mean.expand_as(input)
+        target_mean_expand = target_mean.expand_as(target)
+        cov = torch.mean((input - input_mean_expand) * (target - target_mean_expand), dim=[2, 3], keepdim=True)
+
+        # 计算CMD
+        c = torch.mean(self.one / self.num_channels * cov, dim=[2, 3], keepdim=True)
+        d = torch.mean(self.one / self.num_channels * (input_var - target_var), dim=[2, 3], keepdim=True)
+        cmd_loss = c / (d + 1e-5)
+
+        return cmd_loss

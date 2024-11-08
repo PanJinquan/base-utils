@@ -38,10 +38,14 @@ class TextDataset(Dataset):
         :param check:
         :param kwargs: use_max,use_mean,crop_scale,resample,save_info
         """
-        self.kwargs = kwargs
+        self.data_file = data_file
+        self.data_root = data_root
         self.use_rgb = use_rgb
         self.transform = transform
         self.phase = phase
+        self.shuffle = shuffle
+        self.check = check
+        self.kwargs = kwargs
         self.label_index = kwargs.get("label_index", "label")  # 类别字段key
         self.class_name, self.class_dict = self.parser_classes(class_name)
         self.item_list = self.parser_dataset(data_file, data_root=data_root, label_index=self.label_index,

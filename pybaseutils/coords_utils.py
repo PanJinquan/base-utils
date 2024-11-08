@@ -267,7 +267,7 @@ def get_section(start, end, nums=2, scale=1.0, dtype=None):
     return out
 
 
-def box_iou_v1(box1, box2):
+def get_boxes_iou(box1, box2):
     """
     :param box1: 预测框(n, 4)
     :param box2: GT框 (m, 4)
@@ -294,6 +294,9 @@ def box_iou_v1(box1, box2):
     return iou
 
 
+box_iou_v1 = get_boxes_iou
+
+
 def box_iou_v2(box1, box2):
     """
     https://www.jb51.net/article/178732.htm
@@ -318,6 +321,64 @@ def box_iou_v2(box1, box2):
     intersect = h * w
     union = area1 + np.squeeze(area2, axis=-1) - intersect
     iou = intersect / union
+    return iou
+
+
+def get_box_iou(box1, box2):
+    """
+    计算IOU=交集(A,B)/并集(A,B)
+    计算IOM=交集(A,B)/最小集(A,B)
+    :param box1: = [xmin1, ymin1, xmax1, ymax1]
+    :param box2: = [xmin2, ymin2, xmax2, ymax2]
+    :return:
+    """
+    if len(box1) == 0: return 0
+    if len(box2) == 0: return 0
+    xmin1, ymin1, xmax1, ymax1 = box1
+    xmin2, ymin2, xmax2, ymax2 = box2
+    # 计算每个矩形的面积
+    s1 = (xmax1 - xmin1) * (ymax1 - ymin1)  # C的面积
+    s2 = (xmax2 - xmin2) * (ymax2 - ymin2)  # G的面积
+
+    # 计算相交矩形
+    xmin = max(xmin1, xmin2)
+    ymin = max(ymin1, ymin2)
+    xmax = min(xmax1, xmax2)
+    ymax = min(ymax1, ymax2)
+
+    w = max(0, xmax - xmin)
+    h = max(0, ymax - ymin)
+    area = w * h  # C∩G的面积
+    iou = area / (s1 + s2 - area)
+    return iou
+
+
+def get_box_iom(box1, box2):
+    """
+    计算IOU=交集(A,B)/并集(A,B)
+    计算IOM=交集(A,B)/最小集(A,B)
+    :param box1: = [xmin1, ymin1, xmax1, ymax1]
+    :param box2: = [xmin2, ymin2, xmax2, ymax2]
+    :return:
+    """
+    if len(box1) == 0: return 0
+    if len(box2) == 0: return 0
+    xmin1, ymin1, xmax1, ymax1 = box1
+    xmin2, ymin2, xmax2, ymax2 = box2
+    # 计算每个矩形的面积
+    s1 = (xmax1 - xmin1) * (ymax1 - ymin1)  # C的面积
+    s2 = (xmax2 - xmin2) * (ymax2 - ymin2)  # G的面积
+
+    # 计算相交矩形
+    xmin = max(xmin1, xmin2)
+    ymin = max(ymin1, ymin2)
+    xmax = min(xmax1, xmax2)
+    ymax = min(ymax1, ymax2)
+
+    w = max(0, xmax - xmin)
+    h = max(0, ymax - ymin)
+    area = w * h  # C∩G的面积
+    iou = area / min(s1, s2)
     return iou
 
 
