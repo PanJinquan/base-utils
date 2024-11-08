@@ -26,6 +26,7 @@ class FolderDataset(parser_image_text.TextDataset):
         :param shuffle:
         :param disp:
         """
+        self.image_dir = image_dir
         super(FolderDataset, self).__init__(data_file=image_dir,
                                             data_root=None,
                                             class_name=class_name,
