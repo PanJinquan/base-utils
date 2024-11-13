@@ -8,6 +8,7 @@
 import cv2
 import random
 import types
+import torch
 import numpy as np
 from typing import Callable
 from pybaseutils import image_utils, file_utils, text_utils
@@ -16,6 +17,7 @@ import cv2
 import re
 
 if __name__ == '__main__':
-    file = "/home/PKing/nasdata/dataset-dmai/AIJE/方案图/pose2/result.mp4"
-    video_utils.video2frames(file)
-
+    accs = np.asarray([0.6205, 0.5752, 0.9296, 0.9906, 0.4833, 0.0756, 0.000001, 0, 0, 0.8205, 0.9205])
+    print(accs,np.mean(accs))
+    accs = accs[accs > 0]
+    print(accs,np.mean(accs))

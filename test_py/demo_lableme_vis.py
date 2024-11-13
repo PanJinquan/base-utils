@@ -48,5 +48,6 @@ if __name__ == "__main__":
         if class_name: labels = [class_name[l] for l in labels]
         image_file = data["image_file"]
         anno_file = os.path.join("masker", "{}.json".format(os.path.basename(image_file).split(".")[0]))
-        # result = parser_labelme.show_target_image(image, bboxes, labels, points, thickness=2)
+        print(image_file)
+        result = parser_labelme.show_target_image(image, bboxes, labels, points, thickness=2)
         # image_utils.save_image("./"+os.path.basename(image_file), result)

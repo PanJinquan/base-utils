@@ -124,6 +124,10 @@ class Dataset(object):
         return image_id
 
     @staticmethod
+    def read_files(filename, split=None):  # TODO 避免兼容问题
+        return Dataset.read_files(filename, split=split)
+
+    @staticmethod
     def get_file_list(dir_root, postfix=['*.jpg'], basename=True):
         """
         获得文件列表

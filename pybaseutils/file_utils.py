@@ -72,6 +72,21 @@ def get_file_size(file, rate=1024):
     return os.path.getsize(file) / rate
 
 
+def replace_elements(items, src, dst, ignore=True):
+    """
+    将列表中，值为src改为dst
+    :param items:
+    :param src:
+    :param dst:
+    :param ignore: 是否提出空的数据
+    :return:
+    """
+    for i, item in enumerate(items):
+        if item == src: items[i] = dst
+    if ignore: items = [it for it in items if str(it)]
+    return items
+
+
 def combine_flags(flags: list, use_time=True, info=True):
     """
     :param flags:
