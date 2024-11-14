@@ -68,7 +68,7 @@ class YOLODataset(Dataset):
         self.class_name, self.class_dict = self.parser_classes(class_name)
         parser = self.parser_paths(filename, data_root, anno_dir, image_dir)
         self.data_root, self.anno_dir, self.image_dir, self.image_ids = parser
-        self.postfix = self.get_image_postfix(self.image_dir, self.image_ids)
+        self.image_ids = self.add_image_postfix(self.image_dir, self.image_ids)
         self.classes = list(self.class_dict.values()) if self.class_dict else None
         self.num_classes = max(list(self.class_dict.values())) + 1 if self.class_dict else None
         self.class_weights = None
@@ -114,18 +114,17 @@ class YOLODataset(Dataset):
             class_dict = None
         return class_name, class_dict
 
-    def get_image_postfix(self, image_dir, image_id):
+    def add_image_postfix(self, image_dir, image_ids):
         """
         获得图像文件后缀名
         :param image_dir:
         :return:
         """
-        if "." in image_id[0]:
-            postfix = ""
-        else:
+        if "." not in image_ids[0]:
             image_list = glob.glob(os.path.join(image_dir, "*"))
             postfix = os.path.basename(image_list[0]).split(".")[1]
-        return postfix
+            image_ids = [f"{image_id}.{postfix}" for image_id in image_ids]
+        return image_ids
 
     def get_image_anno_file(self, index):
         """
@@ -135,16 +134,14 @@ class YOLODataset(Dataset):
         image_id = self.index2id(index)
         image_file, annotation_file, image_id = self.__get_image_anno_file(self.image_dir,
                                                                            self.anno_dir,
-                                                                           image_id,
-                                                                           self.postfix)
+                                                                           image_id)
         return image_file, annotation_file, image_id
 
-    def __get_image_anno_file(self, image_dir, anno_dir, image_name: str, img_postfix):
+    def __get_image_anno_file(self, image_dir, anno_dir, image_name: str):
         """
         :param image_dir:
         :param anno_dir:
         :param image_id:
-        :param img_postfix:
         :return:
         """
         img_postfix = image_name.split(".")[-1]

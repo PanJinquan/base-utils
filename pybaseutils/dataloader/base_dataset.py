@@ -125,7 +125,7 @@ class Dataset(object):
 
     @staticmethod
     def read_files(filename, split=None):  # TODO 避免兼容问题
-        return Dataset.read_files(filename, split=split)
+        return Dataset.read_file(filename, split=split)
 
     @staticmethod
     def get_file_list(dir_root, postfix=['*.jpg'], basename=True):

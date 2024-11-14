@@ -1,7 +1,7 @@
 # -*-coding: utf-8 -*-
 """
     @Author : PKing
-    @E-mail : 
+    @E-mail :
     @Date   : 2024-07-25 08:33:57
     @Brief  : https://imgaug.readthedocs.io/en/latest/index.html
 """
@@ -9,7 +9,10 @@ import os
 import cv2
 import numpy as np
 from typing import List, Tuple
+import torch
 from imgaug import augmenters as iaa
+from imgaug import parameters as iap
+import imgaug.augmenters.meta as meta
 from pybaseutils import file_utils, image_utils
 from imgaug.augmentables.segmaps import SegmentationMapsOnImage
 from imgaug.augmentables.kps import KeypointsOnImage
@@ -43,6 +46,49 @@ class Compose(object):
         if isinstance(image, np.ndarray):
             image = self.aug(image=image, **kwargs)
             return image
+
+
+class Transpose(meta.Augmenter):
+    def __init__(self, p=1, seed=None, name=None, random_state="deprecated", deterministic="deprecated"):
+        super(Transpose, self).__init__(
+            seed=seed, name=name,
+            random_state=random_state, deterministic=deterministic)
+        self.p = iap.handle_probability_param(p, "p")
+
+    def get_parameters(self):
+        """See :func:`~imgaug.augmenters.meta.Augmenter.get_parameters`."""
+        return [self.p]
+
+    def _augment_images(self, images, random_state, parents, hooks):
+        images = [self.task(img) for img in images]
+        return images
+
+    def task(self, image, **kwargs):
+        image = image.transpose(2, 0, 1)
+        return image
+
+
+class Normalize(meta.Augmenter):
+    def __init__(self, mean, std, p=1, seed=None, name=None, random_state="deprecated", deterministic="deprecated"):
+        self.mean = mean
+        self.std = std
+        super(Normalize, self).__init__(
+            seed=seed, name=name,
+            random_state=random_state, deterministic=deterministic)
+        self.p = iap.handle_probability_param(p, "p")
+
+    def get_parameters(self):
+        """See :func:`~imgaug.augmenters.meta.Augmenter.get_parameters`."""
+        return [self.p]
+
+    def _augment_images(self, images, random_state, parents, hooks):
+        images = [self.task(img) for img in images]
+        return images
+
+    def task(self, image, **kwargs):
+        image = np.asarray(image, dtype=np.float32) / 255.0
+        image = (image - self.mean) / self.std
+        return image
 
 
 def augment_example(input_size=(224, 224)):
@@ -112,7 +158,7 @@ def demo_for_keypoint():
         image = image_utils.read_image("../../data/test.png")
         mask = image_utils.read_image("../../data/mask.png")
         mask = image_utils.get_image_mask(mask)
-        contours = image_utils.find_mask_contours(mask)
+        contours = image_utils.find_mask_contours(mask)  # [(N,2)]
         auimg, contours = augment(image=image, keypoints=contours)
         h, w = auimg.shape[:2]
         mask = image_utils.draw_mask_contours(contours, size=(w, h))

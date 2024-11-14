@@ -50,6 +50,7 @@ class VOCDataset(Dataset):
         self.class_name, self.class_dict = self.parser_classes(class_name)
         parser = self.parser_paths(filename, data_root, anno_dir, image_dir)
         self.data_root, self.anno_dir, self.image_dir, self.image_ids = parser
+        self.image_ids = self.add_image_postfix(self.image_dir, self.image_ids)
         self.seg_dir = seg_dir
         if check or (self.class_dict is None):
             self.image_ids = self.checking(self.image_ids, class_dict=self.class_dict)
@@ -70,12 +71,23 @@ class VOCDataset(Dataset):
         print("Dataset num_classes   :{}".format(self.num_classes))
         print("------" * 10)
 
+    def add_image_postfix(self, image_dir, image_ids):
+        """
+        获得图像文件后缀名
+        :param image_dir:
+        :return:
+        """
+        if "." not in image_ids[0]:
+            image_list = glob.glob(os.path.join(image_dir, "*"))
+            postfix = os.path.basename(image_list[0]).split(".")[1]
+            image_ids = [f"{image_id}.{postfix}" for image_id in image_ids]
+        return image_ids
+
     def __get_image_anno_file(self, image_dir, anno_dir, image_name: str):
         """
         :param image_dir:
         :param anno_dir:
         :param image_name:
-        :param img_postfix:
         :return:
         """
         img_postfix = image_name.split(".")[-1]
@@ -92,8 +104,6 @@ class VOCDataset(Dataset):
         """
         print("Please wait, it's in checking")
         dst_ids = []
-        # image_ids = image_ids[:100]
-        # image_ids = image_ids[100:]
         class_set = []
         for image_id in tqdm(image_ids):
             image_file, annotation_file = self.get_image_anno_file(image_id)

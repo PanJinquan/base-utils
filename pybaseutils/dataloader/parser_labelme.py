@@ -115,9 +115,9 @@ class LabelMeDataset(Dataset):
             if not os.path.exists(image_file):
                 continue
             annotation, width, height = self.load_annotations(anno_file)
-            box, label, point, group = self.parser_annotation(annotation, self.class_dict,
-                                                              min_points=self.min_points,
-                                                              unique=self.unique)
+            box, label, point, group, names = self.parser_annotation(annotation, self.class_dict,
+                                                                     min_points=self.min_points,
+                                                                     unique=self.unique)
             if len(label) == 0:
                 continue
             dst_ids.append(image_id)
@@ -171,9 +171,9 @@ class LabelMeDataset(Dataset):
         annotation, width, height = self.load_annotations(anno_file)
         image = self.read_image(image_file, use_rgb=self.use_rgb)
         shape = image.shape
-        boxes, labels, points, groups = self.parser_annotation(annotation, self.class_dict, shape,
-                                                               min_points=self.min_points, unique=self.unique)
-        data = {"image": image, "points": points, "boxes": boxes, "labels": labels, "groups": groups,
+        boxes, labels, points, groups, names = self.parser_annotation(annotation, self.class_dict, shape,
+                                                                      min_points=self.min_points, unique=self.unique)
+        data = {"image": image, "points": points, "boxes": boxes, "labels": labels, "groups": groups, "names": names,
                 "image_file": image_file, "anno_file": anno_file, "size": [shape[1], shape[0]]}
         return data
 
@@ -186,14 +186,16 @@ class LabelMeDataset(Dataset):
         :param min_points: 当标注的轮廓点的个数小于等于min_points，会被剔除；负数不剔除
         :return:
         """
-        bboxes, labels, points, groups = [], [], [], []
+        bboxes, labels, points, groups, names = [], [], [], [], []
         for anno in annotation:
-            label = "unique" if unique else anno["label"]
+            name = "unique" if unique else anno["label"]
+            label = name
             if class_dict:
-                if not label in class_dict:
+                if not name in class_dict:
                     continue
                 if isinstance(class_dict, dict):
-                    label = class_dict[label]
+                    label = class_dict[name]
+                    if isinstance(label, str): name = label
             pts = np.asarray(anno["points"], dtype=np.int32)
             if min_points > 0 and len(pts) <= min_points:
                 continue
@@ -204,11 +206,12 @@ class LabelMeDataset(Dataset):
                 pts[:, 0] = np.clip(pts[:, 0], 0, w - 1)
                 pts[:, 1] = np.clip(pts[:, 1], 0, h - 1)
             box = image_utils.polygons2boxes([pts])[0]
+            names.append(name)
             labels.append(label)
             bboxes.append(box)
             points.append(pts)
             groups.append(group_id)
-        return bboxes, labels, points, groups
+        return bboxes, labels, points, groups, names
 
     def index2id(self, index):
         """
@@ -380,8 +383,8 @@ def parser_labelme(anno_file, class_dict={}, shape=None):
     :return:
     """
     annotation, width, height = LabelMeDataset.load_annotations(anno_file)
-    bboxes, labels, points, groups = LabelMeDataset.parser_annotation(annotation, class_dict, shape)
-    return bboxes, labels, points, groups
+    bboxes, labels, points, groups, names = LabelMeDataset.parser_annotation(annotation, class_dict, shape)
+    return bboxes, labels, points, groups, names
 
 
 def show_target_image(image, bboxes, labels, points, color=(), thickness=1):
