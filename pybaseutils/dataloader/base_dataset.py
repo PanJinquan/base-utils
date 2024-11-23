@@ -76,6 +76,7 @@ class Dataset(object):
                 for n in name: class_dict[n] = i
         elif isinstance(class_name, dict) and len(class_name) > 0:
             class_dict = class_name
+            class_name = list(class_dict.keys())
         else:
             class_dict = None
         if class_dict:

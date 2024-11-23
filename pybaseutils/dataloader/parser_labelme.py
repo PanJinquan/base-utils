@@ -11,10 +11,9 @@ import cv2
 import glob
 import random
 import numbers
-import torch
 import json
 from tqdm import tqdm
-from pybaseutils import image_utils, file_utils, json_utils
+from pybaseutils import image_utils, file_utils, json_utils, text_utils
 from pybaseutils.dataloader.base_dataset import Dataset, ConcatDataset
 
 
@@ -326,6 +325,63 @@ class LabelMeDataset(Dataset):
             width = -1
             height = -1
         return annos, width, height
+
+    @staticmethod
+    def get_targets(data_info: dict, targets, keys=['points', 'boxes', 'labels', 'groups', 'names']):
+        names = data_info["names"]
+        out = {}
+        for i in range(len(names)):
+            matches = text_utils.find_match_texts(texts=[names[i]], pattern=targets, org=True)
+            if len(matches) > 0:
+                for k in keys:
+                    if k in data_info: out[k] = out.get(k, []) + [data_info[k][i]]
+        return out
+
+    @staticmethod
+    def get_sub2superclass(data_info, superclass, subclass, scale=[], square=True, vis=False):
+        """
+        通过IOU的方式，将子类属性分配给父类中
+        :param data_info:
+        :param superclass: 父类
+        :param subclass: 子类
+        :param scale: 对superclass进行缩放
+        :param square: 对superclass
+        :param vis:
+        :return:
+        """
+        image, file = data_info["image"], data_info["image_file"]
+        target_info = LabelMeDataset.get_targets(data_info, targets=superclass)
+        attibu_info = LabelMeDataset.get_targets(data_info, targets=subclass)
+        item_list = []
+        for i in range(len(target_info.get("boxes", []))):
+            tbbox = [target_info["boxes"][i]]
+            tname = [target_info["names"][i]]
+            if square:
+                tbbox = image_utils.get_square_boxes(tbbox, use_max=True, baseline=-1)
+            if scale:
+                tbbox = image_utils.extend_xyxy(tbbox, scale=scale)
+            item = {}  #
+            for j in range(len(attibu_info.get("boxes", []))):
+                abox = attibu_info["boxes"][j]
+                iou = image_utils.get_box_iom(tbbox[0], abox)
+                if iou > 0:
+                    item["ious"] = item.get("ious", []) + [iou]
+                    for k, v in attibu_info.items():
+                        item[k] = item.get(k, []) + [v[j]]
+            item_list.append(dict(file=file, box=tbbox[0], name=tname[0], attribute=item))
+            if vis:
+                image = image_utils.draw_image_boxes_texts(image, tbbox, tname, thickness=2, fontScale=1.0,
+                                                           drawType="ch", color=image_utils.color_table[i + 1])
+                texts = [f"{n} {s:3.2f}" for n, s in zip(item.get("names", []), item.get("ious", []))]
+                image = image_utils.draw_image_boxes_texts(image,
+                                                           item.get("boxes", []),
+                                                           texts,
+                                                           thickness=2,
+                                                           fontScale=1.0,
+                                                           color=image_utils.color_table[i + 1],
+                                                           drawType="ch")
+                image_utils.cv_show_image("instance", image)
+        return item_list
 
 
 def LabelMeDatasets(filename=None,

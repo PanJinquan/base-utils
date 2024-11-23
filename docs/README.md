@@ -14,8 +14,8 @@ find /usr -name libnvidia-ml*
 
 ```bash
 tmux ls # 查看有多少个窗口
-Crtl + Shift + Alt + B + { # 浏览LOG记录[
-Crtl + Shift + Alt + B + S # 浏览窗口
+Crtl + B + { 或 Crtl + Shift + Alt + B + { # 浏览LOG记录[
+Crtl + B + S 或 Crtl + Shift + Alt + B + S # 浏览窗口
 ```
 
 ## memory profiler性能分析工具

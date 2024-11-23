@@ -17,7 +17,7 @@ import math
 import cv2
 from tqdm import tqdm
 from torch.utils.data import Dataset
-from pybaseutils import image_utils, file_utils
+from pybaseutils import image_utils, file_utils, json_utils
 from pybaseutils.dataloader import data_resample
 
 
@@ -146,12 +146,22 @@ class TextDataset(Dataset):
         """
         if isinstance(class_name, str):
             class_name = file_utils.read_data(class_name, split=None)
-        if isinstance(class_name, list):
-            class_dict = {name: i for i, name in enumerate(class_name)}
-        elif isinstance(class_name, dict):
+        if isinstance(class_name, list) and len(class_name) > 0:
+            class_dict = {}
+            for i, name in enumerate(class_name):
+                name = name.split(",")
+                for n in name: class_dict[n] = i
+        elif isinstance(class_name, dict) and len(class_name) > 0:
             class_dict = class_name
+            class_name = list(class_dict.keys())
         else:
             class_dict = None
+        if class_dict:
+            class_dict = json_utils.dict_sort_by_value(class_dict, reverse=False)
+            class_name = {}
+            for n, i in class_dict.items():
+                class_name[i] = "{},{}".format(class_name[i], n) if i in class_name else n
+            class_name = list(class_name.values())
         return class_name, class_dict
 
     def check_item(self, item_list):

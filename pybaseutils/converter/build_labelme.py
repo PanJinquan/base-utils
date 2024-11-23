@@ -12,7 +12,7 @@ from tqdm import tqdm
 from pybaseutils import image_utils, file_utils, json_utils
 
 
-def maker_labelme(json_file, points, labels, image_name, image_size, image_bs64=None):
+def maker_labelme(json_file, points, labels, image_name, image_size, keypoints=[], image_bs64=None):
     """
     制作label数据格式
     :param json_file: 保存json文件路径
@@ -30,8 +30,8 @@ def maker_labelme(json_file, points, labels, image_name, image_size, image_bs64=
         # point = [[x1,y1],[x2,y2],...,[xn,yn]]
         if isinstance(point, np.ndarray): point = point.tolist()
         if not isinstance(point[0], list): point = [point]
-        item = {"label": label, "line_color": None, "fill_color": None,
-                "points": point, "shape_type": "polygon", "flags": {}}
+        item = {"label": label, "score": None, "keypoints": keypoints, "line_color": None, "fill_color": None,
+                "group_id": None, "points": point, "shape_type": "polygon", "flags": {}, "description": ""}
         shapes.append(item)
     data = {
         "version": "3.16.7", "flags": {},

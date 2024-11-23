@@ -5,6 +5,7 @@
     @Date   : 2022-12-31 11:37:30
     @Brief  : https://blog.csdn.net/qdPython/article/details/121381363
 """
+import os
 import cv2
 import random
 import types
@@ -17,7 +18,7 @@ import cv2
 import re
 
 if __name__ == '__main__':
-    accs = np.asarray([0.6205, 0.5752, 0.9296, 0.9906, 0.4833, 0.0756, 0.000001, 0, 0, 0.8205, 0.9205])
-    print(accs,np.mean(accs))
-    accs = accs[accs > 0]
-    print(accs,np.mean(accs))
+    file = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-action-cvlm-v2/action-names.txt"
+    outputs = [torch.tensor(1, dtype=torch.int64), torch.tensor(1, dtype=torch.int64)]
+    data = torch.stack(outputs)
+    print(data)
