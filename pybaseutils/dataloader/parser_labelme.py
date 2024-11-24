@@ -169,13 +169,12 @@ class LabelMeDataset(Dataset):
         annotation, width, height = self.load_annotations(anno_file)
         image = self.read_image(image_file, use_rgb=self.use_rgb)
         shape = image.shape
-        # TODO dict(boxes=bboxes, labels=labels, points=points, groups=groups, names=names, keypoints=keypoints)
-        info = self.parser_annotation(annotation, self.class_dict, shape, min_points=self.min_points,
-                                      unique=self.unique)
-        data = {"image": image, "points": info["points"], "boxes": info["boxes"], "labels": info["labels"],
-                "groups": info["groups"], "names": names,
-                "image_file": image_file, "anno_file": anno_file, "size": [shape[1], shape[0]]}
-        return data
+        data_info = self.parser_annotation(annotation, self.class_dict, shape, min_points=self.min_points,
+                                           unique=self.unique)
+        # TODO dict(boxes, labels, points, groups, names, keypoints)
+        data_info.update({"image": image, "image_file": image_file, "anno_file": anno_file,
+                          "size": [shape[1], shape[0]]})
+        return data_info
 
     @staticmethod
     def parser_annotation(annotation: dict, class_dict={}, shape=None, min_points=-1, unique=False):
