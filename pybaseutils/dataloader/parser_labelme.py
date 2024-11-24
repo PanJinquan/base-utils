@@ -114,13 +114,12 @@ class LabelMeDataset(Dataset):
             if not os.path.exists(image_file):
                 continue
             annotation, width, height = self.load_annotations(anno_file)
-            box, label, point, group, names = self.parser_annotation(annotation, self.class_dict,
-                                                                     min_points=self.min_points,
-                                                                     unique=self.unique)
-            if len(label) == 0:
+            info = self.parser_annotation(annotation, self.class_dict, min_points=self.min_points, unique=self.unique)
+            labels = info["labels"]
+            if len(labels) == 0:
                 continue
             dst_ids.append(image_id)
-            class_name += label
+            class_name += labels
         if self.class_name is None:
             class_name = sorted(list(set(class_name)))
             self.class_name, self.class_dict = self.parser_classes(class_name)
@@ -170,9 +169,11 @@ class LabelMeDataset(Dataset):
         annotation, width, height = self.load_annotations(anno_file)
         image = self.read_image(image_file, use_rgb=self.use_rgb)
         shape = image.shape
-        boxes, labels, points, groups, names = self.parser_annotation(annotation, self.class_dict, shape,
-                                                                      min_points=self.min_points, unique=self.unique)
-        data = {"image": image, "points": points, "boxes": boxes, "labels": labels, "groups": groups, "names": names,
+        # TODO dict(boxes=bboxes, labels=labels, points=points, groups=groups, names=names, keypoints=keypoints)
+        info = self.parser_annotation(annotation, self.class_dict, shape, min_points=self.min_points,
+                                      unique=self.unique)
+        data = {"image": image, "points": info["points"], "boxes": info["boxes"], "labels": info["labels"],
+                "groups": info["groups"], "names": names,
                 "image_file": image_file, "anno_file": anno_file, "size": [shape[1], shape[0]]}
         return data
 
@@ -185,7 +186,7 @@ class LabelMeDataset(Dataset):
         :param min_points: 当标注的轮廓点的个数小于等于min_points，会被剔除；负数不剔除
         :return:
         """
-        bboxes, labels, points, groups, names = [], [], [], [], []
+        bboxes, labels, points, groups, names, keypoints = [], [], [], [], [], []
         for anno in annotation:
             name = "unique" if unique else anno["label"]
             label = name
@@ -198,8 +199,9 @@ class LabelMeDataset(Dataset):
             pts = np.asarray(anno["points"], dtype=np.int32)
             if min_points > 0 and len(pts) <= min_points:
                 continue
-            group_id = json_utils.get_value(anno, key=["group_id"], default=0)
-            group_id = group_id if group_id else 0
+            gid = json_utils.get_value(anno, key=["group_id"], default=0)
+            gid = gid if gid else 0
+            kpt = json_utils.get_value(anno, key=["keypoints"], default=[])
             if shape:
                 h, w = shape[:2]
                 pts[:, 0] = np.clip(pts[:, 0], 0, w - 1)
@@ -209,8 +211,9 @@ class LabelMeDataset(Dataset):
             labels.append(label)
             bboxes.append(box)
             points.append(pts)
-            groups.append(group_id)
-        return bboxes, labels, points, groups, names
+            groups.append(gid)
+            keypoints.append(kpt)
+        return dict(boxes=bboxes, labels=labels, points=points, groups=groups, names=names, keypoints=keypoints)
 
     def index2id(self, index):
         """
@@ -439,8 +442,8 @@ def parser_labelme(anno_file, class_dict={}, shape=None):
     :return:
     """
     annotation, width, height = LabelMeDataset.load_annotations(anno_file)
-    bboxes, labels, points, groups, names = LabelMeDataset.parser_annotation(annotation, class_dict, shape)
-    return bboxes, labels, points, groups, names
+    info = LabelMeDataset.parser_annotation(annotation, class_dict, shape)
+    return info
 
 
 def show_target_image(image, bboxes, labels, points, color=(), thickness=1):
@@ -456,20 +459,7 @@ def show_target_image(image, bboxes, labels, points, color=(), thickness=1):
 if __name__ == "__main__":
     from pybaseutils.converter import build_labelme
 
-    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v1/json"
-    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v7/json"
-    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/使用钳形电流表测量低压线路电流/dataset-v1/json"
-    # anno_dir = [anno_dir, anno_dir]
-    names = ['A相电线', 'B相电线', 'C相电线', 'N相电线']
-
-    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v11/json"
-    # anno_dir = "/home/PKing/Downloads/labelme/json"
-    # anno_dir = "/media/PKing/新加卷1/SDK/base-utils/data/coco/json"
-    # # names = ["car", "dog", "person", "unique"]
-    # names = ["BG", "unique"]
-    # # names = ["car", "dog", "person"]
-    # # names = ["dog", "car,person"]
-    # # names = {"car": 1, "person": 0}
+    anno_dir = "/home/PKing/Downloads/sample/images"
     names = None
     dataset = LabelMeDatasets(filename=None,
                               data_root=None,
@@ -482,7 +472,7 @@ if __name__ == "__main__":
     print("have num:{}".format(len(dataset)))
     for i in range(len(dataset)):
         print(i)  # i=20
-        data = dataset.__getitem__(12)
+        data = dataset.__getitem__(i)
         image, points, bboxes, labels = data["image"], data["points"], data["boxes"], data["labels"]
         h, w = image.shape[:2]
         image_file = data["image_file"]

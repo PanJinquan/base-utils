@@ -27,7 +27,8 @@ def convert_labelme2cvat(anno_dir, image_dir="", vis=False):
         image_name = os.path.basename(image_file)
         json_file = os.path.join(anno_dir, image_name.split(".")[0] + ".json")
         xml_file = os.path.join(image_dir, image_name.split(".")[0] + ".xml")
-        boxes, labels, points, groups = parser_labelme.parser_labelme(json_file, class_dict={})
+        info = parser_labelme.parser_labelme(json_file, class_dict={})
+        boxes, labels, points = info["boxes"], info["points"], info["labels"]
         image = cv2.imread(image_file)
         h, w = image.shape[:2]
         build_cvat.maker_cvat(xml_file, points, labels, image_name, image_size=[w, h])

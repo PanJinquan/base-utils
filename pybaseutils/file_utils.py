@@ -24,7 +24,7 @@ from datetime import datetime
 from tqdm import tqdm
 
 IMG_POSTFIX = ['*.jpg', '*.jpeg', '*.png', '*.tif', "*.JPG", "*.bmp"]
-VIDEO_POSTFIX = ['*.mp4', '*.avi', '*.mov', "*.flv"]
+VIDEO_POSTFIX = ['*.mp4', '*.avi', '*.mov', "*.flv", "*.dav"]
 AUDIO_POSTFIX = ['*.mp3', '*.wav']
 
 
@@ -361,6 +361,18 @@ def get_basename(file_list):
         basename = os.path.basename(file_path)
         dest_list.append(basename)
     return dest_list
+
+
+def change_postfix(file: str, postfix: str):
+    """
+    修改后缀名称
+    :param file:
+    :param postfix:
+    :return:
+    """
+    src_pos = file.split(".")[-1]
+    file = file[:-len(f".{src_pos}")] + postfix
+    return file
 
 
 def randam_select_images(image_list, nums, shuffle=True):

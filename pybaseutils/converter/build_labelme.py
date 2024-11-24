@@ -12,7 +12,7 @@ from tqdm import tqdm
 from pybaseutils import image_utils, file_utils, json_utils
 
 
-def maker_labelme(json_file, points, labels, image_name, image_size, keypoints=[], image_bs64=None):
+def maker_labelme(json_file, points, labels, image_name, image_size, image_bs64=None, keypoints=[]):
     """
     制作label数据格式
     :param json_file: 保存json文件路径
@@ -21,16 +21,20 @@ def maker_labelme(json_file, points, labels, image_name, image_size, keypoints=[
     :param image_name: 图片名称，如果存在则进行拷贝到json_file同一级目录
     :param image_size: (W,H)
     :param image_bs64: 图片base64编码，可为None
+    :param keypoints: [(N,3),(N,3),...]
     :return:
     """
     assert len(points) == len(labels)
     file_utils.create_file_path(json_file)
     shapes = []
-    for point, label in zip(points, labels):
+    if isinstance(keypoints, np.ndarray): keypoints = keypoints.tolist()
+    for i in range(len(points)):
         # point = [[x1,y1],[x2,y2],...,[xn,yn]]
+        point, label = points[i], labels[i]
         if isinstance(point, np.ndarray): point = point.tolist()
         if not isinstance(point[0], list): point = [point]
-        item = {"label": label, "score": None, "keypoints": keypoints, "line_color": None, "fill_color": None,
+        kpts = keypoints[i] if keypoints else []
+        item = {"label": label, "score": None, "keypoints": kpts, "line_color": None, "fill_color": None,
                 "group_id": None, "points": point, "shape_type": "polygon", "flags": {}, "description": ""}
         shapes.append(item)
     data = {
