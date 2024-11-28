@@ -64,7 +64,7 @@ if __name__ == "__main__":
           '绝缘手套', '绝缘鞋', '脚扣', '螺丝', '身穿工作服', '遮拦杆', '铁架', '铝扎线']
     室外: []
     """
-    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-action-cvlm-v2/test-v1/aije-action-train-v02/json"
+    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/dataset-v31/images"
     class_name = None  # 室内\
     out_dir = os.path.join(os.path.dirname(anno_dir), "crops")
     dataset = parser_labelme.LabelMeDatasets(filename=None,
@@ -77,8 +77,8 @@ if __name__ == "__main__":
                                              shuffle=False)
     print("have num:{}".format(len(dataset)))
     class_name = dataset.class_name
-    scale = [1.5,1.5]
-    flag = str(scale[0]).replace(".", "p")
+    scale = [1.0, 1.0]
+    # flag = str(scale[0]).replace(".", "p")
     flag = None
     # scale = None
     for i in tqdm(range(len(dataset))):

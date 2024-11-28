@@ -91,7 +91,7 @@ def plot_bar(x, y, xlabel="X", ylabel="Y", title="bar", bin_width=1, vis=True, s
     font = get_font_type(size=14)
     # 准备数据
     # 用 Matplotlib 画条形图
-    plt.bar(x=x, height=y, width=bin_width, align="center", yerr=0.000001, fontproperties=font)
+    plt.bar(x=x, height=y, width=bin_width, align="center", yerr=0.000001,)
     # plt.xlim([0.0, 1.0])
     # plt.ylim([0.0, 1.05])
     # 设置横纵坐标的名称以及对应字体格式

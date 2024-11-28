@@ -21,7 +21,7 @@ def maker_labelme(json_file, points, labels, image_name, image_size, image_bs64=
     :param image_name: 图片名称，如果存在则进行拷贝到json_file同一级目录
     :param image_size: (W,H)
     :param image_bs64: 图片base64编码，可为None
-    :param keypoints: [(N,3),(N,3),...]
+    :param keypoints: [(N,3),(N,3),...],(x,y,conf),其3维度是置信度
     :return:
     """
     assert len(points) == len(labels)

@@ -2,25 +2,22 @@
 """
     @Author : PKing
     @E-mail : 390737991@qq.com
-    @Date   : 2022-12-16 15:39:50
-    @Brief  :
+    @Date   : 2022-12-31 11:37:30
+    @Brief  : https://blog.csdn.net/qdPython/article/details/121381363
 """
-
+import os
+import cv2
+import random
+import types
+import torch
 import numpy as np
-from pybaseutils import plot_utils, image_utils, file_utils
-
-
-def plot_sigmoid(x=[], step=0.1, inv=False):
-    x = np.arange(start=x[0], stop=x[1], step=step)
-    y = 1 / (1 + np.exp(-x))
-    return x, y
-
+from typing import Callable
+from pybaseutils import image_utils, file_utils, text_utils, plot_utils
+from pybaseutils.cvutils import video_utils
+import cv2
+import re
 
 if __name__ == '__main__':
-    file = "/home/dm/nasdata/dataset/csdn/plate/CCPD-master/CRNN-Plate-Recognition/data/province_count.json"
-    data: dict = file_utils.read_json_data(file)
-    y = list(data.values())
-    x = list(data.keys())
-    # x = [str(i) for i in range(len(y))]
-    # plot_utils.plot_bar_text(x, y)
-    plot_utils.plot_bar(x, y,xlabel="好X", ylabel="Y",)
+    x = [1, 2, 3]
+    y = [1, 2, 3]
+    plot_utils.plot_bar(x, y, xlabel="X轴", ylabel="Y轴", title="bar", bin_width=1, vis=True, save=True)

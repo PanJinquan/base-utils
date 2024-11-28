@@ -16,7 +16,7 @@ import random
 import math
 import cv2
 from tqdm import tqdm
-from torch.utils.data import Dataset
+from pybaseutils.dataloader.base_dataset import Dataset, ConcatDataset
 from pybaseutils import image_utils, file_utils, json_utils
 from pybaseutils.dataloader import data_resample
 
@@ -138,32 +138,6 @@ class TextDataset(Dataset):
             item_list += data
         return item_list
 
-    def parser_classes(self, class_name):
-        """
-        class_dict = {class_name: i for i, class_name in enumerate(class_name)}
-        :param
-        :return:
-        """
-        if isinstance(class_name, str):
-            class_name = file_utils.read_data(class_name, split=None)
-        if isinstance(class_name, list) and len(class_name) > 0:
-            class_dict = {}
-            for i, name in enumerate(class_name):
-                name = name.split(",")
-                for n in name: class_dict[n] = i
-        elif isinstance(class_name, dict) and len(class_name) > 0:
-            class_dict = class_name
-            class_name = list(class_dict.keys())
-        else:
-            class_dict = None
-        if class_dict:
-            class_dict = json_utils.dict_sort_by_value(class_dict, reverse=False)
-            class_name = {}
-            for n, i in class_dict.items():
-                class_name[i] = "{},{}".format(class_name[i], n) if i in class_name else n
-            class_name = list(class_name.values())
-        return class_name, class_dict
-
     def check_item(self, item_list):
         """
         :param item_list:
@@ -187,6 +161,7 @@ class TextDataset(Dataset):
         """
         item = self.item_list[index]
         file, label, bbox = item["file"], item[self.label_index], item.get("bbox", [])
+        name = self.class_name[label]
         image = self.read_image(file, use_rgb=self.use_rgb)
         image = self.crop_image(image, bbox=bbox, **self.kwargs) if bbox else image
         if self.transform:
@@ -195,7 +170,7 @@ class TextDataset(Dataset):
         if image is None:
             index = int(random.uniform(0, self.num_samples))
             return self.__getitem__(index)
-        return {"image": image, "label": label, "file": file}
+        return dict(image=image, label=label, file=file, name=name)
 
     def __len__(self):
         if self.resample:

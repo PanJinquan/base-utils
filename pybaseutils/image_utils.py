@@ -1336,7 +1336,7 @@ def show_landmark(title, image, landmarks, vis_id=False, delay=0):
     return image
 
 
-def draw_points_text(image, points, texts=None, color=(255, 0, 0), thickness=-1, fontScale=-1.0, drawType="simple"):
+def draw_points_texts(image, points, texts=None, color=(255, 0, 0), thickness=-1, fontScale=-1.0, drawType="simple"):
     """
     :param image:
     :param points:
@@ -1358,7 +1358,7 @@ def draw_points_text(image, points, texts=None, color=(255, 0, 0), thickness=-1,
     return image
 
 
-draw_points_texts = draw_points_text
+draw_points_text = draw_points_texts
 
 
 def draw_texts(image, points, texts, color=(255, 0, 0), fontScale=-1.0, thickness=-1, drawType="simple"):

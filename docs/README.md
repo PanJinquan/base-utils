@@ -211,16 +211,16 @@ export HF_ENDPOINT=https://hf-mirror.com # 或者写入~/.bashrc中
 ./hfd.sh BAAI/DIVA --tool aria2c -x 4
 ```
 
-## 表格
-
-| Model   |     |      |
-|---------|-----|------|
-| YOLOv5s | 640 | 36.7 |
-| YOLOv5m | 640 | 44.5 |
-
 ## huggingface.co资源下载
 
 - https://huggingface.co/
 - 方法1：https://blog.csdn.net/gmmmmmmmm/article/details/135953651 (将下载连接huggingface.co`替换为 hf-mirror.com)
 - 方法2：https://modelscope.cn/my/overview
 - import huggingface_hub.constants 可以修改访问路径
+
+## 表格
+
+| Model   |     |      |
+|---------|-----|------|
+| YOLOv5s | 640 | 36.7 |
+| YOLOv5m | 640 | 44.5 |

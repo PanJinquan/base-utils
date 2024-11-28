@@ -63,13 +63,13 @@ class LabelMeDataset(Dataset):
             random.seed(200)
             random.shuffle(self.image_ids)
         self.num_images = len(self.image_ids)
-        print("Dataset data_root     :{}".format(self.data_root))
-        print("Dataset anno_dir      :{}".format(self.anno_dir))
-        print("Dataset image_dir     :{}".format(self.image_dir))
-        print("Dataset class_name    :{}".format(self.class_name))
-        print("Dataset class_dict    :{}".format(self.class_dict))
-        print("Dataset num images    :{}".format(len(self.image_ids)))
-        # print("Dataset num_classes   :{}".format(self.num_classes))
+        print("LabelMeDataset data_root     :{}".format(self.data_root))
+        print("LabelMeDataset anno_dir      :{}".format(self.anno_dir))
+        print("LabelMeDataset image_dir     :{}".format(self.image_dir))
+        print("LabelMeDataset class_name    :{}".format(self.class_name))
+        print("LabelMeDataset class_dict    :{}".format(self.class_dict))
+        print("LabelMeDataset num images    :{}".format(len(self.image_ids)))
+        # print("LabelMeDataset num_classes   :{}".format(self.num_classes))
         print("------" * 10)
 
     def __len__(self):
@@ -154,9 +154,9 @@ class LabelMeDataset(Dataset):
         elif anno_dir and not image_ids:
             image_ids = self.get_file_list(anno_dir, postfix=["*.json", "*.xml"], basename=False)
             image_ids = [os.path.basename(f) for f in image_ids]
-        # assert os.path.exists(image_dir), Exception("no directory:{}".format(image_dir))
-        # assert os.path.exists(anno_dir), Exception("no directory:{}".format(anno_dir))
-        assert len(image_ids) > 0, f"image_dir={image_dir} is empty"
+        assert os.path.exists(image_dir), Exception("no image_dir:{}".format(image_dir))
+        assert os.path.exists(anno_dir), Exception("no anno_dir :{}".format(anno_dir))
+        assert len(image_ids) > 0, f"image_ids is empty,image_dir={image_dir},anno_dir={anno_dir}"
         return data_root, anno_dir, image_dir, image_ids
 
     def __getitem__(self, index):
@@ -329,7 +329,7 @@ class LabelMeDataset(Dataset):
         return annos, width, height
 
     @staticmethod
-    def get_targets(data_info: dict, targets, keys=['points', 'boxes', 'labels', 'groups', 'names']):
+    def get_match_targets(data_info: dict, targets, keys=['points', 'boxes', 'labels', 'groups', 'names', 'keypoints']):
         names = data_info["names"]
         out = {}
         for i in range(len(names)):
@@ -352,8 +352,8 @@ class LabelMeDataset(Dataset):
         :return:
         """
         image, file = data_info["image"], data_info["image_file"]
-        target_info = LabelMeDataset.get_targets(data_info, targets=superclass)
-        attibu_info = LabelMeDataset.get_targets(data_info, targets=subclass)
+        target_info = LabelMeDataset.get_match_targets(data_info, targets=superclass)
+        attibu_info = LabelMeDataset.get_match_targets(data_info, targets=subclass)
         item_list = []
         for i in range(len(target_info.get("boxes", []))):
             tbbox = [target_info["boxes"][i]]
@@ -409,9 +409,9 @@ def LabelMeDatasets(filename=None,
     :param kwargs:
     :return:
     """
-    if data_root and not isinstance(data_root, list) and os.path.isdir(data_root): data_root = [data_root]
-    if image_dir and not isinstance(image_dir, list) and os.path.isdir(image_dir): image_dir = [image_dir]
-    if anno_dir and not isinstance(anno_dir, list) and os.path.isdir(anno_dir): anno_dir = [anno_dir]
+    if data_root and isinstance(data_root, str): data_root = [data_root]
+    if image_dir and isinstance(image_dir, str): image_dir = [image_dir]
+    if anno_dir and isinstance(anno_dir, str): anno_dir = [anno_dir]
     n = max([len(n) for n in [data_root, image_dir, anno_dir] if n])
     if data_root is None: data_root = [None] * n
     if image_dir is None: image_dir = [None] * n
@@ -445,12 +445,33 @@ def parser_labelme(anno_file, class_dict={}, shape=None):
     return info
 
 
-def show_target_image(image, bboxes, labels, points, color=(), thickness=1):
-    # image = image_utils.draw_image_bboxes_text(image, bboxes, labels, color=(255, 0, 0),
+def draw_keypoints_image(image, boxes=[], keypoints=[], thickness=1, vis_id=False):
+    """绘制keypoints"""
+    h, w = image.shape[:2]
+    if len(keypoints) == 0: return image
+    if len(boxes) == 0: boxes = [(0, 0, w, h)] * len(keypoints)
+    from pybaseutils.pose import bones_utils
+    target_bones = bones_utils.get_target_bones("coco_person")
+    image = image_utils.draw_key_point_in_image(image, keypoints, pointline=target_bones["skeleton"],
+                                                colors=target_bones["colors"], thickness=thickness,
+                                                boxes=boxes, vis_id=vis_id)
+
+    if vis_id:
+        for kpts in keypoints:
+            if len(kpts) == 0: continue
+            print(kpts)
+            kpts = np.asarray(kpts)
+            point = kpts[:, 0:2]
+            texts = [f"{t:3.2f}" for t in kpts[:, 2]]
+            image = image_utils.draw_texts(image, points=point, texts=texts, fontScale=0.8, thickness=2)
+    return image
+
+
+def show_target_image(image, boxes, labels, points, keypoints=[], color=(), thickness=2):
+    # image = image_utils.draw_image_bboxes_text(image, boxes, labels, color=(255, 0, 0),
     #                                            thickness=2, fontScale=1.2, drawType="chinese")
-    # image = image_utils.draw_landmark(image, points, color=(0, 255, 0))
-    # image = image_utils.draw_key_point_in_image(image, points)
     image = image_utils.draw_image_contours(image, points, labels, color=color, thickness=thickness)
+    image = draw_keypoints_image(image, boxes, keypoints, thickness=thickness, vis_id=True)
     image_utils.cv_show_image("det", image)
     return image
 
@@ -459,6 +480,7 @@ if __name__ == "__main__":
     from pybaseutils.converter import build_labelme
 
     anno_dir = "/home/PKing/Downloads/sample/images"
+     # anno_dir = "/home/PKing/Downloads/冲击试验/sample/images"
     names = None
     dataset = LabelMeDatasets(filename=None,
                               data_root=None,
@@ -472,8 +494,8 @@ if __name__ == "__main__":
     for i in range(len(dataset)):
         print(i)  # i=20
         data = dataset.__getitem__(i)
-        image, points, bboxes, labels = data["image"], data["points"], data["boxes"], data["labels"]
+        image, points, boxes, labels = data["image"], data["points"], data["boxes"], data["labels"]
         h, w = image.shape[:2]
         image_file = data["image_file"]
         anno_file = os.path.join("masker", "{}.json".format(os.path.basename(image_file).split(".")[0]))
-        show_target_image(image, bboxes, labels, points)
+        show_target_image(image, boxes, labels, points, keypoints=data["keypoints"])

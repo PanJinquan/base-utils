@@ -3,7 +3,8 @@
     @Author : PKing
     @E-mail :
     @Date   : 2024-07-25 08:33:57
-    @Brief  : https://imgaug.readthedocs.io/en/latest/index.html
+    @Brief  :  https://github.com/aleju/imgaug-doc
+               https://imgaug.readthedocs.io/en/latest/index.html
 """
 import os
 import cv2
@@ -14,8 +15,11 @@ from imgaug import augmenters as iaa
 from imgaug import parameters as iap
 import imgaug.augmenters.meta as meta
 from pybaseutils import file_utils, image_utils
+import imgaug as ia
 from imgaug.augmentables.segmaps import SegmentationMapsOnImage
 from imgaug.augmentables.kps import KeypointsOnImage
+from imgaug.augmentables import Keypoint, KeypointsOnImage
+from imgaug.augmentables.polys import Polygon, PolygonsOnImage
 
 
 class Compose(object):
@@ -70,8 +74,8 @@ class Transpose(meta.Augmenter):
 
 class Normalize(meta.Augmenter):
     def __init__(self, mean, std, p=1, seed=None, name=None, random_state="deprecated", deterministic="deprecated"):
-        self.mean = mean
-        self.std = std
+        self.mean = np.array(mean, dtype=np.float32)
+        self.std = np.array(std, dtype=np.float32)
         super(Normalize, self).__init__(
             seed=seed, name=name,
             random_state=random_state, deterministic=deterministic)
@@ -89,6 +93,40 @@ class Normalize(meta.Augmenter):
         image = np.asarray(image, dtype=np.float32) / 255.0
         image = (image - self.mean) / self.std
         return image
+
+
+def decode_polygons(polygons: List, shape) -> ia.PolygonsOnImage:
+    """
+    :param polygons: [(N,2),(N,2),....,]
+    :param shape:
+    :return:
+    """
+    polygons = [Polygon(c) for c in polygons]
+    P = ia.PolygonsOnImage(polygons, shape=shape)
+    return P
+
+
+def encode_polygons(polygons: ia.PolygonsOnImage) -> List:
+    polygons = [item.coords for item in polygons.polygons]
+    return polygons
+
+
+aug_seq = iaa.Sequential([
+    iaa.MotionBlur(k=15),  # 运动模糊
+    iaa.Clouds(),  # 云雾
+    iaa.imgcorruptlike.Fog(severity=1),  # 多雾/霜
+    iaa.imgcorruptlike.Snow(severity=2),  # 下雨、大雪
+    iaa.Rain(drop_size=(0.10, 0.20), speed=(0.2, 0.3)),  # 雨
+    iaa.Rain(speed=(0.3, 0.5)),  # 雨
+    iaa.Snowflakes(flake_size=(0.6, 0.7), speed=(0.02, 0.03)),  # 雪点
+    iaa.imgcorruptlike.Spatter(severity=2),  # 溅 123水滴、45泥
+    iaa.contrast.LinearContrast((0.5, 2.0), per_channel=0.5),  # 对比度变为原来的一半或者二倍
+    iaa.imgcorruptlike.Brightness(severity=2),  # 亮度增加
+    iaa.imgcorruptlike.Saturate(severity=3),  # 色彩饱和度
+    iaa.FastSnowyLandscape(lightness_threshold=(100, 255), lightness_multiplier=(1.5, 2.0)),
+    # 雪地亮度阈值是从 uniform(100, 255)（每张图像）和来自 uniform(1.5, 2.0)（每张图像）的乘数采样的。
+    iaa.Cartoon(blur_ksize=3, segmentation_size=1.0, saturation=2.0, edge_prevalence=1.0),  # 卡通
+])
 
 
 def augment_example(input_size=(224, 224)):
@@ -158,8 +196,27 @@ def demo_for_keypoint():
         image = image_utils.read_image("../../data/test.png")
         mask = image_utils.read_image("../../data/mask.png")
         mask = image_utils.get_image_mask(mask)
-        contours = image_utils.find_mask_contours(mask)  # [(N,2)]
+        contours = image_utils.find_mask_contours(mask)
         auimg, contours = augment(image=image, keypoints=contours)
+        h, w = auimg.shape[:2]
+        mask = image_utils.draw_mask_contours(contours, size=(w, h))
+        color_image = image_utils.draw_image_contours(auimg, contours)
+        result = image_utils.image_hstack([image, color_image, mask])
+        image_utils.cv_show_image("image", result)
+
+
+def demo_for_polygons():
+    transforms = augment_example()
+    augment = Compose(transforms=transforms, fixed=True)
+    for i in range(100):
+        image = image_utils.read_image("../../data/test.png")
+        mask = image_utils.read_image("../../data/mask.png")
+        mask = image_utils.get_image_mask(mask)
+        contours = image_utils.find_mask_contours(mask)
+        contours = contours * 3
+        polygons = decode_polygons(contours, image.shape)
+        auimg, polygons = augment(image=image, polygons=polygons)
+        contours = encode_polygons(polygons)
         h, w = auimg.shape[:2]
         mask = image_utils.draw_mask_contours(contours, size=(w, h))
         color_image = image_utils.draw_image_contours(auimg, contours)
@@ -170,4 +227,5 @@ def demo_for_keypoint():
 if __name__ == "__main__":
     # demo_for_image()
     # demo_for_segment()
-    demo_for_keypoint()
+    # demo_for_keypoint()
+    demo_for_polygons()
