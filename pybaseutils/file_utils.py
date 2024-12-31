@@ -22,6 +22,7 @@ import argparse
 import itertools
 from datetime import datetime
 from tqdm import tqdm
+from pybaseutils import text_utils
 
 IMG_POSTFIX = ['*.jpg', '*.jpeg', '*.png', '*.tif', "*.JPG", "*.bmp"]
 VIDEO_POSTFIX = ['*.mp4', '*.avi', '*.mov', "*.flv", "*.dav"]
@@ -793,7 +794,7 @@ def get_files_lists(file_dir, postfix=IMG_POSTFIX, subname="", shuffle=False, su
     return file_list
 
 
-def get_files_list(file_dir, prefix="", postfix=None, basename=False, sub=False):
+def get_files_list_v1(file_dir, prefix="", postfix=None, basename=False, sub=False):
     """
     获得file_dir目录下，后缀名为postfix所有文件列表，包括子目录所有文件
     :param file_dir:
@@ -816,6 +817,25 @@ def get_files_list(file_dir, prefix="", postfix=None, basename=False, sub=False)
             prefix_name = name[:len(prefix)].lower()
             if prefix_name == prefix and postfix_name in postfix:
                 file_list.append(file)
+    file_list.sort()
+    file_list = get_basename(file_list) if basename else file_list
+    if sub: file_list = get_sub_list(file_list, dirname=file_dir)
+    return file_list
+
+
+def get_files_list(file_dir, prefix="", postfix=None, basename=False, sub=False):
+    """
+    获得file_dir目录下，后缀名为postfix所有文件列表，包括子目录所有文件
+    :param file_dir:
+    :param prefix: 前缀
+    :param postfix: 后缀
+    :param basename: 返回的列表是文件名（True），还是文件的完整路径(False)
+    :param sub: 是否去除根路径
+    :return:
+    """
+    file_list = get_all_files(file_dir)
+    file_list = text_utils.find_match_texts(file_list, pattern=[prefix], org=True) if prefix else file_list
+    file_list = text_utils.find_match_texts(file_list, pattern=postfix, org=True) if postfix else file_list
     file_list.sort()
     file_list = get_basename(file_list) if basename else file_list
     if sub: file_list = get_sub_list(file_list, dirname=file_dir)

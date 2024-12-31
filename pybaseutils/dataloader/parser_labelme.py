@@ -45,12 +45,13 @@ class LabelMeDataset(Dataset):
         :param shuffle:
         :param check: 当class_name=None且check=True,将自动获取所有class
         :param min_points: 当标注的轮廓点的个数小于min_points，会被剔除；负数不剔除
-        :param kwargs:
+        :param kwargs: read_image: 是否读取图片，否则image=None
         """
         super(LabelMeDataset, self).__init__()
         self.min_area = 1 / 1000  # 如果前景面积不足0.1%,则去除
         self.use_rgb = use_rgb
         self.min_points = min_points
+        self.kwargs = kwargs
         self.class_name, self.class_dict = self.parser_classes(class_name)
         parser = self.parser_paths(filename, data_root, anno_dir, image_dir)
         self.data_root, self.anno_dir, self.image_dir, self.image_ids = parser
@@ -154,8 +155,8 @@ class LabelMeDataset(Dataset):
         elif anno_dir and not image_ids:
             image_ids = self.get_file_list(anno_dir, postfix=["*.json", "*.xml"], basename=False)
             image_ids = [os.path.basename(f) for f in image_ids]
-        assert os.path.exists(image_dir), Exception("no image_dir:{}".format(image_dir))
-        assert os.path.exists(anno_dir), Exception("no anno_dir :{}".format(anno_dir))
+        assert isinstance(anno_dir, str) and os.path.exists(anno_dir), "no anno_dir :{}".format(anno_dir)
+        assert isinstance(image_dir, str) and os.path.exists(image_dir), "no image_dir:{}".format(image_dir)
         assert len(image_ids) > 0, f"image_ids is empty,image_dir={image_dir},anno_dir={anno_dir}"
         return data_root, anno_dir, image_dir, image_ids
 
@@ -167,13 +168,17 @@ class LabelMeDataset(Dataset):
         image_id = self.index2id(index)
         image_file, anno_file, image_id = self.get_image_anno_file(image_id)
         annotation, width, height = self.load_annotations(anno_file)
-        image = self.read_image(image_file, use_rgb=self.use_rgb)
-        shape = image.shape
-        data_info = self.parser_annotation(annotation, self.class_dict, shape, min_points=self.min_points,
-                                           unique=self.unique)
+        if self.kwargs.get("read_image", True):  # 是否读取图片
+            image = self.read_image(image_file, use_rgb=self.use_rgb)
+            shape = image.shape
+            size = [shape[1], shape[0]]
+        else:
+            image, shape, size = None, None, [width, height]
+        data_info = self.parser_annotation(annotation, self.class_dict, shape=shape,
+                                           min_points=self.min_points, unique=self.unique)
         # TODO dict(boxes, labels, points, groups, names, keypoints)
         data_info.update({"image": image, "image_file": image_file, "anno_file": anno_file,
-                          "size": [shape[1], shape[0]]})
+                          "size": size})
         return data_info
 
     @staticmethod
@@ -480,7 +485,7 @@ if __name__ == "__main__":
     from pybaseutils.converter import build_labelme
 
     anno_dir = "/home/PKing/Downloads/sample/images"
-     # anno_dir = "/home/PKing/Downloads/冲击试验/sample/images"
+    # anno_dir = "/home/PKing/Downloads/冲击试验/sample/images"
     names = None
     dataset = LabelMeDatasets(filename=None,
                               data_root=None,

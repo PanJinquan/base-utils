@@ -299,12 +299,14 @@ def video_iterator(video_file: int or str, save_video: str or int = None, interv
     save_fps = max(kwargs.get("speed", 1) * fps // interval, 1)
     count = 0
     video_writer = None
+    use_fast = kwargs.get("use_fast", False)
     while True:
-        ret, frame = video_cap.read()
+        ret, frame = (False, None) if use_fast else video_cap.read()
         if count % interval == 0 and count >= start:
             # TODO 设置抽帧的位置，但某些格式视频容易出现问题
-            # if isinstance(video_file, str): video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
-            # ret, frame = video_cap.read()
+            if use_fast and isinstance(video_file, str):
+                video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
+                ret, frame = video_cap.read()
             if not ret or 0 < end < count or frame is None: break
             if task: frame = task(frame, **kwargs)
             data_info = {"frame": frame, "count": count, "w": w, "h": h, "fps": fps}

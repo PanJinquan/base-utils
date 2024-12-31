@@ -51,7 +51,8 @@ def performance(tag=""):
                                                                                            content["avg"],
                                                                                            content["total"],
                                                                                            content["count"])
-            print("{} call {} elapsed: {}".format(tag, func.__name__, elapsed))
+            tag_ = f"{tag} " if tag else ""
+            print("{:20s}{:20s} elapsed: {}".format(tag_, func.__name__, elapsed))
             return result
 
         return wrapper
@@ -78,37 +79,38 @@ class Performance(object):
                                                                                        content["avg"],
                                                                                        content["total"],
                                                                                        content["count"])
-        print("{} elapsed: {}".format(self.tag, elapsed))
+        tag_ = f"{self.tag} " if self.tag else ""
+        print("{:20s}elapsed: {}\t".format(tag_, elapsed))
 
     def task(self):
         pass
 
 
-@performance("")
+@performance("test1")
 def targe_func1():
     time.sleep(1)
 
 
-@performance("")
+@performance("test111111")
 def targe_func2():
     time.sleep(0.5)
 
 
 def targe_func3():
-    with Performance("targe_func3") as p:
+    with Performance("test222") as p:
         time.sleep(1)
 
 
 def targe_func4():
-    with Performance("targe_func4") as p:
+    with Performance("test22222222") as p:
         time.sleep(0.5)
 
 
 def targe_func():
     targe_func1()
     targe_func2()
-    targe_func3()
-    targe_func4()
+    # targe_func3()
+    # targe_func4()
 
 
 if __name__ == '__main__':

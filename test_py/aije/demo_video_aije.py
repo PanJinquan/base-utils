@@ -84,15 +84,15 @@ def video2frames_demo(root, out, prefix="", thresh=0.2):
     for video_file in tqdm(files):
         print(video_file)
         name = os.path.basename(video_file).split(".")[0]
-        if name in thresh_dict:
-            thresh = thresh_dict[name]
-        prefix_ = "{}_{}".format(prefix, os.path.basename(os.path.dirname(video_file)))
+        thresh = thresh_dict.get(name, 0.5)
+        prefix_ = os.path.basename(os.path.dirname(video_file))
+        if prefix: prefix_ = "{}_{}".format(prefix, prefix_)
         video2frames_similarity(video_file, out_dir=out, func=None, interval=20,
                                 thresh=thresh, prefix=prefix_, vis=True)
 
 
 if __name__ == "__main__":
-    root = "/home/PKing/nasdata/dataset-dmai/AIJE/技能人才系统_数据集管理/归档/20240607_数企_jinquan采集的多样性样本-train/shuqi_20240607yanshi111346/shuqi_20240607yanshi111346_right.mp4"
-    prefix = "数企"
+    root = "/home/PKing/nasdata/dataset-dmai/AIJE/技能人才系统_数据集管理/01-江门四维数据/01-37道考题视频/江门四维2024-12-06-检查帽撑/video"
+    prefix = ""
     out = root + "-train"
     video2frames_demo(root, out, prefix=prefix)
