@@ -1,191 +1,64 @@
-# -*- coding: utf-8 -*-
+# -*-coding: utf-8 -*-
 """
-# --------------------------------------------------------
-# @Author : Pan
-# @Date   : 2019-9-20 13:18:34
-# --------------------------------------------------------
+    @Author : PKing
+    @E-mail :
+    @Date   : 2024-12-10 22:22:58
+    @Brief  :
 """
 import os
-import datetime
+import sys
 import logging
-import threading
-import re
-import time
 from logging.handlers import TimedRotatingFileHandler
 
 
-# from memory_profiler import profile
-
-
-def singleton(cls):
-    _instance_lock = threading.Lock()
-    instances = {}
-
-    def _singleton(*args, **kwargs):
-        with _instance_lock:
-            if cls not in instances:
-                instances[cls] = cls(*args, **kwargs)
-            return instances[cls]
-
-    return _singleton
-
-
-@singleton  # 使用singleton，会出现loger的level失效的问题
-class CustomLogger(logging.Logger):
-    def __init__(self, name="LOG", level="debug"):
-        """
-        Initialize the logger with a name and an optional level.
-        Args:
-            name:
-            level: debug,info,warning,critical,fatal
-        """
-        super().__init__(name)
-        # super(CustomLogger, self).__init__(name)
-        self.setLevel(level=level)
-
-    @staticmethod
-    def levels(level):
-        if level == 'debug':
-            return logging.DEBUG
-        if level == 'info':
-            return logging.INFO
-        if level == 'warning':
-            return logging.WARN
-        if level == 'critical':
-            return logging.CRITICAL
-        if level == 'fatal':
-            return logging.FATAL
-        return logging.DEBUG
-
-    def setLevel(self, level):
-        """
-        Args:
-            level: debug,info,warning,critical,fatal
-        Returns:
-        """
-        level = self.levels(level)
-        super().setLevel(level)
-
-    @staticmethod
-    def set_format(handler, format):
-        # handler.suffix = "%Y%m%d"
-        if format:
-            logFormatter = logging.Formatter("%(asctime)s %(filename)s %(funcName)s %(levelname)s: %(message)s",
-                                             "%Y-%m-%d %H:%M:%S")
-        else:
-            logFormatter = logging.Formatter("%(levelname)s: %(message)s")
-        handler.setFormatter(logFormatter)
-
-    def show_batch_tensor(self, title, batch_imgs, index=0):
-        pass
-
-
-class FileHandler(TimedRotatingFileHandler):
-    def __init__(self, filename, when='h', interval=1, backupCount=0, encoding=None, delay=False, utc=False,
-                 atTime=None):
-        logging.handlers.BaseRotatingHandler.__init__(self, filename, 'a', encoding, delay)
-        self.when = when.upper()
-        self.backupCount = backupCount
-        self.utc = utc
-        self.atTime = atTime
-        if self.when == 'S':
-            self.interval = 1  # one second
-            self.suffix = "%Y-%m-%d_%H-%M-%S"
-            self.extMatch = r"^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}(\.\w+)?$"
-        elif self.when == 'M':
-            self.interval = 60  # one minute
-            self.suffix = "%Y-%m-%d_%H-%M"
-            self.extMatch = r"^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}(\.\w+)?$"
-        elif self.when == 'H':
-            self.interval = 60 * 60  # one hour
-            self.suffix = "%Y-%m-%d_%H"
-            self.extMatch = r"^\d{4}-\d{2}-\d{2}_\d{2}(\.\w+)?$"
-        elif self.when == 'D' or self.when == 'MIDNIGHT':
-            self.interval = 60 * 60 * 24  # one day
-            self.suffix = "%Y-%m-%d"
-            self.extMatch = r"^\d{4}-\d{2}-\d{2}(\.\w+)?$"
-        elif self.when.startswith('W'):
-            self.interval = 60 * 60 * 24 * 7  # one week
-            if len(self.when) != 2:
-                raise ValueError("You must specify a day for weekly rollover from 0 to 6 (0 is Monday): %s" % self.when)
-            if self.when[1] < '0' or self.when[1] > '6':
-                raise ValueError("Invalid day specified for weekly rollover: %s" % self.when)
-            self.dayOfWeek = int(self.when[1])
-            self.suffix = "%Y-%m-%d"
-            self.extMatch = r"^\d{4}-\d{2}-\d{2}(\.\w+)?$"
-        elif self.when == 'Y':
-            self.interval = 60 * 60 * 24 * 365  # one yes
-            self.suffix = "%Y-%m-%d"
-            self.extMatch = r"^\d{4}-\d{2}-\d{2}(\.\w+)?$"
-        else:
-            raise ValueError("Invalid rollover interval specified: %s" % self.when)
-
-        self.extMatch = re.compile(self.extMatch, re.ASCII)
-        self.interval = self.interval * interval  # multiply by units requested
-        # The following line added because the filename passed in could be a
-        # path object (see Issue #27493), but self.baseFilename will be a string
-        filename = self.baseFilename
-        if os.path.exists(filename):
-            t = os.stat(filename)[logging.handlers.ST_MTIME]
-        else:
-            t = int(time.time())
-        self.rolloverAt = self.computeRollover(t)
-
-
-def set_logger(name="LOG", level="debug", logfile=None, format=False, is_main_process=True):
+def get_logger(name='APPLOG', level="info", logfile=None, is_main_process=True):
     """
-    logger = set_logging(name="LOG", level="debug", logfile="log.txt", format=False)
-    url:https://cuiqingcai.com/6080.html
-    level级别：debug>info>warning>error>critical
-    :param level: 设置log输出级别
-    :param logfile: log保存路径，如果为None，则在控制台打印log
-    :param is_main_process: 是否是主进程
+    :param name:
+    :param logfile:
+    :param level: CRITICAL,FATAL,ERROR,WARN,WARNING,INFO,DEBUG,NOTSET
     :return:
     """
-    if not is_main_process:
-        level = "fatal"
-        logfile = None
-    # logger = logging.getLogger(name)
-    logger = CustomLogger(name, level=level)
-    if logfile and os.path.exists(logfile):
-        os.remove(logfile)
-    # define a FileHandler write messages to file
-    if logfile:
-        # filehandler = logging.handlers.RotatingFileHandler(filename="./log.txt")
-        # filehandler = TimedRotatingFileHandler(logfile, when="midnight", interval=1)
-        filehandler = FileHandler(logfile, when="Y", interval=1)
-        logger.set_format(filehandler, format)
-        logger.addHandler(filehandler)
+    # 创建logger对象
+    if is_main_process:
+        logger = logging.getLogger(name)
+        # 如果logger已经有，则不添加
+        if logger.handlers: return logger
+        logger.setLevel(level.upper())
+        # 创建格式化器
+        formatter = logging.Formatter(
+            fmt="%(asctime)s|%(levelname)6s|%(filename)20s|%(funcName)20s|Line%(lineno)4s|%(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S"
+        )
+        # 创建控制台处理器
+        console_handler = logging.StreamHandler(sys.stdout)
+        console_handler.setFormatter(formatter)
+        logger.addHandler(console_handler)
 
-    # define a StreamHandler print messages to console
-    console = logging.StreamHandler()
-    logger.set_format(console, format)
-    logger.addHandler(console)
-    return logger
-
-
-def print_args(args):
-    logger = get_logger()
-    logger.info("---" * 10)
-    args = args.__dict__
-    for k, v in args.items():
-        # print("{}: {}".format(k, v))
-        logger.info("{}: {}".format(k, v))
-    logger.info("---" * 10)
-
-
-def get_logger(name="LOG", level="debug"):
-    logger = CustomLogger(name)
-    # if logger.isEnabledFor(CustomLogger.levels(level)):
-    #     logger = CustomLogger(name, level=level)
+        # 创建日志目录
+        if logfile:
+            os.makedirs(os.path.dirname(logfile), exist_ok=True)
+            # 创建文件处理器（按时间轮转）
+            file_handler = TimedRotatingFileHandler(
+                logfile,
+                when='midnight',  # 每天午夜切换新文件
+                interval=1,  # 间隔为1天
+                backupCount=30,  # 保留30天的日志文件
+                encoding='utf-8'
+            )
+            file_handler.setFormatter(formatter)
+            logger.addHandler(file_handler)
+    else:
+        logger = logging.getLogger(name)
+        logger.setLevel("warning")
     return logger
 
 
 if __name__ == '__main__':
-    logger = set_logger(logfile=None, level="debug")
-    logger1 = get_logger()
-    logger1.info("---" * 20)
-    logger1.debug("work_space:{}".format("work_dir"))
-    logger1.info("work_space:{}".format("work_dir"))
-    logger1.error("work_space:{}".format("work_dir"))
-    logger1.fatal("work_space:{}".format("work_dir"))
+    logger = get_logger(name='APPLOG', level="debug", logfile="./log.log")
+    # 测试日志输出
+    logger.debug('-----------------')
+    logger.debug('这是一条调试信息')
+    logger.info('这是一条信息')
+    logger.warning('这是一条警告')
+    logger.error('这是一条错误信息')
+    logger.critical('这是一条严重错误信息')

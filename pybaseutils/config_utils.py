@@ -6,7 +6,7 @@ import easydict
 import yaml
 import copy
 import json
-from . import file_utils
+from pybaseutils import file_utils
 
 
 def parser_work_space(work_dir, flags: list = [], time=True):
@@ -54,6 +54,22 @@ def easy2dict(config: easydict.EasyDict):
     # fix a Bug: cfg = dict(config) 仅仅转换第一层easydict
     cfg = json.loads(json.dumps(config))
     return cfg
+
+
+def dict2easy(config: dict):
+    """
+    :param config: Dict参数
+    """
+    return easydict.EasyDict(config)
+
+
+class Dict2Obj:
+    '''
+    dict转类对象
+    '''
+
+    def __init__(self, args):
+        self.__dict__.update(args)
 
 
 def parser_config_file(config: easydict.EasyDict, config_file: str, cfg_updata: bool = True):
@@ -109,16 +125,7 @@ def update_dict(cfg1: dict, cfg2: dict):
     return cfg
 
 
-class Dict2Obj:
-    '''
-    dict转类对象
-    '''
-
-    def __init__(self, args):
-        self.__dict__.update(args)
-
-
-def load_config(config_file='config.yaml'):
+def load_config(config_file='config.yaml', easy=False):
     """
     读取配置文件，并返回一个python dict 对象
     :param config_file: 配置文件路径
@@ -128,6 +135,7 @@ def load_config(config_file='config.yaml'):
         try:
             config = yaml.load(stream, Loader=yaml.FullLoader)
             # config = Dict2Obj(config)
+            if easy: config = dict2easy(config)
         except yaml.YAMLError as e:
             print(e)
             return None

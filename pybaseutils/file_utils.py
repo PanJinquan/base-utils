@@ -227,25 +227,39 @@ def read_data(filename, split=",", convertNum=True):
     注意：这些函数都只会删除头和尾的字符，中间的不会删除。
     """
     with open(filename, mode="r", encoding='utf-8') as f:
-        content_list = f.readlines()
-        content_list = [line.strip().strip('\ufeff').strip('\xef\xbb\xbf') for line in content_list]
-        if split is None:
-            content_list = [content.rstrip() for content in content_list]
-            return content_list
-        else:
-            content_list = [content.rstrip().split(split) for content in content_list]
-        if convertNum:
-            for i, line in enumerate(content_list):
-                line_data = []
-                for l in line:
-                    if is_int(l):  # isdigit() 方法检测字符串是否只由数字组成,只能判断整数
-                        line_data.append(int(l))
-                    elif is_float(l):  # 判断是否为小数
-                        line_data.append(float(l))
-                    else:
-                        line_data.append(l)
-                content_list[i] = line_data
-    return content_list
+        lines = f.readlines()
+    lines = [line.strip().strip('\ufeff').strip('\xef\xbb\xbf') for line in lines]
+    if split is None:
+        return lines
+    else:
+        lines = [line.split(split) for line in lines]
+    if convertNum:
+        for i, line in enumerate(lines):
+            line = [str2number(l) for l in line]
+            lines[i] = line
+    return lines
+
+
+def str2number(x: str | int | float):
+    """
+    :param x:
+    :return:
+    """
+    # 如果已经是数值类型，直接处理
+    if isinstance(x, (int, float)):
+        return int(x) if isinstance(x, int) or x.is_integer() else x
+    # 处理字符串类型
+    if isinstance(x, str):
+        if not x: return x  # 处理空字符串
+        x = x.strip()  # 去除首尾空格
+        try:
+            x = int(x)
+        except Exception as e:
+            try:
+                x = float(x)
+            except Exception as e:
+                pass
+    return x
 
 
 def read_line_image_label(line_image_label):

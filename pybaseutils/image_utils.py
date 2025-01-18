@@ -166,25 +166,6 @@ def check_point(point):
     return r
 
 
-def transpose(data):
-    data = data.transpose(2, 0, 1)  # HWC->CHW
-    return data
-
-
-def untranspose(data):
-    if len(data.shape) == 3:
-        data = data.transpose(1, 2, 0).copy()  # 通道由[c,h,w]->[h,w,c]
-    else:
-        data = data.transpose(1, 0).copy()
-    return data
-
-
-def swap_image(image):
-    # image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-    image = image[:, :, ::-1]  # RGB->BGR
-    return image
-
-
 def show_batch_image(title, batch_images, index=0):
     '''
     批量显示图片
@@ -332,6 +313,31 @@ def get_prewhiten_image(x):
     return y
 
 
+def transpose(data):
+    data = data.transpose(2, 0, 1)  # HWC->CHW
+    return data
+
+
+image_hwc2chw = transpose
+
+
+def untranspose(data):
+    if len(data.shape) == 3:
+        data = data.transpose(1, 2, 0).copy()  # 通道由[c,h,w]->[h,w,c]
+    else:
+        data = data.transpose(1, 0).copy()
+    return data
+
+
+image_chw2hwc = untranspose
+
+
+def swap_image(image):
+    # image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+    image = image[:, :, ::-1]  # RGB->BGR
+    return image
+
+
 def image_normalize(image, mean=None, std=None):
     '''
     正则化，归一化
@@ -357,9 +363,9 @@ def image_normalize(image, mean=None, std=None):
 
 def image_unnormalize(image, mean=None, std=None):
     """
-    正则化，归一化
+    反归一化
     image = image/255.0
-    image[channel] = (image[channel] - mean[channel]) / std[channel]
+    image[channel] = image[channel] * std[channel]+ mean[channel])
     :param image: numpy image
     :param mean: [0.5,0.5,0.5]
     :param std:  [0.5,0.5,0.5]
@@ -390,9 +396,15 @@ def data_normalize(x, ymin=0, ymax=1.0, xmin=None, xmax=None):
     :param xmax: 输入参数xmax的最大值
     :return: 输出参数y：归一化到区间[omin,omax]的数据
     """
+    if len(x) == 0: return x
     xmax = np.max(x) if xmax is None else xmax  # %计算最大值
     xmin = np.min(x) if xmin is None else xmin  # %计算最小值
-    y = (ymax - ymin) * (x - xmin) / (xmax - xmin) + ymin
+    if (xmax - xmin) > 0:
+        y = (ymax - ymin) * (x - xmin) / (xmax - xmin) + ymin
+    elif xmax != 0:
+        y = x / xmax
+    else:
+        y = x
     return y
 
 

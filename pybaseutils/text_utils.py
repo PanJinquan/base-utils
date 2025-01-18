@@ -32,6 +32,7 @@ def find_match_texts(texts: list, pattern: list, org=True):
     :param org:  True,返回匹配成功的原始字符串，False 返回匹配成功的子串
     :return:
     """
+    if isinstance(pattern, str): pattern = [pattern]
     out = []
     for text in texts:
         for sub in pattern:

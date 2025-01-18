@@ -553,37 +553,29 @@ def get_error(data1, data2):
     return mse, rmse, mae
 
 
-def get_topK(data, k=1, axis=-1, reverse=False):
+def get_topK(data: np.ndarray, K: int, reverse=False):
     """
-    选取Top5: contours = sorted(contours, key=cv2.contourArea, reverse=True)[:5]
-    多维数组排序
-    Args:
-        data: 多维数组
-        k: 取数
-        axis: 轴维度
-        reverse: 是否倒序
-    Returns:
-        top_sorted_scores: 值
-        top_sorted_indexes: 位置
+    计算data中前K大或前K小的元素
+    :param data: 输入数组
+    :param K: 要获取的元素个数
+    :param reverse: False表示获取前K大元素，True表示获取前K小元素
+    :return: (top_value, top_index) 值和对应的索引
     """
-    data = np.asarray(data)
+    K = min(len(data), K)
     if reverse:
-        partition_index = np.take(np.argpartition(data, kth=k, axis=axis), range(0, k), axis)
+        # 获取前K小的元素的索引
+        index = np.argpartition(data, K - 1)[:K]
+        # 按照值的大小对索引进行排序（从小到大）
+        top_index = index[np.argsort(data[index])]
     else:
-        # argpartition分区排序，在给定轴上找到最小的值对应的idx，partition同理找对应的值
-        # kth表示在前的较小值的个数，带来的问题是排序后的结果两个分区间是仍然是无序的
-        # kth绝对值越小，分区排序效果越明显
-        axis_length = data.shape[axis]
-        partition_index = np.take(np.argpartition(data, kth=-k, axis=axis),
-                                  range(axis_length - k, axis_length), axis)
-    top_scores = np.take_along_axis(data, partition_index, axis)
-    # 分区后重新排序
-    sorted_index = np.argsort(top_scores, axis=axis)
-    if not reverse:
-        sorted_index = np.flip(sorted_index, axis=axis)
-    top_k_value = np.take_along_axis(top_scores, sorted_index, axis)
-    top_k_index = np.take_along_axis(partition_index, sorted_index, axis)
-    return top_k_value, top_k_index
+        # 获取前K大的元素的索引
+        index = np.argpartition(data, -K)[-K:]
+        # 按照值的大小对索引进行排序（从大到小）
+        top_index = index[np.argsort(data[index])][::-1]
+
+    # 获取对应的值
+    top_value = data[top_index]
+    return top_value, top_index
 
 
 class Preprocessing(object):
