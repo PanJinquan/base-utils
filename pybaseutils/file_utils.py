@@ -240,7 +240,7 @@ def read_data(filename, split=",", convertNum=True):
     return lines
 
 
-def str2number(x: str | int | float):
+def str2number(x):
     """
     :param x:
     :return:

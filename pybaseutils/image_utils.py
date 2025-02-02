@@ -697,16 +697,17 @@ def resize_image(image, size: Tuple, interpolation=cv2.INTER_LINEAR):
 def image_boxes_resize_padding(image, input_size, boxes=None, points=None, color=(0, 0, 0)):
     """
     等比例图像resize,保持原始图像内容比，避免失真,短边会0填充
-    input_size = [300, 300]
-    image_path = "test.jpg"
-    src_boxes = [[8.20251, 1, 242.2412, 699.2236],
-                 [201.14865, 204.18265, 468.605, 696.36163]]
-    src_boxes = np.asarray(src_boxes)
-    image = read_image(image_path)
-    image1, boxes1 = image_boxes_resize_padding(image, input_size, src_boxes)
-    image1 = show_image_boxes("Det", image1, boxes1, color=(255, 0, 0), delay=3)
-    boxes = image_boxes_resize_padding_inverse(image.shape, input_size, boxes1)
-    show_image_boxes("image", image, boxes)
+    >> example:
+        input_size = [300, 300]
+        image_path = "../data/test_image/grid1.png"
+        boxes = [[120, 50, 250, 180]]
+        boxes = np.asarray(boxes)
+        image0 = read_image(image_path)
+        show_image_boxes("image0", image0, boxes, color=(255, 0, 0), delay=3)
+        image1 = image_boxes_resize_padding(image0, input_size, boxes)
+        show_image_boxes("image1", image1, boxes, color=(0, 255, 0), delay=3)
+        boxes = image_boxes_resize_padding_inverse((image0.shape[1], image0.shape[0]), input_size, boxes)
+        show_image_boxes("image2", image0, boxes, color=(0, 0, 255))
     :param size:
     """
     height, width = image.shape[:2]
@@ -2996,13 +2997,13 @@ def get_video_writer(video_file, width, height, fps):
 if __name__ == "__main__":
     # from utils import image_utils
 
-    input_size = [int(490 / 2), int(800 / 2)]
-    image_path = "test.jpg"
-    src_boxes = [[8.20251, 1, 242.2412, 699.2236],
-                 [201.14865, 204.18265, 468.605, 696.36163]]
-    src_boxes = np.asarray(src_boxes)
-    image = read_image(image_path)  # (800, 490, 3)
-    image1, boxes1 = image_boxes_resize_padding(image, input_size, src_boxes)
-    image1 = show_image_boxes("Det", image1, boxes1, color=(255, 0, 0), delay=3)
-    boxes = image_boxes_resize_padding_inverse((image.shape[1], image.shape[0]), input_size, boxes1)
-    show_image_boxes("image", image, boxes)
+    input_size = [300, 300]
+    image_path = "../data/test_image/grid1.png"
+    boxes = [[120, 50, 250, 180]]
+    boxes = np.asarray(boxes)
+    image0 = read_image(image_path)  # (800, 490, 3)
+    show_image_boxes("image0", image0, boxes, color=(255, 0, 0), delay=3)
+    image1 = image_boxes_resize_padding(image0, input_size, boxes)
+    show_image_boxes("image1", image1, boxes, color=(0, 255, 0), delay=3)
+    boxes = image_boxes_resize_padding_inverse((image0.shape[1], image0.shape[0]), input_size, boxes)
+    show_image_boxes("image2", image0, boxes, color=(0, 0, 255))

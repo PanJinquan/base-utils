@@ -274,8 +274,8 @@ cv::Mat rotate_image(cv::Mat &image, cv::Point2f center, float angle, cv::Scalar
  * @param angle  旋转角度
  * @return
  */
-vector<cv::Point2f>
-rotate_image_points(cv::Mat &image, vector<cv::Point2f> &points, cv::Point2f center, float angle);
+vector<cv::Point2f> rotate_image_points(cv::Mat &image, vector<cv::Point2f> &points, cv::Point2f center,
+                                        float angle);
 
 /***
  * 逆时针旋转图像中点
@@ -286,8 +286,7 @@ rotate_image_points(cv::Mat &image, vector<cv::Point2f> &points, cv::Point2f cen
  * @param angle 旋转角度
  * @return
  */
-cv::Point2f
-rotate_point(cv::Point2f point, cv::Point2f center, int image_width, int image_height, float angle);
+cv::Point2f rotate_point(cv::Point2f point, cv::Point2f center, int image_width, int image_height, float angle);
 
 /***
  * 逆时针旋转图像中点
@@ -298,8 +297,8 @@ rotate_point(cv::Point2f point, cv::Point2f center, int image_width, int image_h
  * @param angle 旋转角度
  * @return
  */
-vector<cv::Point2f>
-rotate_points(vector<cv::Point2f> &points, cv::Point2f center, int image_width, int image_height, float angle);
+vector<cv::Point2f> rotate_points(vector<cv::Point2f> &points, cv::Point2f center, int image_width, int image_height,
+                                  float angle);
 
 
 /***
@@ -313,6 +312,16 @@ rotate_points(vector<cv::Point2f> &points, cv::Point2f center, int image_width, 
  * @return
  */
 cv::Rect extend_rect(cv::Rect rect, float sx = 1.0f, float sy = 1.0f, bool fixed = false, bool use_max = true);
+
+
+/***
+ * 将boxes转换为正方形的boxes
+ * @param rect
+ * @param use_max 是否按照每个box(w,h)最大值(True)/最小值(False)进行转换(默认)
+ * @param use_mean: 是否按照每个box(w,h)平均值进行转换(优先级比use_mean高)
+ * @return
+ */
+cv::Rect get_square_rect(cv::Rect rect, bool use_max = true, bool use_mean = false);
 
 /***
  * 图像裁剪,超出的区域会被丢弃
@@ -386,7 +395,7 @@ void image_save(string name, cv::Mat &image);
  * @param text
  */
 void draw_point_text(cv::Mat &image, cv::Point2f points, string text = "",
-                     cv::Scalar color = cv::Scalar(255, 0, 0));
+                     cv::Scalar color = COLOR_GREEN, int radius = 2);
 
 
 /***
@@ -396,7 +405,7 @@ void draw_point_text(cv::Mat &image, cv::Point2f points, string text = "",
  * @param texts 点需要显示的文本
  */
 void draw_points_texts(cv::Mat &image, vector<cv::Point2f> points, vector<string> texts = {},
-                       cv::Scalar color = cv::Scalar(255, 0, 0));
+                       cv::Scalar color = COLOR_GREEN, int radius = 2);
 
 /***
  * 绘制多个点和文本
@@ -405,7 +414,7 @@ void draw_points_texts(cv::Mat &image, vector<cv::Point2f> points, vector<string
  * @param texts 点需要显示的文本
  */
 void draw_points_texts(cv::Mat &image, cv::Point2f points[], int num, vector<string> texts = {},
-                       cv::Scalar color = cv::Scalar(255, 0, 0));
+                       cv::Scalar color = COLOR_GREEN, int radius = 2);
 
 
 /***
@@ -416,7 +425,7 @@ void draw_points_texts(cv::Mat &image, cv::Point2f points[], int num, vector<str
  * @param colors 颜色表
  */
 void draw_points_texts_colors(cv::Mat &image, vector<cv::Point2f> points, vector<string> texts = {},
-                              vector<cv::Scalar> colors = {cv::Scalar(255, 0, 0)});
+                              vector<cv::Scalar> colors = {COLOR_GREEN});
 
 
 /***
@@ -577,15 +586,15 @@ cv::Mat image_boxes_resize_padding(cv::Mat &image, cv::Size input_size, cv::Scal
  * @param color
  * @return
  */
-cv::Mat
-image_boxes_resize_padding(cv::Mat &image, cv::Size input_size, vector<cv::Box> &boxes,
-                           cv::Scalar color = COLOR_BLACK);
+cv::Mat image_boxes_resize_padding(cv::Mat &image, cv::Size input_size, vector<cv::Box> &boxes,
+                                   cv::Scalar color = COLOR_BLACK);
 
 /****
  * image_boxes_resize_padding的逆过程
  * @param image_size
  * @param input_size
- * @param boxes
+ * @param boxes out boxes
+ * @param points out points
  */
 void image_boxes_resize_padding_inverse(cv::Size image_size, cv::Size input_size,
                                         vector<cv::Box> &boxes = cv::boxes,

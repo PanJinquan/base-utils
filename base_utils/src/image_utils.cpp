@@ -187,8 +187,8 @@ cv::Mat rotate_image(cv::Mat &image, cv::Point2f center, float angle, cv::Scalar
     return dst;
 }
 
-vector<cv::Point2f>
-rotate_image_points(cv::Mat &image, vector<cv::Point2f> &points, cv::Point2f center, float angle) {
+vector<cv::Point2f> rotate_image_points(cv::Mat &image, vector<cv::Point2f> &points, cv::Point2f center,
+                                        float angle) {
     image = rotate_image(image, center, angle);
     return rotate_points(points, center, image.cols, image.rows, angle);;
 }
@@ -235,6 +235,22 @@ cv::Rect extend_rect(cv::Rect rect, float sx, float sy, bool fixed, bool use_max
     ex = cx - 0.5 * ew;
     ey = cy - 0.5 * eh;
     r.x = ex, r.y = ey, r.width = ew, r.height = eh;
+    return r;
+}
+
+cv::Rect get_square_rect(cv::Rect rect, bool use_max, bool use_mean) {
+    float cx = (rect.x + rect.x + rect.width) / 2.0f;
+    float cy = (rect.y + rect.y + rect.height) / 2.0f;
+    float b = rect.width > rect.height ? rect.width : rect.height;
+    if (!use_max) {
+        b = rect.width < rect.height ? rect.width : rect.height;
+    }
+    if (use_mean) {
+        b = (rect.width + rect.height) / 2.f;
+    }
+    float x1 = cx - b / 2;
+    float y1 = cy - b / 2;
+    cv::Rect r(x1, y1, b, b);
     return r;
 }
 
@@ -321,8 +337,8 @@ void image_save(string name, cv::Mat &image) {
 }
 
 
-void draw_point_text(cv::Mat &image, cv::Point2f points, string text, cv::Scalar color) {
-    int radius = 4;
+void draw_point_text(cv::Mat &image, cv::Point2f points, string text, cv::Scalar color, int radius) {
+    //int radius = 4;
     int thickness = -1;//实心点
     cv::circle(image, points, radius, color, thickness, cv::LINE_AA);
     if (text != "") {
@@ -336,7 +352,7 @@ void draw_point_text(cv::Mat &image, cv::Point2f points, string text, cv::Scalar
 }
 
 void draw_points_texts(cv::Mat &image, vector<cv::Point2f> points, vector<string> texts,
-                       cv::Scalar color) {
+                       cv::Scalar color, int radius) {
     int num = points.size();
     if (texts.size() != num && texts.size() == 0) {
         for (int i = 0; i < num; ++i) {
@@ -344,14 +360,15 @@ void draw_points_texts(cv::Mat &image, vector<cv::Point2f> points, vector<string
         }
     }
     for (int i = 0; i < num; ++i) {
-        draw_point_text(image, points[i], texts[i], color);
+        draw_point_text(image, points[i], texts[i], color, radius);
     }
 }
 
 
-void draw_points_texts(cv::Mat &image, cv::Point2f points[], int num, vector<string> texts, cv::Scalar color) {
+void draw_points_texts(cv::Mat &image, cv::Point2f points[], int num, vector<string> texts, cv::Scalar color,
+                       int radius) {
     vector<cv::Point2f> tmp = array2vector<cv::Point2f>(points, num);
-    draw_points_texts(image, tmp, texts, color);
+    draw_points_texts(image, tmp, texts, color, radius);
 }
 
 

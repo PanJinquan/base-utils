@@ -9,6 +9,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 using namespace std;
 
@@ -64,7 +65,7 @@ vector<T> array2vector(T *pts, int num) {
  */
 inline vector<string> string2vector(string str) {
     vector<string> out;
-    for (int i = 0; i < str.size(); ++i) {
+    for (size_t i = 0; i < str.size(); ++i) {
         out.push_back(str.substr(i,1));
     }
     return out;
