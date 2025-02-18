@@ -11,6 +11,41 @@ from sklearn import metrics, preprocessing
 import heapq
 
 
+def softmax(x, axis=1):
+    # 计算每行的最大值
+    row_max = x.max(axis=axis)
+    # 每行元素都需要减去对应的最大值，否则求exp(x)会溢出，导致inf情况
+    # row_max = row_max.reshape(-1, 1)
+    row_max = row_max[:, :, np.newaxis]
+    x = x - row_max
+    # 计算e的指数次幂
+    x_exp = np.exp(x)
+    x_sum = np.sum(x_exp, axis=axis, keepdims=True)
+    s = x_exp / x_sum
+    return s
+
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+
+def gaussian_impulse(x, c=0, sigma=0.1):
+    """
+    高斯脉冲
+    :param x: 输入数据x
+    :param c: 脉冲中心点
+    :param sigma:标准差，越小脉冲越尖锐
+    :return: 生成高斯脉冲
+    """
+    y = np.exp(-((x - c) ** 2) / (2 * sigma ** 2))
+    return y
+
+
+def power(x, n=1):
+    """幂函数"""
+    y = np.power(x, n)
+    return y
+
+
 def feature_norm(x, axis=-1):
     """
     特征归一化,会使得特征L2之和为1, 即||y||=L2(y,axis=-1)

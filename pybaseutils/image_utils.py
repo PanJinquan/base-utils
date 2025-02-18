@@ -46,29 +46,6 @@ mpii_skeleton = [[0, 1], [1, 2], [3, 4], [4, 5], [2, 6], [6, 3], [12, 11], [7, 1
                  [11, 10], [13, 14], [14, 15], [8, 9], [8, 7], [6, 7], [7, 13]]
 
 
-def get_font_type(size, font=""):
-    """
-    Windows字体路径      : /usr/share/fonts/楷体.ttf
-    Linux(Ubuntu)字体路径：/usr/share/fonts/楷体.ttf
-     >> fc-list             查看所有的字体
-     >> fc-list :lang=zh    查看所有的中文字体
-    :param size: 字体大小
-    :param font:  simsun.ttc 宋体;simhei.ttf 黑体
-    :return:
-    """
-    # 参数1：字体文件路径，参数2：字体大小；Windows系统“simhei.ttf”默认存储在路径：
-    if font:
-        font = ImageFont.truetype(font, size, encoding="utf-8")
-    elif platform.system().lower() == 'windows':
-        font = ImageFont.truetype("simhei.ttf", size, encoding="utf-8")  # simsun.ttc 宋体
-    elif platform.system().lower() == 'linux':
-        # font = ImageFont.truetype("uming.ttc", size, encoding="utf-8")
-        font = ImageFont.truetype("NotoSansCJK-Regular.ttc", size, encoding="utf-8")
-    else:
-        font = ImageFont.truetype(os.path.join(root, "font_style/simhei.ttf"), size, encoding="utf-8")
-    return font
-
-
 def create_image(shape, color=(255, 255, 255), dtype=np.uint8, use_rgb=False):
     """
     生成一张图片
@@ -1418,9 +1395,16 @@ def draw_image_box_text(image, bbox, color, text, thickness=2, fontScale=0.8, dr
     :return:
     """
     thickness, fontScale = get_linesize(max(image.shape), thickness=thickness, fontScale=fontScale)
-    text_loc = (bbox[0], bbox[1]) if top else (bbox[0], bbox[3])
+    # text_loc = (bbox[0], bbox[1]) if top else (bbox[0], bbox[3])
     if not text: drawType = "simple"
+    text_size, baseline = cv2.getTextSize(str(text), cv2.FONT_HERSHEY_SIMPLEX, fontScale, thickness)
+    if top:
+        # text_loc = (bbox[0], bbox[1] + text_size[1])  # 在左上角下方绘制文字
+        text_loc = (bbox[0], bbox[1] - baseline // 2)  # 在左上角上方绘制文字
+    else:
+        text_loc = (bbox[0], bbox[3] + text_size[1] + baseline // 2)
     if drawType == "chinese" or drawType == "ch":
+        if not top: text_loc = (text_loc[0], text_loc[1] - baseline)
         cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness)
         cv2_putText(image, str(text), text_loc, color=color, fontScale=fontScale, thickness=thickness)
     elif drawType == "simple" or drawType == "en":
@@ -1428,13 +1412,7 @@ def draw_image_box_text(image, bbox, color, text, thickness=2, fontScale=0.8, dr
         cv2.putText(image, str(text), text_loc, cv2.FONT_HERSHEY_SIMPLEX, fontScale, color, thickness)
     elif drawType == "custom":
         cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness)
-        text_size, baseline = cv2.getTextSize(str(text), cv2.FONT_HERSHEY_SIMPLEX, fontScale, thickness)
-        if top:
-            # text_loc = (bbox[0], bbox[1] + text_size[1])  # 在左上角下方绘制文字
-            text_loc = (bbox[0], bbox[1] - baseline // 2)  # 在左上角上方绘制文字
-        else:
-            text_loc = (bbox[0], bbox[3])
-        bg1 = (text_loc[0], text_loc[1] - text_size[1])
+        bg1 = (text_loc[0], text_loc[1] - text_size[1] - baseline // 2)
         bg2 = (text_loc[0] + text_size[0], text_loc[1] + baseline // 2)  # 底纹等于字体的宽度
         # bg2 = (max(bbox[2], text_loc[0] + text_size[0]), text_loc[1] + baseline // 2) # 底纹等于box的宽度
         cv2.rectangle(image, bg1, bg2, color, thickness)  # 先绘制框，再填充
@@ -1485,12 +1463,36 @@ def draw_text_pil(image, point, text, size=10, color_color=(255, 0, 0)):
     return image
 
 
+def get_font_type(size, font=""):
+    """
+    Windows字体路径      : /usr/share/fonts/楷体.ttf
+    Linux(Ubuntu)字体路径：/usr/share/fonts/楷体.ttf
+     >> fc-list             查看所有的字体
+     >> fc-list :lang=zh    查看所有的中文字体
+    :param size: 字体大小
+    :param font:  simsun.ttc 宋体;simhei.ttf 黑体
+    :return:
+    """
+    # 参数1：字体文件路径，参数2：字体大小；Windows系统“simhei.ttf”默认存储在路径：
+    if font:
+        font = ImageFont.truetype(font, size, encoding="utf-8")
+    elif platform.system().lower() == 'windows':
+        font = ImageFont.truetype("simhei.ttf", size, encoding="utf-8")  # simsun.ttc 宋体
+    elif platform.system().lower() == 'linux':
+        # font = ImageFont.truetype(FONT_TABLES['simhei'], size, encoding="utf-8")  # simsun.ttc 宋体
+        font = ImageFont.load_default()
+    else:
+        font = ImageFont.load_default()
+    return font
+
+
 def cv2_putText(img, text, point, fontFace=None, fontScale=0.8, color=(255, 0, 0), thickness=None):
     # cv2.putText(img, str(text), point, fontFace, fontScale, color=color, thickness=thickness)
+    text_size, baseline = cv2.getTextSize(str(text), cv2.FONT_HERSHEY_SIMPLEX, fontScale, thickness)
     pilimg = Image.fromarray(img)  # Image.fromarray()将数组类型转成图片格式，与np.array()相反
     draw = ImageDraw.Draw(pilimg)  # PIL图片上打印汉字
-    size = int(fontScale * 10 * thickness)
-    point = (point[0], point[1] - int(size * 1.3))
+    size = text_size[1]  # 字体大小
+    point = (point[0], point[1] - text_size[1] + baseline // 2)
     font = get_font_type(size=size)
     draw.text(point, text, color, font)
     img[:] = np.asarray(pilimg)
@@ -1842,13 +1844,18 @@ def softmax(x, axis=1):
     # 计算每行的最大值
     row_max = x.max(axis=axis)
     # 每行元素都需要减去对应的最大值，否则求exp(x)会溢出，导致inf情况
-    row_max = row_max.reshape(-1, 1)
+    # row_max = row_max.reshape(-1, 1)
+    row_max = row_max[:, :, np.newaxis]
     x = x - row_max
     # 计算e的指数次幂
     x_exp = np.exp(x)
     x_sum = np.sum(x_exp, axis=axis, keepdims=True)
     s = x_exp / x_sum
     return s
+
+
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
 
 
 def convert_anchor(anchors, height, width):

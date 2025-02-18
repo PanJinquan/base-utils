@@ -6,8 +6,19 @@
     @Brief  :
 """
 import time
+from datetime import datetime
 import numpy as np
 from typing import Dict, List
+
+
+def date2stamp(date, format='%Y-%m-%d %H:%M:%S'):
+    """将日期格式转换为时间戳"""
+    return time.mktime(time.strptime(date, format))
+
+
+def stamp2date(stamp, format='%Y-%m-%d %H:%M:%S'):
+    """将时间戳转换为日期格式"""
+    return datetime.fromtimestamp(stamp).strftime(format)
 
 
 class Recorder(object):
@@ -51,8 +62,10 @@ def performance(tag=""):
                                                                                            content["avg"],
                                                                                            content["total"],
                                                                                            content["count"])
-            tag_ = f"{tag} " if tag else ""
-            print("{:20s}{:20s} elapsed: {}".format(tag_, func.__name__, elapsed))
+            if tag:
+                print("{:20s}{:20s} elapsed: {}".format(tag, func.__name__, elapsed))
+            else:
+                print("{:20s} elapsed: {}".format(func.__name__, elapsed))
             return result
 
         return wrapper

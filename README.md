@@ -6,6 +6,7 @@
 
 ## base_utils(C++)
 
+
 base_util是个人开发常用的C++库，集成了C/C++ OpenCV等常用的算法
 
 - 增加了debug测试宏定义，如时间测试，LOG信息等
@@ -17,7 +18,8 @@ base_util是个人开发常用的C++库，集成了C/C++ OpenCV等常用的算�
 
 pybaseutils是个人开发常用的python库，集成了python等常用的算法
 
-- 安装方法1：pip install -i https://pypi.tuna.tsinghua.edu.cn/simple  pybaseutils (有延时，可能不是最新版本)
+- 安装方法1：pip install 
+- pybaseutils (有延时，可能不是最新版本)
 - 安装方法2：pip install --upgrade  -i https://pypi.org/simple pybaseutils (从pypi源下载最新版本)
 
 

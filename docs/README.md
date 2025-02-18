@@ -181,7 +181,33 @@ sudo apt-get install '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-
 # opencv-python==4.8.0.76 
 # opencv-contrib-python==4.8.1.78 
 # pyqt5==5.13.2
-pip install -i https://pypi.tuna.tsinghua.edu.cn/simple opencv-python==4.8.0.76 opencv-contrib-python==4.8.1.78 pyqt5==5.13.2
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple opencv-python==4.8.0.76 opencv-contrib-python==4.8.1.78 opencv-python-headless==4.8.0.76 pyqt5==5.13.2 # 新版labelme异常
+# 可能需要安装的依赖包：
+sudo apt-get update
+sudo apt-get install -y \
+    libxcb1-dev \
+    libxcb-xinerama0-dev \
+    libxcb-randr0-dev \
+    libxcb-xtest0-dev \
+    libxcb-shape0-dev \
+    libxcb-xkb-dev \
+    libxkbcommon-x11-dev \
+    libxcb-icccm4-dev \
+    libxcb-image0-dev \
+    libxcb-keysyms1-dev \
+    libxcb-render-util0-dev \
+    qtbase5-dev \
+    qttools5-dev
+
+```
+
+```bash
+PySide2==5.15.2.1
+
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple opencv-python opencv-contrib-python opencv-python-headless
+
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple PySide2
+PyQt5==5.15.11 PyQt5-Qt5==5.15.16 PyQt5_sip==12.17.0
 
 ```
 
@@ -193,6 +219,7 @@ pip install -i https://pypi.tuna.tsinghua.edu.cn/simple opencv-python==4.8.0.76 
 git config --global credential.helper store
 
 ```
+
 
 ## 解决Github克隆失败的问题
 

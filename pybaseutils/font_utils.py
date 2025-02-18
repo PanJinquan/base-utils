@@ -9,20 +9,22 @@
 import os
 import cv2
 import re
+import glob
 import PIL
 import platform
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
-from pybaseutils import image_utils, file_utils
-from pybaseutils.font_style import FONT_TYPE, FONT_ROOT
+from pybaseutils import image_utils
+from pybaseutils.font_style import FONT_TABLES, get_system_fonts
 from fontTools.ttLib import TTFont
 
 ROOT = os.path.dirname(__file__)
 
 
 class FontType(object):
-    def __init__(self, root=FONT_ROOT, style="宋体", size=20):
+    def __init__(self, root=[], style="DejaVuSans", size=20):
         """
+        Linux ~/.local/share/fonts
         :param root: 安装字体的路径
         :param style: 选择字体风格
         :param size: 旋转字体大小
@@ -30,10 +32,13 @@ class FontType(object):
         self.font_root = root
         self.font_style = style
         self.font_size = size
-        self.font_file = os.path.join(self.font_root, FONT_TYPE[style])
-        self.font_type = None
-        if os.path.exists(self.font_file):
+        self.font_table = get_system_fonts(root=root)
+        self.font_file = self.font_table.get(style, "")
+        try:
             self.font_type = ImageFont.truetype(self.font_file, size=self.font_size, encoding="utf-8")
+        except:
+            print(f"字体{style}{self.font_file}加载失败，使用系统默认字体")
+            self.font_type = ImageFont.load_default()
 
     def set_root(self, root):
         """设置字体的路径"""
@@ -53,7 +58,7 @@ class FontType(object):
         return self.font_type
 
 
-font_type = FontType()
+# font_type = FontType()
 
 
 def get_font_type(size, font=""):
@@ -72,10 +77,9 @@ def get_font_type(size, font=""):
     elif platform.system().lower() == 'windows':
         font = ImageFont.truetype("simhei.ttf", size, encoding="utf-8")  # simsun.ttc 宋体
     elif platform.system().lower() == 'linux':
-        # font = ImageFont.truetype("uming.ttc", size, encoding="utf-8")
-        font = ImageFont.truetype("NotoSansCJK-Regular.ttc", size, encoding="utf-8")
+        font = ImageFont.truetype(FONT_TABLES['simhei'], size, encoding="utf-8")  # simsun.ttc 宋体
     else:
-        font = ImageFont.truetype(os.path.join(ROOT, "font_style/simhei.ttf"), size, encoding="utf-8")
+        font = ImageFont.load_default()
     return font
 
 
@@ -104,32 +108,32 @@ def draw_image_text(image, point, text, style="楷体", size=20, color=(255, 255
     return image
 
 
-def draw_font(text, style="楷体", scale=1.0, size=20, c1=(255, 255, 255), c2=(0, 0, 0), center=True):
+def draw_font(text, style="楷体", scale=1.0, size=20, fg=(255, 255, 255), bg=(0, 0, 0), center=True):
     """
     绘制汉字
     :param text:
     :param style: 字体风格
     :param scale: 缩放因子
     :param size: 字体大小
-    :param c1:字体颜色
-    :param c2:背景颜色
+    :param fg:字体颜色
+    :param bg:背景颜色
     :param center: 是否居中显示
     :return:
     """
     if center:
-        image = image_utils.create_image(shape=(size * 2, size * 2, 3), color=c2)
-        image = draw_image_text(image, (0, 0), text, style=style, size=size, color=c1)
+        image = image_utils.create_image(shape=(size * 2, size * 2, 3), color=bg)
+        image = draw_image_text(image, (0, 0), text, style=style, size=size, color=fg)
         if np.sum(image) < 1: return None
         mask = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         box = image_utils.get_mask_boundrect_cv(mask, binarize=True, shift=10)
         image = image_utils.get_box_crop(image, box)
-        image = image_utils.resize_image_padding(image, size=(size, size), color=(0, 0, 0))
+        image = image_utils.resize_image_padding(image, size=(size, size), color=bg)
     else:
-        image = image_utils.create_image(shape=(size, size, 3), color=c2)
-        image = draw_image_text(image, (0, 0), text, style=style, size=size, color=c1)
+        image = image_utils.create_image(shape=(size, size, 3), color=bg)
+        image = draw_image_text(image, (0, 0), text, style=style, size=size, color=fg)
         if np.sum(image) < 1: return None
     if scale < 1.0:
-        image = image_utils.get_scale_image(image, scale=scale, offset=(0, 0), color=c2)
+        image = image_utils.get_scale_image(image, scale=scale, offset=(0, 0), color=bg)
     return image
 
 
@@ -210,10 +214,11 @@ def get_font_char(font_file, only_chinese=False):
 def draw_font_example():
     size = 512
     string = "我"
-    for style, path in FONT_TYPE.items():
-        style = "/home/dm/nasdata/dataset-dmai/ziku/1200款精品字体/书法字体库 37款/国祥手写体.ttf"
-        image = draw_font(string, style=style, size=size, scale=0.8, c2=(100, 0, 255))
+    for style, path in FONT_TABLES.items():
+        print(style, path)
+        image = draw_font(string, style=style, size=size, scale=0.8, fg=(255, 255, 255), bg=(128, 128, 128))
         image_utils.cv_show_image("style", image, use_rgb=False)
+        # cv2.imwrite("./style.png", image)
 
 
 def re_example():
@@ -225,5 +230,6 @@ def re_example():
 
 
 if __name__ == "__main__":
-    # draw_font_example()
-    re_example()
+    draw_font_example()
+    # get_system_fonts()
+    # re_example()
