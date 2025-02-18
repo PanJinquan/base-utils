@@ -6,7 +6,7 @@ pip install dist/pybaseutils-*.*.*.tar.gz
 twine upload dist/*  --verbose
 #Enter your username: PKing
 #Enter your password:
-#
+# pypi-AgEIcHlwaS5vcmcCJDI1ZGJlNTY0LWI2NGMtNDg3Ni1hYjc0LTMwY2I3OGRhYTdhYgACKlszLCJiZTU2ZmZlOS0xMzk3LTQ0ZGEtOTQzZi0zYzE4OWJlZmRkOGQiXQAABiAbgkB8UsQBPbL3HD_OeXnRniImB8wcLgAE5QplCJSWsg
 
 echo please use PIP to install pybaseutils:
 echo pip install --upgrade pybaseutils -i https://pypi.org/simple

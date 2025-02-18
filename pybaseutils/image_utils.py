@@ -22,6 +22,7 @@ from typing import List, Dict, Tuple
 from PIL import ImageDraw, ImageFont
 from math import cos, sin
 from pybaseutils import file_utils, color_utils
+from pybaseutils import font_style
 from pybaseutils.coords_utils import *
 from pybaseutils.cvutils import corner_utils
 
@@ -1479,8 +1480,8 @@ def get_font_type(size, font=""):
     elif platform.system().lower() == 'windows':
         font = ImageFont.truetype("simhei.ttf", size, encoding="utf-8")  # simsun.ttc 宋体
     elif platform.system().lower() == 'linux':
-        # font = ImageFont.truetype(FONT_TABLES['simhei'], size, encoding="utf-8")  # simsun.ttc 宋体
-        font = ImageFont.load_default()
+        font = ImageFont.truetype(font_style.FONT_TABLES['simhei'], size, encoding="utf-8")  # simsun.ttc 宋体
+        # font = ImageFont.load_default()
     else:
         font = ImageFont.load_default()
     return font
