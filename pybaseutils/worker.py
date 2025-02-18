@@ -1,9 +1,11 @@
-# -*-coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
-    @Author : Pan
-    @E-mail : 390737991@qq.com
-    @Date   : 2022-05-01 16:36:18
-    @Url    : https://blog.csdn.net/xiaoyu_wu/article/details/102820384
+# --------------------------------------------------------
+# @Author : Pan
+# @E-mail : 390737991@qq.com
+# @Date   : 2022-02-18 16:10:49
+# @Brief  : https://blog.csdn.net/xiaoyu_wu/article/details/102820384
+# --------------------------------------------------------
 """
 
 import threading

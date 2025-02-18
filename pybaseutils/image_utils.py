@@ -1,8 +1,11 @@
-# -*-coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
-    @Author : Pan
-    @E-mail : 390737991@qq.com
-    @Date   : 2019-02-14 15:34:50
+# --------------------------------------------------------
+# @Author : Pan
+# @E-mail :
+# @Date   : 2025-02-18 16:10:49
+# @Brief  :
+# --------------------------------------------------------
 """
 
 import os
@@ -1458,7 +1461,7 @@ def draw_text_pil(image, point, text, size=10, color_color=(255, 0, 0)):
     pilimg = Image.fromarray(image)  # Image.fromarray()将数组类型转成图片格式，与np.array()相反
     draw = ImageDraw.Draw(pilimg)  # PIL图片上打印汉字
     # 参数1：字体文件路径，参数2：字体大小；Windows系统“simhei.ttf”默认存储在路径：
-    font = ImageFont.truetype(os.path.join(root, "font_style/simhei.ttf"), size, encoding="utf-8")
+    font = ImageFont.truetype(font_style.FONT_TABLES['simhei'], size, encoding="utf-8")  # simsun.ttc 宋体
     draw.text(point, text, color_color, font)
     image = cv2.cvtColor(np.array(pilimg), cv2.COLOR_RGB2BGR)  # 将图片转成cv2.imshow()可以显示的数组格式
     return image

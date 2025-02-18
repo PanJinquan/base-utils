@@ -1,4 +1,4 @@
-# -*-coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
     @Project: IntelligentManufacture
     @File   : maxmin_distance.py
