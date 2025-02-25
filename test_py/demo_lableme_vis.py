@@ -16,7 +16,7 @@ if __name__ == "__main__":
     anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-v7/json"
     anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/使用钳形电流表测量低压线路电流/dataset-v1/json"
     # anno_dir = [anno_dir, anno_dir]
-    names = ['A相电线', 'B相电线', 'C相电线', 'N相电线']
+    # names = ['A相电线', 'B相电线', 'C相电线', 'N相电线']
 
     # anno_dir = "/home/PKing/nasdata/tmp/tmp/WaterMeter/水表数据集/Water-Meter-Det3/train/json"
     # names = ["BG", "unique"]
@@ -26,9 +26,9 @@ if __name__ == "__main__":
     anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-test/json"
     anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/dataset-v25/json"
     anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-negetive/dataset-v02/json"
-    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-action-cvlm-v2/train-v2/aije-action-train-v30/images"
+    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-date/date-det/dataset-v01/images"
     names = None
-    # names = ['身穿工作服,未穿工作服', '手,手穿绝缘手套,手穿棉纱手套,手穿其他手套']
+    names = ['unique']
     dataset = parser_labelme.LabelMeDatasets(filename=None,
                                              data_root=None,
                                              anno_dir=anno_dir,

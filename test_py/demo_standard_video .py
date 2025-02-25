@@ -13,10 +13,10 @@ from pybaseutils.cvutils import video_utils
 
 
 def video_converter(root, out):
-    files = file_utils.get_files_list(root, postfix=["*.avi"])
+    files = file_utils.get_files_list(root, postfix=["*.avi", "*.dav"])
     for video_file in files:
         save_video = file_utils.create_dir(out, None, os.path.basename(video_file))
-        save_video = save_video.replace(".avi", ".mp4")
+        save_video = save_video.replace(".avi", ".mp4").replace(".dav", ".mp4")
         video_utils.video2video(video_file, save_video, interval=1, vis=False)
 
 
@@ -33,8 +33,8 @@ def rotate_video():
 
 
 if __name__ == "__main__":
-    root = "/media/dm/新加卷/SDK/project/Camera-Calibration-Reconstruct-Cpp/data/lenacv-video"
-    out = "/media/dm/新加卷/SDK/project/Camera-Calibration-Reconstruct-Cpp/data/lenacv-video1"
-    # video_converter(root, out)
+    root = "/home/PKing/nasdata/dataset-dmai/AIJE/技能人才系统_数据集管理/01-江门四维数据/01-37道考题视频/江门四维2024-12-05-冲击试验/2024-12-05-冲击试验/dav"
+    out = "/home/PKing/nasdata/dataset-dmai/AIJE/技能人才系统_数据集管理/01-江门四维数据/01-37道考题视频/江门四维2024-12-05-冲击试验/2024-12-05-冲击试验/mp4"
+    video_converter(root, out)
     # resize_video()
-    rotate_video()
+    # rotate_video()

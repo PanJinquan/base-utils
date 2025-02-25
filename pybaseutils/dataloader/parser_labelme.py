@@ -193,6 +193,7 @@ class LabelMeDataset(Dataset):
         bboxes, labels, points, groups, names, keypoints = [], [], [], [], [], []
         for anno in annotation:
             name = "unique" if unique else anno["label"]
+            shape_type = anno.get("shape_type", "polygon")
             label = name
             if class_dict:
                 if not name in class_dict:
@@ -211,6 +212,8 @@ class LabelMeDataset(Dataset):
                 pts[:, 0] = np.clip(pts[:, 0], 0, w - 1)
                 pts[:, 1] = np.clip(pts[:, 1], 0, h - 1)
             box = image_utils.polygons2boxes([pts])[0]
+            if shape_type == "rectangle":
+                pts = image_utils.boxes2polygons([box])[0]
             names.append(name)
             labels.append(label)
             bboxes.append(box)

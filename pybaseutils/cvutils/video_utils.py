@@ -242,6 +242,7 @@ def video_capture(video_file: int or str, save_video: str or int = None, interva
     w, h, num_frames, fps = image_utils.get_video_info(video_cap)
     start = int(kwargs.get("start", 0) * fps)
     end = int(kwargs.get("end", num_frames / fps) * fps) if fps > 0 else 0
+    if num_frames <= 0: num_frames = end
     end = min(end, num_frames)  # TODO 当num_frames<0时，使用0<end<count继续播放
     interval = fps if interval == -1 else interval  # 当interval=-1，表示interval=fps,即一秒一帧
     save_fps = max(kwargs.get("speed", 1) * fps // interval, 1)

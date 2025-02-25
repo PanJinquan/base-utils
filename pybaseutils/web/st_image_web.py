@@ -52,9 +52,15 @@ def st_floder_image(callback: Callable = None, **kwargs):
     # 上传文件夹
     uploaded_files = st.sidebar.file_uploader("选择图片", type=['png', 'jpg', 'jpeg'], accept_multiple_files=True)
     if uploaded_files:
-        # 创建图片索引
-        if 'image_index' not in st.session_state:
+        # 检查是否有文件被上传
+        if len(uploaded_files) == 0:
+            st.warning("请上传图片文件")
+            return
+
+        # 确保索引在有效范围内
+        if 'image_index' not in st.session_state or st.session_state.image_index >= len(uploaded_files):
             st.session_state.image_index = 0
+
         # 添加导航按钮
         col1, col2 = st.columns(2)
         with col1:

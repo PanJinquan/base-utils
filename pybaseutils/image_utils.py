@@ -102,34 +102,6 @@ def boxes_protection(boxes, width, height):
     return boxes
 
 
-def tensor2image(batch_tensor, index=0):
-    """
-    convert tensor to image
-    :param batch_tensor:
-    :param index:
-    :return:
-    """
-    image_tensor = batch_tensor[index, :]
-    image = np.array(image_tensor, dtype=np.float32)
-    image = np.squeeze(image)
-    image = image.transpose(1, 2, 0)  # 通道由[c,h,w]->[h,w,c]
-    return image
-
-
-def get_image_tensor(image_path, image_size, transpose=False):
-    image = read_image(image_path)
-    # transform = default_transform(image_size)
-    # torch_image = transform(image).detach().numpy()
-    image = resize_image(image, size=(int(128 * image_size[0] / 112), int(128 * image_size[1] / 112)))
-    image = center_crop(image, crop_size=image_size)
-    image_tensor = image_normalize(image, mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
-    if transpose:
-        image_tensor = image_tensor.transpose(2, 0, 1)  # NHWC->NCHW
-    image_tensor = image_tensor[np.newaxis, :]
-    # std = np.std(torch_image-image_tensor)
-    return image_tensor
-
-
 def image_clip(image):
     """
     :param image:
@@ -317,6 +289,55 @@ def swap_image(image):
     # image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     image = image[:, :, ::-1]  # RGB->BGR
     return image
+
+
+def image2tensor(image, size=(), mean=(), std=()):
+    """
+    transform = transforms.Compose([
+        transforms.Resize(size=(input_size[1], input_size[0])),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=rgb_mean, std=rgb_std),
+    ])
+    :param image:
+    :param input_size:
+    :return:
+    """
+    if size: image = cv2.resize(image, dsize=size)
+    image = np.array(image, dtype=np.float32) / 255.0
+    if mean: image = image - np.asarray(mean, dtype=np.float32)
+    if std: image = image / np.asarray(std, dtype=np.float32)
+    tensor = image.transpose(2, 0, 1)  # HWC->CHW
+    tensor = tensor[np.newaxis, :]
+    return tensor
+
+
+def tensor2image(tensor, mean=(), std=()):
+    """
+    :param tensor: (b,c,h,w)
+    :param index:
+    :return:
+    """
+    image = np.array(tensor, dtype=np.float32)
+    image = image.transpose(0, 2, 3, 1)  # (b0,c1,h2,w3)->(b0,h2,w3,c1)
+    if std: image = image * np.asarray(std, dtype=np.float32)
+    if mean: image = image + np.asarray(mean, dtype=np.float32)
+    image = np.clip(image * 255, 0, 255)
+    image = np.array(image, dtype=np.uint8)
+    return image
+
+
+def get_image_tensor(image_path, image_size, transpose=False):
+    image = read_image(image_path)
+    # transform = default_transform(image_size)
+    # torch_image = transform(image).detach().numpy()
+    image = resize_image(image, size=(int(128 * image_size[0] / 112), int(128 * image_size[1] / 112)))
+    image = center_crop(image, crop_size=image_size)
+    image_tensor = image_normalize(image, mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
+    if transpose:
+        image_tensor = image_tensor.transpose(2, 0, 1)  # NHWC->NCHW
+    image_tensor = image_tensor[np.newaxis, :]
+    # std = np.std(torch_image-image_tensor)
+    return image_tensor
 
 
 def image_normalize(image, mean=None, std=None):
@@ -2982,7 +3003,7 @@ def get_video_info(video_cap: cv2.VideoCapture, vis=True):
     width = int(video_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(video_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     num_frames = int(video_cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    fps = int(video_cap.get(cv2.CAP_PROP_FPS))
+    fps = video_cap.get(cv2.CAP_PROP_FPS)
     if vis: print("read video:width:{},height:{},fps:{},num_frames:{}".format(width, height, fps, num_frames))
     return width, height, num_frames, fps
 

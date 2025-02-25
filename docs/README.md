@@ -181,7 +181,7 @@ sudo apt-get install '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-
 # opencv-python==4.8.0.76 
 # opencv-contrib-python==4.8.1.78 
 # pyqt5==5.13.2
-pip install -i https://pypi.tuna.tsinghua.edu.cn/simple opencv-python==4.8.0.76 opencv-contrib-python==4.8.1.78 opencv-python-headless==4.8.0.76 pyqt5==5.13.2 # 新版labelme异常
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple numpy==1.23.0 opencv-python==4.8.0.76 opencv-contrib-python==4.8.1.78 opencv-python-headless==4.8.0.76 pyqt5==5.13.2 # 新版labelme异常
 # 可能需要安装的依赖包：
 sudo apt-get update
 sudo apt-get install -y \
@@ -202,10 +202,12 @@ sudo apt-get install -y \
 ```
 
 ```bash
+# 安装最新版
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple opencv-contrib-python==4.11.0.86 opencv-python==4.11.0.86
+
 PySide2==5.15.2.1
 
-pip install -i https://pypi.tuna.tsinghua.edu.cn/simple opencv-python opencv-contrib-python opencv-python-headless
-
+# opencv-python-headless
 pip install -i https://pypi.tuna.tsinghua.edu.cn/simple PySide2
 PyQt5==5.15.11 PyQt5-Qt5==5.15.16 PyQt5_sip==12.17.0
 

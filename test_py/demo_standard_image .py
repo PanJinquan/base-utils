@@ -26,11 +26,13 @@ def image_clip_demo(image_dir, out_dir):
         out_image = image_utils.resize_image_clip(image, clip_max=1920)
         print(image.shape, out_image.shape)
         if out_dir:
-            out_file = file_utils.create_dir(out_dir, None, os.path.basename(image_file))
+            # out_file = file_utils.create_dir(out_dir, None, os.path.basename(image_file))  # 原始格式
+            # out_file = file_utils.create_dir(out_dir, None, f"{os.path.basename(image_file).split('.')}.jpg") # 转为jpg格式
+            out_file = file_utils.create_dir(out_dir, None, f"image_{file_utils.get_time()}.jpg") # 转为jpg格式
             cv2.imwrite(out_file, out_image)
 
 
 if __name__ == "__main__":
-    image_dir = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/word-v6/zip/test1"
-    out_dir = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/word-v6/zip/test"
+    image_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-date/date-det/dataset-v01/原始数据"
+    out_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-date/date-det/dataset-v01/images"
     image_clip_demo(image_dir, out_dir)
