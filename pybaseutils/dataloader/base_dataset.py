@@ -67,8 +67,6 @@ class Dataset(object):
         """
         if isinstance(class_name, str):
             class_name = Dataset.read_file(class_name)
-        elif isinstance(class_name, list) and "unique" in class_name:
-            self.unique = True
         if isinstance(class_name, list) and len(class_name) > 0:
             class_dict = {}
             for i, name in enumerate(class_name):
@@ -85,6 +83,8 @@ class Dataset(object):
             for n, i in class_dict.items():
                 class_name[i] = "{},{}".format(class_name[i], n) if i in class_name else n
             class_name = list(class_name.values())
+        if isinstance(class_name, list) and "unique" in class_name:
+            self.unique = True
         return class_name, class_dict
 
     @staticmethod
