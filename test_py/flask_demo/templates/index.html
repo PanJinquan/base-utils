@@ -4,20 +4,96 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>人工智能</title>
+    <title>图像处理工具</title>
+    <style>
+        body {
+            text-align: center; /* 所有文本居中对齐 */
+        }
+
+        table {
+            width: 1600px; /* 设置表格宽度为1600像素 */
+            margin: 0 auto; /* 表格居中对齐 */
+            background-color: rgb(200, 200, 200); /* 设置表格背景颜色 */
+            border: 2px solid black; /* 设置表格边框颜色为黑色 */
+            border-collapse: collapse; /* 合并边框 */
+        }
+
+        td {
+            border: 1px solid black; /* 设置单元格边框颜色为黑色 */
+        }
+    </style>
 </head>
 
-<img src="static/main.jpg" width="500" height=auto>
+<!--<img src="static/main.jpg" width="1600" height="60">-->
+<hr style="width: 1600px; margin: 20px auto;">
 
-<form action="upload" method="post" enctype="multipart/form-data">
-    <body class="light-theme">
-    <p>Detection</p>
-    <input type="file" id="image_file" name="image_file">
-    <button type="submit">Detect</button>
-    </body>
+<h2 style="font-size: 38px;">图 像 处 理 工 具</h2>
+<form action="process" method="post" enctype="multipart/form-data">
+    <input type="file" style="font-size: 24px;" id="image_file" name="image_file" multiple>
+    <button type="submit" style="font-size: 24px;">添加图片</button>
 </form>
 
+<hr style="width: 1600px; margin: 20px auto;">
+
+<form action="last" method="post" enctype="multipart/form-data"
+      style="display:inline-block; font-size: 28px; margin-left: 30px;">
+    <button type="submit" style="font-size: 24px;">上一张</button>
+</form>
+<form action="next" method="post" enctype="multipart/form-data"
+      style="display:inline-block;  margin-left: 30px;">
+    <button type="submit" style="font-size: 24px;">下一张</button>
+</form>
+
+<form action="clear" method="post" enctype="multipart/form-data"
+      style="display:inline-block;  margin-left: 30px;">
+    <button type="submit" style="font-size: 24px;">清空数据</button>
+</form>
+
+<p style="font-size: 20px;">
+    {% if count %}
+    {{ count }}
+    {% endif %}
+</p>
+
+<!-- 插入分割线 -->
+
+<hr style="width: 1600px; margin-bottom: 20px;">
+
 <body>
-<img src="{{ url_for('static', filename='cache/ldh_output.jpg') }}" width="500" height=auto>
+
+<table>
+    <tr>
+        <td height="30" style="font-size: 24px; font-weight: bold">原始图片</td>
+        <td height="30" style="font-size: 24px; font-weight: bold">返回结果</td>
+    </tr>
+    <tr>
+        <td height="200">
+            {% if src_image %}
+            <img src="data:image/jpeg;base64,{{ src_image }}" width="800" height="auto">
+            {% endif %}
+        </td>
+        <td height="200">
+            {% if dst_image %}
+            <img src="data:image/jpeg;base64,{{ dst_image }}" width="800" height="auto">
+            {% endif %}
+        </td>
+    </tr>
+
+    <tr>
+        <td height="30">
+            {% if src_info %}
+            {{ src_info | tojson }}
+            {% endif %}
+        </td>
+        <td height="30">
+            {% if dst_info %}
+            {{ dst_info | tojson }}
+            {% endif %}
+        </td>
+    </tr>
+
+</table>
 </body>
+<hr style="width: 1600px; margin-top: 20px;">
+
 </html>
