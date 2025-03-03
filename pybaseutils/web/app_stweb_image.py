@@ -4,7 +4,8 @@
 # @Author : Pan
 # @E-mail :
 # @Date   : 2025-02-18 16:10:49
-# @Brief  :
+# @Brief  : 基于streamlit实现图像处理web小工具
+#           运行方法：streamlit run app_stweb_image.py
 # --------------------------------------------------------
 """
 

@@ -53,6 +53,7 @@ timeout = 120
 
 - pip install --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple opencv-python
 - 若出现超时：pip install --default-timeout=1000000 -i https://pypi.tuna.tsinghua.edu.cn/simple
+- 设置默认的镜像源：pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 
 ## 远程挂载
 

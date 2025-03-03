@@ -1794,6 +1794,17 @@ def nms_boxes_cv2(boxes: np.ndarray, scores: np.ndarray, labels: np.ndarray, sco
     return index
 
 
+def image2bytes(image):
+    """将numpy数据转换为JPEG编码格式的字节数据"""
+    _, image = cv2.imencode('.jpg', image)
+    return image.tobytes()
+
+
+def bytes2image(bytes):
+    image = cv2.imdecode(np.frombuffer(bytes, np.uint8), cv2.IMREAD_COLOR)
+    return image
+
+
 def file2base64(file):
     image_base64 = base64.b64encode(open(file, 'rb').read()).decode()
     return image_base64
@@ -3004,6 +3015,7 @@ def get_video_info(video_cap: cv2.VideoCapture, vis=True):
     height = int(video_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     num_frames = int(video_cap.get(cv2.CAP_PROP_FRAME_COUNT))
     fps = video_cap.get(cv2.CAP_PROP_FPS)
+    fps = math.ceil(fps)
     if vis: print("read video:width:{},height:{},fps:{},num_frames:{}".format(width, height, fps, num_frames))
     return width, height, num_frames, fps
 

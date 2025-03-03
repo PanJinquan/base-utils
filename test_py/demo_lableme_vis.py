@@ -6,6 +6,7 @@
     @Brief  :
 """
 import os
+from tqdm import tqdm
 from pybaseutils import file_utils, image_utils
 from pybaseutils.dataloader import parser_labelme
 from pybaseutils.converter import build_labelme
@@ -26,10 +27,10 @@ if __name__ == "__main__":
     anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-indoor-det/dataset-test/json"
     anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/dataset-v25/json"
     anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-negetive/dataset-v02/json"
-    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-date/date-det/dataset-v01/images"
-    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-date/date-det/dataset-v01/images"
+    # anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-date/date-det/dataset-v01/images"
+    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/09-更换熔断器/dataset-v20/images"
     names = None
-    names = ['unique']
+    # names = {'unique': 0}
     dataset = parser_labelme.LabelMeDatasets(filename=None,
                                              data_root=None,
                                              anno_dir=anno_dir,
@@ -42,7 +43,7 @@ if __name__ == "__main__":
     class_file = os.path.join(os.path.dirname(anno_dir), "class_name.txt")
     file_utils.write_list_data(class_file, class_name)
     print("have num:{}".format(len(dataset)))
-    for i in range(len(dataset)):
+    for i in tqdm(range(len(dataset))):
         print(i)  # i=20
         data = dataset.__getitem__(i)
         image, points, bboxes, labels = data["image"], data["points"], data["boxes"], data["labels"]
@@ -50,6 +51,6 @@ if __name__ == "__main__":
         if class_name: labels = [class_name[l] for l in labels]
         image_file = data["image_file"]
         anno_file = os.path.join("masker", "{}.json".format(os.path.basename(image_file).split(".")[0]))
-        print(image_file,labels)
+        print(image_file, labels, points)
         result = parser_labelme.show_target_image(image, bboxes, labels, points, thickness=2)
         # image_utils.save_image("./"+os.path.basename(image_file), result)

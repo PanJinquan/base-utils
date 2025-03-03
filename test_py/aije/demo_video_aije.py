@@ -8,7 +8,6 @@
 import os
 import cv2
 import numpy as np
-from xpinyin import Pinyin
 from tqdm import tqdm
 from pybaseutils import file_utils, image_utils
 from pybaseutils.cvutils import video_utils, monitor
