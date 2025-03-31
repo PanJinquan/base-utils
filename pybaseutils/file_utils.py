@@ -107,14 +107,14 @@ def combine_flags(flags: list, use_time=True, info=True):
     return out_flags
 
 
-def write_file(file, data):
+def write_file(file, data, mode='wb'):
     """写二进制数据"""
-    with open(file, 'wb') as f: f.write(data)
+    with open(file, mode) as f: f.write(data)
 
 
-def read_file(file):
+def read_file(file, mode='rb'):
     """读取二进制数据"""
-    with open(file, 'rb') as f: key = f.read()
+    with open(file, mode) as f: key = f.read()
     return key
 
 
@@ -565,8 +565,7 @@ def copy_dir(src, dst, sub=False, exclude=[]):
                 if isExclude: break
         if isExclude: continue
         dest_path = os.path.join(dst, os.path.relpath(root, src))
-        if not os.path.exists(dest_path):
-            os.makedirs(dest_path)
+        os.makedirs(dest_path, exist_ok=True)
         for filename in files:
             copy_file(
                 os.path.join(root, filename),
@@ -582,8 +581,7 @@ def move_dir(src, dst, sub=False):
     if sub: dst = os.path.join(dst, os.path.basename(src))
     for root, dirs, files in os.walk(src, topdown=False):
         dest_path = os.path.join(dst, os.path.relpath(root, src))
-        if not os.path.exists(dest_path):
-            os.makedirs(dest_path)
+        os.makedirs(dest_path, exist_ok=True)
         for filename in files:
             move_file(
                 os.path.join(root, filename),
@@ -595,8 +593,7 @@ def move_file(srcfile, dstfile):
     """ 移动文件或重命名"""
     if os.path.exists(srcfile) and os.path.isfile(srcfile):
         fpath, fname = os.path.split(dstfile)  # 分离文件名和路径
-        if not os.path.exists(fpath):
-            os.makedirs(fpath)  # 创建路径
+        os.makedirs(fpath, exist_ok=True)  # 创建路径
         shutil.move(srcfile, dstfile)
         # print("copy %s -> %s"%( srcfile,dstfile))
         # time.sleep(1 / 1000.)
@@ -615,8 +612,7 @@ def copy_file(srcfile, dstfile):
         print("%s not exist!" % (srcfile))
     else:
         fpath, fname = os.path.split(dstfile)  # 分离文件名和路径
-        if not os.path.exists(fpath):
-            os.makedirs(fpath)  # 创建路径
+        os.makedirs(fpath, exist_ok=True)  # 创建路径
         shutil.copyfile(srcfile, dstfile)  # 复制文件
         # print("copy %s -> %s"%( srcfile,dstfile))
         # time.sleep(1 / 1000.)
@@ -627,8 +623,7 @@ def copy_file_to_dir(srcfile, des_dir):
         print("%s not exist!" % (srcfile))
     else:
         fpath, fname = os.path.split(srcfile)  # 分离文件名和路径
-        if not os.path.exists(des_dir):
-            os.makedirs(des_dir)  # 创建路径
+        os.makedirs(des_dir, exist_ok=True)  # 创建路径
         dstfile = os.path.join(des_dir, fname)
         shutil.copyfile(srcfile, dstfile)  # 复制文件
 
@@ -638,8 +633,7 @@ def move_file_to_dir(srcfile, des_dir):
         print("%s not exist!" % (srcfile))
     else:
         fpath, fname = os.path.split(srcfile)  # 分离文件名和路径
-        if not os.path.exists(des_dir):
-            os.makedirs(des_dir)  # 创建路径
+        os.makedirs(des_dir, exist_ok=True)  # 创建路径
         dstfile = os.path.join(des_dir, fname)
         # shutil.copyfile(srcfile, dstfile)  # 复制文件
         move_file(srcfile, dstfile)  # 复制文件
@@ -651,22 +645,6 @@ def copy_file_list(file_list, dst_dir):
 
 def move_file_list(file_list, dst_dir):
     [move_file_to_dir(file, dst_dir) for file in file_list]
-
-
-def merge_dir(src, dst, sub, merge_same):
-    src_dir = os.path.join(src, sub)
-    dst_dir = os.path.join(dst, sub)
-
-    if not os.path.exists(src_dir):
-        print("\nno src path:{}".format(src))
-        return
-    if not os.path.exists(dst_dir):
-        os.makedirs(dst_dir)
-    elif not merge_same:
-        t = get_time()
-        dst_dir = os.path.join(dst, sub + "_{}".format(t))
-        print("have save sub:{}".format(dst_dir))
-    copy_dir(src_dir, dst_dir)
 
 
 def create_dir(parent_dir, dir1=None, filename=None):
@@ -681,8 +659,7 @@ def create_dir(parent_dir, dir1=None, filename=None):
     if dir1:
         out_path = os.path.join(parent_dir, dir1)
     if not out_path: return out_path
-    if not os.path.exists(out_path):
-        os.makedirs(out_path)
+    os.makedirs(out_path, exist_ok=True)
     if filename:
         out_path = os.path.join(out_path, filename)
     return out_path
@@ -700,7 +677,7 @@ def create_file_path(filename):
     return out_path
 
 
-def get_sub_paths(input_dir):
+def get_sub_paths(input_dir, abspath=False):
     """
     当前路径下所有子目录
     :param input_dir:
@@ -714,6 +691,7 @@ def get_sub_paths(input_dir):
     # print(dirs)   # 当前路径下所有子目录
     # print(files)  # 当前路径下所有非目录子文件
     sub_list.sort()
+    if abspath: sub_list = [os.path.join(input_dir, p) for p in sub_list]
     return sub_list
 
 

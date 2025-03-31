@@ -58,9 +58,6 @@ class FontType(object):
         return self.font_type
 
 
-# font_type = FontType()
-
-
 def get_font_type(size, font=""):
     """
     Windows字体路径      : /usr/share/fonts/楷体.ttf
@@ -101,8 +98,7 @@ def draw_image_text(image, point, text, style="楷体", size=20, color=(255, 255
         font = ImageFont.truetype(style, size=size, encoding="utf-8")
     else:
         # simhei.ttf 是字体，你如果没有字体，需要下载
-        font_type.set_font_style(style=style, size=size)
-        font = font_type.get_font_type()
+        font = get_font_type(size=size)
     draw.text(point, text, fill=color, font=font)
     image = np.asarray(image)
     return image
@@ -209,6 +205,24 @@ def get_font_char(font_file, only_chinese=False):
         if only_chinese and not is_chinese(w): continue
         fonts.append(w)
     return fonts
+
+
+def set_pyplot_font(font="simhei"):
+    """
+    设置 seaborn，matplotlib等默认字体
+    :param font: 字体路径或者名称，或者使用默认的,SimHei
+    :return:
+    """
+    import seaborn
+    import matplotlib.pyplot as plt
+    import matplotlib.font_manager as fm
+    font_file = font if os.path.isfile(font) else FONT_TABLES[font]
+    font = os.path.basename(font_file).split(".")[0]
+    fm.fontManager.addfont(font_file)
+    plt.rcParams['font.sans-serif'] = [font]
+    plt.rcParams['axes.unicode_minus'] = False
+    seaborn.set_theme(font=font)  # 增加一行代码, 设置 seaborn 使用的字体文件
+    return font_file
 
 
 def draw_font_example():

@@ -72,7 +72,8 @@ def video2frames_similarity(video_file, out_dir=None, func=None, interval=1, thr
 
 # thresh_dict = {"1号视角": 0.5, "2号视角": 0.15, "3号视角": 0.3, "4号视角": 0.3}
 # thresh_dict = {"一号位": 0.58, "平视": 0.35, "俯视": 0.35, "右视": 0.25, "左视": 0.3}
-thresh_dict = {"第一视角": 0.50, "主视角": 0.50, "平视": 0.30, "俯视": 0.30, "右视": 0.35, "左视": 0.35, "全景": 0.30}
+thresh_dict = {"第一视角": 0.50, "主视角": 0.50, "主视": 0.50, "平视": 0.30, "俯视": 0.30, "右视": 0.35, "左视": 0.35,
+               "全景": 0.30}
 
 
 # thresh_dict = {"1号位": 0.58, "平视": 0.35, "全景": 0.35, "俯视": 0.35, "右视": 0.25, "左视": 0.3}
@@ -91,7 +92,7 @@ def video2frames_demo(root, out, prefix="", thresh=0.2):
 
 
 if __name__ == "__main__":
-    root = "/home/PKing/nasdata/dataset-dmai/AIJE/技能人才系统_数据集管理/01-江门四维数据/01-37道考题视频/江门四维2024-12-06-检查帽撑/video"
+    root = "/home/PKing/Downloads/video/08-更换熔丝"
     prefix = ""
     out = root + "-train"
     video2frames_demo(root, out, prefix=prefix)

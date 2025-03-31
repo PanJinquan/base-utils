@@ -12,7 +12,7 @@ from pybaseutils.dataloader import parser_labelme
 from pybaseutils import image_utils, file_utils
 
 
-def save_object_crops(data_info, out_dir, class_name=None, scale=[], square=False,
+def save_object_crops(data_info, out_dir, class_name=None, target_name=None, scale=[], square=False,
                       padding=False, min_size=20 * 20 * 3, flag="", vis=False):
     """
     对VOC的数据目标进行裁剪
@@ -51,22 +51,16 @@ def save_object_crops(data_info, out_dir, class_name=None, scale=[], square=Fals
         name = class_name[int(labels[i])] if class_name else labels[i]
         if out_dir:
             file_name = "{}_{:0=4d}_{}.jpg".format(image_id, i, flag) if flag else "{}_{:0=4d}.jpg".format(image_id, i)
-            img_file = file_utils.create_dir(out_dir, name, file_name)
+            if target_name:
+                out_dir_ = out_dir if name in target_name else os.path.join(out_dir, "其他")
+                img_file = file_utils.create_dir(out_dir_, name, file_name)
+            else:
+                img_file = file_utils.create_dir(out_dir, name, file_name)
             cv2.imwrite(img_file, img)
         if vis: image_utils.cv_show_image("crop", img, use_rgb=False, delay=0)
 
 
-if __name__ == "__main__":
-    """
-    对VOC的数据目标进行裁剪
-    室内：['主杆', '从此进出标示牌', '其他鞋', '吊物绳', '在此工作标示牌', '垫子', '安全带', '安全帽', '安全绳',
-          '导线头', '尖嘴钳', '工具袋', '手', '扳手', '抹布', '未穿工作服','柱式绝缘子', '止步高压危险标示牌',
-          '绝缘手套', '绝缘鞋', '脚扣', '螺丝', '身穿工作服', '遮拦杆', '铁架', '铝扎线']
-    室外: []
-    """
-    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/dataset-v31/images"
-    class_name = None  # 室内\
-    out_dir = os.path.join(os.path.dirname(anno_dir), "crops")
+def crop_dataset(anno_dir, out_dir=None, class_name=None, target_name=None):
     dataset = parser_labelme.LabelMeDatasets(filename=None,
                                              data_root=None,
                                              anno_dir=anno_dir,
@@ -83,4 +77,46 @@ if __name__ == "__main__":
     # scale = None
     for i in tqdm(range(len(dataset))):
         data_info = dataset.__getitem__(i)
-        save_object_crops(data_info, out_dir, class_name=class_name, scale=scale, flag=flag, vis=False)
+        save_object_crops(data_info, out_dir, class_name=class_name, target_name=target_name, scale=scale, flag=flag,
+                          vis=False)
+
+
+def get_sub_dataset(data_root):
+    sub_paths = file_utils.get_sub_paths(data_root, abspath=True)
+    datasets = []
+    for sub_path in sub_paths:
+        data_list = file_utils.get_sub_paths(sub_path, abspath=True)
+        data_list = [os.path.join(p, "images") for p in data_list if os.path.exists(os.path.join(p, "images"))]
+        datasets += data_list
+    return datasets
+
+
+if __name__ == "__main__":
+    """
+    对labelme的数据目标进行裁剪，用于制作分类数据集
+    """
+
+    target_name = ["身穿工作服", "未穿工作服",
+                   "绝缘鞋", "脚穿绝缘鞋", "长筒靴", "脚穿长筒靴", "其他鞋", "脚穿其他鞋",
+                   "手", "绝缘手套", "手穿绝缘手套", "棉纱手套", "手穿棉纱手套", "其他手套", "手穿其他手套",
+                   "拨动开关分闸", "拨动开关合闸",
+                   "电容柜开关合闸", "电容柜开关分闸",
+                   "低压侧总刀闸合闸", "低压侧总刀闸分闸",
+                   "面板单键开关断开", "面板单键开关合上",
+                   "面板双键开关断开", "面板双键开关合上",
+                   "表箱关", "表箱开", "手", "其他",
+                   ]
+    datasets = [
+        "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-action-cvlm-v2/test-v2/dataset-v01/images",
+        "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-action-cvlm-v2/test-v2/dataset-v02/images",
+    ]
+    # dataroot = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det"
+    # datasets = get_sub_dataset(dataroot)
+    class_name = []
+    for anno_dir in datasets:
+        print(anno_dir)
+        out_dir = os.path.join(os.path.dirname(anno_dir), "crops")
+        if os.path.exists(out_dir) and out_dir.endswith("crops"): file_utils.remove_dir(out_dir)
+        file_utils.create_dir(out_dir)
+        file = file_utils.write_file(os.path.join(out_dir, "分类数据集，请勿删除.txt"), data="", mode="w")
+        crop_dataset(anno_dir, out_dir=out_dir, class_name=class_name, target_name=target_name)

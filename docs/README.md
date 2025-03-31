@@ -50,10 +50,11 @@ index-url = https://pypi.tuna.tsinghua.edu.cn/simple
 disable-pip-version-check = true
 timeout = 120
 ```
-
+- apt install python3.10-distutils && wget https://bootstrap.pypa.io/get-pip.py && python3.10 get-pip.py
 - pip install --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple opencv-python
 - 若出现超时：pip install --default-timeout=1000000 -i https://pypi.tuna.tsinghua.edu.cn/simple
 - 设置默认的镜像源：pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+- 
 
 ## 远程挂载
 
@@ -162,6 +163,18 @@ alias countdir='ls -lR|grep "^d"|wc -l'
 ```
 
 ## 安装opencv-python常见的错误
+- 依赖库
+```bash
+sudo apt-get update
+sudo apt-get install build-essential
+sudo apt-get install cmake git libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev
+sudo apt-get install python-dev python-numpy libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libjasper-dev libdc1394-22-dev
+ 
+sudo apt-get install build-essential libgtk2.0-dev libgtk-3-dev libavcodec-dev libavformat-dev libjpeg-dev libswscale-dev libtiff5-dev
+sudo apt install libgstreamer-plugins-base1.0-dev libgstreamer1.0-dev
+sudo apt install libpng-dev libopenexr-dev libtiff-dev libwebp-dev
+       
+```
 
 - OpenCV+PyQT5兼容问题：https://www.sohu.com/a/602131072_121124366
 - opencv-python4.2.0以上的版本，使用了qt库

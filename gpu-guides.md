@@ -10,6 +10,15 @@
  whereis cudnn_version.h                          # 查找方法
 ```
 
+## 安装显卡
+```bash
+sudo apt update && sudo apt install -y kmod 
+wget https://us.download.nvidia.com/tesla/535.161.07/NVIDIA-Linux-x86_64-535.161.07.run
+chmod +x NVIDIA-Linux-x86_64-535.161.07.run
+./NVIDIA-Linux-x86_64-535.161.07.run --silent --no-kernel-module
+
+```
+
 ## 卸载cuDNN
 
 - 卸载cudnn: https://blog.csdn.net/qq_45779334/article/details/123168792

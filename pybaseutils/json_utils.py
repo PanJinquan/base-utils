@@ -20,6 +20,14 @@ class Dict2Obj(object):
         self.__dict__.update(args)
 
 
+def str2dict(data: str):
+    try:
+        return json.loads(data)
+    except Exception as e:
+        print(e)
+    return None
+
+
 def dict_sort_by_value(data: Dict, reverse=False):
     """
     按照字典的value值排序

@@ -2862,6 +2862,29 @@ def get_image_block(image, grid=[3, 3], same=False):
     return image_block
 
 
+def apply_mosaic(image, boxes, radius=8, scale=[1.0, 1.0]):
+    """
+    马赛克
+    :param image: BGR image
+    :param boxes: 人脸框(xmin,ymin,xmax,ymax)
+    :param radius: 马赛克强度
+    :param scale: 人脸框扩大范围
+    :return:
+    """
+    h, w = image.shape[:2]
+    boxes = np.asarray(boxes, dtype=np.int32)
+    boxes = extend_xyxy(boxes, scale=scale, valid_range=(0, 0, w, h))
+    for box in boxes:
+        x1, y1, x2, y2 = box
+        roi = image[y1:y2, x1:x2]
+        size = (max((x2 - x1) // radius, 5), max((y2 - y1) // radius, 5))
+        img = cv2.resize(roi, size)
+        # img = cv2.resize(roi, (radius, radius))
+        img = cv2.resize(img, (x2 - x1, y2 - y1), interpolation=cv2.INTER_NEAREST)
+        image[y1:y2, x1:x2] = img
+    return image
+
+
 def image_composite(image: np.ndarray, alpha: np.ndarray, bg_img=(219, 142, 67)):
     """
     图像融合：合成图 = 前景*alpha+背景*(1-alpha)

@@ -164,7 +164,13 @@ class ThreadPool(object):
         return result
 
     def task_maps(self, func: Callable, inputs: List[List] or List[Tuple], timeout=None):
-        """线程任务，返回结果有序(map与submit的性能基本一致)"""
+        """
+        线程任务，返回结果有序(map与submit的性能基本一致)
+        :param func:
+        :param inputs: 如 [["0.jpg", "a"], ["4.jpg", "b"], ["2.jpg", "c"]]
+        :param timeout:
+        :return:
+        """
         # 通过executor的 map 获取已经完成的task的值
         inputs = [args for args in zip(*inputs)]
         result = []

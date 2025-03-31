@@ -28,9 +28,9 @@ if __name__ == "__main__":
     anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/dataset-v25/json"
     anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-negetive/dataset-v02/json"
     # anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-date/date-det/dataset-v01/images"
-    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/09-更换熔断器/dataset-v20/images"
+    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-action-cvlm-v2/train-v2/10-钳流表/dataset-v22/images"
     names = None
-    # names = {'unique': 0}
+    # names = {'手拿安全帽帽撑': 0}
     dataset = parser_labelme.LabelMeDatasets(filename=None,
                                              data_root=None,
                                              anno_dir=anno_dir,
@@ -51,6 +51,6 @@ if __name__ == "__main__":
         if class_name: labels = [class_name[l] for l in labels]
         image_file = data["image_file"]
         anno_file = os.path.join("masker", "{}.json".format(os.path.basename(image_file).split(".")[0]))
-        print(image_file, labels, points)
+        print(image_file, labels)
         result = parser_labelme.show_target_image(image, bboxes, labels, points, thickness=2)
         # image_utils.save_image("./"+os.path.basename(image_file), result)
