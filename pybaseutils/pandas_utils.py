@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-    @Project: python-learning-notes
-    @File   : pandas_tools.py
     @Author : Pan
     @E-mail : 390737991@qq.com
     @Date   : 2019-07-30 20:13:59
 """
+import os
 import numpy as np
 import pandas as pd
 
@@ -39,14 +38,16 @@ def df2list(df):
     return list_
 
 
-def save_csv(filename, df, save_index=True):
+def save_csv(filename, df: pd.DataFrame, rows=True):
     """
     :param filename:
     :param df:
-    :param save_index:
+    :param rows:
     :return:
     """
-    df.to_csv(filename, index=save_index, sep=',', header=True)
+    if rows is None: rows = True
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    df.to_csv(filename, index=rows, sep=',', header=True)
 
 
 def print_info(class_name, labels):
@@ -64,45 +65,48 @@ def print_info(class_name, labels):
     save_csv("my_test.csv", df)
 
 
-def construct_pd(index, columns_name, content, filename=None):
-    df = pd.DataFrame(content, index=index, columns=columns_name)  # 生成6行4列位置
-    save_index = True
-    if not index:
-        save_index = False
-    if filename is not None:
-        save_csv(filename, df, save_index=save_index)
+def data2df(data, cols, rows=None, file=None) -> pd.DataFrame:
+    """
+    将data数据转为pd.DataFrame
+    :param data: 表单数据
+    :param cols: (columns)表单列名称
+    :param rows: (index)表单行名称
+    :param file:
+    :return: pd.DataFrame
+    """
+    df = pd.DataFrame(data, index=rows, columns=cols)  # 生成6行4列位置
+    if file: save_csv(file, df, rows=rows)
     return df
 
 
-def dict2pd(data: dict, T=False):
+def dict2df(data: dict, cols=None, T=False, file=None):
     """
-    :param data:
-    :param T:
-    :return:
+    :param data: 表单数据
+    :param cols: (columns)表单列名称
+    :param T: 是否转置表单
+    :return: pd.DataFrame
     """
     if T:
-        df = pd.DataFrame.from_dict(data)  # 键按照列进行转换
+        df = pd.DataFrame.from_dict(data, columns=cols)  # 键按照列进行转换
     else:
-        df = pd.DataFrame.from_dict(data, orient='index')  # 键按照行进行转换
+        df = pd.DataFrame.from_dict(data, columns=cols, orient='index')  # 键按照行进行转换
+    if file: save_csv(file, df, rows=True)
     return df
 
 
 if __name__ == "__main__":
-    class_name = ['C1', 'C2', 'C3']
-    labels = [100, 200, 300]
-    # print_info(class_name, labels)
-    # index = [1, 2, 3, 4, 5, 8]
-    index = None
-    columns_name = ["A", "B"]
-    content = np.arange(0, 12).reshape(6, 2)
-    filename = "my_test.csv"
-    df = construct_pd(index, columns_name, content, filename)
+    # TODO
+    cols = ["C1", "C2"]
+    rows = None
+    data = np.arange(0, 6).reshape(3, 2)
+    df = data2df(data, cols, rows, file="data1.csv")
     print(df)
 
+    # TODO
     data = {
         'name1': ["A0", "A1", "A2"],
         'name2': ["B0", "B1", "B2"],
         'name3': ["C0", "C1", "C2"]
     }
-    df = dict2pd(data)
-    save_csv("data.csv", df)
+    cols = ["C1", "C2", "C3"]
+    df = dict2df(data, cols=cols, file="data2.csv")

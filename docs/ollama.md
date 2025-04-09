@@ -1,10 +1,9 @@
 # ollama教程
-
+- 教程：https://wiki.hiwepy.com/docs/ollama 
 - ollama： https://ollama.com/download/linux:
 - 安装命令： curl -fsSL https://ollama.com/install.sh | sh
 - 局域网内配置 Ollama 服务以实现远程访问: https://www.11zhang.com/1456.html
 - https://blog.csdn.net/qq_41297934/article/details/145612269
-- /etc/systemd/system
 
 ## ollama镜像
 
@@ -20,6 +19,7 @@ docker pull docker-0.unsee.tech/ollama/ollama:latest
 docker run -d --gpus all  -p 50000:11434 -v `pwd`:/root/.ollama --name ollama docker-0.unsee.tech/ollama/ollama:latest
 # 进入容器
 docker exec -it ollama bash
+# 运行容器，并指向命令
 # docker exec -it ollama ollama run deepseek-r1:1.5b
 # 可以将本地模型文件：/usr/share/ollama/.ollama/models 或~/.ollama/models挂载到docker中/root/.ollama
 # 复制制定模型：cp -r /usr/share/ollama/.ollama/models ~/project/ollama

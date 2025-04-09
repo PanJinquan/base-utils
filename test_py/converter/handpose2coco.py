@@ -51,7 +51,7 @@ class HandPose(build_coco.COCOBuilder):
                 print("not exists : {}".format(json_file))
             try:
                 image = image_utils.read_image(image_file)
-                anns = json_utils.read_json_data(json_file)['info']
+                anns = json_utils.load_json(json_file)['info']
                 height, width = image.shape[:2]
                 labels, boxes, contours, keypoints = [], [], [], []
                 for ann in anns:

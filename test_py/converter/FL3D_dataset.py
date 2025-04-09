@@ -17,7 +17,7 @@ def parser_dataset(data_root, anno_file, vis=True):
     :param vis: 可视化效果
     :return:
     """
-    annotations: dict = json_utils.read_json_data(anno_file)
+    annotations: dict = json_utils.load_json(anno_file)
     for image_name, anno in annotations.items():
         image_name = image_name.replace("./", "")
         image_file = os.path.join(data_root, image_name)

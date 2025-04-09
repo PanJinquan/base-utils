@@ -81,10 +81,10 @@ class TextDataset(Dataset):
             class_lack = sorted(class_lack.items(), key=lambda x: x[1], reverse=True)
             class_lack = {n[0]: n[1] for n in class_lack}
             class_lack.update({"mean": m})
-            file_utils.write_json_path(os.path.join(save_info, f"{self.phase}_class_dict.json"), self.class_dict)
-            file_utils.write_json_path(os.path.join(save_info, f"{self.phase}_class_count.json"), self.class_count)
+            file_utils.save_json(os.path.join(save_info, f"{self.phase}_class_dict.json"), self.class_dict)
+            file_utils.save_json(os.path.join(save_info, f"{self.phase}_class_count.json"), self.class_count)
             file_utils.write_list_data(os.path.join(save_info, f"{self.phase}_class_name.txt"), self.class_name)
-            file_utils.write_json_path(os.path.join(save_info, f"{self.phase}_class_lack.json"), class_lack)
+            file_utils.save_json(os.path.join(save_info, f"{self.phase}_class_lack.json"), class_lack)
             print("loss_labels: {}".format(class_lack))
         print("------------------------------------------------------------------")
 

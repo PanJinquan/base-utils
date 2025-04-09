@@ -261,6 +261,12 @@ export HF_ENDPOINT=https://hf-mirror.com # 或者写入~/.bashrc中
 - 方法2：https://modelscope.cn/my/overview
 - import huggingface_hub.constants 可以修改访问路径
 
+```bash
+# !pip install -U "huggingface_hub[cli]"
+export HF_ENDPOINT=https://hf-mirror.com
+huggingface-cli download KwaiVGI/LivePortrait --local-dir pretrained_weights --exclude "*.git*" "README.md" "docs"
+```
+
 ## 表格
 
 | Model   |     |      |

@@ -103,14 +103,14 @@ class ConcatCoco(object):
         """
         if isinstance(file_dict, dict):
             for dirname, file in file_dict.items():
-                coco = file_utils.read_json_data(file)
+                coco = file_utils.load_json(file)
                 self.add_categories(copy.deepcopy(coco["categories"]))
                 self.add_images(copy.deepcopy(coco["images"]), dirname)
                 self.add_annotations(copy.deepcopy(coco["annotations"]),
                                      copy.deepcopy(coco["categories"]))
         elif isinstance(file_dict, list):
             for file in file_dict:
-                coco = file_utils.read_json_data(file)
+                coco = file_utils.load_json(file)
                 self.add_categories(copy.deepcopy(coco["categories"]))
                 self.add_images(copy.deepcopy(coco["images"]), dirname=None)
                 self.add_annotations(copy.deepcopy(coco["annotations"]),
@@ -120,7 +120,7 @@ class ConcatCoco(object):
 
     def save_coco(self, json_file):
         file_utils.create_file_path(json_file)
-        file_utils.write_json_path(json_file, self.coco)
+        file_utils.save_json(json_file, self.coco)
         print("save file:{}".format(json_file))
 
 

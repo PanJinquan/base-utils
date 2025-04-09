@@ -94,7 +94,7 @@ class MockRequest(object):
     def print_info(r):
         info = json.dumps(r, indent=1, separators=(', ', ': '), ensure_ascii=False)
         print(info)
-        json_utils.write_json_path("result.json", r)
+        json_utils.save_json("result.json", r)
 
 
 if __name__ == '__main__':

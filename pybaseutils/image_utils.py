@@ -2871,14 +2871,17 @@ def apply_mosaic(image, boxes, radius=8, scale=[1.0, 1.0]):
     :param scale: 人脸框扩大范围
     :return:
     """
+    ar = (5, 20)
     h, w = image.shape[:2]
     boxes = np.asarray(boxes, dtype=np.int32)
     boxes = extend_xyxy(boxes, scale=scale, valid_range=(0, 0, w, h))
     for box in boxes:
         x1, y1, x2, y2 = box
         roi = image[y1:y2, x1:x2]
-        size = (max((x2 - x1) // radius, 5), max((y2 - y1) // radius, 5))
-        img = cv2.resize(roi, size)
+        size = [(x2 - x1) // radius, (y2 - y1) // radius]
+        size[0] = max(min(size[0], ar[1]), ar[0])
+        size[1] = max(min(size[1], ar[1]), ar[0])
+        img = cv2.resize(roi, tuple(size))
         # img = cv2.resize(roi, (radius, radius))
         img = cv2.resize(img, (x2 - x1, y2 - y1), interpolation=cv2.INTER_NEAREST)
         image[y1:y2, x1:x2] = img

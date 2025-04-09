@@ -9,7 +9,7 @@ import os
 import toolz
 import json
 import numbers
-from pybaseutils.file_utils import read_json_data, write_json_path
+from pybaseutils.file_utils import load_json, read_json_data, save_json, write_json_path
 from typing import List, Tuple, Dict
 
 
@@ -39,16 +39,16 @@ def dict_sort_by_value(data: Dict, reverse=False):
     return dst
 
 
-def formatting(content):
+def formatting(data):
     """格式化json数据"""
-    info = json.dumps(content, indent=1, separators=(', ', ': '), ensure_ascii=False)
+    info = json.dumps(data, indent=1, separators=(', ', ': '), ensure_ascii=False)
     return info
 
 
-def get_keys_vaules(content, func=None):
+def get_keys_vaules(data, func=None):
     """
     遍历json数据并获得所有value的key路径
-    :param content:
+    :param data:
     :param func: 过滤条件函数func(k,v),默认为None,表示获取有的,获得所有value的key路径,一些常用的过滤方法：
            过滤所有文件：func = lambda k,v: isinstance(v, str) and os.path.isfile(v) and os.path.exists(v)
            过滤所有字符串：func = lambda k,v: isinstance(v, str)
@@ -74,57 +74,80 @@ def get_keys_vaules(content, func=None):
 
     keys = []
     values = []
-    recursion(content, key=None, sub=[])
+    recursion(data, key=None, sub=[])
     return keys, values
 
 
-def get_value(content, key, default=None):
+def get_value(data, key, default=None):
     """根据key路径获得对应的值"""
-    value = toolz.get_in(key, content, default=default)
+    value = toolz.get_in(key, data, default=default)
     return value
 
 
-def get_values(content, keys):
+def get_values(data, keys):
     """根据keys路径获得对应的值"""
-    values = [toolz.get_in(k, content) for k in keys]
+    values = [toolz.get_in(k, data) for k in keys]
     return values
 
 
-def set_values(content, keys, values):
+def set_values(data, keys, values):
     """根据keys路径设置对应的值"""
     for k, v in zip(keys, values):
-        content = toolz_assoc_in(content, keys=k, value=v)
+        data = toolz_assoc_in(data, keys=k, value=v)
         # data = toolz.assoc_in(data, keys=k, value=v)
-    return content
+    return data
 
 
-def set_value(content, key, value):
+def set_value(data, key, value):
     """根据keys路径设置对应的值"""
     # content = toolz_assoc_in(content, keys=key, value=value)
-    content = toolz.assoc_in(content, keys=key, value=value)
-    return content
+    data = toolz.assoc_in(data, keys=key, value=value)
+    return data
 
 
-def toolz_assoc_in(content, keys, value):
+def del_key(data: dict, key: list):
+    """
+    安全删除嵌套字典的深层键
+    :param data:
+    :param key:
+    :return:
+    """
+    out = data
+    for k in key[:-1]:
+        if not isinstance(out, dict) or k not in out:
+            return None
+        out = out[k]
+    return out.pop(key[-1], None)
+
+
+def del_keys(data: dict, keys: list):
+    out = []
+    for key in keys:
+        v = del_key(data, key)
+        out.append(v)
+    return out
+
+
+def toolz_assoc_in(data, keys, value):
     """toolz_assoc_in用来代替toolz.assoc_in"""
     cur_keys = []
     for i, k in enumerate(keys):
         if isinstance(k, str):
             cur_keys.append(k)
         elif isinstance(k, int):
-            curObj = toolz.get_in(cur_keys + [k], content)
+            curObj = toolz.get_in(cur_keys + [k], data)
             if curObj == None:
-                print("发现非法参数:obj:{}, keys:{}".format(toolz.get_in(cur_keys, content), keys))
+                print("发现非法参数:obj:{}, keys:{}".format(toolz.get_in(cur_keys, data), keys))
                 raise Exception("给定路径非法")
             newKeys = keys[i + 1:]
             if len(newKeys) == 0:
-                toolz.get_in(cur_keys, content)[k] = value
+                toolz.get_in(cur_keys, data)[k] = value
             else:
                 newValue = toolz_assoc_in(curObj, newKeys, value)
-                toolz.get_in(cur_keys, content)[k] = newValue
-            return content
+                toolz.get_in(cur_keys, data)[k] = newValue
+            return data
     if len(cur_keys) == len(keys):
-        return toolz.assoc_in(content, cur_keys, value)
+        return toolz.assoc_in(data, cur_keys, value)
 
 
 if __name__ == "__main__":

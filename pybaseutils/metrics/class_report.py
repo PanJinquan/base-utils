@@ -58,7 +58,7 @@ def get_confusion_matrix(true_labels, pred_labels, target_names=None, filename=N
     # print("Confusion Matrix:\n",pdf)
     if filename is not None:
         create_file_path(filename)
-        pandas_utils.save_csv(filename, pdf, save_index=True)
+        pandas_utils.save_csv(filename, pdf, rows=True)
     if plot:
         plot_confusion_matrix(conf_matrix, target_names, title, normalization=normalization)
     return conf_matrix

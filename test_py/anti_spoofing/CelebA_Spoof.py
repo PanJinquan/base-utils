@@ -44,7 +44,7 @@ def CelebA_Spoof_Dataset(anno_file, image_dir, vis=False):
     #   [42]: Environment label
     #   [43]: 0-live 1-spoof label
     content = []
-    anno_info: dict = json_utils.read_json_data(anno_file)
+    anno_info: dict = json_utils.load_json(anno_file)
     path_list = list(anno_info.keys())
     for path in tqdm(path_list):
         try:

@@ -31,7 +31,7 @@ if __name__ == '__main__':
     aije_root = "/home/PKing/nasdata/release/AIJE/aije-release"
     url = "https://gitlab.dm-ai.cn/aije/aije-algorithm"
     runtime = "/home/PKing/nasdata/release/AIJE/aije-algorithm/aije-algorithm-deployment/.runtime-structure.json"
-    runtime_data = file_utils.read_json_data(runtime)["services"]
+    runtime_data = file_utils.load_json(runtime)["services"]
     branch = "obfuscation"
     match = ["aije-equipment-detection"]
     use_tag = False  #

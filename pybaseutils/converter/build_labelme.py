@@ -48,7 +48,7 @@ def maker_labelme(json_file, points, labels, image_name, image_size, image_bs64=
         "imageWidth": image_size[0]
     }
     if os.path.exists(image_name): file_utils.copy_file_to_dir(image_name, os.path.dirname(json_file))
-    file_utils.write_json_path(json_file, data)
+    file_utils.save_json(json_file, data)
     return data
 
 
@@ -60,9 +60,9 @@ def del_labelme_imagedata(anno_dir):
     """
     file_list = file_utils.get_files_lists(anno_dir, postfix=["*.json"])
     for anno_file in tqdm(file_list):
-        data_info = json_utils.read_json_data(anno_file)
+        data_info = json_utils.load_json(anno_file)
         data_info["imageData"] = None
-        json_utils.write_json_path(anno_file, data_info)
+        json_utils.save_json(anno_file, data_info)
 
 
 def copy_labelme_files(image_dir, anno_dir, out_root):
@@ -77,7 +77,7 @@ def copy_labelme_files(image_dir, anno_dir, out_root):
     out_images = file_utils.create_dir(out_root, "images")
     out_json = file_utils.create_dir(out_root, "json")
     for json_file in tqdm(json_list):
-        json_data = json_utils.read_json_data(json_file)
+        json_data = json_utils.load_json(json_file)
         image_name = json_data['imagePath']
         shapes = json_data.get('shapes', [])
         image_file = os.path.join(image_dir, image_name)

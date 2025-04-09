@@ -22,7 +22,7 @@ import argparse
 import itertools
 from datetime import datetime
 from tqdm import tqdm
-from pybaseutils import text_utils
+from pybaseutils import text_utils, thread_utils
 
 IMG_POSTFIX = ['*.jpg', '*.jpeg', '*.png', '*.tif', "*.JPG", "*.bmp"]
 VIDEO_POSTFIX = ['*.mp4', '*.avi', '*.mov', "*.flv", "*.dav"]
@@ -161,7 +161,7 @@ def parser_classes(class_name):
     return class_name, class_dict
 
 
-def read_json_data(json_path):
+def load_json(json_path):
     """
     读取数据
     :param json_path:
@@ -172,7 +172,10 @@ def read_json_data(json_path):
     return json_data
 
 
-def write_json_path(json_file, json_data):
+read_json_data = load_json
+
+
+def save_json(json_file, json_data):
     """
     写入 JSON 数据
     :param json_file:
@@ -181,6 +184,30 @@ def write_json_path(json_file, json_data):
     """
     with open(json_file, 'w', encoding="utf-8") as f:
         json.dump(json_data, f, indent=4, ensure_ascii=False)
+
+
+write_json_path = save_json
+
+
+def load_json_files(files: list, max_workers=8):
+    """
+    根据url读取文件
+    :param files: 文件urls列表
+    :param max_workers: 开启线程数目
+    :return: 返回读取成功的文件数据file_list
+    """
+    pool = thread_utils.ThreadPool(max_workers=max_workers)
+    inputs = [(url, ) for url in files]
+    print("----" * 10)
+    print(f"启动{max_workers}个线程读取{len(files)}个文件,请等待....")
+    t0 = time.time()
+    file_list = pool.task_maps(func=load_json, inputs=inputs)
+    t1 = time.time()
+    dt = (t1 - t0) * 1000
+    # 读取失败的url列表loss_list
+    loss_list = [files[i] for i in range(len(file_list)) if not file_list[i]]
+    print(f"成功:{len(file_list) - len(loss_list)},失败:{len(loss_list)},耗时:{dt:.2f}ms")
+    return file_list, loss_list
 
 
 def write_data(filename, content_list, split=",", mode='w'):

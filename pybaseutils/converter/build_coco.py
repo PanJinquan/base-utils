@@ -120,7 +120,7 @@ class COCOBuilder():
 
     def save_coco(self, json_file):
         file_utils.create_file_path(json_file)
-        file_utils.write_json_path(json_file, self.coco)
+        file_utils.save_json(json_file, self.coco)
         print("save file:{}".format(json_file))
 
     def set_keypoints_category(self, kps_name=[], skeleton=[], cat_id=0):

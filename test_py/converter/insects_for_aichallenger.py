@@ -15,7 +15,7 @@ from pybaseutils.converter import build_voc
 
 
 def parser_dataset(image_dir, anno_file, out_voc, vis=True):
-    anno_info = file_utils.read_json_data(anno_file)
+    anno_info = file_utils.load_json(anno_file)
     for data in tqdm(anno_info):
         class_id = data['disease_class']
         image_name = data['image_ids']
