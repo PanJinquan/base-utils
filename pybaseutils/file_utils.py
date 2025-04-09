@@ -196,12 +196,12 @@ def load_json_files(files: list, max_workers=8):
     :param max_workers: 开启线程数目
     :return: 返回读取成功的文件数据file_list
     """
+    # pool = thread_utils.ProcessPool(max_workers=max_workers)
     pool = thread_utils.ThreadPool(max_workers=max_workers)
-    inputs = [(url, ) for url in files]
     print("----" * 10)
     print(f"启动{max_workers}个线程读取{len(files)}个文件,请等待....")
     t0 = time.time()
-    file_list = pool.task_maps(func=load_json, inputs=inputs)
+    file_list = pool.task_map(func=load_json, inputs=files)
     t1 = time.time()
     dt = (t1 - t0) * 1000
     # 读取失败的url列表loss_list
@@ -1378,6 +1378,10 @@ def copy_move_voc_dataset(data_file, data_root=None, out_root=None, file_map={},
 
 
 if __name__ == '__main__':
-    dir = "/home/dm/nasdata/dataset-dmai/handwriting/word-class/trainval/unknown"
-    file_list, label_list = get_files_labels(dir)
-    print(label_list)
+    from pybaseutils import time_utils
+
+    path = "/home/PKing/Downloads/tmp"
+    file_list = get_files_list(path, postfix=["*.json"])
+    with time_utils.Performance():
+        file_data, loss_list = load_json_files(file_list, max_workers=1) # 12433.96ms
+    print(len(file_data))

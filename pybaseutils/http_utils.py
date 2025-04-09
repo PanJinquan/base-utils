@@ -222,6 +222,8 @@ if __name__ == '__main__':
         "http://aije-mvp-nginx.partner.dm-ai.com/req-resp/aije-job-m8ch701s-awbg/nlp-17.json",
     ]
     out = "/home/PKing/Downloads/tmp"
+    url = 'https://aije-mvp-nginx.partner.dm-ai.com/req-resp/aije-job-m911dzow-17cu'
+    urls = get_url_files(url, postfix=["*.json"])
     file_list1, loss_list1 = download_files(urls, out=out, max_retries=1)
     file_list2, loss_list2 = read_url_files(urls, max_retries=1)
     print(loss_list1)

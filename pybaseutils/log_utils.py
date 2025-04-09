@@ -11,7 +11,7 @@ import logging
 from logging.handlers import TimedRotatingFileHandler
 
 
-def get_logger(name='APPLOG', level="info", logfile=None, is_main_process=True):
+def get_logger(name=None, level="info", logfile=None, is_main_process=True):
     """
     :param name:
     :param logfile:
