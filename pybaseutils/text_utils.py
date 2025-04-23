@@ -191,6 +191,41 @@ def get_standard_text(text, ignore_words):
     return text
 
 
+def insert_substring(string: str, index: int, sub: str):
+    "在string中插入子串"
+    return string[:index] + sub + string[index:]
+
+
+def find_substring(string: str, sub=[]):
+    """
+    在string中查找多个子串(首个)
+    :param string: 字符串
+    :param sub: 匹配的子串列表[]
+    :return: [(index,sub),...,]
+    """
+    if isinstance(sub, str): sub = []
+    r = []
+    for s in sub:
+        i = string.find(s)
+        if i != -1: r.append((i, s))
+    return r
+
+
+def find_substring_all(string: str, sub: str):
+    """
+    在string中查找所有子串
+    :param string: 字符串
+    :param sub: 匹配的子串列表[]
+    :return: [(index,sub),...,]
+    """
+    r = []
+    i = string.find(sub)
+    while i != -1:
+        r.append(i)
+        i = string.find(sub, i + 1)  # 从下一个位置继续查找
+    return r
+
+
 if __name__ == "__main__":
     text1 = 'ABCE'
     text2 = 'ACDB'

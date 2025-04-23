@@ -107,8 +107,8 @@ if __name__ == "__main__":
                    "表箱关", "表箱开", "手", "其他",
                    ]
     datasets = [
-        "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/08-更换熔丝/dataset-v23-special/images",
-        "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/08-更换熔丝/dataset-v23-special-val/images",
+        "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/10-钳形电流表/dataset-v01-val/images",
+        "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/10-钳形电流表/dataset-v03/images"
     ]
     # dataroot = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det"
     # datasets = get_sub_dataset(dataroot)

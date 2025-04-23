@@ -9,13 +9,13 @@ import numpy as np
 import pandas as pd
 
 
-def read_csv(filename, usecols=None):
+def read_csv(filename, sep=";"):
     """
     :param filename:
-    :param usecols:
+    :param sep: 分隔符
     :return:
     """
-    file = pd.read_csv(filename, usecols=usecols)
+    file = pd.read_csv(filename, sep=sep)
     df = pd.DataFrame(file)
     return df
 
@@ -65,7 +65,7 @@ def print_info(class_name, labels):
     save_csv("my_test.csv", df)
 
 
-def data2df(data, cols, rows=None, file=None) -> pd.DataFrame:
+def data2df(data, cols=None, rows=None, file=None) -> pd.DataFrame:
     """
     将data数据转为pd.DataFrame
     :param data: 表单数据

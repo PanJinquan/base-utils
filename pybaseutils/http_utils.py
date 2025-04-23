@@ -13,9 +13,15 @@ import json
 from pybaseutils import log_utils, text_utils, json_utils, thread_utils
 
 logger = log_utils.get_logger()
+# extensions
+extensions = {"application/json": "json",
+              "application/xml": "xml",
+              "image/jpeg": "jpg",
+              "image/jpg": "jpg",
+              }
 
 
-def post(url, params=None, timeout=6, max_retries=1, **kwargs):
+def post(url, params=None, headers=None, timeout=6, max_retries=1, **kwargs):
     """
     :param url: 请求URL
     :param params: 请求参数
@@ -27,14 +33,15 @@ def post(url, params=None, timeout=6, max_retries=1, **kwargs):
     while counts < max_retries:
         try:
             t1 = time.time()
-            # r = requests.get(url, params=params, timeout=timeout,**kwargs)
-            r = requests.post(url, json=params, timeout=timeout, **kwargs)
+            # r = requests.get(url, params=params,headers=headers, timeout=timeout,**kwargs)
+            r = requests.post(url, json=params, headers=headers, timeout=timeout, **kwargs)
             t2 = time.time()
             elapsed = (t2 - t1) * 1000
+            type = r.headers.get('Content-Type', '').lower()
             code = r.status_code
             if code == 200:
                 logger.info(f'code={code}, url={url}, elapsed:{elapsed:3.3f}ms')
-                result = r.json()
+                result = r.json() if type == "application/json" else r.content
                 break
             else:
                 r.raise_for_status()  # 如果响应状态码不是200，抛出异常
@@ -45,8 +52,9 @@ def post(url, params=None, timeout=6, max_retries=1, **kwargs):
     return result
 
 
-def get(url, params=None, timeout=6, max_retries=1, **kwargs):
+def get(url, params=None, headers=None, timeout=6, max_retries=1, **kwargs):
     """
+    type = r.headers.get('Content-Type', '').lower() # 数据类型
     :param url: 请求URL
     :param params: 请求参数
     :param timeout: 设置超时
@@ -58,14 +66,15 @@ def get(url, params=None, timeout=6, max_retries=1, **kwargs):
     while counts < max_retries:
         try:
             t1 = time.time()
-            r = requests.get(url, params=params, timeout=timeout, **kwargs)
+            r = requests.get(url, params=params, headers=headers, timeout=timeout, **kwargs)
             # r = requests.post(url, json=params, timeout=timeout, **kwargs)
             t2 = time.time()
             elapsed = (t2 - t1) * 1000
+            type = r.headers.get('Content-Type', '').lower()
             code = r.status_code
             if code == 200:
                 if log: logger.info(f'code={code}, url={url}, elapsed:{elapsed:3.3f}ms')
-                result = r.json()
+                result = r.json() if type == "application/json" else r.content
                 break
             else:
                 r.raise_for_status()  # 如果响应状态码不是200，抛出异常
@@ -74,6 +83,14 @@ def get(url, params=None, timeout=6, max_retries=1, **kwargs):
             logger.error(f'Error msg:{e}, url={url}, try to retry times={counts}/{max_retries}')
             time.sleep(0.1)
     return result
+
+
+def get_type(r: requests.Response):
+    return r.headers.get('Content-Type', '').lower()  # 数据类型
+
+
+def get_code(r: requests.Response):
+    return r.status_code
 
 
 def get_url_files(url, prefix="", postfix=None, basename=False, timeout=30):
@@ -105,24 +122,34 @@ def get_url_files(url, prefix="", postfix=None, basename=False, timeout=30):
         return []
 
 
-def download_file(url, out, timeout=30, max_retries=1, log=False):
+def download_file(url, out, timeout=30, max_retries=1, log=False, headers=None):
     """
+    使用方法：
+        name = url.split('/')[-1]                    # 文件名
+        exts = name.split(".")[-1]                   # 扩展名
+        name = f"{prefix}_{count + 1 :0=4d}.{exts}"  # 文件名
+        path = os.path.join(output, name)            # 保存路径
+        if exts not in ["jpg", "png", "jpeg"]: continue
+        http_utils.download_file(url, path)          # 下载文件
     根据url下载文件
     :param url: 文件URL
-    :param out: 输出保存目录
+    :param out: 输出路径，如果是目录，则文件名是url的文件名
+    :param timeout: 超时
+    :param max_retries: 重复次数
     :param log: 是否打印LOG信息
     :return:
     """
     try:
-        os.makedirs(out, exist_ok=True)
-        name = url.split('/')[-1]
-        path = os.path.join(out, name)
-        data = get(url, params=None, timeout=timeout, max_retries=max_retries, log=False)
+        name = url.split('/')[-1]  # 文件名
+        # exts = name.split(".")[-1]  # 扩展名
+        path = out if "." in os.path.basename(out) else os.path.join(out, name)
+        data = get(url, params=None, headers=headers, timeout=timeout, max_retries=max_retries, log=False)
         assert data
+        os.makedirs(os.path.dirname(path), exist_ok=True)
         if name.endswith("json"):
             json_utils.save_json(path, data)
         else:
-            with open(path, 'w', encoding='utf-8') as f:
+            with open(path, 'wb') as f:
                 f.write(data)
         if log: print(f"下载成功: {url} --> {path}")
         return path
@@ -217,14 +244,13 @@ def tojson(data: dict, keys: list):
 
 if __name__ == '__main__':
     urls = [
-        "http://aije-mvp-nginx.partner.dm-ai.com/req-resp/aije-job-m8ch701s-awbg/nlp-12.json",
-        "http://aije-mvp-nginx.partner.dm-ai.com/req-resp/aije-job-m8ch701s-awbg/nlp-13.json",
-        "http://aije-mvp-nginx.partner.dm-ai.com/req-resp/aije-job-m8ch701s-awbg/nlp-17.json",
+        "https://13741729.s21i.faiusr.com/2/ABUIABACGAAg7_KTzgUonM3V0wIw7gU4wgg.jpg",
+        # "https://aije-mvp-nginx.partner.dm-ai.com/req-resp/aije-job-m9hy42ca-2l6i/cv-00001.json",
     ]
     out = "/home/PKing/Downloads/tmp"
     url = 'https://aije-mvp-nginx.partner.dm-ai.com/req-resp/aije-job-m911dzow-17cu'
-    urls = get_url_files(url, postfix=["*.json"])
+    # urls = get_url_files(url, postfix=["*.json"])
     file_list1, loss_list1 = download_files(urls, out=out, max_retries=1)
-    file_list2, loss_list2 = read_url_files(urls, max_retries=1)
-    print(loss_list1)
-    print(loss_list2)
+    # file_list2, loss_list2 = read_url_files(urls, max_retries=1)
+    # print(file_list1)
+    # print(file_list2)

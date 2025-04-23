@@ -17,7 +17,7 @@ LOG_FORMAT = {
 }
 
 
-def set_logger(name="", level="debug", logfile=None, format="simple", is_main_process=True):
+def set_logger(name=None, level="debug", logfile=None, format="simple", is_main_process=True):
     """
     logger = set_logger(level="debug", logfile="log.txt")
     url: https://www.cnblogs.com/shiyitongxue/p/17870527.html

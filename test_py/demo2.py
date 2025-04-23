@@ -12,15 +12,14 @@ import types
 import torch
 import numpy as np
 from typing import Callable
-from pybaseutils import image_utils, file_utils, text_utils
+from pybaseutils import image_utils, file_utils, text_utils, pandas_utils
 from pybaseutils.cvutils import video_utils
 import cv2
 import re
-
-
+import torch
 
 if __name__ == '__main__':
-    file = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-action-cvlm-v2/action-names.txt"
-    outputs = [torch.tensor(1, dtype=torch.int64), torch.tensor(1, dtype=torch.int64)]
-    data = torch.stack(outputs)
-    print(data)
+    dir = '/media/PKing/新加卷/SDK/base-utils/test_py/demo2.py'
+    dir = '/media/PKing/新加卷/SDK/base-utils/test_py1/demo2.py'
+    print(os.path.isdir(dir))
+    print(os.path.isfile(dir))
