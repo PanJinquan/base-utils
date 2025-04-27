@@ -63,7 +63,7 @@ def get_system_fonts(root=[]):
     for dir in font_root:
         files = get_all_files(dir, postfix=['*.ttf', '*.ttc', '*.otf'])
         for file in files:
-            name = os.path.basename(file).split(".")[0]
+            name = os.path.basename(file).split(".")[0].lower()
             font_tables[name] = file
     for name in list(font_tables.keys()):
         if not os.path.exists(font_tables[name]): font_tables.pop(name)

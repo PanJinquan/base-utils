@@ -18,7 +18,7 @@ def read_csv(filename, sep=","):
     :param sep: 分隔符
     :return:
     """
-    names = ["name", "file_list", "flags", "temporal_coordinates", "spatial_coordinates", "metadata"]
+    names = ["name", "file_list", "temporal_segment_start", "temporal_segment_end", "metadata"]
     file = pd.read_csv(filename, sep=sep, names=names, comment="#")
     df = pd.DataFrame(file)
     return df
@@ -31,9 +31,8 @@ def load_annotation(filename):
     """
     df = read_csv(filename)
     label = df['metadata'].tolist()
-    times = df['temporal_coordinates'].tolist()
-    label = [json_utils.str2dict(s)["1"] for s in label]
-    times = [json_utils.str2dict(s) for s in times]
+    times = df[['temporal_segment_start', 'temporal_segment_end']].values.tolist()
+    label = [json_utils.str2dict(s)["TEMPORAL-SEGMENTS"] for s in label]
     assert len(label) == len(times), f"数据标注有问题：{filename}"
     return label, times
 
@@ -45,7 +44,7 @@ def get_video_label(labels, times, count, fps, offset=0):
         t0 = clip[0] + offset
         t1 = clip[1] - offset
         if t0 < t < t1: c = i
-    label = [labels[c]] if c >= 0 else None
+    label = labels[c] if c >= 0 else "face"
     return label
 
 
@@ -62,6 +61,5 @@ def parser_video(video_file, annot_file):
 
 if __name__ == '__main__':
     video_file = "/media/PKing/新加卷1/个人文件/video/driving/DF0001.mp4"
-    video_file = "/media/PKing/新加卷1/个人文件/video/output/F0001-DF0001.mp4"
     annot_file = "/media/PKing/新加卷1/个人文件/video/driving/DF0001.csv"
     parser_video(video_file, annot_file)

@@ -24,7 +24,7 @@ from datetime import datetime
 from tqdm import tqdm
 from pybaseutils import text_utils, thread_utils
 
-IMG_POSTFIX = ['*.jpg', '*.jpeg', '*.png', '*.tif', "*.JPG", "*.bmp"]
+IMG_POSTFIX = ['*.jpg', '*.jpeg', '*.png', '*.tif', "*.JPG", "*.bmp", "*.webp"]
 VIDEO_POSTFIX = ['*.mp4', '*.avi', '*.mov', "*.flv", "*.dav"]
 AUDIO_POSTFIX = ['*.mp3', '*.wav']
 
@@ -1383,5 +1383,5 @@ if __name__ == '__main__':
     path = "/home/PKing/Downloads/tmp"
     file_list = get_files_list(path, postfix=["*.json"])
     with time_utils.Performance():
-        file_data, loss_list = load_json_files(file_list, max_workers=1) # 12433.96ms
+        file_data, loss_list = load_json_files(file_list, max_workers=1)  # 12433.96ms
     print(len(file_data))

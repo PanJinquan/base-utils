@@ -3064,6 +3064,43 @@ def get_video_writer(video_file, width, height, fps):
     return video_writer
 
 
+def get_similar_images(image_dir, th=1.0, dsize=(256, 256), remove=False, vis=False, delay=0):
+    """
+    获得相似的图片
+    :param image_dir:
+    :param th:
+    :param remove: 是否只保留一张(删除相似的图片)
+    :param vis:
+    :return:
+    """
+    import imagehash, tqdm
+    image_list = file_utils.get_files_lists(image_dir)
+    image_pair = []  # 相似图片集合
+    nums = len(image_list)
+    for i in tqdm.tqdm(range(nums)):
+        file1 = image_list[i]
+        if not os.path.exists(file1): continue
+        imag1 = cv2.imread(file1)
+        if imag1 is None: continue
+        imag1 = cv2.resize(imag1, dsize)
+        hash1 = imagehash.phash(Image.fromarray(imag1))
+        for j in range(i + 1, nums):
+            file2 = image_list[j]
+            if not os.path.exists(file2): continue
+            imag2 = cv2.imread(file2)
+            if imag2 is None: continue
+            imag2 = cv2.resize(imag2, dsize)
+            hash2 = imagehash.phash(Image.fromarray(imag2))
+            # 计算哈希值之间的差异
+            diff = hash1 - hash2  # 相似度分数（0表示完全相同，64表示完全不同）
+            score = 1 - (diff / len(hash1.hash.reshape(-1)))
+            if score < th: continue
+            image_pair.append([file1, file2])
+            if vis: cv_show_image("image", image_hstack([imag1, imag2]), delay=delay)
+            if remove: print(f"remove file:{file2}"), file_utils.remove_file(file2)
+    return image_pair
+
+
 if __name__ == "__main__":
     # from utils import image_utils
 

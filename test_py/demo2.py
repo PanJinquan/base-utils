@@ -19,7 +19,8 @@ import re
 import torch
 
 if __name__ == '__main__':
-    dir = '/media/PKing/新加卷/SDK/base-utils/test_py/demo2.py'
-    dir = '/media/PKing/新加卷/SDK/base-utils/test_py1/demo2.py'
-    print(os.path.isdir(dir))
-    print(os.path.isfile(dir))
+    image_dir = "/media/PKing/新加卷1/个人文件/video/download/download3"
+    # image_dir = "/media/PKing/新加卷1/个人文件/video/download/download1"
+    # image_dir = "/media/PKing/新加卷1/个人文件/video/download/demo"
+    out_list = image_utils.get_similar_images(image_dir, remove=True, vis=True, delay=1000)
+    print(out_list)

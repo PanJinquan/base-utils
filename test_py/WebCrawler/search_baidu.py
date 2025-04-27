@@ -11,7 +11,7 @@ headers = {
 }
 
 
-def search_images(keyword, output, prefix, max_nums=50):
+def search_images(keyword, output, prefix, max_nums=50, timeout=3):
     encoded_keyword = urllib.parse.quote(keyword)
     print(f"开始搜索关键词: {keyword}")
     pages = 0
@@ -34,7 +34,7 @@ def search_images(keyword, output, prefix, max_nums=50):
                     name = f"{prefix}_{count + 1 :0=4d}.{exts}"  # 文件名
                     path = os.path.join(output, name)  # 保存路径
                     if exts not in ["jpg", "png", "jpeg"]: continue
-                    if http_utils.download_file(url, path): count += 1
+                    if http_utils.download_file(url, path, timeout=timeout): count += 1
                     time.sleep(0.5)
                 except Exception as e:
                     print(f"下载图片失败: {str(e)}")
@@ -48,7 +48,7 @@ def search_images(keyword, output, prefix, max_nums=50):
 
 if __name__ == "__main__":
     keywords = ['低头人脸照片', '闭眼人脸照片', '张嘴人脸照片', "侧脸人脸照片"]
-    output = "/home/PKing/Downloads/search_images/biying"
+    output = "/home/PKing/Downloads/search_images/baidu"
     for i, word in tqdm(enumerate(keywords)):
         keyword = f"{word}"
         prefix = f"image4_{i :0=4d}"

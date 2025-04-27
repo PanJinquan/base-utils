@@ -13,7 +13,7 @@ headers = {
 }
 
 
-def search_images(keyword, output, prefix, max_nums=50):
+def search_images(keyword, output, prefix, max_nums=50, timeout=3):
     # 构建搜索URL
     search_url = "https://cn.bing.com/images/search"
     pages = 0
@@ -35,7 +35,7 @@ def search_images(keyword, output, prefix, max_nums=50):
                     name = f"{prefix}_{count + 1 :0=4d}.{exts}"  # 文件名
                     path = os.path.join(output, name)  # 保存路径
                     if exts not in ["jpg", "png", "jpeg"]: continue
-                    if http_utils.download_file(url, path): count += 1
+                    if http_utils.download_file(url, path, timeout=timeout): count += 1
                     time.sleep(0.5)
                 except Exception as e:
                     print(f"下载图片失败: {str(e)}")
