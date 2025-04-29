@@ -23,6 +23,7 @@ def clip_xyxy(xyxy: np.ndarray, valid_range):
     :return:
     """
     if len(xyxy) == 0: return xyxy
+    if not isinstance(xyxy, np.ndarray): xyxy = np.asarray(xyxy)
     xmin, ymin, xmax, ymax = valid_range
     xyxy[:, [0, 2]] = np.clip(xyxy[:, [0, 2]], xmin, xmax)
     xyxy[:, [1, 3]] = np.clip(xyxy[:, [1, 3]], ymin, ymax)

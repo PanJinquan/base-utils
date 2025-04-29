@@ -275,7 +275,7 @@ huggingface-cli download KwaiVGI/LivePortrait --local-dir pretrained_weights --e
 | YOLOv5m | 640 | 44.5 |
 
 
-## 格式化
+## 文档注释
 
 ```python
 # -*- coding: utf-8 -*-
@@ -288,3 +288,10 @@ huggingface-cli download KwaiVGI/LivePortrait --local-dir pretrained_weights --e
 # --------------------------------------------------------
 """
 ```
+
+## 解决终端粘贴出现^[[200~
+在~/.bashrc中配置
+- bind 'set enable-bracketed-paste off'
+
+
+

@@ -61,7 +61,7 @@ def video2gif(video_file, gif_file=None, func=None, interval=1, use_pil=False, f
         image_utils.frames2gif_by_imageio(frames, gif_file=gif_file, fps=fps, loop=0)
 
 
-def video2frames(video_file, out_dir=None, func=None, interval=1, vis=True, delay=10):
+def video2frames(video_file, out_dir=None, func=None, interval=1, start=0, end=-1, vis=True, delay=10):
     """
     视频抽帧图像
     :param video_file: 视频文件
@@ -73,26 +73,14 @@ def video2frames(video_file, out_dir=None, func=None, interval=1, vis=True, dela
     """
     name = os.path.basename(video_file).split(".")[0]
     if not out_dir:  out_dir = os.path.join(os.path.dirname(video_file), name)
-    video_cap = get_video_capture(video_file)
-    width, height, num_frames, fps = get_video_info(video_cap)
-    if not interval: interval = fps
-    if not os.path.exists(out_dir): os.makedirs(out_dir)
-    count = 0
-    while True:
-        if count % interval == 0:
-            # 设置抽帧的位置
-            video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
-            isSuccess, frame = video_cap.read()
-            if not isSuccess or 0 < num_frames < count: break
-            if func:
-                frame = func(frame)
-            if vis:
-                image_utils.cv_show_image("frame", frame, use_rgb=False, delay=delay)
-            frame_file = os.path.join(out_dir, "{}_{:0=4d}.jpg".format(name, count))
-            cv2.imwrite(frame_file, frame)
-        count += 1
-    video_cap.release()
-    cv2.destroyAllWindows()
+    video_cap = video_iterator(video_file, save_video=None, interval=interval, start=start, end=end)
+    for data_info in video_cap:
+        frame = data_info["frame"]
+        count = data_info["count"]
+        if func: frame = func(frame)
+        if vis: image_utils.cv_show_image("frame", frame, use_rgb=False, delay=delay)
+        frame_file = os.path.join(out_dir, "{}_{:0=4d}.jpg".format(name, count))
+        cv2.imwrite(frame_file, frame)
 
 
 def video2frames_similarity(video_file, out_dir=None, func=None, interval=1, thresh=0.3, vis=True):
@@ -297,7 +285,7 @@ def video_iterator(video_file: int or str, save_video: str or int = None, interv
     w, h, num_frames, fps = image_utils.get_video_info(video_cap)
     start = int(kwargs.get("start", 0) * fps)
     end = int(kwargs.get("end", num_frames / fps) * fps) if fps > 0 else 0
-    end = min(end, num_frames)  # TODO 当num_frames<0时，使用0<end<count继续播放
+    end = min(end, num_frames) if end > 0 else num_frames  # TODO 当num_frames<0时，使用0<end<count继续播放
     interval = fps if interval == -1 else interval  # 当interval=-1，表示interval=fps,即一秒一帧
     save_fps = max(kwargs.get("speed", 1) * fps // interval, 1)
     count = 0

@@ -174,7 +174,7 @@ class VIADataset(Dataset):
         :param slices: 时间片段集合
         :param default:  未标注的视频片段的默认label
         :param offset: 对标注的视频片段进行偏移offset=(左边界,右边界)
-        :return: label视频片段的标注label, dist距离最近label的时间差
+        :return: label视频片段的标注label, dist距离最近label的时间差(秒)
         """
         c = -1
         dist = np.inf
@@ -213,15 +213,21 @@ class VIADataset(Dataset):
         """
         print(video_file)
         print(annot_file)
-        video = video_utils.video_iterator(video_file, save_video=None, interval=5, vis=True, delay=delay)
+        video = video_utils.video_iterator(video_file, save_video=None, interval=15, vis=False, delay=delay)
         name = os.path.basename(video_file).split(".")[0]
         labels, slices = self.load_annotations(annot_file)
+        index = 0
         for data_info in video:
+            index = index + 1
             count = data_info["count"]
             frame = data_info["frame"]
             vtime = count / data_info['fps']  # 视频时刻
+            if count <= 0: continue
             label, dist = self.get_video_label(vtime, labels, slices)
-            if label == "face" and dist < 5: continue  # TODO 为避免label定义模糊，跳过边界附近的图片
+            dist = dist * data_info['fps']
+            if label == "face" and index % 3 > 0: continue
+            if label == "face" and dist < 30: continue  # TODO 为避免label定义模糊，跳过边界附近的图片
+            if label == "低头" and dist < 8: continue  # TODO 为避免label定义模糊，跳过边界附近的图片
             if output:
                 outfile = os.path.join(output, label, f"{name}_{count:0=4d}.jpg")
                 file_utils.create_file_path(outfile)
@@ -232,10 +238,8 @@ class VIADataset(Dataset):
 
 
 if __name__ == '__main__':
-    video_dir = "/media/PKing/新加卷1/个人文件/video/driving"
-    video_file = "/media/PKing/新加卷1/个人文件/video/driving/DF0001.mp4"
-    annot_file = "/media/PKing/新加卷1/个人文件/video/driving/DF0001.csv"
-    output = "/media/PKing/新加卷1/个人文件/video/face-frame"
+    video_dir = "/home/PKing/nasdata/tmp/tmp/RealFakeFace/living/sample2/video"
+    output = "/home/PKing/nasdata/tmp/tmp/RealFakeFace/living/sample2/video-frame"
     via = VIADataset(video_dir)
     # via.video_extracter(video_file, annot_file, output=output)
     via.video_extracter_example(output=output)
