@@ -5,40 +5,63 @@
     @Date   : 2024-10-29 11:33:21
     @Brief  : https://blog.csdn.net/jixiaoyu0209/article/details/140444906
 """
-from pymilvus import connections, FieldSchema, CollectionSchema, DataType, Collection
+import cv2
+import numpy as np
+from pymilvus import MilvusClient
+from pymilvus import MilvusClient, DataType
+from pybaseutils import image_utils, file_utils
 
-# 连接 Milvus 服务
-connections.connect(host='localhost', port='19530')
+client = MilvusClient("http://192.168.2.52:19530")
+collection_name = "example04"  # 集合名称
+dim = 10 * 10
 
-# 指定集合名和字段
-collection_name = 'test_collection'
-vector_field_name = 'vec_field'
 
-# 创建集合（如果已存在，则不需要这一步）
-dim = 128
-field = FieldSchema(name=vector_field_name, dtype=DataType.FLOAT_VECTOR, is_primary=True, dim=dim)
-schema = CollectionSchema(fields=[field], description="test collection")
+def create():
+    schema = MilvusClient.create_schema(auto_id=True, enable_dynamic_field=False)
+    schema.add_field(field_name="id", datatype=DataType.INT64, is_primary=True)
+    schema.add_field(field_name="vector", datatype=DataType.FLOAT_VECTOR, dim=dim)
+    schema.add_field(field_name="name", datatype=DataType.VARCHAR, max_length=256)
+    schema.verify()
+    index_params = client.prepare_index_params()
+    index_params.add_index(
+        field_name="id",
+        index_type="STL_SORT"
+    )
+    index_params.add_index(
+        field_name="vector",
+        index_type="IVF_FLAT",
+        metric_type="L2",
+        params={"nlist": 1024}
+    )
+    # 创建 collection
+    client.create_collection(
+        collection_name=collection_name,
+        schema=schema,
+        index_params=index_params
+    )
 
-# 如果集合不存在则创建
-if collection_name not in collections.list_collections():
-    collection = Collection(name=collection_name, schema=schema)
 
-# 查询当前集合
-collection = Collection(name=collection_name)
-collection.load()  # 加载集合
+def insert():
+    image_dir = "/media/PKing/新加卷/SDK/base-utils/data/test_image"
+    image_list = file_utils.get_files_list(image_dir)
+    for image_file in image_list:
+        print(image_file)
+        image = image_utils.read_image(image_file)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        image = image_utils.resize_image(image, size=(10, 10))
+        # 提取特征向量
+        features = np.asarray(image.reshape(-1) / 255.0, dtype=np.float32)
+        # milvus
+        client.insert(
+            collection_name=collection_name,
+            data={
+                "vector": features,
+                "name": image_file
+            }
+        )
+    client.flush(collection_name=collection_name)
 
-# 查询参数
-search_param = {
-    "metric_type": "L2",
-    "params": {
-        "nprobe": 10
-    }
-}
 
-# 查询向量
-query_vector = [0.1, 0.2] * dim  # 假设的查询向量
-search_results = collection.search(vector_field_name=vector_field_name, query_records=[query_vector],
-                                   top_k=10, params=search_param)
-
-# 打印搜索结果
-print(search_results)
+if __name__ == '__main__':
+    create()
+    insert()

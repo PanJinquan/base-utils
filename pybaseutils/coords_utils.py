@@ -106,7 +106,7 @@ def cxcywh2xyxy(cxcywh: np.ndarray, width=None, height=None, normalized=False):
 def extend_xyxy(xyxy: np.ndarray, scale=[1.0, 1.0], valid_range=[], fixed=False, use_max=True):
     """
     :param bboxes: [[xmin, ymin, xmax, ymax]]
-    :param scale: [sx,sy]==>(W,H)
+    :param scale: [sx,sy]==>(W,H),（sx1,sy1,sx2,sy2）,1.0表示不缩放，<1.0表示缩小倍数，>1.0表示扩大倍数
     :param valid_range:有效范围(xmin,ymin,xmax,ymax)
     :param fixed: 长宽是否按照相同大小扩展
                  当长宽比相差比较大，直接scale会导致短边扩展不明显，
@@ -115,22 +115,30 @@ def extend_xyxy(xyxy: np.ndarray, scale=[1.0, 1.0], valid_range=[], fixed=False,
     """
     if len(xyxy) == 0 or len(scale) == 0: return xyxy
     if not isinstance(xyxy, np.ndarray): xyxy = np.asarray(xyxy)
-    cxcywh = xyxy.copy()
-    if fixed:
-        cxcywh[:, 0] = (xyxy[:, 2] + xyxy[:, 0]) / 2  # cx
-        cxcywh[:, 1] = (xyxy[:, 3] + xyxy[:, 1]) / 2  # cy
-        dw = (xyxy[:, 2] - xyxy[:, 0]) * (scale[0] - 1)
-        dh = (xyxy[:, 3] - xyxy[:, 1]) * (scale[1] - 1)
-        dp = np.vstack((dw, dh))
-        dp = np.max(dp, axis=0) if use_max else np.min(dp, axis=0)
-        cxcywh[:, 2] = (xyxy[:, 2] - xyxy[:, 0]) + dp  # w
-        cxcywh[:, 3] = (xyxy[:, 3] - xyxy[:, 1]) + dp  # h
-    else:
-        cxcywh[:, 0] = (xyxy[:, 2] + xyxy[:, 0]) / 2  # cx
-        cxcywh[:, 1] = (xyxy[:, 3] + xyxy[:, 1]) / 2  # cy
-        cxcywh[:, 2] = (xyxy[:, 2] - xyxy[:, 0]) * scale[0]  # w
-        cxcywh[:, 3] = (xyxy[:, 3] - xyxy[:, 1]) * scale[1]  # h
-    dxyxy = cxcywh2xyxy(cxcywh, width=None, height=None, normalized=False)
+    if len(scale) == 2:
+        cxcywh = xyxy.copy()
+        if fixed:
+            cxcywh[:, 0] = (xyxy[:, 2] + xyxy[:, 0]) / 2  # cx
+            cxcywh[:, 1] = (xyxy[:, 3] + xyxy[:, 1]) / 2  # cy
+            dw = (xyxy[:, 2] - xyxy[:, 0]) * (scale[0] - 1)
+            dh = (xyxy[:, 3] - xyxy[:, 1]) * (scale[1] - 1)
+            dp = np.vstack((dw, dh))
+            dp = np.max(dp, axis=0) if use_max else np.min(dp, axis=0)
+            cxcywh[:, 2] = (xyxy[:, 2] - xyxy[:, 0]) + dp  # w
+            cxcywh[:, 3] = (xyxy[:, 3] - xyxy[:, 1]) + dp  # h
+        else:
+            cxcywh[:, 0] = (xyxy[:, 2] + xyxy[:, 0]) / 2  # cx
+            cxcywh[:, 1] = (xyxy[:, 3] + xyxy[:, 1]) / 2  # cy
+            cxcywh[:, 2] = (xyxy[:, 2] - xyxy[:, 0]) * scale[0]  # w
+            cxcywh[:, 3] = (xyxy[:, 3] - xyxy[:, 1]) * scale[1]  # h
+        dxyxy = cxcywh2xyxy(cxcywh, width=None, height=None, normalized=False)
+    elif len(scale) == 4:
+        xywh = xyxy2xywh(xyxy)
+        xyxy[:, 0] = xyxy[:, 0] + xywh[:, 2] * (1 - scale[0])
+        xyxy[:, 1] = xyxy[:, 1] + xywh[:, 3] * (1 - scale[1])
+        xyxy[:, 2] = xyxy[:, 2] - xywh[:, 2] * (1 - scale[2])
+        xyxy[:, 3] = xyxy[:, 3] - xywh[:, 3] * (1 - scale[3])
+        dxyxy = xyxy
     if valid_range: dxyxy = clip_xyxy(dxyxy, valid_range=valid_range)
     return dxyxy
 

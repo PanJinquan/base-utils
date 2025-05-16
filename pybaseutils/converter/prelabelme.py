@@ -15,7 +15,15 @@ from pybaseutils import http_utils, base64_utils, file_utils, image_utils
 
 
 class PreLabelme(object):
-    """调用API接口进行预标注，并保持为Labelme数据格式"""
+    """
+    调用API接口进行预标注，并保持为Labelme数据格式
+    接口必须返回字段:
+            boxes 必选
+            label 必选
+            score 可选
+            names 可选
+            segms 可选
+    """
 
     def __init__(self, url, headers=None, timeout=6, max_retries=1):
         """
@@ -29,7 +37,7 @@ class PreLabelme(object):
     def request(self, params, **kwargs):
         """
         :param params:
-        :return: boxes,names,segms,label,score
+        :return: boxes,label,names,segms,,score
         """
         params.update(kwargs)
         params = base64_utils.serialization(params)

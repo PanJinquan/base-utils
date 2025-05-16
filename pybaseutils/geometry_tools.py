@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-    @Project: PyKinect2-OpenCV
-    @File   : geometry_tools.py
-    @Author : Pan
-    @E-mail : 390737991@qq.com
-    @Date   : 2019-10-11 09:23:21
+    @Author : PKing
+    @E-mail :
+    @Date   : 2024-05-23 11:24:37
+    @Brief  :
 """
-# -*- coding: utf-8 -*-
-
 import numpy as np
+from scipy.spatial.distance import cdist
 
 
 def compute_point2point_distance(area_point, target_point):

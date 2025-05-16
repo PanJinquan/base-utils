@@ -21,8 +21,8 @@ def video_converter(root, out):
 
 
 def resize_video():
-    video_file = "/home/PKing/nasdata/dataset/tmp/hand-pose/demo/video3-1080p.mp4"
-    save_video = "/home/PKing/nasdata/dataset/tmp/hand-pose/demo/video3-640p.mp4"
+    video_file = "/media/PKing/新加卷/SDK/project/cv-sdk-ncnn/cv-sdk-ncnn/data/video/face_person.avi"
+    save_video = "/media/PKing/新加卷/SDK/project/cv-sdk-ncnn/cv-sdk-ncnn/data/video/face_person.mp4"
     video_utils.resize_video(video_file, save_video, size=(None, 640), interval=1, vis=True, delay=10)
 
 
@@ -33,8 +33,8 @@ def rotate_video():
 
 
 if __name__ == "__main__":
-    root = "/home/PKing/nasdata/dataset-dmai/AIJE/技能人才系统_数据集管理/01-江门四维数据/01-37道考题视频/江门四维2024-12-05-冲击试验/2024-12-05-冲击试验/dav"
-    out = "/home/PKing/nasdata/dataset-dmai/AIJE/技能人才系统_数据集管理/01-江门四维数据/01-37道考题视频/江门四维2024-12-05-冲击试验/2024-12-05-冲击试验/mp4"
-    video_converter(root, out)
-    # resize_video()
+    # root = "/home/PKing/nasdata/dataset-dmai/AIJE/技能人才系统_数据集管理/01-江门四维数据/01-37道考题视频/江门四维2024-12-05-冲击试验/2024-12-05-冲击试验/dav"
+    # out = "/home/PKing/nasdata/dataset-dmai/AIJE/技能人才系统_数据集管理/01-江门四维数据/01-37道考题视频/江门四维2024-12-05-冲击试验/2024-12-05-冲击试验/mp4"
+    # video_converter(root, out)
+    resize_video()
     # rotate_video()

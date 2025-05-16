@@ -841,22 +841,22 @@ def get_files_list_v1(file_dir, prefix="", postfix=None, basename=False, sub=Fal
     return file_list
 
 
-def get_files_list(file_dir, prefix="", postfix=None, basename=False, sub=False):
+def get_files_list(file_dir, prefix="", postfix=None, sub=False, basename=False):
     """
     获得file_dir目录下，后缀名为postfix所有文件列表，包括子目录所有文件
     :param file_dir:
     :param prefix: 前缀
     :param postfix: 后缀
-    :param basename: 返回的列表是文件名（True），还是文件的完整路径(False)
     :param sub: 是否去除根路径
+    :param basename: 返回的列表是文件名（True），还是文件的完整路径(False)
     :return:
     """
     file_list = get_all_files(file_dir)
     file_list = text_utils.find_match_texts(file_list, pattern=[prefix], org=True) if prefix else file_list
     file_list = text_utils.find_match_texts(file_list, pattern=postfix, org=True) if postfix else file_list
     file_list.sort()
-    file_list = get_basename(file_list) if basename else file_list
     if sub: file_list = get_sub_list(file_list, dirname=file_dir)
+    if basename: file_list = [os.path.basename(f) for f in file_list]
     return file_list
 
 

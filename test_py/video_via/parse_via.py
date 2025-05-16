@@ -238,8 +238,8 @@ class VIADataset(Dataset):
 
 
 if __name__ == '__main__':
-    video_dir = "/home/PKing/nasdata/tmp/tmp/RealFakeFace/living/sample2/video"
-    output = "/home/PKing/nasdata/tmp/tmp/RealFakeFace/living/sample2/video-frame"
+    video_dir = "/home/PKing/nasdata/tmp/tmp/RealFakeFace/living/driving"
+    output = video_dir + "-frame"
     via = VIADataset(video_dir)
     # via.video_extracter(video_file, annot_file, output=output)
     via.video_extracter_example(output=output)

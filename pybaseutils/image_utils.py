@@ -1084,13 +1084,13 @@ def draw_image_bboxes_labels_text(image, boxes, labels, boxes_name=None, color=N
 
 
 def draw_image_boxes_labels_texts(image, boxes, labels, texts=None, color=None, thickness=2, fontScale=0.8,
-                                  drawType="custom", top=True):
+                                  drawType="custom", top=True, color_table=color_table):
     if isinstance(labels, np.ndarray):
         labels = labels.reshape(-1).tolist()
     texts = texts if texts else labels
     for label, box, name in zip(labels, boxes, texts):
         box = [int(b) for b in box]
-        color_ = color if color else color_map[int(label) + 1]
+        color_ = color if color else color_table[int(label) + 1]
         image = draw_image_box_text(image, box, color_, str(name), thickness, fontScale, drawType, top)
     return image
 

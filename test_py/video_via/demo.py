@@ -18,7 +18,7 @@ from test_py.video_via import parse_via
 from pybaseutils import json_utils, pandas_utils, image_utils, file_utils
 
 if __name__ == '__main__':
-    video_dir = "/home/PKing/nasdata/tmp/tmp/RealFakeFace/living/portrait/videos/portrait2"
+    video_dir = "/home/PKing/nasdata/tmp/tmp/RealFakeFace/living/dataset-v1/video"
     annot_dir = "/home/PKing/nasdata/tmp/tmp/RealFakeFace/living/driving"
     output = video_dir + "-frame"
     via = parse_via.VIADataset(video_dir)

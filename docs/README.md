@@ -243,7 +243,8 @@ git config --global credential.helper store
 - https://hf-mirror.com/
 - https://blog.csdn.net/weixin_43431218/article/details/135403324
 - https://blog.csdn.net/weixin_43431218/article/details/135544365
-- 如果是github.com的地址，则直接替换为githubfast.com
+- 克隆github的仓库，请将github.com替换为githubfast.com
+- 下载github的文件，则可以在这里下载：https://down.npee.cn/
 - 如果是huggingface.co的地址，则直接替换为hf-mirror.com
 
 ```bash

@@ -47,7 +47,8 @@ if __name__ == '__main__':
     # url = 'http://192.168.68.102:5000/detect'
     url = 'http://0.0.0.0:5000/detect'
     # image_dir = "/media/PKing/新加卷1/个人文件/video/video/frame"
-    image_dir = "/home/PKing/nasdata/tmp/tmp/RealFakeFace/living/portrait/videos/portrait1-frame"
+    # image_dir = "/home/PKing/nasdata/tmp/tmp/RealFakeFace/living/portrait/videos/portrait2-frame"
+    image_dir = "/home/PKing/nasdata/tmp/tmp/RealFakeFace/living/dataset-v1/image"
     # image_dir = "/home/PKing/nasdata/tmp/tmp/RealFakeFace/living/portrait/image/portrait220"
     # image_dir = "/home/PKing/nasdata/tmp/tmp/RealFakeFace/living/portrait/image/portrait764"
     clsss_dict = {}

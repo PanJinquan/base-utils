@@ -129,23 +129,16 @@ class Dataset(object):
         return Dataset.read_file(filename, split=split)
 
     @staticmethod
-    def get_file_list(dir_root, postfix=['*.jpg'], basename=True):
+    def get_file_list(dir_root, postfix=['*.jpg'], sub=False, basename=True):
         """
         获得文件列表
         :param dir_root: 图片文件目录
         :param postfix: 后缀名，可是多个如，['*.jpg','*.png']
+        :param sub: 是否去除根路径
         :param basename: 返回的列表是文件名（True），还是文件的完整路径(False)
         :return:
         """
-        file_list = []
-        for format in postfix:
-            format = os.path.join(dir_root, format)
-            image_list = glob.glob(format)
-            if image_list:
-                file_list += image_list
-        file_list = sorted(file_list)
-        if basename:
-            file_list = [os.path.basename(f).split(".")[0] for f in file_list]
+        file_list = file_utils.get_files_list(dir_root, prefix="", postfix=postfix, sub=sub, basename=basename)
         return file_list
 
     @staticmethod

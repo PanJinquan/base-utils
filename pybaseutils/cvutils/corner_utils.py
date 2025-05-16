@@ -76,6 +76,30 @@ def get_target_points(src_pts: np.ndarray):
     return dst_pts
 
 
+def get_order_points_index(src_pts):
+    """
+    对4个点按顺时针方向进行排序:[top-left, top-right, bottom-right, bottom-left]
+    top-left    ：对应y+x之和的最小点
+    bottom-right：对应y+x之和的最大点
+    top-right   ：对应y-x之差的最小点
+    bottom-left ：对应y-x之差的最大点
+         0(top-left)----(w10)----1(top-right)
+            |                       |
+          (h30)                    (h21)
+            |                       |
+        3(bottom-left)--(w23)---2(bottom-right)
+    :param src_pts: pts_dst [top-left, top-right, bottom-right, bottom-left]
+    :return:
+    """
+    s = src_pts.sum(axis=1)
+    d = np.diff(src_pts, axis=1)
+    i0 = np.argmin(s)
+    i2 = np.argmax(s)
+    i1 = np.argmin(d)
+    i3 = np.argmax(d)
+    return [i0, i1, i2, i3]
+
+
 def get_order_points(src_pts):
     """
     对4个点按顺时针方向进行排序:[top-left, top-right, bottom-right, bottom-left]
@@ -91,13 +115,8 @@ def get_order_points(src_pts):
     :param src_pts: pts_dst [top-left, top-right, bottom-right, bottom-left]
     :return:
     """
-    dst_pts = np.zeros(shape=(4, 2), dtype=np.float32)
-    s = src_pts.sum(axis=1)
-    dst_pts[0] = src_pts[np.argmin(s)]
-    dst_pts[2] = src_pts[np.argmax(s)]
-    d = np.diff(src_pts, axis=1)
-    dst_pts[1] = src_pts[np.argmin(d)]
-    dst_pts[3] = src_pts[np.argmax(d)]
+    index = get_order_points_index(src_pts)
+    dst_pts = src_pts[index]
     return dst_pts
 
 

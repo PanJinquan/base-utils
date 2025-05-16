@@ -5,8 +5,10 @@
     @Date   : 2024-10-29 11:26:34
     @Brief  :
 """
+import time
 from typing import List, Dict
-from pymilvus import (connections,
+from pymilvus import (db,
+                      connections,
                       utility,
                       FieldSchema,
                       CollectionSchema,
@@ -15,20 +17,39 @@ from pymilvus import (connections,
                       )
 
 # 连接到 Milvus 服务器
-connections.connect("default", uri="http://10.13.3.22:19530", db_name="aije_algorithm_dev")
+# connections.connect("default", uri="http://10.13.3.22:19530")
+# connections.connect("default", uri="http://127.0.0.1:19530")
+connections.connect("default", uri="http://192.168.2.52:19530")
+
+db_name = "aije_algorithm_dev"
+
+
+def create_database(db_name=db_name):
+    """
+    创建数据库
+    :param db_name:
+    :return:
+    """
+    if db_name not in db.list_database():
+        db.create_database(db_name)  # 仅企业版支持
+        print(f"Database '{db_name}' created")
+    else:
+        print(f"Database '{db_name}' already exists")
+    # 切换数据库
+    db.using_database(db_name)
 
 
 class MilvusCollection(object):
-    def __init__(self, collection_name, dim, drop=False):
+    def __init__(self, col_name, dim, drop=False):
         """
         向量数据库集合
-        :param collection_name:集合名称
+        :param col_name:集合名称
         :param dim: 数据特征维度(Embedding-Dim)
         :param drop: True,如果collection存在,则删除;
         """
         self.drop = drop
-        self.collection_name = collection_name
-        self.collection = self.create(collection_name=self.collection_name, dim=dim, drop=self.drop)
+        self.col_name = col_name
+        self.collection = self.create(col_name=self.col_name, dim=dim, drop=self.drop)
 
     @staticmethod
     def get_collections():
@@ -52,23 +73,23 @@ class MilvusCollection(object):
         return True
 
     @staticmethod
-    def create(collection_name, dim, drop=False) -> Collection:
+    def create(col_name, dim, drop=False) -> Collection:
         """
-        :param collection_name: 集合名称
+        :param col_name: 集合名称
         :param dim:  数据特征维度(Embedding-Dim)
         :param drop: True,如果collection存在,则删除;
         :return:
         """
-        if drop and utility.has_collection(collection_name):  # 删除原始的集合
-            utility.drop_collection(collection_name=collection_name)
+        if drop and utility.has_collection(col_name):  # 删除原始的集合
+            utility.drop_collection(collection_name=col_name)
         fields = [
-            FieldSchema(name='id', dtype=DataType.INT64, descrition='id of the embedding', is_primary=True,
-                        auto_id=True),
+            FieldSchema(name='id', dtype=DataType.INT64, descrition='embedding ID', is_primary=True, auto_id=True),
+            FieldSchema(name='feature', dtype=DataType.FLOAT_VECTOR, descrition='embedding vectors', dim=dim),
             FieldSchema(name='info', dtype=DataType.JSON, descrition='data information', max_length=500),
-            FieldSchema(name='feature', dtype=DataType.FLOAT_VECTOR, descrition='embedding vectors', dim=dim)
         ]
-        schema = CollectionSchema(fields=fields, description='video dedup')
-        collection = Collection(name=collection_name, schema=schema)
+        # 定义集合 Schema
+        schema = CollectionSchema(fields=fields, description='CollectionSchema')
+        collection = Collection(name=col_name, schema=schema)
         return collection
 
     def insert(self, inputs: List):
@@ -76,16 +97,23 @@ class MilvusCollection(object):
         :param inputs: [field0,field1,field2,...]
         :return:
         """
-        self.collection.insert(inputs)  # 插入数据
+        r = self.collection.insert(inputs)  # 插入数据
+        return r
 
-    def search(self, vectors: List, metric_type="IP", top_k=3):
+    def flush(self):
+        # 插入数据后，调用 flush 方法将数据持久化到磁盘。
+        self.collection.flush()
+
+    def search(self, vectors: List, metric_type="IP", top_k=3, flush=True):
         """
         :param vectors: 查询向量 [v0,v1,v2]
         :param metric_type: L2，IP(必须归一化)
                           参考：https://milvus.io/docs/v2.2.x/metric.md?tab=floating
         :param top_k:
+        :param flush: 查询前如果有插入操作，请先刷新
         :return:
         """
+        if flush: self.flush()
         # 创建索引
         index_params = {
             "index_type": "IVF_FLAT",
@@ -96,21 +124,21 @@ class MilvusCollection(object):
         # 加载集合
         self.collection.load()
         # 定义搜索参数
-        search_params = {"metric_type": metric_type, "params": {"nprobe": 10}}
+        params = {"metric_type": metric_type, "params": {"nprobe": 10}}
         # 执行搜索
-        results = self.collection.search(data=vectors,
-                                         anns_field="feature",
-                                         output_fields=["id", "info", "feature"],
-                                         param=search_params,
-                                         limit=top_k,
-                                         expr=None
-                                         )
+        output = self.collection.search(data=vectors,
+                                        anns_field="feature",
+                                        output_fields=["id", "feature", "info"],
+                                        param=params,
+                                        limit=top_k,
+                                        expr=None
+                                        )
         # 返回结果
-        outs = []
-        for hits in results:
+        results = []
+        for hits in output:
             r = [dict(id=hit.id, score=hit.score, fields=hit.fields) for hit in hits]
-            outs.append(r)
-        return outs
+            results.append(r)
+        return results
 
     def print_results(self, results: List):
         print("----" * 20)

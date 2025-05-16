@@ -150,11 +150,11 @@ class LabelMeDataset(Dataset):
         if not image_dir:
             image_dir = self.search_path(data_root, ["images", "JPEGImages"])
         if image_dir and not image_ids:
-            image_ids = self.get_file_list(image_dir, postfix=file_utils.IMG_POSTFIX, basename=False)
-            image_ids = [os.path.basename(f) for f in image_ids]
+            image_ids = self.get_file_list(image_dir, postfix=file_utils.IMG_POSTFIX, sub=True, basename=False)
+            if not anno_dir: anno_dir = image_dir
         elif anno_dir and not image_ids:
-            image_ids = self.get_file_list(anno_dir, postfix=["*.json", "*.xml"], basename=False)
-            image_ids = [os.path.basename(f) for f in image_ids]
+            image_ids = self.get_file_list(anno_dir, postfix=file_utils.IMG_POSTFIX, sub=True, basename=False)
+            if not image_dir: image_dir = anno_dir
         assert isinstance(anno_dir, str) and os.path.exists(anno_dir), "no anno_dir :{}".format(anno_dir)
         assert isinstance(image_dir, str) and os.path.exists(image_dir), "no image_dir:{}".format(image_dir)
         assert len(image_ids) > 0, f"image_ids is empty,image_dir={image_dir},anno_dir={anno_dir}"
@@ -330,7 +330,7 @@ class LabelMeDataset(Dataset):
             width = annotation.get('imageWidth', -1)
             height = annotation.get('imageHeight', -1)
         except:
-            print("illegal annotation:{}".format(anno_file))
+            # print("illegal annotation:{}".format(anno_file))
             annos = []
             width = -1
             height = -1
@@ -487,8 +487,7 @@ def show_target_image(image, boxes, labels, points, keypoints=[], color=(), thic
 if __name__ == "__main__":
     from pybaseutils.converter import build_labelme
 
-    anno_dir = "/home/PKing/Downloads/sample/images"
-    # anno_dir = "/home/PKing/Downloads/冲击试验/sample/images"
+    anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-action-cvlm-v2/train-v2/01-核相操作/dataset-v01/images"
     names = None
     dataset = LabelMeDatasets(filename=None,
                               data_root=None,

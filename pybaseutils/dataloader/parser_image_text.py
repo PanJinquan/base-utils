@@ -47,6 +47,7 @@ class TextDataset(Dataset):
         self.check = check
         self.kwargs = kwargs
         self.label_index = kwargs.get("label_index", "label")  # 类别字段key
+        self.crop_scale = kwargs.get("crop_scale", [])  # TODO bbox缩放系数
         self.class_name, self.class_dict = self.parser_classes(class_name)
         self.item_list = self.parser_dataset(data_file, data_root=data_root, label_index=self.label_index,
                                              shuffle=shuffle, check=check)
@@ -68,6 +69,7 @@ class TextDataset(Dataset):
 
     def info(self, save_info=""):
         print("----------------------- {} DATASET INFO -----------------------".format(self.phase.upper()))
+        print("Dataset kwargs        :{}".format(self.kwargs))
         print("Dataset num_samples   :{}".format(len(self.item_list)))
         print("Dataset num_classes   :{}".format(self.num_classes))
         print("Dataset class_name    :{}".format(self.class_name))
@@ -163,10 +165,9 @@ class TextDataset(Dataset):
         file, label, bbox = item["file"], item[self.label_index], item.get("bbox", [])
         name = self.class_name[label]
         image = self.read_image(file, use_rgb=self.use_rgb)
-        image = self.crop_image(image, bbox=bbox, **self.kwargs) if bbox else image
+        image = self.crop_image(image, bbox=bbox, **self.kwargs)
         if self.transform:
-            image = Image.fromarray(image)
-            image = self.transform(image)
+            image = self.transform(Image.fromarray(image))
         if image is None:
             index = int(random.uniform(0, self.num_samples))
             return self.__getitem__(index)
@@ -178,7 +179,13 @@ class TextDataset(Dataset):
         return len(self.item_list)
 
     def crop_image(self, image, bbox, **kwargs):
-        """裁剪图片"""
+        """
+        裁剪图片
+        :param image:
+        :param bbox:
+        :param kwargs:  use_max,use_mean,crop_scale
+        :return:
+        """
         if len(bbox) == 0: return image
         boxes = image_utils.get_square_boxes(boxes=[bbox],
                                              use_max=kwargs.get("use_max", False),

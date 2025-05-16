@@ -8,7 +8,7 @@
 import numpy as np
 import math
 from sklearn import metrics, preprocessing
-import heapq
+from scipy.spatial.distance import cdist
 
 
 def softmax(x, axis=1):
@@ -112,6 +112,27 @@ def feature_matching(inputs, target, use_max=True):
     return index, score
 
 
+def points_minmax_distance(points, use_max=False):
+    """
+    计算点集合中最大/最小的距离
+    :param points: 点集合
+    :param use_max:
+    :return: value 最大/最小的距离
+             index 最大/最小的距离的index
+    """
+    points = np.array(points)
+    dist_mat = cdist(points, points)  # 距离矩阵
+    # dist_mat.argmax()返回最大值一维索引，再使用unravel_index返回多维数组中的位置(row,col)
+    if use_max:
+        np.fill_diagonal(dist_mat, 0)  # 忽略对角线（自己与自己的距离）
+        index = np.unravel_index(dist_mat.argmax(), dist_mat.shape)
+        value = dist_mat[index]
+    else:
+        np.fill_diagonal(dist_mat, np.inf)  # 忽略对角线（自己与自己的距离）
+        index = np.unravel_index(dist_mat.argmin(), dist_mat.shape)
+        value = dist_mat[index]
+    return value, index
+
 def get_nearest_point(points, center, axis=1, use_max=False):
     """
     求离center最近/最远的点
@@ -131,6 +152,7 @@ def get_nearest_point(points, center, axis=1, use_max=False):
     else:
         index = np.argmin(l2dist)
         distance = l2dist[index]
+    # distance = np.sqrt(distance)
     return index, distance
 
 
@@ -164,6 +186,7 @@ def get_nearest_point_minmax(points, center, axis=1, use_max=False, minmax=-1):
         while minmax > 0 and index < num and distance < minmax:
             index += 1
             distance = l2dist[indexes[index]]
+    # distance = np.sqrt(distance)
     return indexes[index], distance
 
 
@@ -188,10 +211,11 @@ def get_nearest_point_sort(points, center, axis=1, use_max=False, minmax=-1):
     else:
         indexes = np.argsort(l2dist)  # 从小到大排列
         distance = l2dist[indexes]
+    # distance = np.sqrt(distance)
     return indexes, distance
 
 
-def matching_data_vecror(data, vector):
+def matching_data_vector(data, vector):
     '''
     从data中匹配vector向量，查找出现vector的index,如：
     data = [[1., 0., 0.],[0., 0., 0.],[2., 0., 0.],
@@ -217,7 +241,7 @@ def matching_data_vecror(data, vector):
     return index
 
 
-def set_mat_vecror(data, index, vector):
+def set_mat_vector(data, index, vector):
     '''
     实现将data指定index位置的数据设置为vector
     # 实现将大于阈值分数的point，设置为vector = [10, 10]

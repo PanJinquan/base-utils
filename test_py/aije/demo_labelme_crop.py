@@ -104,17 +104,54 @@ if __name__ == "__main__":
                    "低压侧总刀闸合闸", "低压侧总刀闸分闸",
                    "面板单键开关断开", "面板单键开关合上",
                    "面板双键开关断开", "面板双键开关合上",
-                   "表箱关", "表箱开", "手", "其他",
+                   "柱上开关刀闸分闸", "柱上开关刀闸合闸",
+                   "低压开关断开", "低压开关合上",
+                   "表箱关", "表箱开", "其他",
                    ]
+    # 还差核相的数据
     datasets = [
-        "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/10-钳形电流表/dataset-v01-val/images",
-        "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/10-钳形电流表/dataset-v03/images"
+        "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/37-带电接火/dataset-v04-special/images",
+        "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/37-带电接火/dataset-v04-special-val/images",
+        # "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/03-架空线接地/dataset-v01/images",
+        # "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/03-架空线接地/dataset-v01-val/images",
+        # "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/06-地网电阻/dataset-v01/images",
+        # "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/06-地网电阻/dataset-v01-val/images",
+        # "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/06-地网电阻/dataset-v02/images",
+        # "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/06-地网电阻/dataset-v02-val/images",
+        # "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/10-钳形电流表/dataset-v01/images",
+        # "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/10-钳形电流表/dataset-v01-val/images",
+        # "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/10-钳形电流表/dataset-v02-special/images",
+        # "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/10-钳形电流表/dataset-v02-special-val/images",
+        # "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/10-钳形电流表/dataset-v03/images",
+        # "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/10-钳形电流表/dataset-v03-val/images",
+        # "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/10-钳形电流表/dataset-v04-special/images",
+        # "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/10-钳形电流表/dataset-v04-special-val/images",
+        # "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/32-绝缘包扎/dataset-v01/images",
+        # "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/32-绝缘包扎/dataset-v01-val/images",
+        # "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/32-绝缘包扎/dataset-v02/images",
+        # "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/32-绝缘包扎/dataset-v02-val/images",
+        # "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/33-日常巡视/dataset-v01/images",
+        # "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/33-日常巡视/dataset-v01-val/images",
+        # "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/33-日常巡视/dataset-v02/images",
+        # "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/33-日常巡视/dataset-v02-val/images",
+        # "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/35-清除飘挂物/dataset-v23/images",
+        # "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/35-清除飘挂物/dataset-v23-val/images",
+        # "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/36-低压开关/dataset-v01/images",
+        # "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/36-低压开关/dataset-v01-val/images",
+        # "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/36-低压开关/dataset-v02/images",
+        # "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/36-低压开关/dataset-v02-val/images",
+        # "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/37-带电接火/dataset-v01/images",
+        # "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/37-带电接火/dataset-v02/images",
+        # "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/37-带电接火/dataset-v02-val/images",
+        # "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/37-带电接火/dataset-v03/images",
+        # "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/37-带电接火/dataset-v03-val/images",
     ]
     # dataroot = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det"
     # datasets = get_sub_dataset(dataroot)
     class_name = []
     for anno_dir in datasets:
         print(anno_dir)
+        assert os.path.exists(anno_dir), anno_dir
         out_dir = os.path.join(os.path.dirname(anno_dir), "crops")
         if os.path.exists(out_dir) and out_dir.endswith("crops"): file_utils.remove_dir(out_dir)
         file_utils.create_dir(out_dir)
