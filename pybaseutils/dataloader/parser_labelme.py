@@ -94,8 +94,7 @@ class LabelMeDataset(Dataset):
         :return:
         """
         image_file = os.path.join(image_dir, image_name)
-        img_postfix = image_name.split(".")[-1]
-        image_id = image_name[:-len(img_postfix) - 1]
+        image_id, img_postfix = file_utils.split_postfix(image_file)
         anno_file = os.path.join(anno_dir, "{}.json".format(image_id))
         return image_file, anno_file, image_name
 

@@ -3,26 +3,39 @@
     @Author : PKing
     @E-mail :
     @Date   : 2024-05-23 11:24:37
-    @Brief  :
+    @Brief  : Series是一维数据结构，DataFrame二维表格结构，由多个Series组成（每列是一个Series）
 """
 import os
 
 import cv2
 import numpy as np
-from sympy.printing.pretty.pretty_symbology import center
 from tqdm import tqdm
-from pybaseutils import file_utils, image_utils, numpy_utils
+from pybaseutils import file_utils, image_utils, numpy_utils, pandas_utils, json_utils
 from pybaseutils.cvutils import corner_utils
 from pybaseutils.dataloader import parser_labelme
 from pybaseutils.converter import build_labelme
 from scipy.spatial.distance import cdist
+import hashlib
+import pandas as pd
+import nltk
+from rich import print_json
 
-if __name__ == "__main__":
-    boxes = [[100, 100, 500, 600]]
-    image_file = "/home/PKing/Pictures/DMovie/image-2025-05-12-13h52m05s385.jpg"
-    image = cv2.imread(image_file)
-    image = image_utils.draw_image_boxes(image, boxes, color=(255, 0, 0),thickness=6)
-    # boxes = image_utils.extend_xyxy(boxes, scale=[0.9,0.9])
-    boxes = image_utils.extend_xyxy(boxes, scale=[1.0, 0.9, 1.0, 1.0])
-    image = image_utils.draw_image_boxes(image, boxes, color=(0, 255, 0),thickness=2)
-    image = image_utils.cv_show_image("image", image)
+punkt_path = "/home/PKing/nltk_data"
+from nltk.tokenize import sent_tokenize
+import pprint
+
+import json
+
+data = {
+    "name": "张三",
+    "age": 30,
+    "boxes": [[0, 0, 0, 0], [1, 1, 1, 1], [3, 3, 3, 3]],
+    "is_student": False,
+    "courses": ["数学", "英语"]
+}
+
+# 转换为JSON格式的字符串（带缩进美化）
+json_str = json.dumps(data, indent=4, ensure_ascii=False)
+print(json_str)
+print("----------"*10)
+print_json(json.dumps(data, ensure_ascii=False))

@@ -8,6 +8,28 @@
 #           运行方法：python app_webio_image.py
 # --------------------------------------------------------
 """
+import gradio as gr
+from pathlib import Path
 
-if __name__ == '__main__':
-    pass
+import os
+import shutil
+from pathlib import Path
+import gradio as gr
+
+
+with gr.Blocks() as demo:
+    with gr.Row():
+        with gr.Column():
+            gr.Text(value='1')
+            gr.Text(value='2')
+        with gr.Column():
+            gr.Text(value='3')
+            gr.Text(value='4')
+    with gr.Row():
+        with gr.Column():
+            gr.Text(value='11')
+            gr.Text(value='21')
+        with gr.Column():
+            gr.Text(value='31')
+            gr.Text(value='41')
+demo.launch()

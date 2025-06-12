@@ -7,7 +7,7 @@
 xdg-open ./
 # 查找某个文件
 find /usr -name libnvidia-ml* 
-
+dir=$(dirname $0) # 当前文件的路径
 ```
 
 - tmux 快捷键
@@ -261,6 +261,7 @@ export HF_ENDPOINT=https://hf-mirror.com # 或者写入~/.bashrc中
 - 方法1：https://blog.csdn.net/gmmmmmmmm/article/details/135953651 (将下载连接huggingface.co`替换为 hf-mirror.com)
 - 方法2：https://modelscope.cn/my/overview
 - import huggingface_hub.constants 可以修改访问路径
+- 默认保持地址：~/.cache/huggingface/hub
 
 ```bash
 # !pip install -U "huggingface_hub[cli]"

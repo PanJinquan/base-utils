@@ -50,7 +50,7 @@ class FolderDataset(parser_image_text.TextDataset):
         保存格式：[path,label] 或者 [path,label,xmin,ymin,xmax,,ymax]
         :param data_file:
         :param data_root:
-        :return: item_list [{"file":file,"label":label}]
+        :return: item_list [{"file","label","name","bbox"}],bbox非必须
         """
         if isinstance(data_file, str): data_file = [data_file]
         item_list = []
@@ -61,7 +61,7 @@ class FolderDataset(parser_image_text.TextDataset):
             print("loading data from:{},have {},label:{}".format(dir, len(paths), len(set(labels))))
             # TODO # 避免多个数据集的相同的label
             if use_sub:  labels = [os.path.join(str(i), l) for l in labels]
-            data = [{"file": p, "label": l} for p, l in zip(paths, labels)]
+            data = [{"file": p, "label": l, 'name': l} for p, l in zip(paths, labels)]
             item_list += data
         return item_list
 
@@ -70,7 +70,7 @@ if __name__ == '__main__':
     from pybaseutils import image_utils
     from torchvision import transforms
 
-    image_dir = ['/home/PKing/nasdata/release/infrastructure/DMClassification/data/dataset/train']
+    image_dir = ['/home/PKing/nasdata/release/infrastructure/DMClassification/data/dataset/test']
     class_name = []
     input_size = [224, 224]
     rgb_mean = [0., 0., 0.]
@@ -84,7 +84,7 @@ if __name__ == '__main__':
                             transform=transform,
                             shuffle=True,
                             class_name=class_name,
-                            resample=True,
+                            resample=False,
                             disp=True)
     for i in range(len(dataset)):
         data_info = dataset.__getitem__(i)

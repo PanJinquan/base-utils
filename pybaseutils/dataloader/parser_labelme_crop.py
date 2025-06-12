@@ -49,11 +49,11 @@ class LabelmeDataset(parser_image_text.TextDataset):
                                              **kwargs)
         print("LabelmeDataset    have images:{},have samples:{}".format(len(self.item_list), self.num_samples))
 
-    def parser_dataset(self, data_file, **kwargs):
+    def parser_dataset(self, data_file, data_root="", label_index="label", shuffle=False, check=False):
         """
         获得Labelme所有目标信息
         :param dataset:
-        :return:
+        :return: [{"file","label","name","bbox"}],bbox非必须
         """
         self.dataset = parser_labelme.LabelMeDatasets(filename=None,
                                                       data_root=None,
@@ -80,6 +80,12 @@ class LabelmeDataset(parser_image_text.TextDataset):
                                       )
                                  )
         assert len(item_list) > 0, f"item_list is empty, check your data_file is ={data_file}"
+        if not self.class_name:
+            self.class_name = list(set([d['name'] for d in item_list]))
+            self.class_name, self.class_dict = self.parser_classes(self.class_name)
+        for i in range(len(item_list)):
+            info = item_list[i]
+            info.update(label=self.class_dict[info['name']])
         return item_list
 
     def __getitem__(self, index):
@@ -90,7 +96,7 @@ class LabelmeDataset(parser_image_text.TextDataset):
         item: dict = copy.deepcopy(self.item_list[index])  # TODO Fix a bug: 避免修改原始数据
         file, bbox = item["file"], item.get("bbox", [])
         image = self.read_image(file, use_rgb=self.use_rgb)
-        image = self.crop_image(image, bbox=bbox, **self.kwargs)
+        image = self.crop_image(image, bbox=bbox, crop_scale=self.crop_scale, **self.kwargs)
         if self.transform:
             image = self.transform(Image.fromarray(image))
         if image is None:
@@ -102,14 +108,13 @@ class LabelmeDataset(parser_image_text.TextDataset):
 if __name__ == '__main__':
     from torchvision import transforms
 
-    filename = "/home/PKing/nasdata/tmp/tmp/RealFakeFace/face-gesture/dataset-v3/image"
-    # filename = "/home/PKing/nasdata/tmp/tmp/RealFakeFace/living/dataset-v2/image"
+    filename = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-person-action/train-v2/台架区1/dataset-v20/images"
     batch_size = 1
     crop_scale = (1.2, 1.2)
     input_size = [224, 224]
     rgb_mean = [0., 0., 0.]
     rgb_std = [1.0, 1.0, 1.0]
-    class_name = ["face", "闭眼", "张嘴", "低头", "侧脸"]
+    class_name = None
     transform = transforms.Compose([
         transforms.Resize(input_size),
         transforms.ToTensor(),

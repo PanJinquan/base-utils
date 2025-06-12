@@ -1,5 +1,7 @@
 # CUDA，cuDNN安装方法
+
 - CUDA_VISIBLE_DEVICES=7,6,5,4 python train.py
+
 ## 常用的命令
 
 ```bash
@@ -11,6 +13,7 @@
 ```
 
 ## 安装显卡
+
 ```bash
 sudo apt update && sudo apt install -y kmod 
 wget https://us.download.nvidia.com/tesla/535.161.07/NVIDIA-Linux-x86_64-535.161.07.run
@@ -58,6 +61,7 @@ pip install  --no-cache-dir torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaud
 ## 安装TensorRT
 
 #### 方法1
+
 - 下载：TensorRT-8.4.1.5.Linux.x86_64-gnu.cuda-11.6.cudnn8.4，然后进入文件进行拷贝
 
 ```bash
@@ -84,12 +88,6 @@ sudo ldconfig # 修改完成后，让配置生效
 - 安装pycuda: pip install --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple pycuda==2022.1
 - Linux下的安装命令：
 
-```bash
-pip install tensorrt
-pip install nvidia-pyindex
-pip install nvidia-tensorrt==8.4.1.5 (版本與TensorRT-8.4.1.5.Linux.x86_64-gnu.cuda-11.6.cudnn8.4匹配即可)
-```
-
 #### 方法2
 
 ```bash
@@ -99,12 +97,22 @@ pip install tensorrt-8.6.0-cp310-none-win_amd64.whl
 pip install opencv-python
 ```
 
+#### 方法3(只安装Python版本,但很多接口不兼容)：
+
+```bash
+# python 3.10.0,cuda 12.1 
+pip --default-timeout=1000000000  install tensorrt -i https://pypi.tuna.tsinghua.edu.cn/simple # 耗时比较长，耐心等待
+pip install pycuda
+pip install nvidia-pyindex
+pip install nvidia-tensorrt==8.4.1.5 (版本與TensorRT-8.4.1.5.Linux.x86_64-gnu.cuda-11.6.cudnn8.4匹配即可)
+```
+
 ## 制定GPU
 
 ```bash
 CUDA_VISIBLE_DEVICES=0 OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 python train.py
 ```
 
-
 ## 没有root权限安装CUDA
+
 - 参考：https://blog.csdn.net/qq_41105401/article/details/126038851 

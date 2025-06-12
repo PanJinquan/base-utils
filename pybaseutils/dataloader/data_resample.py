@@ -178,6 +178,8 @@ class DataResample(object):
                 class_count[label] += 1
             except Exception as e:
                 class_count[label] = 1
+        from pybaseutils import json_utils
+        class_count = json_utils.dict_sort(class_count,use_key=True)
         return class_count
 
     @staticmethod

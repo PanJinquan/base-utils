@@ -29,7 +29,7 @@ from pybaseutils import font_style
 from pybaseutils.coords_utils import *
 from pybaseutils.cvutils import corner_utils
 
-color_table = [(0, 0, 0), (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 255, 255), (255, 0, 255), (255, 255, 0),
+color_table = [(0, 0, 0), (0, 255, 0), (255, 0, 0), (0, 0, 255), (0, 255, 255), (255, 0, 255), (255, 255, 0),
                (128, 0, 0), (0, 128, 0), (128, 128, 0),
                (0, 0, 128), (128, 0, 128), (0, 128, 128), (128, 128, 128),
                (64, 0, 0), (192, 0, 0), (64, 128, 0), (192, 128, 0),
@@ -180,7 +180,7 @@ def show_images_list(name, images_list, delay=0):
     cv2.waitKey(delay)
 
 
-def resize_image_like(image_list, dst_img, is_rgb=False, use_pad=False, interpolation=cv2.INTER_NEAREST):
+def resize_image_like(image_list, dst_img=None, is_rgb=False, use_pad=False, interpolation=cv2.INTER_NEAREST):
     """
     按dst_img的图像大小对image_list所有图片进行resize
     :param image_list: 图片列表
@@ -188,9 +188,14 @@ def resize_image_like(image_list, dst_img, is_rgb=False, use_pad=False, interpol
     :param is_rgb: 是否将灰度图转换为RGB格式
     :return:
     """
+    for image in image_list if dst_img is None else []:
+        if isinstance(image, np.ndarray):
+            dst_img = image
+            break
     shape = dst_img.shape
     is_rgb = len(shape) == 3 or is_rgb
     for i in range(len(image_list)):
+        if image_list[i] is None: image_list[i] = np.zeros_like(dst_img)
         if not shape[:2] == image_list[i].shape[:2]:
             if use_pad:
                 image_list[i] = resize_image_padding(image_list[i], (shape[1], shape[0]), interpolation=interpolation)
@@ -204,7 +209,7 @@ def resize_image_like(image_list, dst_img, is_rgb=False, use_pad=False, interpol
 def image_hstack(images, split_line=False, is_rgb=False, texts=[], fontScale=-1.0, thickness=-1, use_pad=False):
     """图像左右拼接"""
     if len(images) == 0: return images
-    dst_images = resize_image_like(image_list=images, dst_img=images[0], is_rgb=is_rgb, use_pad=use_pad)
+    dst_images = resize_image_like(image_list=images, is_rgb=is_rgb, use_pad=use_pad)
     thickness, fontScale = get_linesize(max(images[0].shape), thickness=thickness, fontScale=fontScale)
     dst_images = np.hstack(dst_images)
     if len(dst_images.shape) == 2:
@@ -225,7 +230,7 @@ def image_hstack(images, split_line=False, is_rgb=False, texts=[], fontScale=-1.
 def image_vstack(images, split_line=False, is_rgb=False, texts=[], fontScale=-1.0, thickness=-1, use_pad=False):
     """图像上下拼接"""
     if len(images) == 0: return images
-    dst_images = resize_image_like(image_list=images, dst_img=images[0], is_rgb=is_rgb, use_pad=use_pad)
+    dst_images = resize_image_like(image_list=images, is_rgb=is_rgb, use_pad=use_pad)
     thickness, fontScale = get_linesize(max(images[0].shape), thickness=thickness, fontScale=fontScale)
     dst_images = np.vstack(dst_images)
     if len(dst_images.shape) == 2:

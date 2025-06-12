@@ -96,6 +96,7 @@ docker pull docker-0.unsee.tech/nvidia/cuda:11.3.1-cudnn8-devel-ubuntu20.04 # nv
 image=docker.dm-ai.cn/algorithm-research/panjinquan/cuda-11.3.1-cudnn8-devel-ubuntu20.04:base # nvidia-docker基础镜像,无python
 image=docker.dm-ai.cn/algorithm-research/panjinquan/cuda-11.3.1-cudnn8-devel-ubuntu20.04-py3.10:base # nvidia-docker基础镜像,python3.10
 image=docker.dm-ai.cn/algorithm-research/panjinquan/cuda-11.3.1-cudnn8-devel-ubuntu20.04-py3.10:ncnn # nvidia-docker基础镜像,python3.10,ncnn模型推理
+image=docker.dm-ai.cn/algorithm-research/panjinquan/cuda-11.3.1-cudnn8-devel-ubuntu20.04-py3.10:torch2.1.0
 
 # docker pull pavelogurthov/vulkan vulkan在CUDA12.X测试正常，但在CUDA11.X异常
 docker pull docker-0.unsee.tech/randomgraphics/vulkan:11.2.182-cuda-11.3.1-ubuntu-20.04 

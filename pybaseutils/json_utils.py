@@ -28,14 +28,17 @@ def str2dict(data: str):
     return None
 
 
-def dict_sort_by_value(data: Dict, reverse=False):
+def dict_sort(data: Dict, reverse=False, use_key=True):
     """
-    按照字典的value值排序
-    :param src:
+    按照字典的key/value值排序
+    :param data:
     :param reverse: False 升序
                     True  降序
     """
-    dst = dict(sorted(data.items(), key=lambda x: x[1], reverse=reverse))
+    if use_key:
+        dst = dict(sorted(data.items(), key=lambda x: x[0], reverse=reverse))
+    else:
+        dst = dict(sorted(data.items(), key=lambda x: x[1], reverse=reverse))
     return dst
 
 
@@ -151,27 +154,5 @@ def toolz_assoc_in(data, keys, value):
 
 
 if __name__ == "__main__":
-    content = {
-        "code": "0",
-        "data": {
-            "image": ["image1", 0],
-            "file": {"file1": "path/to/image1.jpg", "file2": 2, "file3": ["file3_v1", "file3_v2"], },
-            "url": "url1"
-        }
-    }
-    func = lambda k, v: isinstance(v, numbers.Number)
-    # 遍历获得data中所有value的路径
-    keys, values = get_keys_vaules(content, func=func)
-    for k, v in zip(keys, values):
-        print("path={}\t    value={}".format(k, v))
-    print("===" * 20)
-    # toolz使用toolz工具或得所有keys的值,values1与values的值是一样的
-    # values1 = get_values(content, keys=keys)
-    # values1 = get_values(content, keys=[['data1', 'image', 1], ['data', 'file', 'file11']])
-    values1 = get_value(None, key=['data', 'image', 1], default={"data"})
-    print(values1)
-    print("===" * 20)
-    values = list(range(len(values)))
-    content = set_values(content, keys=keys, values=values)
-    print(formatting(content))
-    print("===" * 20)
+    data = {'C': 0, 'A': 5, 'B': 3, 'D': 2}
+    print(dict_sort(data))

@@ -29,8 +29,13 @@ if __name__ == "__main__":
     anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-negetive/dataset-v02/json"
     # anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-date/date-det/dataset-v01/images"
     anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-action-cvlm-v2/train-v2/01-核相操作/dataset-test/images"
+    anno_dir = [
+        # "/home/PKing/nasdata/tmp/tmp/face_person/SMTC/json",
+        "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-action-cvlm-v2/sample/images"
+    ]
     names = None
-    # names = {'手拿安全帽帽撑': 0}
+    # names = {'person': 0, "身穿工作服": 0, "未穿工作服": 0}
+    # names = ['身穿工作服,未穿工作服', '手,手穿绝缘手套,手穿棉纱手套,手穿其他手套']
     dataset = parser_labelme.LabelMeDatasets(filename=None,
                                              data_root=None,
                                              anno_dir=anno_dir,
@@ -40,7 +45,7 @@ if __name__ == "__main__":
                                              phase="val",
                                              shuffle=True)
     class_name = dataset.class_name
-    class_file = os.path.join(os.path.dirname(anno_dir), "class_name.txt")
+    class_file = os.path.join(os.path.dirname(anno_dir[0]), "class_name.txt")
     file_utils.write_list_data(class_file, class_name)
     print("have num:{}".format(len(dataset)))
     for i in tqdm(range(len(dataset))):

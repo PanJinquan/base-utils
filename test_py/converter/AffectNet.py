@@ -57,7 +57,7 @@ class ParseAsian(object):
         self.shuffle = shuffle
         if file:
             data = pandas_utils.read_csv(file)
-            self.item_list = pandas_utils.get_rows_by_keys(data, keys=["pth", "label"]).values.tolist()
+            self.item_list = pandas_utils.get_cols(data, keys=["pth", "label"]).values.tolist()
         else:
             images = file_utils.get_images_list(image_dir)
             images = file_utils.get_sub_list(images, image_dir)

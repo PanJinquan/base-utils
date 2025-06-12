@@ -78,7 +78,7 @@ class Dataset(object):
         else:
             class_dict = None
         if class_dict:
-            class_dict = json_utils.dict_sort_by_value(class_dict, reverse=False)
+            # class_dict = json_utils.dict_sort(class_dict, reverse=False)
             class_name = {}
             for n, i in class_dict.items():
                 class_name[i] = "{},{}".format(class_name[i], n) if i in class_name else n

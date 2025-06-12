@@ -75,40 +75,62 @@ def torch_norm(x, axis=-1):
     return y
 
 
-def feature_similarity(inputs, target):
+def feature_similarity(v1, v2, axis=-1, norm=False):
     """
-    计算特征相似性
-    similarity = inputs @ target.T                 # torch
-    similarity = np.sum(inputs * target, axis=-1)  # numpy
-    :param inputs: 输入待匹配的特点，shape=(n,D),其中n表示样本个数，D表示特征维度
-    :param target: 目标匹配数据库,shape=(N,D),其中N表示数据库样本个数，D表示特征维度
-    :return: similarity
+    计算特征相似性(1:1)
+    计算余弦相似度s=dot(v1, v2)/ |v1||v2|，
+    如果输入vector已经特征归一化了，则无须计算两个向量的模,可简化为s=dot(v1, v2)
+    特征归一化: y = x / np.linalg.norm(x, axis=axis, keepdims=True)
+    :param v1: (1,D),v1和v2的维度必须相同
+    :param v2: (1,D),v1和v2的维度必须相同
+    :return:
     """
-    assert inputs.shape[1] == target.shape[1]  # 特征维度必须一致
-    inputs_ = np.expand_dims(inputs, axis=1)  # (b,512)->(b,1,512)
-    target_ = np.expand_dims(target, axis=0)  # (n, 512)->(1, n, 512)
-    similarity = np.sum(inputs_ * target_, axis=-1)  # (b,1,512) * (1, n, 512)
-    return similarity
+    if not isinstance(v1, np.ndarray): v1 = np.array(v1)
+    if not isinstance(v2, np.ndarray): v2 = np.array(v2)
+    assert v1.shape[1] == v2.shape[1]  # 特征维度必须一致
+    # 计算两个向量的点积 np.dot(v1, v2)
+    # s = np.dot(v1, v2.T)  # =np.sum(v1 * v2, axis=-1)
+    s = np.sum(v1 * v2, axis=axis)
+    if norm:
+        # 计算两个向量的模
+        n1 = np.linalg.norm(v1, axis=axis)
+        n2 = np.linalg.norm(v2, axis=axis)
+        # 计算余弦相似度
+        s = s / (n1 * n2)
+    return s
 
 
-def feature_matching(inputs, target, use_max=True):
+cosine_similarity = feature_similarity
+
+
+def feature_matching(v1, v2, norm=False, use_max=True, axis=-1):
     """
-    按照相似程度进行特征匹配，输入特征数据必须进行特征归一化:
-    y = x / x.norm(dim=-1, keepdim=True)               # torch
-    y = x / np.linalg.norm(x, axis=-1, keepdims=True)  # numpy
-    :param inputs: 输入待匹配的特点，shape=(n,D),其中n表示样本个数，D表示特征维度
-    :param target: 目标匹配数据库,shape=(N,D),其中N表示数据库样本个数，D表示特征维度
-    :param use_max:按照相似程度进行匹配
-    :return: index： 与target匹配的索引
-             score：与target匹配的最小L2距离(欧式距离=np.sqrt(L2)=np.sqrt(distance))
+    进行特征匹配(1:N)
+    similarity = v1 @ v2.T                 # torch
+    similarity = np.sum(v1 * v2, axis=-1)  # numpy
+    :param v1: 输入待匹配的特征，shape=(N1,D),其中n表示样本个数，D表示特征维度
+    :param v2: 输入目标匹配的数据库,shape=(N2,D),其中N表示数据库样本个数，D表示特征维度
+    :param norm: 如果输入vector已经特征归一化了，则无须计算两个向量的模,可简化为s=np.dot(v1, v2)
+    :param use_max: 返回分值最大的
+    :return: 返回index, score
     """
-    similarity = feature_similarity(inputs, target)
+    assert v1.shape[1] == v2.shape[1]  # 特征维度必须一致
+    v1 = np.expand_dims(v1, axis=1)  # (n1,512)->(n1,1,512)
+    v2 = np.expand_dims(v2, axis=0)  # (n2,512)->(1,n2,512)
+    # 相似度矩阵s[i][j]，表示v1的第i行与v2的第j行的余弦相似度
+    s = np.sum(v1 * v2, axis=-1)  # (n1,1,512)*(1,n2,512)=(n1,n2)
+    if norm:
+        # 计算两个向量的模
+        n1 = np.linalg.norm(v1, axis=axis)
+        n2 = np.linalg.norm(v2, axis=axis)
+        # 计算余弦相似度
+        s = s / (n1 * n2)
     if use_max:
-        index = np.argmax(similarity, axis=1)
-        score = np.max(similarity, axis=1)
+        index = np.argmax(s, axis=axis)
+        score = np.max(s, axis=axis)
     else:
-        index = np.argmin(similarity, axis=1)
-        score = np.min(similarity, axis=1)
+        index = np.argmin(s, axis=axis)
+        score = np.min(s, axis=axis)
     return index, score
 
 
@@ -132,6 +154,7 @@ def points_minmax_distance(points, use_max=False):
         index = np.unravel_index(dist_mat.argmin(), dist_mat.shape)
         value = dist_mat[index]
     return value, index
+
 
 def get_nearest_point(points, center, axis=1, use_max=False):
     """
@@ -395,7 +418,7 @@ def __print(data, info=""):
         print("{}".format(data[index]))
 
 
-def euclidean_distance(p1, p2, axis=1):
+def euclidean_distance(v1, v2, axis=-1):
     """
     计算欧氏距离
     point1 = [[3, 4], [4, 3], [4, 3]]
@@ -410,7 +433,10 @@ def euclidean_distance(p1, p2, axis=1):
     d2 = numpy_utils.norm(point1 - center, p=2, axis=1)
     d3 = numpy_utils.euclidean_distance(point1, center, axis=1)
     """
-    d = np.sqrt(np.sum(np.square(p1 - p2), axis=axis))
+    if not isinstance(v1, np.ndarray): v1 = np.asarray(v1)
+    if not isinstance(v2, np.ndarray): v2 = np.asarray(v2)
+    # d = np.sqrt(np.sum((v1 - v2) ** 2, axis=axis))
+    d = np.sqrt(np.sum(np.square(v1 - v2), axis=axis))
     return d
 
 

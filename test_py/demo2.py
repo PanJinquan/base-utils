@@ -19,8 +19,8 @@ import re
 import torch
 
 if __name__ == '__main__':
-    image_dir = "/media/PKing/新加卷1/个人文件/video/download/download3"
-    # image_dir = "/media/PKing/新加卷1/个人文件/video/download/download1"
-    # image_dir = "/media/PKing/新加卷1/个人文件/video/download/demo"
-    out_list = image_utils.get_similar_images(image_dir, remove=True, vis=True, delay=1000)
-    print(out_list)
+    image_file = "/home/PKing/nasdata/release/eduea/eduea-calligraphy-preprocessing/test/image_bug.png"
+    gray = cv2.imread(image_file,flags=cv2.IMREAD_UNCHANGED)
+    edges = cv2.Canny(gray, threshold1=0, threshold2=255, apertureSize=3)
+    cv2.imshow("gray", gray)
+    cv2.waitKey(0)

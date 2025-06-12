@@ -6,11 +6,10 @@
     @Brief  :
 """
 import cv2
-import numbers
 import numpy as np
-from app.utils import geometry_tools, common_utils
-from pybaseutils import image_utils, file_utils
-from app.infercore.base import base_utils
+from test_py.app import geometry_tools, common_utils
+from pybaseutils import image_utils
+from test_py.app import base_utils
 
 # skeleton连接线，keypoint关键点名称，num_joints关键点个数
 BONES = {

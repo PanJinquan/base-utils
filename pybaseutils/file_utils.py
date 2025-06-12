@@ -19,6 +19,7 @@ import concurrent.futures
 import numbers
 import pickle
 import argparse
+import hashlib
 import itertools
 from datetime import datetime
 from tqdm import tqdm
@@ -70,6 +71,32 @@ def get_kwargs_name(**kwargs):
 def get_file_size(file, rate=1024):
     """获得文件大小"""
     return os.path.getsize(file) / rate
+
+
+def get_file_hash(file):
+    """
+    根据文件内容生成唯一ID(hash)
+    :param file:
+    :return:
+    """
+    with open(file, "rb") as f:
+        data = f.read()
+    hash = hashlib.sha256(data).hexdigest()
+    return hash
+
+
+def get_data_hash(data: np.ndarray):
+    """
+    根据data数据生成唯一ID(hash)
+    :param data:
+    :return:
+    """
+    # 确保数据是C-contiguous的，然后转换为bytes
+    data = data if data.flags.c_contiguous else np.ascontiguousarray(data)
+    byte = data.tobytes()
+    # 使用SHA-256生成哈希值
+    hash = hashlib.sha256(byte).hexdigest()
+    return hash
 
 
 def replace_elements(items, src, dst, ignore=True):
@@ -416,6 +443,39 @@ def change_postfix(file: str, postfix: str):
     return file
 
 
+def split_postfix(file):
+    """分离文件名和后者名"""
+    name = os.path.basename(file)
+    postfix = name.split(".")[-1]
+    name_id = name[:-len(postfix) - 1]
+    return name_id, postfix
+
+
+def split_path_postfix(path):
+    """
+    获得文件的前缀prefix和后缀postfix
+    对于path/to/file.txt其前缀prefix='path/to/file'，后缀postfix='txt'
+    :param path:
+    :return:
+    """
+    postfix = path.split(".")[-1]
+    prefix = path[:-len(postfix) - 1]
+    return prefix, postfix
+
+
+def get_files_id(file_list):
+    """
+    :param file_list:
+    :return:
+    """
+    image_idx = []
+    for path in file_list:
+        basename = os.path.basename(path)
+        id = basename.split(".")[0]
+        image_idx.append(id)
+    return image_idx
+
+
 def randam_select_images(image_list, nums, shuffle=True):
     """
     randam select nums images
@@ -485,31 +545,6 @@ def remove_prefix_files(file_dir, prefix):
 
 get_files_with_prefix = get_prefix_files
 remove_files_with_prefix = remove_prefix_files
-
-
-def get_file_prefix_postfix(filename):
-    """
-    获得文件的前缀prefix和后缀postfix
-    对于path/to/file.txt其前缀prefix='path/to/file'，后缀postfix='txt'
-    :param filename:
-    :return:
-    """
-    postfix = filename.split(".")[-1]
-    prefix = filename[:-len(postfix) - 1]
-    return prefix, postfix
-
-
-def get_files_id(file_list):
-    """
-    :param file_list:
-    :return:
-    """
-    image_idx = []
-    for path in file_list:
-        basename = os.path.basename(path)
-        id = basename.split(".")[0]
-        image_idx.append(id)
-    return image_idx
 
 
 def remove_file(path):

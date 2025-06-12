@@ -13,7 +13,7 @@ sys.path.append(os.getcwd())
 import PIL.Image as Image
 import numpy as np
 import random
-import math
+import time
 import cv2
 from tqdm import tqdm
 from pybaseutils.dataloader.base_dataset import Dataset, ConcatDataset
@@ -36,18 +36,26 @@ class TextDataset(Dataset):
         :param phase:
         :param disp:
         :param check:
-        :param kwargs: use_max,use_mean,crop_scale,resample,save_info
+        :param kwargs:  log: print or log.info
+                        use_max,
+                        use_mean,
+                        crop_scale,
+                        resample,
+                        save_info,
+                        resample_interval
         """
         self.data_file = data_file
         self.data_root = data_root
         self.use_rgb = use_rgb
         self.transform = transform
         self.phase = phase
+        self.train = self.phase.lower() == "train"
         self.shuffle = shuffle
         self.check = check
         self.kwargs = kwargs
+        self.log = kwargs.get('log', print) if kwargs.get('log', print) else print
         self.label_index = kwargs.get("label_index", "label")  # 类别字段key
-        self.crop_scale = kwargs.get("crop_scale", [])  # TODO bbox缩放系数
+        self.crop_scale = kwargs.pop("crop_scale", [])  # TODO bbox缩放系数
         self.class_name, self.class_dict = self.parser_classes(class_name)
         self.item_list = self.parser_dataset(data_file, data_root=data_root, label_index=self.label_index,
                                              shuffle=shuffle, check=check)
@@ -65,17 +73,19 @@ class TextDataset(Dataset):
         self.classes = list(self.class_dict.values())
         self.num_classes = max(self.classes) + 1
         self.num_samples = len(self.item_list)
-        self.info(save_info=kwargs.get("save_info", ""))
+        self.t0 = time.time()
+        self.resample_interval = kwargs.get('resample_interval', 60)  # TODO 重采样间隔，低于该时间的不进行重采集，避免频繁采样
+        if self.log: self.info(save_info=kwargs.get("save_info", ""))
 
     def info(self, save_info=""):
-        print("----------------------- {} DATASET INFO -----------------------".format(self.phase.upper()))
-        print("Dataset kwargs        :{}".format(self.kwargs))
-        print("Dataset num_samples   :{}".format(len(self.item_list)))
-        print("Dataset num_classes   :{}".format(self.num_classes))
-        print("Dataset class_name    :{}".format(self.class_name))
-        print("Dataset class_dict    :{}".format(self.class_dict))
-        print("Dataset class_count   :{}".format(self.class_count))
-        print("Dataset resample      :{}".format(self.resample))
+        self.log("----------------------- {} DATASET INFO -----------------------".format(self.phase.upper()))
+        self.log("Dataset kwargs        :{}".format(self.kwargs))
+        self.log("Dataset num_samples   :{}".format(len(self.item_list)))
+        self.log("Dataset num_classes   :{}".format(self.num_classes))
+        self.log("Dataset class_name    :{}".format(self.class_name))
+        self.log("Dataset class_dict    :{}".format(self.class_dict))
+        self.log("Dataset class_count   :{}".format(self.class_count))
+        self.log("Dataset resample      :{}".format(self.resample))
         if save_info:
             if not os.path.exists(save_info): os.makedirs(save_info)
             m = np.mean(list(self.class_count.values()))
@@ -87,8 +97,8 @@ class TextDataset(Dataset):
             file_utils.save_json(os.path.join(save_info, f"{self.phase}_class_count.json"), self.class_count)
             file_utils.write_list_data(os.path.join(save_info, f"{self.phase}_class_name.txt"), self.class_name)
             file_utils.save_json(os.path.join(save_info, f"{self.phase}_class_lack.json"), class_lack)
-            print("loss_labels: {}".format(class_lack))
-        print("------------------------------------------------------------------")
+            self.log("loss_labels: {}".format(class_lack))
+        self.log("------------------------------------------------------------------")
 
     def parser_dataset(self, data_file, data_root="", label_index="label", shuffle=False, check=False):
         """
@@ -103,6 +113,7 @@ class TextDataset(Dataset):
         data_list = self.load_dataset(data_file, data_root=data_root)
         if not self.class_name:
             self.class_name = list(set([d[label_index] for d in data_list]))
+            self.class_name = sorted(self.class_name)
             self.class_name, self.class_dict = self.parser_classes(self.class_name)
         item_list = []
         for data in data_list:
@@ -120,10 +131,10 @@ class TextDataset(Dataset):
 
     def load_dataset(self, data_file, data_root="", **kwargs):
         """
-        保存格式：[path,label] 或者 [path,label,xmin,ymin,xmax,ymax]
+        txt保存格式：[path,name] 或者 [path,name,xmin,ymin,xmax,ymax]
         :param data_file:
         :param data_root:
-        :return: item_list [{"file":file,"label":label},"bbox":[]]
+        :return: item_list [{"file","label","name","bbox"}],bbox非必须
         """
         if isinstance(data_file, str): data_file = [data_file]
         item_list = []
@@ -132,10 +143,9 @@ class TextDataset(Dataset):
             content = file_utils.read_data(file, split=",")
             data = []
             for line in content:
-                if len(line) == 2:
-                    data.append({"file": os.path.join(root, line[0]), "label": line[1]})
-                elif len(line) == 6:
-                    data.append({"file": os.path.join(root, line[0]), "label": line[1], "bbox": line[2:]})
+                item = {"file": os.path.join(root, line[0]), "label": line[1], 'name': line[1]}
+                if len(line) == 6: item['bbox'] = line[2:]  # (xmin,ymin,xmax,ymax)
+                data.append(item)
             print("loading data from:{},have {}".format(file, len(data)))
             item_list += data
         return item_list
@@ -159,13 +169,12 @@ class TextDataset(Dataset):
     def __getitem__(self, index):
         """
         :param index:
-        :return: {"image": image, "label": label}
+        :return: {"image","label","name"}
         """
         item = self.item_list[index]
-        file, label, bbox = item["file"], item[self.label_index], item.get("bbox", [])
-        name = self.class_name[label]
+        file, label, name, bbox = item["file"], item[self.label_index], item['name'], item.get("bbox", [])
         image = self.read_image(file, use_rgb=self.use_rgb)
-        image = self.crop_image(image, bbox=bbox, **self.kwargs)
+        image = self.crop_image(image, bbox=bbox, crop_scale=self.crop_scale, **self.kwargs)
         if self.transform:
             image = self.transform(Image.fromarray(image))
         if image is None:
@@ -174,23 +183,25 @@ class TextDataset(Dataset):
         return dict(image=image, label=label, file=file, name=name)
 
     def __len__(self):
-        if self.resample:
+        self.t1 = time.time()  # seconds
+        dt = (self.t1 - self.t0)
+        if dt > self.resample_interval and self.resample:  # 如果时间间隔太小则不进行重采样
+            print(f"resample {self.phase} dataset")
             self.item_list = self.data_resample.update(True)
+            self.t0 = self.t1
         return len(self.item_list)
 
-    def crop_image(self, image, bbox, **kwargs):
+    def crop_image(self, image, bbox, crop_scale=[], use_max=False, use_mean=True, **kwargs):
         """
         裁剪图片
         :param image:
         :param bbox:
-        :param kwargs:  use_max,use_mean,crop_scale
+        :param kwargs: use_max,use_mean,crop_scale
         :return:
         """
         if len(bbox) == 0: return image
-        boxes = image_utils.get_square_boxes(boxes=[bbox],
-                                             use_max=kwargs.get("use_max", False),
-                                             use_mean=kwargs.get("use_mean", True))
-        boxes = image_utils.extend_xyxy(boxes, scale=kwargs.get("crop_scale", []))
+        boxes = image_utils.get_square_boxes(boxes=[bbox], use_max=use_max, use_mean=use_mean)
+        boxes = image_utils.extend_xyxy(boxes, scale=crop_scale)
         image = image_utils.get_boxes_crop(image, boxes)[0]
         return image
 
@@ -243,6 +254,7 @@ class TextDataset(Dataset):
         for item in item_list:
             label = item[label_index]
             count[label] = count[label] + 1 if label in count else 1
+        count = json_utils.dict_sort(count, use_key=True)
         if class_name: count = {class_name[k]: v for k, v in count.items()}
         return count
 
@@ -252,7 +264,7 @@ if __name__ == '__main__':
     from torchvision import transforms
 
     data_files = [
-        '/home/PKing/nasdata/tmp/tmp/RealFakeFace/anti-spoofing-images-v2/train.txt',
+        '/home/PKing/nasdata/tmp/tmp/RealFakeFace/anti-spoofing/anti-spoofing-images-v2/test.txt',
     ]
     class_name = None
     input_size = [112, 112]

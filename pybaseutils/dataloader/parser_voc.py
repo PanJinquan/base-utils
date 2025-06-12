@@ -90,8 +90,7 @@ class VOCDataset(Dataset):
         :param image_name:
         :return:
         """
-        img_postfix = image_name.split(".")[-1]
-        image_id = image_name[:-len(img_postfix) - 1]
+        image_id, img_postfix = file_utils.split_postfix(image_name)
         image_file = os.path.join(image_dir, image_name)
         annotation_file = os.path.join(anno_dir, "{}.xml".format(image_id))
         return image_file, annotation_file
