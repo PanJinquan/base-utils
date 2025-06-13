@@ -214,8 +214,8 @@ def get_square_boxes(boxes, use_max=True, use_mean=False, baseline=-1):
     """
     将boxes转换为正方形的boxes
     :param boxes:
-    :param use_max: 是否按照每个box(w,h)最大值(True)/最小值(False)进行转换(默认)
-    :param use_mean: 是否按照每个box(w,h)平均值进行转换(优先级比use_mean高)
+    :param use_max: 是否按照每个box(w,h)最大值(True)/最小值(False)进行转换(默认)，可以保证目标裁剪完整
+    :param use_mean: 是否按照每个box(w,h)平均值进行转换(优先级比use_max高),但当目标长宽比比较大时，可能出现目标裁剪不完整的问题
     :param baseline: 当baseline>0，表示正方形最小边长
     :return:
     """
@@ -279,10 +279,69 @@ def get_section(start, end, nums=2, scale=1.0, dtype=None):
     return out
 
 
-def get_boxes_iou(box1, box2):
+def get_boxes_iom(boxes1, boxes2):
     """
-    :param box1: 预测框(n, 4)
-    :param box2: GT框 (m, 4)
+    计算IOU=交集(A,B)/并集(A,B)
+    计算IOM=交集(A,B)/最小集(A,B)
+    参数:
+        boxes1: (N, 4) 的numpy数组, 格式为(xmin, ymin, xmax, ymax)
+        boxes2: (M, 4) 的numpy数组, 格式为(xmin, ymin, xmax, ymax)
+    返回:
+        iou_matrix: (N, M) 的numpy数组, 表示boxes1中每个box与boxes2中每个box的IOU
+    """
+    # 扩展维度以便广播计算
+    if not isinstance(boxes1, np.ndarray): boxes1 = np.array(boxes1)
+    if not isinstance(boxes2, np.ndarray): boxes2 = np.array(boxes2)
+    boxes1 = np.expand_dims(boxes1, axis=1)  # (N,1,4)
+    boxes2 = np.expand_dims(boxes2, axis=0)  # (1,M,4)
+    # 计算交集区域的坐标
+    xmin = np.maximum(boxes1[..., 0], boxes2[..., 0])
+    ymin = np.maximum(boxes1[..., 1], boxes2[..., 1])
+    xmax = np.minimum(boxes1[..., 2], boxes2[..., 2])
+    ymax = np.minimum(boxes1[..., 3], boxes2[..., 3])
+    # 计算交集区域面积
+    inter = np.maximum(xmax - xmin, 0) * np.maximum(ymax - ymin, 0)
+    # 计算每个box的面积
+    area1 = (boxes1[..., 2] - boxes1[..., 0]) * (boxes1[..., 3] - boxes1[..., 1])
+    area2 = (boxes2[..., 2] - boxes2[..., 0]) * (boxes2[..., 3] - boxes2[..., 1])
+    # 计算IOM(iou=area/min(s1, s2))
+    iom = inter / np.minimum(area1, area2)
+    return iom
+
+
+def get_boxes_iou(boxes1, boxes2):
+    """
+    计算两组边界框之间的IOU
+    参数:
+        boxes1: (N, 4) 的numpy数组, 格式为(xmin, ymin, xmax, ymax)
+        boxes2: (M, 4) 的numpy数组, 格式为(xmin, ymin, xmax, ymax)
+    返回:
+        iou_matrix: (N, M) 的numpy数组, 表示boxes1中每个box与boxes2中每个box的IOU
+    """
+    # 扩展维度以便广播计算
+    if not isinstance(boxes1, np.ndarray): boxes1 = np.array(boxes1)
+    if not isinstance(boxes2, np.ndarray): boxes2 = np.array(boxes2)
+    boxes1 = np.expand_dims(boxes1, axis=1)  # (N,1,4)
+    boxes2 = np.expand_dims(boxes2, axis=0)  # (1,M,4)
+    # 计算交集区域的坐标
+    xmin = np.maximum(boxes1[..., 0], boxes2[..., 0])
+    ymin = np.maximum(boxes1[..., 1], boxes2[..., 1])
+    xmax = np.minimum(boxes1[..., 2], boxes2[..., 2])
+    ymax = np.minimum(boxes1[..., 3], boxes2[..., 3])
+    # 计算交集区域面积
+    inter = np.maximum(xmax - xmin, 0) * np.maximum(ymax - ymin, 0)
+    # 计算每个box的面积
+    area1 = (boxes1[..., 2] - boxes1[..., 0]) * (boxes1[..., 3] - boxes1[..., 1])
+    area2 = (boxes2[..., 2] - boxes2[..., 0]) * (boxes2[..., 3] - boxes2[..., 1])
+    # 计算IOU
+    iou = inter / (area1 + area2 - inter + 1e-8)  # 添加小值避免除以0
+    return iou
+
+
+def get_boxes_iou_v2(boxes1, boxes2):
+    """
+    :param boxes1: 预测框(n, 4)
+    :param boxes2: GT框 (m, 4)
     :return: IOU (n, m)
     numpy 广播机制 从后向前对齐。 维度为1 的可以重复等价为任意维度
     eg: (4,3,2)   (3,2)  (3,2)会扩充为(4,3,2)
@@ -292,17 +351,15 @@ def get_boxes_iou(box1, box2):
     扩充维度的方法：
     eg: a  a.shape: (3,2)  a[:, None, :] a.shape: (3, 1, 2) None 对应的维度相当于newaxis
     """
-    if not isinstance(box1, np.ndarray):
-        box1 = np.array(box1)
-    if not isinstance(box2, np.ndarray):
-        box2 = np.array(box2)
-    lt = np.maximum(box1[:, None, :2], box2[:, :2])  # left_top (x, y)
-    rb = np.minimum(box1[:, None, 2:], box2[:, 2:])  # right_bottom (x, y)
-    wh = np.maximum(rb - lt + 1, 0)  # inter_area (w, h)
-    inter_areas = wh[:, :, 0] * wh[:, :, 1]  # shape: (n, m)
-    box_areas = (box1[:, 2] - box1[:, 0] + 1) * (box1[:, 3] - box1[:, 1] + 1)
-    gt_areas = (box2[:, 2] - box2[:, 0] + 1) * (box2[:, 3] - box2[:, 1] + 1)
-    iou = inter_areas / (box_areas[:, None] + gt_areas - inter_areas)
+    if not isinstance(boxes1, np.ndarray): boxes1 = np.array(boxes1)
+    if not isinstance(boxes2, np.ndarray): boxes2 = np.array(boxes2)
+    lt = np.maximum(boxes1[:, None, :2], boxes2[:, :2])  # left_top (x, y)
+    rb = np.minimum(boxes1[:, None, 2:], boxes2[:, 2:])  # right_bottom (x, y)
+    wh = np.maximum(rb - lt, 0)  # inter_area (w, h)
+    inter = wh[:, :, 0] * wh[:, :, 1]  # shape: (n, m)
+    area1 = (boxes1[:, 2] - boxes1[:, 0]) * (boxes1[:, 3] - boxes1[:, 1])
+    area2 = (boxes2[:, 2] - boxes2[:, 0]) * (boxes2[:, 3] - boxes2[:, 1])
+    iou = inter / (area1[:, None] + area2 - inter + 1e-8)
     return iou
 
 

@@ -197,6 +197,8 @@ class TextDataset(Dataset):
         :param image:
         :param bbox:
         :param kwargs: use_max,use_mean,crop_scale
+                use_max: 是否按照每个box(w,h)最大值(True)/最小值(False)进行转换(默认)，可以保证目标裁剪完整
+                use_mean: 是否按照每个box(w,h)平均值进行转换(优先级比use_max高),但当目标长宽比比较大时，可能出现目标裁剪不完整的问题
         :return:
         """
         if len(bbox) == 0: return image
