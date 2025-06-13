@@ -74,7 +74,7 @@ class CocoKeypoint(base_coco.CocoDataset):
         data = {"image": image, "boxes": boxes, "labels": labels,
                 "segs": [], "mask": [], "keypoints": keypoints, "target": [],
                 "image_id": image_id, "annotations": anns_info, "file_info": file_info,
-                "image_file": image_file, "size": [width, height], "class_name": self.class_name}
+                "image_file": image_file, "size": (width, height), "class_name": self.class_name}
         return data
 
 

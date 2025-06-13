@@ -188,7 +188,7 @@ class VOCDataset(Dataset):
         # return image, boxes, labels
         # return image, {"target": target, "image_id": image_id, "size": [width, height]}
         data = {"image": image, "target": target, "boxes": boxes, "labels": labels, "image_id": image_id,
-                "size": [width, height], "image_file": image_file}
+                "size": (width, height), "image_file": image_file}
         if num_boxes == 0 or len(labels) == 0:
             index = int(random.uniform(0, len(self)))
             data = self.__getitem__(index)

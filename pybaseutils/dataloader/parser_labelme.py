@@ -170,14 +170,14 @@ class LabelMeDataset(Dataset):
         if self.kwargs.get("read_image", True):  # 是否读取图片
             image = self.read_image(image_file, use_rgb=self.use_rgb)
             shape = image.shape
-            size = [shape[1], shape[0]]
+            size = (shape[1], shape[0])
         else:
-            image, shape, size = None, None, [width, height]
+            image, shape, size = None, None, (width, height)
         data_info = self.parser_annotation(annotation, self.class_dict, shape=shape,
                                            min_points=self.min_points, unique=self.unique)
         # TODO dict(boxes, labels, points, groups, names, keypoints)
         data_info.update({"image": image, "image_file": image_file, "anno_file": anno_file,
-                          "size": size})
+                          "size": tuple(size)})
         return data_info
 
     @staticmethod
