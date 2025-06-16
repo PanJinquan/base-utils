@@ -32,8 +32,10 @@ if __name__ == '__main__':
                            ],
                  "label": ["B0", "B1", "B2"],
                  "info2": {}}
-    # obj_info2 = image_utils.get_targets(obj_info2, targets=['B2', 'B0'])
-    # print(json_utils.formatting(obj_info2))
+    obj_info2 = image_utils.get_targets(obj_info2, targets=['B2', 'B0'], key='label', keys=['boxes'])
+    print(json_utils.formatting(obj_info2))
     print("--------" * 10)
     output = image_utils.get_targets_overlap(obj_info1, obj_info2, iou_th=-1)
+    match = output[0]['match']
+    match = image_utils.cat_targets(match)
     print(json_utils.formatting(output))

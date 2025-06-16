@@ -13,7 +13,6 @@ import random
 import cv2
 import numbers
 import numpy as np
-from pybaseutils import text_utils
 
 
 def clip_xyxy(xyxy: np.ndarray, valid_range):
@@ -450,77 +449,6 @@ def get_box_iom(box1, box2):
     area = w * h  # C∩G的面积
     iou = area / min(s1, s2)
     return iou
-
-
-def get_targets(obj_info: dict, targets, key='label'):
-    """
-    从obj_info查找符合条件的目标，支持正则表达式
-    :param obj_info:
-    :param targets:
-    :param key:
-    :return:
-    """
-    label = obj_info[key]
-    output = {}
-    for i in range(len(label)):
-        matches = text_utils.find_match_texts(texts=[label[i]], pattern=targets, org=True)
-        if len(matches) == 0: continue
-        for k, v in obj_info.items():
-            if isinstance(v, list) and len(label) == len(v):
-                output[k] = output.get(k, []) + [v[i]]
-            else:
-                output[k] = v
-    return output
-
-
-def get_targets_overlap(obj_info1: dict, obj_info2: dict, iou_th=0, use_iom=False, key="boxes"):
-    """
-    :param obj_info1: dict(boxes=目标框(xmin,ymin,xmax,ymax),labels=类别名称),
-    :param obj_info2: dict(boxes=目标框(xmin,ymin,xmax,ymax),labels=类别名称)
-    :param iou_th: 返回IOU>iou_th的object(不含等于)
-    :param use_iom: IOU=交集(A,B)/并集(A,B),IOM=交集(A,B)/最小集(A,B)
-    :return:output 返回列表，每个元素格式
-                 {
-                      'boxes': [[10, 10, 50, 50]], # obj1查询目标框
-                      'index': 0,                  # obj1目标index
-                      'label': ['A0'],             # obj1目标label
-                      'maxiou': 1,                 # 在match中，obj1与obj2最大IOU值的下标
-                      'match': [                   # obj2目标信息
-                                {
-                                  'boxes': [[20, 20, 40, 60]],
-                                  'index': 0,
-                                  'iou': 0.3333,
-                                  'label': ['B0']
-                                },
-                                {
-                                  'boxes': [[20, 20, 45, 60]],
-                                  'index': 2,
-                                  'iou': 0.4054,
-                                  'label': ['B2']
-                                }
-                              ]
-                 }
-    """
-    boxes1 = obj_info1[key]
-    boxes2 = obj_info2[key]
-    nums1 = len(boxes1)
-    nums2 = len(boxes2)
-    ious = get_boxes_iom(boxes1, boxes2) if use_iom else get_boxes_iou(boxes1, boxes2)
-    output = []
-    for i in range(len(boxes1)):
-        info = {k: [v[i]] if isinstance(v, list) and nums1 == len(v) else v for k, v in obj_info1.items()}
-        obj2 = []
-        for j in range(len(boxes2)):
-            iou = ious[i, j]
-            if iou > iou_th:
-                item = {k: [v[j]] if isinstance(v, list) and nums2 == len(v) else v for k, v in obj_info2.items()}
-                item.update(iou=iou, index=j)
-                obj2.append(item)
-        maxiou = np.argmax([info['iou'] for info in obj2]) if obj2 else -1
-        info.update(index=i, maxiou=maxiou, match=obj2)
-        output.append(info)
-    return output
-
 
 class YOLOCoords(object):
     def __init__(self, max_boxes=120, norm=False):

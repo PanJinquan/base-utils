@@ -12,7 +12,7 @@ import glob
 import random
 import xmltodict
 import json
-from pybaseutils import file_utils, json_utils
+from pybaseutils import file_utils, json_utils, text_utils, image_utils
 
 VOC_NAMES = ["aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat",
              "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person",
@@ -271,3 +271,127 @@ class ConcatDataset(Dataset):
 
     def __len__(self):
         return len(self.image_ids)
+
+
+def count_class_info(item_list, class_name=None, label_index="label"):
+    """
+    统计类别信息
+    item_list=[[file,label,...],[file,label,...]]
+    :param item_list:
+    :param class_name:
+    :return:
+    """
+    count = {}
+    for item in item_list:
+        label = item[label_index]
+        count[label] = count[label] + 1 if label in count else 1
+    count = json_utils.dict_sort(count, use_key=True)
+    if class_name: count = {class_name[k]: v for k, v in count.items()}
+    return count
+
+
+def get_targets_index(obj_info: dict, index, nums, keys=[], out_info={}):
+    """从obj_info中获得第index个数据，并拼接在out_info"""
+    if not obj_info: return out_info
+    if keys and out_info: [out_info.pop(k) for k in list(out_info.keys()) if k not in keys]
+    for k, v in obj_info.items():
+        if keys and k not in keys: continue  # 如果指定了keys,则进行过滤
+        if isinstance(v, np.ndarray): v = v.tolist()
+        if isinstance(v, list) and nums == len(v):
+            out_info[k] = out_info.get(k, []) + [v[index]]
+        else:
+            out_info[k] = v
+    return out_info
+
+
+def cat_targets(objs: list, keys=[], out_info={}):
+    """
+    将相同字段的数据进行拼接
+    :param objs: List(dict)
+    :param keys:
+    :param out_info:
+    :return:
+    """
+    if not objs: return out_info
+    if keys and out_info: [out_info.pop(k) for k in list(out_info.keys()) if k not in keys]
+    for obj in objs:
+        for k, v in obj.items():
+            if keys and k not in keys: continue  # 如果指定了keys,则进行过滤
+            if isinstance(v, np.ndarray): v = v.tolist()
+            if isinstance(v, list):
+                out_info[k] = out_info.get(k, []) + obj.get(k, [])
+            else:
+                out_info[k] = out_info.get(k, []) + [v]
+    return out_info
+
+
+def get_targets(obj_info: dict, targets=[], key='label', keys=[]):
+    """
+    从obj_info查找符合条件的目标，支持正则表达式
+    :param obj_info:
+    :param targets: 选择过滤的目标
+    :param key: 选择targets对于key字段
+    :param keys: 用于指定返回的keys
+    :return:
+    """
+    if not obj_info: return {}
+    label = obj_info[key]
+    output = {}
+    for i in range(len(label)):
+        matches = text_utils.find_match_texts(texts=[label[i]], pattern=targets, org=True)
+        if len(matches) == 0: continue
+        get_targets_index(obj_info, index=i, nums=len(label), keys=keys, out_info=output)
+    return output
+
+
+def get_targets_overlap(obj_info1: dict, obj_info2: dict, key="boxes", keys=[], iou_th=0, use_iom=False):
+    """
+    :param obj_info1: dict(boxes=目标框(xmin,ymin,xmax,ymax),labels=类别名称),
+    :param obj_info2: dict(boxes=目标框(xmin,ymin,xmax,ymax),labels=类别名称)
+    :param key: 选择targets对于key字段
+    :param keys: 用于指定返回的keys
+    :param iou_th: 返回IOU>iou_th的object(不含等于)
+    :param use_iom: IOU=交集(A,B)/并集(A,B),IOM=交集(A,B)/最小集(A,B)
+    :return:output 返回列表，每个元素格式
+                 {
+                      'boxes': [[10, 10, 50, 50]], # obj1查询目标框
+                      'index': 0,                  # obj1目标index
+                      'label': ['A0'],             # obj1目标label
+                      'maxiou': 1,                 # 在match中，obj1与obj2最大IOU值的下标
+                      'match': [                   # obj2目标信息
+                                {
+                                  'boxes': [[20, 20, 40, 60]],
+                                  'index': 0,
+                                  'iou': 0.3333,
+                                  'label': ['B0']
+                                },
+                                {
+                                  'boxes': [[20, 20, 45, 60]],
+                                  'index': 2,
+                                  'iou': 0.4054,
+                                  'label': ['B2']
+                                }
+                              ]
+                 }
+    """
+    if not obj_info1: return []
+    if not obj_info2: return []
+    boxes1 = obj_info1[key]
+    boxes2 = obj_info2[key]
+    nums1 = len(boxes1)
+    nums2 = len(boxes2)
+    ious = image_utils.get_boxes_iom(boxes1, boxes2) if use_iom else image_utils.get_boxes_iou(boxes1, boxes2)
+    output = []
+    for i in range(len(boxes1)):
+        outs = get_targets_index(obj_info1, index=i, nums=nums1, keys=keys, out_info={})
+        obj2 = []
+        for j in range(len(boxes2)):
+            iou = ious[i, j]
+            if iou > iou_th:
+                item = get_targets_index(obj_info2, index=j, nums=nums2, keys=keys, out_info={})
+                item.update(iou=iou, index=j)
+                obj2.append(item)
+        maxiou = np.argmax([data['iou'] for data in obj2]) if obj2 else -1
+        outs.update(index=i, maxiou=maxiou, match=obj2)
+        output.append(outs)
+    return output
