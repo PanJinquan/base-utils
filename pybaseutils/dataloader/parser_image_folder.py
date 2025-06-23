@@ -70,7 +70,7 @@ if __name__ == '__main__':
     from pybaseutils import image_utils
     from torchvision import transforms
 
-    image_dir = ['/home/PKing/nasdata/release/infrastructure/DMClassification/data/dataset/test']
+    image_dir = ['/home/PKing/nasdata/release/infrastructure/DMClassification/data/dataset/train']
     class_name = []
     input_size = [224, 224]
     rgb_mean = [0., 0., 0.]
@@ -84,7 +84,7 @@ if __name__ == '__main__':
                             transform=transform,
                             shuffle=True,
                             class_name=class_name,
-                            resample=False,
+                            resample=True,
                             disp=True)
     for i in range(len(dataset)):
         data_info = dataset.__getitem__(i)

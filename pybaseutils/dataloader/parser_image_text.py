@@ -13,7 +13,6 @@ sys.path.append(os.getcwd())
 import PIL.Image as Image
 import numpy as np
 import random
-import time
 import cv2
 from tqdm import tqdm
 from pybaseutils.dataloader.base_dataset import Dataset, ConcatDataset
@@ -42,7 +41,7 @@ class TextDataset(Dataset):
                         crop_scale,
                         resample,
                         save_info,
-                        resample_interval
+                        interval
         """
         self.data_file = data_file
         self.data_root = data_root
@@ -60,21 +59,22 @@ class TextDataset(Dataset):
         self.item_list = self.parser_dataset(data_file, data_root=data_root, label_index=self.label_index,
                                              shuffle=shuffle, check=check)
         self.resample = kwargs.get("resample", False)
+        self.interval = kwargs.get('interval', 60)  # TODO 重采样间隔，低于该时间的不进行重采集，避免频繁采样
         if self.resample:
             self.data_resample = data_resample.DataResample(self.item_list,
                                                             label_index=self.label_index,
                                                             shuffle=shuffle,
-                                                            disp=disp)
+                                                            disp=disp,
+                                                            class_name=self.class_name,
+                                                            interval=self.interval)
             self.item_list = self.data_resample.update(True)
-            class_count = self.data_resample.class_count  # resample前，每个类别的分布
-            balance_nums = self.data_resample.balance_nums  # resample后，每个类别的分布
+            src_class_count = self.data_resample.src_class_count  # resample前，每个类别的分布
+            dst_class_count = self.data_resample.dst_class_count  # resample后，每个类别的分布
         self.class_count = self.count_class_info(self.item_list, class_name=self.class_name,
                                                  label_index=self.label_index)
         self.classes = list(self.class_dict.values())
         self.num_classes = max(self.classes) + 1
         self.num_samples = len(self.item_list)
-        self.t0 = time.time()
-        self.resample_interval = kwargs.get('resample_interval', 60)  # TODO 重采样间隔，低于该时间的不进行重采集，避免频繁采样
         if self.log: self.info(save_info=kwargs.get("save_info", ""))
 
     def info(self, save_info=""):
@@ -183,12 +183,8 @@ class TextDataset(Dataset):
         return dict(image=image, label=label, file=file, name=name)
 
     def __len__(self):
-        self.t1 = time.time()  # seconds
-        dt = (self.t1 - self.t0)
-        if dt > self.resample_interval and self.resample:  # 如果时间间隔太小则不进行重采样
-            self.log(f"resample {self.phase} dataset")
+        if self.resample:
             self.item_list = self.data_resample.update(True)
-            self.t0 = self.t1
         return len(self.item_list)
 
     def crop_image(self, image, bbox, crop_scale=[], use_max=False, use_mean=True, **kwargs):

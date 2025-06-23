@@ -7,6 +7,7 @@
 import random
 import numpy as np
 import math
+import time
 
 
 class ResampleExample(object):
@@ -41,35 +42,50 @@ class ResampleExample(object):
 class DataResample(object):
     """样本均衡，重采样的方法"""
 
-    def __init__(self, item_list=[], label_index=1, balance="mean", shuffle=True, disp=False):
+    def __init__(self, item_list=[], class_name=None, label_index=1, interval=0, balance="mean", shuffle=True,
+                 disp=False,
+                 **kwargs):
         """
         Usage:
         参考：ResampleExample例子的使用方法
         :param item_list:
         :param label_index:
+        :param interval: 重采样间隔，低于该时间的不进行重采集，避免频繁采样
         :param balance:实现样本均衡策略,均衡力度：mean > log > sqrt > y
                         "y": 每个label样本数跟原来一样
                         "sqrt": 每个label样本取sqrt数，实现样本均衡
                         "log": 每个label样本取log数，实现样本均衡
                         "mean": 每个label样本取样本平均数，每个label的个数一样
         """
+        self.tag = "DataResample"
         self.src_item_list = item_list
+        self.class_name = class_name
         self.label_index = label_index
+        self.log = kwargs.get('log', print) if kwargs.get('log', print) else print
         self.balance = balance
         self.shuffle = shuffle
         self.disp = disp
-        self.class_count = self.get_class_count(self.src_item_list, label_index)
-        self.class_item_dict = self.get_class_item_dict(self.src_item_list, label_index)
-        self.balance_nums = self.get_balance_nums(self.class_count, self.balance)
+        self.t0 = time.time()
+        self.interval = interval  # TODO 重采样间隔，低于该时间的不进行重采集，避免频繁采样
+        self.src_class_info = self.get_class_info(self.src_item_list, label_index)  # 原始数据样本分布
+        self.src_class_count = {k: len(v) for k, v in self.src_class_info.items()}
+        self.dst_class_count = self.get_balance_nums(self.src_class_count, self.balance)
+        self.dst_class_info = {}
+        self.item_list = []
         self.item_list = self.update(shuffle=self.shuffle)
-        self.class_weight = self.get_class_weight(self.class_count)
+        self.class_weight = self.get_class_weight(self.src_class_count)
 
     def __len__(self):
         self.update(shuffle=self.shuffle)
         return len(self.item_list)
 
     def update(self, shuffle=False):
-        self.item_list = self.get_resample_data(shuffle=shuffle)
+        self.t1 = time.time()  # seconds
+        dt = (self.t1 - self.t0)
+        if not self.item_list or dt > self.interval:
+            self.log(f"{self.tag} resample dataset")
+            self.item_list = self.get_resample_data(shuffle=shuffle)
+            self.t0 = self.t1
         return self.item_list
 
     def get_resample_data(self, shuffle=True):
@@ -80,20 +96,26 @@ class DataResample(object):
         :param shuffle:
         :return:
         """
-        if self.disp:
-            print("class_item_dict:{}".format({k: len(v) for k, v in self.class_item_dict.items()}))
+        if self.disp:  # 统计每个类别的个数
+            self.print_class_info("src_class_info", self.src_class_info, class_name=self.class_name)
         out_list = []
-        for name, per_class_list in self.class_item_dict.items():
-            nums = self.balance_nums[name]
+        for name, per_class_list in self.src_class_info.items():
+            nums = self.dst_class_count[name]
             per_list = self.get_sampler(per_class_list, nums, shuffle=shuffle)
             out_list += per_list
         if shuffle:
             random.shuffle(out_list)
-        if self.disp:
-            # 统计每个类别的个数
-            class_count = self.get_class_count(out_list, self.label_index)
-            print("resampler count_class :{},total:{}".format(class_count, sum(class_count.values())))
+        if self.disp:  # 统计每个类别的个数
+            self.dst_class_info = self.get_class_info(out_list, self.label_index)  # 原始数据样本分布
+            self.print_class_info("dst_class_info", self.dst_class_info, class_name=self.class_name)
         return out_list
+
+    def print_class_info(self, title: str, class_info: dict, class_name=None):
+        if class_name:
+            info = {class_name[k]: len(v) for k, v in class_info.items()}
+        else:
+            info = {k: len(v) for k, v in class_info.items()}
+        self.log("{} {}: {}, total: {}".format(self.tag, title, info, sum(info.values())))
 
     def get_balance_nums(self, class_count: dict, balance):
         """
@@ -146,7 +168,7 @@ class DataResample(object):
         return labels_list
 
     @staticmethod
-    def get_class_item_dict(item_list, label_index):
+    def get_class_info(item_list, label_index):
         """
         获得每一类的样本
         :param item_list:
@@ -179,7 +201,7 @@ class DataResample(object):
             except Exception as e:
                 class_count[label] = 1
         from pybaseutils import json_utils
-        class_count = json_utils.dict_sort(class_count,use_key=True)
+        class_count = json_utils.dict_sort(class_count, use_key=True)
         return class_count
 
     @staticmethod
