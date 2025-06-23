@@ -59,7 +59,7 @@ class TextDataset(Dataset):
         self.item_list = self.parser_dataset(data_file, data_root=data_root, label_index=self.label_index,
                                              shuffle=shuffle, check=check)
         self.resample = kwargs.get("resample", False)
-        self.interval = kwargs.get('interval', 60)  # TODO 重采样间隔，低于该时间的不进行重采集，避免频繁采样
+        self.interval = kwargs.get('interval', 30)  # TODO 重采样间隔，低于该时间的不进行重采集，避免频繁采样
         if self.resample:
             self.data_resample = data_resample.DataResample(self.item_list,
                                                             label_index=self.label_index,
@@ -86,7 +86,7 @@ class TextDataset(Dataset):
         self.log("Dataset class_name    :{}".format(self.class_name))
         self.log("Dataset class_dict    :{}".format(self.class_dict))
         self.log("Dataset class_count   :{}".format(self.class_count))
-        self.log("Dataset resample      :{}".format(self.resample))
+        self.log("Dataset resample      :resample={},interval={}".format(self.resample, self.interval))
         if save_info:
             if not os.path.exists(save_info): os.makedirs(save_info)
             m = np.mean(list(self.class_count.values()))
