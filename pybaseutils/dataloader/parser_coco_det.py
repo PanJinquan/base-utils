@@ -37,10 +37,10 @@ class CocoDetection(CocoDataset):
         super(CocoDetection, self).__init__(anno_file, image_dir=image_dir, class_name=class_name, transform=transform,
                                             target_transform=target_transform, use_rgb=use_rgb,
                                             shuffle=shuffle, decode=decode, **kwargs)
-        print("CocoDataset class_name :{}".format(class_name))
-        print("CocoDataset class_dict :{}".format(self.class_dict))
-        print("CocoDataset num images :{}".format(len(self.image_ids)))
-        print("CocoDataset num_classes:{}".format(self.num_classes))
+        self.log("CocoDataset class_name :{}".format(class_name))
+        self.log("CocoDataset class_dict :{}".format(self.class_dict))
+        self.log("CocoDataset num images :{}".format(len(self.image_ids)))
+        self.log("CocoDataset num_classes:{}".format(self.num_classes))
 
     def convert_target(self, boxes, labels):
         # （xmin,ymin,xmax,ymax,label）
@@ -109,7 +109,7 @@ def CocoDetections(anno_file=None,
                              decode=decode,
                              **kwargs)
         datasets.append(data)
-    datasets = ConcatDataset(datasets, shuffle=shuffle)
+    datasets = ConcatDataset(datasets, shuffle=shuffle, **kwargs)
     return datasets
 
 

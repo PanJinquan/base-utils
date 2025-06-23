@@ -63,6 +63,7 @@ class YOLODataset(Dataset):
         :param shuffle:
         """
         super(YOLODataset, self).__init__()
+        self.log = kwargs.get('log', print) if kwargs.get('log', print) else print
         self.min_area = 1 / 1000  # 如果前景面积不足0.1%,则去除
         self.use_rgb = use_rgb
         self.class_name, self.class_dict = self.parser_classes(class_name)
@@ -81,11 +82,11 @@ class YOLODataset(Dataset):
         self.scale_rate = 1.0
         self.target_type = 'gaussian'
         self.sigma = 2
-        print("Dataset class_name    :{}".format(class_name))
-        print("Dataset class_dict    :{}".format(self.class_dict))
-        print("Dataset num images    :{}".format(len(self.image_ids)))
-        print("Dataset num_classes   :{}".format(self.num_classes))
-        print("------" * 10)
+        self.log("Dataset class_name    :{}".format(class_name))
+        self.log("Dataset class_dict    :{}".format(self.class_dict))
+        self.log("Dataset num images    :{}".format(len(self.image_ids)))
+        self.log("Dataset num_classes   :{}".format(self.num_classes))
+        self.log("------" * 10)
 
     def __len__(self):
         return len(self.image_ids)
@@ -155,7 +156,7 @@ class YOLODataset(Dataset):
         :param ignore_empty : 是否去除一些空数据
         :return:
         """
-        print("Please wait, it's in checking")
+        self.log("Please wait, it's in checking")
         dst_ids = []
         # image_ids = image_ids[:100]
         # image_ids = image_ids[100:]
@@ -169,7 +170,7 @@ class YOLODataset(Dataset):
             if len(annotation) == 0:
                 continue
             dst_ids.append(image_id)
-        print("have nums image:{},legal image:{}".format(len(image_ids), len(dst_ids)))
+        self.log("have nums image:{},legal image:{}".format(len(image_ids), len(dst_ids)))
         return dst_ids
 
     def parser_paths(self, filename=None, data_root=None, anno_dir=None, image_dir=None):

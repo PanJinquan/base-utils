@@ -15,7 +15,7 @@ import numpy as np
 import random
 import cv2
 from tqdm import tqdm
-from pybaseutils.dataloader.base_dataset import Dataset, ConcatDataset
+from pybaseutils.dataloader.base_dataset import Dataset
 from pybaseutils import image_utils, file_utils, json_utils
 from pybaseutils.dataloader import data_resample
 
@@ -66,7 +66,8 @@ class TextDataset(Dataset):
                                                             shuffle=shuffle,
                                                             disp=disp,
                                                             class_name=self.class_name,
-                                                            interval=self.interval)
+                                                            interval=self.interval,
+                                                            log=self.log)
             self.item_list = self.data_resample.update(True)
             src_class_count = self.data_resample.src_class_count  # resample前，每个类别的分布
             dst_class_count = self.data_resample.dst_class_count  # resample后，每个类别的分布
@@ -281,7 +282,7 @@ if __name__ == '__main__':
                           shuffle=True,
                           check=False,
                           crop_scale=(1.5, 1.5),
-                          disp=True)
+                          disp=False)
     for i in range(len(dataset)):
         data_info = dataset.__getitem__(i)
         image, label, file = data_info["image"], data_info["label"], data_info["file"]

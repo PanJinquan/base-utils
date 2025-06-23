@@ -115,6 +115,7 @@ class CocoDataset(object):
         :param decode: 是否对segment进行解码， True:在mask显示分割信息,False：mask为0，无分割信息
         """
         super(CocoDataset, self).__init__()
+        self.log = kwargs.get('log', print) if kwargs.get('log', print) else print
         self.transform = transform
         self.target_transform = target_transform
         self.image_dir, self.anno_dir = self.parser_paths(anno_file, image_dir)
@@ -143,14 +144,14 @@ class CocoDataset(object):
         self.classes = list(set(self.class_dict.values())) if self.class_dict else []
         self.num_classes = max(list(self.class_dict.values())) + 1 if self.class_dict else 0
         self.bones = {}
-        print("CocoDataset anno_file  :{}".format(anno_file))
-        print("CocoDataset image_dir  :{}".format(self.image_dir))
-        print("CocoDataset class_count:{}".format(self.class_count))
-        print("CocoDataset class_name :{}".format(self.class_name))
-        print("CocoDataset class_dict :{}".format(self.class_dict))
-        print("CocoDataset num images :{}".format(len(self.image_ids)))
-        print("CocoDataset num_classes:{}".format(self.num_classes))
-        print("------" * 10)
+        self.log("CocoDataset anno_file  :{}".format(anno_file))
+        self.log("CocoDataset image_dir  :{}".format(self.image_dir))
+        self.log("CocoDataset class_count:{}".format(self.class_count))
+        self.log("CocoDataset class_name :{}".format(self.class_name))
+        self.log("CocoDataset class_dict :{}".format(self.class_dict))
+        self.log("CocoDataset num images :{}".format(len(self.image_ids)))
+        self.log("CocoDataset num_classes:{}".format(self.num_classes))
+        self.log("------" * 10)
 
     def parser_paths(self, filename=None, image_dir=None):
         """
@@ -402,7 +403,7 @@ class CocoDataset(object):
 class ConcatDataset(Dataset):
     """ Concat Dataset """
 
-    def __init__(self, datasets, shuffle=False):
+    def __init__(self, datasets, shuffle=False, **kwargs):
         """
         import torch.utils.data as torch_utils
         voc1 = PolygonParser(filename1)
@@ -412,6 +413,7 @@ class ConcatDataset(Dataset):
         :param datasets:
         :param shuffle:
         """
+        self.log = kwargs.get('log', print) if kwargs.get('log', print) else print
         super(ConcatDataset, self).__init__()
         assert len(datasets) > 0, 'dataset should not be an empty iterable'
         # super(ConcatDataset, self).__init__()
@@ -434,9 +436,9 @@ class ConcatDataset(Dataset):
         if shuffle:
             random.seed(200)
             random.shuffle(self.image_ids)
-        print("ConcatDataset total images :{}".format(len(self.image_ids)))
-        print("ConcatDataset class_name   :{}".format(self.class_name))
-        print("------" * 10)
+        self.log("ConcatDataset total images :{}".format(len(self.image_ids)))
+        self.log("ConcatDataset class_name   :{}".format(self.class_name))
+        self.log("------" * 10)
 
     def add_dataset_id(self, image_ids, dataset_id):
         """

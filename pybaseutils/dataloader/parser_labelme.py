@@ -437,7 +437,7 @@ def LabelMeDatasets(filename=None,
                               min_points=min_points,
                               **kwargs)
         datasets.append(data)
-    datasets = ConcatDataset(datasets, shuffle=shuffle)
+    datasets = ConcatDataset(datasets, shuffle=shuffle, **kwargs)
     return datasets
 
 

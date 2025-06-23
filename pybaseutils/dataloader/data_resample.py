@@ -43,14 +43,14 @@ class DataResample(object):
     """样本均衡，重采样的方法"""
 
     def __init__(self, item_list=[], class_name=None, label_index=1, interval=0, balance="mean", shuffle=True,
-                 disp=False,
-                 **kwargs):
+                 disp=False, **kwargs):
         """
         Usage:
         参考：ResampleExample例子的使用方法
         :param item_list:
+        :param class_name:
         :param label_index:
-        :param interval: 重采样间隔，低于该时间的不进行重采集，避免频繁采样
+        :param interval: 重采样时间间隔(秒)，低于该时间的不进行重采集，避免频繁采样
         :param balance:实现样本均衡策略,均衡力度：mean > log > sqrt > y
                         "y": 每个label样本数跟原来一样
                         "sqrt": 每个label样本取sqrt数，实现样本均衡
@@ -66,6 +66,7 @@ class DataResample(object):
         self.shuffle = shuffle
         self.disp = disp
         self.t0 = time.time()
+        self.first_time = True
         self.interval = interval  # TODO 重采样间隔，低于该时间的不进行重采集，避免频繁采样
         self.src_class_info = self.get_class_info(self.src_item_list, label_index)  # 原始数据样本分布
         self.src_class_count = {k: len(v) for k, v in self.src_class_info.items()}
@@ -96,18 +97,19 @@ class DataResample(object):
         :param shuffle:
         :return:
         """
-        if self.disp:  # 统计每个类别的个数
+        if self.disp or self.first_time:  # 统计每个类别的个数
             self.print_class_info("src_class_info", self.src_class_info, class_name=self.class_name)
         out_list = []
         for name, per_class_list in self.src_class_info.items():
             nums = self.dst_class_count[name]
-            per_list = self.get_sampler(per_class_list, nums, shuffle=shuffle)
-            out_list += per_list
+            data = self.get_sampler(per_class_list, nums, shuffle=shuffle)
+            out_list += data
         if shuffle:
             random.shuffle(out_list)
-        if self.disp:  # 统计每个类别的个数
+        if self.disp or self.first_time:  # 统计每个类别的个数
             self.dst_class_info = self.get_class_info(out_list, self.label_index)  # 原始数据样本分布
             self.print_class_info("dst_class_info", self.dst_class_info, class_name=self.class_name)
+        self.first_time = False
         return out_list
 
     def print_class_info(self, title: str, class_info: dict, class_name=None):
@@ -257,15 +259,17 @@ def get_class_count(item_list, label_index):
     :param label_index: label在item中的序号
     :return:
     """
-    count_info = {}
+    class_count = {}
     for item in item_list:
         label = item[label_index]
         try:
             # if label in class_count:  # 比较慢，相当于需要查询label是否存在
-            count_info[label] += 1
+            class_count[label] += 1
         except Exception as e:
-            count_info[label] = 1
-    return count_info
+            class_count[label] = 1
+    from pybaseutils import json_utils
+    class_count = json_utils.dict_sort(class_count, use_key=True)
+    return class_count
 
 
 def get_label_count(label):

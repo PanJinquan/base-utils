@@ -205,7 +205,7 @@ class Dataset(object):
 class ConcatDataset(Dataset):
     """ Concat Dataset """
 
-    def __init__(self, datasets, shuffle=False):
+    def __init__(self, datasets, shuffle=False, **kwargs):
         """
         import torch.utils.data as torch_utils
         voc1 = PolygonParser(filename1)
@@ -216,6 +216,7 @@ class ConcatDataset(Dataset):
         :param shuffle:
         """
         super(ConcatDataset, self).__init__()
+        self.log = kwargs.get('log', print) if kwargs.get('log', print) else print
         assert len(datasets) > 0, 'dataset should not be an empty iterable'
         # super(ConcatDataset, self).__init__()
         if not isinstance(datasets, list):
@@ -232,9 +233,9 @@ class ConcatDataset(Dataset):
         if shuffle:
             random.seed(200)
             random.shuffle(self.image_ids)
-        print("ConcatDataset  total images  :{}".format(len(self.image_ids)))
-        print("ConcatDataset  class_name    :{}".format(self.class_name))
-        print("------" * 10)
+        self.log("ConcatDataset  total images  :{}".format(len(self.image_ids)))
+        self.log("ConcatDataset  class_name    :{}".format(self.class_name))
+        self.log("------" * 10)
 
     def add_dataset_id(self, image_ids, dataset_id):
         """

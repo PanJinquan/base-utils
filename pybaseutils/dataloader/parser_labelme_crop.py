@@ -47,7 +47,7 @@ class LabelmeDataset(parser_image_text.TextDataset):
                                              check=check,
                                              label_index="label",
                                              **kwargs)
-        print("LabelmeDataset    have images:{},have samples:{}".format(len(self.item_list), self.num_samples))
+        self.log("LabelmeDataset    have images:{},have samples:{}".format(len(self.item_list), self.num_samples))
 
     def parser_dataset(self, data_file, data_root="", label_index="label", shuffle=False, check=False):
         """

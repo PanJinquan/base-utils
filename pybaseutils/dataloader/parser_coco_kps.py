@@ -56,11 +56,11 @@ class CocoKeypoint(base_coco.CocoDataset):
         # skeleton下标从0开始，coco_skeleton下标是从1开始的
         self.coco_skeleton = np.array(self.skeleton, dtype=np.int32) + 1
         self.set_skeleton_keypoints(self.kps_info[0]['id'], skeleton=self.coco_skeleton, keypoints=[])
-        print("num_joints             :{}".format(self.num_joints))
-        print("skeleton               :{}".format(self.skeleton))
-        print("coco skeleton          :{}".format(self.coco_skeleton.tolist()))
-        print("anno_file              :{}".format(anno_file))
-        print("------" * 10)
+        self.log("num_joints             :{}".format(self.num_joints))
+        self.log("skeleton               :{}".format(self.skeleton))
+        self.log("coco skeleton          :{}".format(self.coco_skeleton.tolist()))
+        self.log("anno_file              :{}".format(anno_file))
+        self.log("------" * 10)
 
     def __getitem__(self, index):
         """
@@ -114,7 +114,7 @@ def CocoKeypoints(anno_file=None,
                             decode=decode,
                             **kwargs)
         datasets.append(data)
-    datasets = ConcatDataset(datasets, shuffle=shuffle)
+    datasets = ConcatDataset(datasets, shuffle=shuffle, **kwargs)
     return datasets
 
 

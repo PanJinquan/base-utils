@@ -83,7 +83,7 @@ def CocoInstances(anno_file=None,
                             decode=decode,
                             **kwargs)
         datasets.append(data)
-    datasets = ConcatDataset(datasets, shuffle=shuffle)
+    datasets = ConcatDataset(datasets, shuffle=shuffle, **kwargs)
     return datasets
 
 
@@ -138,8 +138,10 @@ if __name__ == "__main__":
     # class_name = ["BG", 'car,person,身穿工作服']
     # class_name = {"BG": 0, 'car': 1, 'person': 1, "身穿工作服": 1}
 
-    class_name = {'手': 0, '护目镜': 1, '未穿工作服': 2, '身穿工作服': 2, '其他鞋': 3, '绝缘鞋': 3, '安全带': 4, '安全帽': 5,
-                  '绝缘垫': 6, '绝缘手套': 7, '万用表': 8, '万用表线头': 9, '相序表': 10, '相序表线头': 11, '钳形电流表': 12,
+    class_name = {'手': 0, '护目镜': 1, '未穿工作服': 2, '身穿工作服': 2, '其他鞋': 3, '绝缘鞋': 3, '安全带': 4,
+                  '安全帽': 5,
+                  '绝缘垫': 6, '绝缘手套': 7, '万用表': 8, '万用表线头': 9, '相序表': 10, '相序表线头': 11,
+                  '钳形电流表': 12,
                   '电能表': 13, '尖嘴钳': 14, '验电笔': 15, '螺丝刀': 16, '接线盒': 17, '电流互感器': 18, '表箱关': 19,
                   '表箱开': 19, '竹梯': 20, '准备区域': 21, '工作台': 22}
     #
