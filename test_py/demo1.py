@@ -19,23 +19,17 @@ import hashlib
 import pandas as pd
 import nltk
 from rich import print_json
+import inspect
+from pybaseutils import log
+import asyncio
 
-if __name__ == '__main__':
-    #
-    obj_info1 = {'boxes': [[10, 10, 50, 50],
-                           [10, 10, 50, 50]],
-                 "label": ["A0", "A1"],
-                 "info1": {}}
-    obj_info2 = {'boxes': [[20, 20, 40, 60],
-                           [60, 60, 80, 80],
-                           [20, 20, 45, 60],
-                           ],
-                 "label": ["B0", "B1", "B2"],
-                 "info2": {}}
-    obj_info2 = image_utils.get_targets(obj_info2, targets=['B2', 'B0'], key='label', keys=['boxes'])
-    print(json_utils.formatting(obj_info2))
-    print("--------" * 10)
-    output = image_utils.get_targets_overlap(obj_info1, obj_info2, iou_th=-1)
-    match = output[0]['match']
-    match = image_utils.cat_targets(match)
-    print(json_utils.formatting(output))
+async def search():
+    return "ok"
+
+
+async def main():
+    result = await search()  # 在async函数内await
+    print(result)  # 输出: ok
+
+if __name__ == "__main__":
+    asyncio.run(main())

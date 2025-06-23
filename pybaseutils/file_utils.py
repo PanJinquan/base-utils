@@ -45,11 +45,15 @@ def get_time(format="p"):
     :return:
     """
     if format.lower() == "s":  # 精确到秒
-        # time = datetime.strftime(datetime.now(), '%Y%m%d_%H%M%S')
-        time = datetime.strftime(datetime.now(), '%Y%m%d%H%M%S')
+        # time = datetime.strftime(datetime.now(), '%Y%m%d%H%M%S')
+        time = datetime.now().strftime("%Y%m%d%H%M%S")
     elif format.lower() == "p":  # 精确到微妙
-        time = datetime.strftime(datetime.now(), '%Y%m%d_%H%M%S_%f')  # 20200508_143059_379116
+        # time = datetime.strftime(datetime.now(), '%Y%m%d_%H%M%S_%f')  # 20200508_143059_379116
+        time = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
         time = time[:-2]
+    elif format.lower() == "y":  # 2025-06-18 11:02:05
+        # time = datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M:%S")  #
+        time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     else:
         time = (str(datetime.now())[:-10]).replace(' ', '-').replace(':', '-')
     return time

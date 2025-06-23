@@ -186,7 +186,7 @@ class TextDataset(Dataset):
         self.t1 = time.time()  # seconds
         dt = (self.t1 - self.t0)
         if dt > self.resample_interval and self.resample:  # 如果时间间隔太小则不进行重采样
-            print(f"resample {self.phase} dataset")
+            self.log(f"resample {self.phase} dataset")
             self.item_list = self.data_resample.update(True)
             self.t0 = self.t1
         return len(self.item_list)

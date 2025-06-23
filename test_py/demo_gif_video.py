@@ -18,7 +18,7 @@ def crop_fun(frame):
 
 def resize_android(frame):
     h, w = frame.shape[:2]
-    frame = image_utils.resize_image(frame, size=(None, 580))  # android-video
+    frame = image_utils.resize_image(frame, size=(None, 512))  # android-video
     return frame
 
 
@@ -33,8 +33,8 @@ def resize_fun(frame):
 
 def android_gif():
     # video_file = "/media/dm/新加卷/SDK/CSDN/双目测距/demo/image-nouse-wls.mp4"
-    video_file = "/home/PKing/nasdata/tmp/tmp/WaterMeter/code/android-demo.mp4"
-    video_utils.video2gif(video_file, interval=5, func=resize_android, fps=10, use_pil=False, vis=True)
+    video_file = "/home/PKing/nasdata/tmp/tmp/Face-Gesture/code/android-demo1.mp4"
+    video_utils.video2gif(video_file, interval=12, func=resize_android, fps=3, use_pil=False, vis=True)
 
 
 def python_gif():
@@ -52,5 +52,5 @@ def image_gif():
 
 if __name__ == "__main__":
     # image_gif()
-    # android_gif()
-    python_gif()
+    android_gif()
+    # python_gif()

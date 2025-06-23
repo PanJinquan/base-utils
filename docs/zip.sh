@@ -6,7 +6,7 @@ for dir in */; do
         dir_name="${dir%/}"
         # 压缩成 zip 文件
         echo "正在压缩: $dir_name → ${dir_name}.zip"
-        zip -r -q -r "${dir_name}.zip" "$dir_name"
+        zip -q -r "${dir_name}.zip" "$dir_name"
     fi
 done
 

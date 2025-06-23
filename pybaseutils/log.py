@@ -10,11 +10,12 @@ import sys
 from loguru import logger
 
 LOG_FORMAT = {
-    "simple": "<level>{time:YYYY-MM-DD HH:mm:ss}|{level:7}| {message}</level>",
-    "name": "<level>{time:YYYY-MM-DD HH:mm:ss}|{level:7}|{name} {line:4}| {message}</level>",  # 打印文件名
-    "module": "<level>{time:YYYY-MM-DD HH:mm:ss}|{level:7}|{module} {line:4}| {message}</level>",  # 打印模块名
-    "function": "<level>{time:YYYY-MM-DD HH:mm:ss}|{level:7}|{function} {line:4}| {message}</level>",  # 打印函数
-    "all": "<level>{time:YYYY-MM-DD HH:mm:ss}|{level:7}|{name}.{module}.{function} {line:4}| {message}</level>",  # 打印函数
+    "simple":   "<level>{time:YYYY-MM-DD HH:mm:ss}|{level:7}| {message}</level>",
+    "name":     "<level>{time:YYYY-MM-DD HH:mm:ss}|{level:7}|{name} {line:4}| {message}</level>",  # 打印文件名
+    "module":   "<level>{time:YYYY-MM-DD HH:mm:ss}|{level:7}|{module} {line:4}| {message}</level>",  # 打印模块名
+    # "function": "<level>{time:YYYY-MM-DD HH:mm:ss}|{level:7}|{function} {line:4}| {message}</level>",  # 打印函数
+    "function": "<level>{time:YYYY-MM-DD HH:mm:ss}|{level:7}|{module}.{function} {line:4}| {message}</level>",  # 打印函数
+    "all":      "<level>{time:YYYY-MM-DD HH:mm:ss}|{level:7}|{name}.{module}.{function} {line:4}| {message}</level>",  # 打印函数
 }
 
 
@@ -82,8 +83,6 @@ if __name__ == '__main__':
     logfile = "./log.log"
     # logger = set_logger(logfile=logfile, is_main_process=True, format="function",level="debug")
     logger = set_logger(name="demo", is_main_process=True, format="function", level="debug")
+    # logger = set_logger(name="demo", is_main_process=True, format="module", level="debug")
     # logger = get_logger()
-    logger.debug("debug")
-    logger.info("info")
-    logger.warning("warning")
-    logger.error("error")
+    example()

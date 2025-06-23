@@ -232,8 +232,8 @@ class ConcatDataset(Dataset):
         if shuffle:
             random.seed(200)
             random.shuffle(self.image_ids)
-        print("ConcatDataset total images :{}".format(len(self.image_ids)))
-        print("ConcatDataset class_name   :{}".format(self.class_name))
+        print("ConcatDataset  total images  :{}".format(len(self.image_ids)))
+        print("ConcatDataset  class_name    :{}".format(self.class_name))
         print("------" * 10)
 
     def add_dataset_id(self, image_ids, dataset_id):
@@ -391,7 +391,28 @@ def get_targets_overlap(obj_info1: dict, obj_info2: dict, key="boxes", keys=[], 
                 item = get_targets_index(obj_info2, index=j, nums=nums2, keys=keys, out_info={})
                 item.update(iou=iou, index=j)
                 obj2.append(item)
-        maxiou = np.argmax([data['iou'] for data in obj2]) if obj2 else -1
+        maxiou = int(np.argmax([data['iou'] for data in obj2])) if obj2 else -1
         outs.update(index=i, maxiou=maxiou, match=obj2)
         output.append(outs)
     return output
+
+
+if __name__ == '__main__':
+    #
+    obj_info1 = {'boxes': [[10, 10, 50, 50],
+                           [10, 10, 50, 50]],
+                 "label": ["A0", "A1"],
+                 "info1": {}}
+    obj_info2 = {'boxes': [[20, 20, 40, 60],
+                           [60, 60, 80, 80],
+                           [20, 20, 45, 60],
+                           ],
+                 "label": ["B0", "B1", "B2"],
+                 "info2": {}}
+    obj_info2 = get_targets(obj_info2, targets=['B2', 'B0'], key='label', keys=['boxes'])
+    print(json_utils.formatting(obj_info2))
+    print("--------" * 10)
+    output = get_targets_overlap(obj_info1, obj_info2, iou_th=-1)
+    match = output[0]['match']
+    match = cat_targets(match)
+    print(json_utils.formatting(output))

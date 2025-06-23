@@ -139,6 +139,8 @@ def extend_xyxy(xyxy: np.ndarray, scale=[1.0, 1.0], valid_range=[], fixed=False,
         xyxy[:, 2] = xyxy[:, 2] - xywh[:, 2] * (1 - scale[2])
         xyxy[:, 3] = xyxy[:, 3] - xywh[:, 3] * (1 - scale[3])
         dxyxy = xyxy
+    else:
+        raise ValueError('scale should have length 2 or 4 ')
     if valid_range: dxyxy = clip_xyxy(dxyxy, valid_range=valid_range)
     return dxyxy
 
@@ -450,6 +452,7 @@ def get_box_iom(box1, box2):
     iou = area / min(s1, s2)
     return iou
 
+
 class YOLOCoords(object):
     def __init__(self, max_boxes=120, norm=False):
         self.max_boxes = max_boxes
@@ -466,7 +469,7 @@ class YOLOCoords(object):
         return image, dboxes, dlabels
 
 
-def show_image(name, image, boxes, labels, center2bboxes=False, untranspose=False, waitKey=0):
+def show_targets_image(name, image, boxes, labels, center2bboxes=False, untranspose=False, waitKey=0):
     from pybaseutils import image_utils
     if center2bboxes:
         boxes = cxcywh2xyxy(boxes)
@@ -489,7 +492,7 @@ def demo_for_augment():
     for i in range(1000):
         boxes = extend_xyxy(boxes, scale=[1.2, 1.2])
         dst_image, dst_label, dst_boxes = augment(image, boxes.copy(), labels.copy())
-        image = show_image("detd", image, dst_label, dst_boxes, center2bboxes=True, untranspose=False, waitKey=0)
+        image = show_targets_image("detd", image, dst_label, dst_boxes, center2bboxes=True, untranspose=False, waitKey=0)
 
 
 if __name__ == "__main__":

@@ -136,13 +136,14 @@ def show_batch_image(title, batch_images, index=0):
         cv_show_image(title, image)
 
 
-def show_image(title, image):
-    '''
+def show_image_plt(title, image):
+    """
+    use matplotlib to show image
     调用matplotlib显示RGB图片
     :param title: 图像标题
     :param image: 图像的数据
     :return:
-    '''
+    """
     # plt.figure("show_image")
     # print(image.dtype)
     channel = len(image.shape)
@@ -155,6 +156,9 @@ def show_image(title, image):
     plt.show()
 
 
+plot_image = show_image_plt
+
+
 def cv_show_image(title, image, use_rgb=False, delay=0):
     """
     调用OpenCV显示图片
@@ -164,14 +168,16 @@ def cv_show_image(title, image, use_rgb=False, delay=0):
     :param delay: delay=0表示暂停，delay>0表示延时delay毫米
     :return:
     """
-    img = image.copy()
-    if img.shape[-1] == 3 and use_rgb:
-        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)  # 将BGR转为RGB
+    if image.shape[-1] == 3 and use_rgb:
+        image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)  # 将BGR转为RGB
     # cv2.namedWindow(title, flags=cv2.WINDOW_AUTOSIZE)
     cv2.namedWindow(title, flags=cv2.WINDOW_NORMAL)
-    cv2.imshow(title, img)
+    cv2.imshow(title, image)
     cv2.waitKey(delay)
-    return img
+    return image
+
+
+show_image = cv_show_image
 
 
 def show_images_list(name, images_list, delay=0):
@@ -2329,13 +2335,13 @@ def get_mask_iou1(mask1, mask2, binarize=True):
     return iou
 
 
-def get_contours_iou(contour1, contour2, image_size: Tuple = None, plot=False):
+def get_contours_iou(contour1, contour2, image_size: Tuple = None, vis=False):
     """
     计算两个轮廓(多边形)交并比(Intersection-over-Union,IoU)
     :param contour1: 多边形1 (num_points,2),由num_points个点构成的封闭多边形
     :param contour2: 多边形2 (num_points,2),由num_points个点构成的封闭多边形
     :param image_size: (W,H) image size,用于可视化,不会影响contours,iou的结果
-    :param plot: 是否可视化Mask
+    :param vis: 是否可视化Mask
     :return: contours: 多边形1和多边形2重叠区域
              iou: 多边形1和多边形2的交并比
     """
@@ -2364,7 +2370,7 @@ def get_contours_iou(contour1, contour2, image_size: Tuple = None, plot=False):
     contours = [c.reshape(-1, 2) + (xmin, ymin) for c in contours]
     # area = np.sum(mask > 0)
     iou = area / max((area1 + area2 - area), 1e-8)
-    if plot:
+    if vis:
         print("U(mask1,mask2)={}".format(iou))
         cv_show_image("mask1", mask1, delay=1)
         cv_show_image("mask2", mask2, delay=1)
@@ -2525,8 +2531,8 @@ def draw_image_contours(image, contours: List[np.ndarray], texts=[], color=(), a
         image[:] = cv2.drawContours(image, p, contourIdx=-1, color=c, thickness=thickness)
         bgimg = image.copy()
         bgimg = cv2.fillPoly(bgimg, p, color=c)
-        image = cv2.addWeighted(src1=image, alpha=1 - alpha, src2=bgimg, beta=alpha, gamma=0)
-        if t: image = draw_text(image, point=(b[0], b[1]), color=c, text=t, thickness=thickness,
+        image[:] = cv2.addWeighted(src1=image, alpha=1 - alpha, src2=bgimg, beta=alpha, gamma=0)
+        if t: image[:] = draw_text(image, point=(b[0], b[1]), color=c, text=t, thickness=thickness,
                                 fontScale=fontScale, drawType=drawType)
     return image
 

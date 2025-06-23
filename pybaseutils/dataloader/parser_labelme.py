@@ -52,6 +52,7 @@ class LabelMeDataset(Dataset):
         self.use_rgb = use_rgb
         self.min_points = min_points
         self.kwargs = kwargs
+        self.log = kwargs.get('log', print) if kwargs.get('log', print) else print
         self.class_name, self.class_dict = self.parser_classes(class_name)
         parser = self.parser_paths(filename, data_root, anno_dir, image_dir)
         self.data_root, self.anno_dir, self.image_dir, self.image_ids = parser
@@ -64,14 +65,14 @@ class LabelMeDataset(Dataset):
             random.seed(200)
             random.shuffle(self.image_ids)
         self.num_images = len(self.image_ids)
-        print("LabelMeDataset data_root     :{}".format(self.data_root))
-        print("LabelMeDataset anno_dir      :{}".format(self.anno_dir))
-        print("LabelMeDataset image_dir     :{}".format(self.image_dir))
-        print("LabelMeDataset class_name    :{}".format(self.class_name))
-        print("LabelMeDataset class_dict    :{}".format(self.class_dict))
-        print("LabelMeDataset num images    :{}".format(len(self.image_ids)))
-        # print("LabelMeDataset num_classes   :{}".format(self.num_classes))
-        print("------" * 10)
+        self.log("LabelMeDataset data_root     :{}".format(self.data_root))
+        self.log("LabelMeDataset anno_dir      :{}".format(self.anno_dir))
+        self.log("LabelMeDataset image_dir     :{}".format(self.image_dir))
+        self.log("LabelMeDataset class_name    :{}".format(self.class_name))
+        self.log("LabelMeDataset class_dict    :{}".format(self.class_dict))
+        self.log("LabelMeDataset num images    :{}".format(len(self.image_ids)))
+        # self.log("LabelMeDataset num_classes   :{}".format(self.num_classes))
+        self.log("------" * 10)
 
     def __len__(self):
         return len(self.image_ids)

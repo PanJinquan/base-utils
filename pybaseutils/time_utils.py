@@ -55,7 +55,7 @@ class Recorder(object):
 recorder = Recorder()
 
 
-def performance(tag="", n=1):
+def performance(tag="", n=1, log=print):
     """
     :param tag:
     :param n: 从第几次开始记录数据
@@ -72,13 +72,13 @@ def performance(tag="", n=1):
             key = tag if tag else str(func.__name__)
             recorder.push(key=key, v=(t1 - t0) * 1000, start=n)
             content = recorder.get(key)
-            info = ["{}:{:.5f}ms".format(n, content.get(n, 0)) for n in ["current", "avg", "total"]]
+            info = ["{}:{:.3f}ms".format(n, content.get(n, 0)) for n in ["current", "avg", "total"]]
             info += ["count:{}".format(content['count'])]
             elapsed = "\t ".join(info)
             if tag:
-                print("{:20s}{:20s} elapsed: {}".format(tag, func.__name__, elapsed))
+                log("{:20s}{:20s} elapsed: {}".format(tag, func.__name__, elapsed))
             else:
-                print("{:20s} elapsed: {}".format(func.__name__, elapsed))
+                log("{:20s} elapsed: {}".format(func.__name__, elapsed))
             return result
 
         return wrapper
@@ -87,7 +87,7 @@ def performance(tag="", n=1):
 
 
 class Performance(object):
-    def __init__(self, tag="", n=1):
+    def __init__(self, tag="", n=1, log=print):
         """
         :param tag:
         :param n: 从第几次开始记录数据
@@ -95,6 +95,7 @@ class Performance(object):
         """
         self.tag = tag
         self.n = n
+        self.log = log
 
     def __enter__(self):
         self.t0 = time.time()
@@ -107,17 +108,17 @@ class Performance(object):
 
     def info(self, key):
         content = recorder.get(key)
-        info = ["{}:{:.5f}ms".format(n, content.get(n, 0)) for n in ["current", "avg", "total"]]
+        info = ["{}:{:.3f}ms".format(n, content.get(n, 0)) for n in ["current", "avg", "total"]]
         info += ["count:{}".format(content['count'])]
         elapsed = "\t ".join(info)
         tag_ = f"{self.tag} " if self.tag else ""
-        print("{:20s}elapsed: {}\t".format(tag_, elapsed))
+        self.log("{:20s}elapsed: {}\t".format(tag_, elapsed))
 
     def task(self):
         pass
 
 
-@performance("test1",n=5)
+@performance("test1", n=5)
 def targe_func1():
     time.sleep(1)
 
@@ -139,7 +140,7 @@ def targe_func4():
 
 def targe_func():
     targe_func1()
-    targe_func2()
+    # targe_func2()
     # targe_func3()
     # targe_func4()
 
