@@ -158,14 +158,14 @@ class TextDataset(Dataset):
         :return:
         """
         dst_list = []
-        print("Please wait, it's in checking")
+        print("{:15s} Please wait, it's in checking".format(self.tag))
         for item in tqdm(item_list):
             file, label, bbox = item["file"], item[self.label_index], item.get("bbox", [])
             if not os.path.exists(file):
                 print("no file:{}".format(file))
                 continue
             dst_list.append(item)
-        self.log("have nums samples:{},legal samples:{}".format(len(item_list), len(dst_list)))
+        self.log("{:15s} have nums samples:{},legal samples:{}".format(self.tag, len(item_list), len(dst_list)))
         return dst_list
 
     def __getitem__(self, index):

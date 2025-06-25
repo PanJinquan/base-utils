@@ -106,7 +106,7 @@ class LabelMeDataset(Dataset):
         :param ignore_empty : 是否去除一些空数据
         :return:
         """
-        print("Please wait, it's in checking")
+        print("{:15s} Please wait, it's in checking".format(self.tag))
         dst_ids = []
         class_name = []
         for image_id in tqdm(image_ids):
@@ -125,7 +125,7 @@ class LabelMeDataset(Dataset):
         if self.class_name is None:
             class_name = sorted(list(set(class_name)))
             self.class_name, self.class_dict = self.parser_classes(class_name)
-        print("have nums image:{},legal image:{}".format(len(image_ids), len(dst_ids)))
+        self.log("{:15s} have nums image:{},legal image:{}".format(self.tag, len(image_ids), len(dst_ids)))
         return dst_ids
 
     def parser_paths(self, filename=None, data_root=None, anno_dir=None, image_dir=None):
