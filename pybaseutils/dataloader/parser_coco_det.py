@@ -37,10 +37,11 @@ class CocoDetection(CocoDataset):
         super(CocoDetection, self).__init__(anno_file, image_dir=image_dir, class_name=class_name, transform=transform,
                                             target_transform=target_transform, use_rgb=use_rgb,
                                             shuffle=shuffle, decode=decode, **kwargs)
-        self.log("CocoDataset class_name :{}".format(class_name))
-        self.log("CocoDataset class_dict :{}".format(self.class_dict))
-        self.log("CocoDataset num images :{}".format(len(self.image_ids)))
-        self.log("CocoDataset num_classes:{}".format(self.num_classes))
+        self.log("{:15s} class_name :{}".format(self.tag, class_name))
+        self.log("{:15s} class_dict :{}".format(self.tag, self.class_dict))
+        self.log("{:15s} num images :{}".format(self.tag, len(self.image_ids)))
+        self.log("{:15s} num_classes:{}".format(self.tag, self.num_classes))
+        self.log("------" * 10)
 
     def convert_target(self, boxes, labels):
         # （xmin,ymin,xmax,ymax,label）
@@ -147,7 +148,7 @@ def show_target_image(image, boxes, labels, normal=False, transpose=False, class
 
 if __name__ == "__main__":
     size = [640, 640]
-    anno_file = "/home/PKing/nasdata/dataset/tmp/hand-pose/HandPose-v2/train/train_anno.json"
+    anno_file = "/media/PKing/新加卷/SDK/base-utils/data/coco/coco_ins.json"
     dataset = CocoDetection(anno_file, class_name=[], transform=None, use_rgb=True)
     class_name = dataset.class_name
     for i in range(len(dataset)):

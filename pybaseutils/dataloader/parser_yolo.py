@@ -62,6 +62,7 @@ class YOLODataset(Dataset):
         :param use_rgb:
         :param shuffle:
         """
+        self.tag = self.__class__.__name__
         super(YOLODataset, self).__init__()
         self.log = kwargs.get('log', print) if kwargs.get('log', print) else print
         self.min_area = 1 / 1000  # 如果前景面积不足0.1%,则去除
@@ -82,10 +83,10 @@ class YOLODataset(Dataset):
         self.scale_rate = 1.0
         self.target_type = 'gaussian'
         self.sigma = 2
-        self.log("Dataset class_name    :{}".format(class_name))
-        self.log("Dataset class_dict    :{}".format(self.class_dict))
-        self.log("Dataset num images    :{}".format(len(self.image_ids)))
-        self.log("Dataset num_classes   :{}".format(self.num_classes))
+        self.log("{:15s} class_name    :{}".format(self.tag, class_name))
+        self.log("{:15s} class_dict    :{}".format(self.tag, self.class_dict))
+        self.log("{:15s} num images    :{}".format(self.tag, len(self.image_ids)))
+        self.log("{:15s} num_classes   :{}".format(self.tag, self.num_classes))
         self.log("------" * 10)
 
     def __len__(self):

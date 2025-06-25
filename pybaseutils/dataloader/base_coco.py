@@ -115,6 +115,7 @@ class CocoDataset(object):
         :param decode: 是否对segment进行解码， True:在mask显示分割信息,False：mask为0，无分割信息
         """
         super(CocoDataset, self).__init__()
+        self.tag = self.__class__.__name__
         self.log = kwargs.get('log', print) if kwargs.get('log', print) else print
         self.transform = transform
         self.target_transform = target_transform
@@ -144,14 +145,14 @@ class CocoDataset(object):
         self.classes = list(set(self.class_dict.values())) if self.class_dict else []
         self.num_classes = max(list(self.class_dict.values())) + 1 if self.class_dict else 0
         self.bones = {}
-        self.log("CocoDataset anno_file  :{}".format(anno_file))
-        self.log("CocoDataset image_dir  :{}".format(self.image_dir))
-        self.log("CocoDataset class_count:{}".format(self.class_count))
-        self.log("CocoDataset class_name :{}".format(self.class_name))
-        self.log("CocoDataset class_dict :{}".format(self.class_dict))
-        self.log("CocoDataset num images :{}".format(len(self.image_ids)))
-        self.log("CocoDataset num_classes:{}".format(self.num_classes))
-        self.log("------" * 10)
+        self.log("{:15s} anno_file  :{}".format(self.tag, anno_file))
+        self.log("{:15s} image_dir  :{}".format(self.tag, self.image_dir))
+        self.log("{:15s} class_count:{}".format(self.tag, self.class_count))
+        self.log("{:15s} class_name :{}".format(self.tag, self.class_name))
+        self.log("{:15s} class_dict :{}".format(self.tag, self.class_dict))
+        self.log("{:15s} num images :{}".format(self.tag, len(self.image_ids)))
+        self.log("{:15s} num_classes:{}".format(self.tag, self.num_classes))
+        self.log("------" * 5)
 
     def parser_paths(self, filename=None, image_dir=None):
         """
@@ -413,6 +414,7 @@ class ConcatDataset(Dataset):
         :param datasets:
         :param shuffle:
         """
+        self.tag = self.__class__.__name__
         self.log = kwargs.get('log', print) if kwargs.get('log', print) else print
         super(ConcatDataset, self).__init__()
         assert len(datasets) > 0, 'dataset should not be an empty iterable'
@@ -436,8 +438,8 @@ class ConcatDataset(Dataset):
         if shuffle:
             random.seed(200)
             random.shuffle(self.image_ids)
-        self.log("ConcatDataset total images :{}".format(len(self.image_ids)))
-        self.log("ConcatDataset class_name   :{}".format(self.class_name))
+        self.log("{:15s} total images :{}".format(self.tag, len(self.image_ids)))
+        self.log("{:15s} class_name   :{}".format(self.tag, self.class_name))
         self.log("------" * 10)
 
     def add_dataset_id(self, image_ids, dataset_id):

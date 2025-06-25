@@ -64,13 +64,13 @@ class VOCDataset(Dataset):
             random.seed(200)
             random.shuffle(self.image_ids)
         self.num_images = len(self.image_ids)
-        self.log("Dataset data_root     :{}".format(self.data_root))
-        self.log("Dataset anno_dir      :{}".format(self.anno_dir))
-        self.log("Dataset image_dir     :{}".format(self.image_dir))
-        self.log("Dataset class_name    :{}".format(class_name))
-        self.log("Dataset class_dict    :{}".format(self.class_dict))
-        self.log("Dataset num images    :{}".format(len(self.image_ids)))
-        self.log("Dataset num_classes   :{}".format(self.num_classes))
+        self.log("{:15s} data_root     :{}".format(self.tag, self.data_root))
+        self.log("{:15s} anno_dir      :{}".format(self.tag, self.anno_dir))
+        self.log("{:15s} image_dir     :{}".format(self.tag, self.image_dir))
+        self.log("{:15s} class_name    :{}".format(self.tag, class_name))
+        self.log("{:15s} class_dict    :{}".format(self.tag, self.class_dict))
+        self.log("{:15s} num images    :{}".format(self.tag, len(self.image_ids)))
+        self.log("{:15s} num_classes   :{}".format(self.tag, self.num_classes))
         self.log("------" * 10)
 
     def add_image_postfix(self, image_dir, image_ids):
@@ -410,7 +410,7 @@ def show_target_image(image, boxes, labels, normal=False, transpose=False, class
 
 if __name__ == "__main__":
     # from models.transforms import data_transforms
-    filename = '/media/PKing/新加卷1/SDK/base-utils/data/coco/file_list.txt'
+    filename = '../../data/coco/file_list.txt'
     # class_name = ["car", "person"]
     class_name = ["car,person"]
     # class_name = {"car": 1, "person": 0}

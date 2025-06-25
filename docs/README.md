@@ -138,6 +138,8 @@ du -ah --max-depth=1/
 ls -lR|grep "^-"|wc -l
 # 统计文件夹下目录的个数，包括子文件夹里的
 ls -lR|grep "^d"|wc -l
+# 统计当前目录(含子目录)下有多张图片
+find . -type f -iname "*.jpg" | wc -l
 ```
 
 ## 一些个性化别名

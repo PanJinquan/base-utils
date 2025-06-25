@@ -43,6 +43,7 @@ class TextDataset(Dataset):
                         save_info,
                         interval
         """
+        self.tag = self.__class__.__name__
         self.data_file = data_file
         self.data_root = data_root
         self.use_rgb = use_rgb
@@ -80,13 +81,13 @@ class TextDataset(Dataset):
 
     def info(self, save_info=""):
         self.log("----------------------- {} DATASET INFO -----------------------".format(self.phase.upper()))
-        self.log("Dataset kwargs        :{}".format(self.kwargs))
-        self.log("Dataset num_samples   :{}".format(len(self.item_list)))
-        self.log("Dataset num_classes   :{}".format(self.num_classes))
-        self.log("Dataset class_name    :{}".format(self.class_name))
-        self.log("Dataset class_dict    :{}".format(self.class_dict))
-        self.log("Dataset class_count   :{}".format(self.class_count))
-        self.log("Dataset resample      :resample={},interval={}".format(self.resample, self.interval))
+        self.log("{:15s} kwargs        :{}".format(self.tag, self.kwargs))
+        self.log("{:15s} num_samples   :{}".format(self.tag, len(self.item_list)))
+        self.log("{:15s} num_classes   :{}".format(self.tag, self.num_classes))
+        self.log("{:15s} class_name    :{}".format(self.tag, self.class_name))
+        self.log("{:15s} class_dict    :{}".format(self.tag, self.class_dict))
+        self.log("{:15s} class_count   :{}".format(self.tag, self.class_count))
+        self.log("{:15s} resample      :resample={},interval={}".format(self.tag, self.resample, self.interval))
         if save_info:
             if not os.path.exists(save_info): os.makedirs(save_info)
             m = np.mean(list(self.class_count.values()))
@@ -147,7 +148,7 @@ class TextDataset(Dataset):
                 item = {"file": os.path.join(root, line[0]), "label": line[1], 'name': line[1]}
                 if len(line) == 6: item['bbox'] = line[2:]  # (xmin,ymin,xmax,ymax)
                 data.append(item)
-            print("loading data from:{},have {}".format(file, len(data)))
+            self.log("{:15s} loading data from:{},have {}".format(self.tag, file, len(data)))
             item_list += data
         return item_list
 
@@ -164,7 +165,7 @@ class TextDataset(Dataset):
                 print("no file:{}".format(file))
                 continue
             dst_list.append(item)
-        print("have nums samples:{},legal samples:{}".format(len(item_list), len(dst_list)))
+        self.log("have nums samples:{},legal samples:{}".format(len(item_list), len(dst_list)))
         return dst_list
 
     def __getitem__(self, index):

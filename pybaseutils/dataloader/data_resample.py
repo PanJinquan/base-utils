@@ -57,7 +57,7 @@ class DataResample(object):
                         "log": 每个label样本取log数，实现样本均衡
                         "mean": 每个label样本取样本平均数，每个label的个数一样
         """
-        self.tag = "DataResample"
+        self.tag = self.__class__.__name__
         self.src_item_list = item_list
         self.class_name = class_name
         self.label_index = label_index
@@ -75,6 +75,9 @@ class DataResample(object):
         self.item_list = []
         self.item_list = self.update(shuffle=self.shuffle)
         self.class_weight = self.get_class_weight(self.src_class_count)
+        self.log("{:15s} balance        :{}".format(self.tag, self.balance))
+        self.log("{:15s} interval       :{}".format(self.tag, self.interval))
+        self.log("{:15s} interval       :{}".format(self.tag, self.interval))
 
     def __len__(self):
         self.update(shuffle=self.shuffle)
@@ -84,7 +87,7 @@ class DataResample(object):
         self.t1 = time.time()  # seconds
         dt = (self.t1 - self.t0)
         if not self.item_list or dt > self.interval:
-            self.log(f"{self.tag} resample dataset")
+            self.log(f"{self.tag:15s} resample dataset")
             self.item_list = self.get_resample_data(shuffle=shuffle)
             self.t0 = self.t1
         return self.item_list
@@ -117,7 +120,7 @@ class DataResample(object):
             info = {class_name[k]: len(v) for k, v in class_info.items()}
         else:
             info = {k: len(v) for k, v in class_info.items()}
-        self.log("{} {}: {}, total: {}".format(self.tag, title, info, sum(info.values())))
+        self.log("{:15s} {}: {}, total: {}".format(self.tag, title, info, sum(info.values())))
 
     def get_balance_nums(self, class_count: dict, balance):
         """

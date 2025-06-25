@@ -47,6 +47,7 @@ class LabelMeDataset(Dataset):
         :param min_points: 当标注的轮廓点的个数小于min_points，会被剔除；负数不剔除
         :param kwargs: read_image: 是否读取图片，否则image=None
         """
+        self.tag = self.__class__.__name__
         super(LabelMeDataset, self).__init__()
         self.min_area = 1 / 1000  # 如果前景面积不足0.1%,则去除
         self.use_rgb = use_rgb
@@ -65,13 +66,13 @@ class LabelMeDataset(Dataset):
             random.seed(200)
             random.shuffle(self.image_ids)
         self.num_images = len(self.image_ids)
-        self.log("LabelMeDataset data_root     :{}".format(self.data_root))
-        self.log("LabelMeDataset anno_dir      :{}".format(self.anno_dir))
-        self.log("LabelMeDataset image_dir     :{}".format(self.image_dir))
-        self.log("LabelMeDataset class_name    :{}".format(self.class_name))
-        self.log("LabelMeDataset class_dict    :{}".format(self.class_dict))
-        self.log("LabelMeDataset num images    :{}".format(len(self.image_ids)))
-        # self.log("LabelMeDataset num_classes   :{}".format(self.num_classes))
+        self.log("{:15s} data_root     :{}".format(self.tag, self.data_root))
+        self.log("{:15s} anno_dir      :{}".format(self.tag, self.anno_dir))
+        self.log("{:15s} image_dir     :{}".format(self.tag, self.image_dir))
+        self.log("{:15s} class_name    :{}".format(self.tag, self.class_name))
+        self.log("{:15s} class_dict    :{}".format(self.tag, self.class_dict))
+        self.log("{:15s} num images    :{}".format(self.tag, len(self.image_ids)))
+        # self.log("{:15s} num_classes   :{}".format(self.tag,self.num_classes))
         self.log("------" * 10)
 
     def __len__(self):

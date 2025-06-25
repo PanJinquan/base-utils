@@ -35,6 +35,7 @@ class LabelmeDataset(parser_image_text.TextDataset):
         :param check:
         :param kwargs:  use_max,use_mean,crop_scale
         """
+        self.tag = self.__class__.__name__
         self.dataset = None
         super(LabelmeDataset, self).__init__(data_file=filename,
                                              data_root=None,
@@ -47,7 +48,7 @@ class LabelmeDataset(parser_image_text.TextDataset):
                                              check=check,
                                              label_index="label",
                                              **kwargs)
-        self.log("LabelmeDataset    have images:{},have samples:{}".format(len(self.item_list), self.num_samples))
+        self.log("{:15s} have images:{},have samples:{}".format(self.tag, len(self.item_list), self.num_samples))
 
     def parser_dataset(self, data_file, data_root="", label_index="label", shuffle=False, check=False):
         """
@@ -108,7 +109,13 @@ class LabelmeDataset(parser_image_text.TextDataset):
 if __name__ == '__main__':
     from torchvision import transforms
 
-    filename = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-person-action/train-v2/台架区1/dataset-v20/images"
+    filename = [
+        "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-person-action/train-v2/高杆区4/dataset-v20/images",
+        "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-person-action/train-v2/高杆区4/dataset-v21/images",
+        "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-person-action/train-v2/高杆区4/dataset-v22/images",
+        "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-person-action/train-v2/高杆区4/dataset-v23/images",
+        "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-person-action/train-v2/高杆区4/dataset-v24/images"
+    ]
     batch_size = 1
     crop_scale = (1.2, 1.2)
     input_size = [224, 224]

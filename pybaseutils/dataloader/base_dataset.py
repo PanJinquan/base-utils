@@ -38,6 +38,7 @@ class Dataset(object):
     """
 
     def __init__(self, **kwargs):
+        self.tag = self.__class__.__name__
         self.image_ids = []
         # TODO: self.class_name, self.class_dict = self.parser_classes(class_name)
         self.class_name = []
@@ -233,8 +234,8 @@ class ConcatDataset(Dataset):
         if shuffle:
             random.seed(200)
             random.shuffle(self.image_ids)
-        self.log("ConcatDataset  total images  :{}".format(len(self.image_ids)))
-        self.log("ConcatDataset  class_name    :{}".format(self.class_name))
+        self.log("{:15s} total images  :{}".format(self.tag, len(self.image_ids)))
+        self.log("{:15s} class_name    :{}".format(self.tag, self.class_name))
         self.log("------" * 10)
 
     def add_dataset_id(self, image_ids, dataset_id):

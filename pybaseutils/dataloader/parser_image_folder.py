@@ -58,7 +58,7 @@ class FolderDataset(parser_image_text.TextDataset):
             if not os.path.exists(dir): raise Exception("文件不存在，image_dir:{}".format(dir))
             paths, labels = file_utils.get_files_labels(dir, postfix=file_utils.IMG_POSTFIX)
             if len(paths) == 0: raise Exception("文件为空:{}".format(dir))
-            self.log("loading data from:{},have {},label:{}".format(dir, len(paths), len(set(labels))))
+            self.log("{:15s} loading data from:{},have {},label:{}".format(self.tag, dir, len(paths), len(set(labels))))
             # TODO # 避免多个数据集的相同的label
             if use_sub:  labels = [os.path.join(str(i), l) for l in labels]
             data = [{"file": p, "label": l, 'name': l} for p, l in zip(paths, labels)]
