@@ -66,7 +66,7 @@ class LabelmeDataset(parser_image_text.TextDataset):
                                                       use_rgb=self.use_rgb,
                                                       shuffle=self.shuffle,
                                                       read_image=False)
-        print("Please wait, it's in checking")
+        print("{:15s} Please wait, it's in checking".format(self.tag))
         item_list = []
         for index in tqdm(range(len(self.dataset))):
             info = self.dataset.__getitem__(index)

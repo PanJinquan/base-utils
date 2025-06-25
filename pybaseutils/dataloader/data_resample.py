@@ -87,19 +87,20 @@ class DataResample(object):
         self.t1 = time.time()  # seconds
         dt = (self.t1 - self.t0)
         if not self.item_list or dt > self.interval:
-            self.log(f"{self.tag:15s} resample dataset")
-            self.item_list = self.get_resample_data(shuffle=shuffle)
+            seed = int(self.t1) # TODO 修复BUG，由于其他地方有设置seed，导致每次shuffle结果都一致
+            self.log(f"{self.tag:15s} resample dataset,seed={seed}")
+            self.item_list = self.get_resample_data(shuffle=shuffle, seed=seed)
             self.t0 = self.t1
         return self.item_list
 
-    def get_resample_data(self, shuffle=True):
+    def get_resample_data(self, shuffle=True, seed=2025):
         """
         获得重采样的数据
-        :param item_list:
-        :param label_index:
         :param shuffle:
+        :param seed:
         :return:
         """
+        random.seed(seed)  # TODO 修复BUG，由于其他地方有设置seed，导致每次shuffle结果都一致
         if self.disp or self.first_time:  # 统计每个类别的个数
             self.print_class_info("src_class_info", self.src_class_info, class_name=self.class_name)
         out_list = []
