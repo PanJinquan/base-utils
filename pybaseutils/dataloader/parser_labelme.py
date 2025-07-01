@@ -106,10 +106,9 @@ class LabelMeDataset(Dataset):
         :param ignore_empty : 是否去除一些空数据
         :return:
         """
-        print("{:15s} Please wait, it's in checking".format(self.tag))
         dst_ids = []
         class_name = []
-        for image_id in tqdm(image_ids):
+        for image_id in tqdm(image_ids, desc="check data"):
             image_file, anno_file, image_id = self.get_image_anno_file(image_id)
             if not os.path.exists(anno_file):
                 continue

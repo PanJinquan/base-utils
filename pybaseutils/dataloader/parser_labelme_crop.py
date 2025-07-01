@@ -66,9 +66,8 @@ class LabelmeDataset(parser_image_text.TextDataset):
                                                       use_rgb=self.use_rgb,
                                                       shuffle=self.shuffle,
                                                       read_image=False)
-        print("{:15s} Please wait, it's in checking".format(self.tag))
         item_list = []
-        for index in tqdm(range(len(self.dataset))):
+        for index in tqdm(range(len(self.dataset)), desc="process data"):
             info = self.dataset.__getitem__(index)
             file, boxes = info["image_file"], info.get("boxes", [])
             for i in range(len(boxes)):

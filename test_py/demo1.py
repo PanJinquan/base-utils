@@ -23,13 +23,12 @@ import inspect
 from pybaseutils import log
 import asyncio
 
+
 async def search():
     return "ok"
 
 
-async def main():
-    result = await search()  # 在async函数内await
-    print(result)  # 输出: ok
-
 if __name__ == "__main__":
-    asyncio.run(main())
+    json_file = "/home/PKing/Downloads/labeled_trainval/SSLAD-2D/labeled/val/instance_val.json"
+    data = json_utils.load_json(json_file)
+    print(data)

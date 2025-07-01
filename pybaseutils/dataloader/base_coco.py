@@ -100,7 +100,7 @@ class CocoDataset(object):
     """Coco dataset."""
 
     def __init__(self, anno_file, image_dir="", class_name=[], transform=None, target_transform=None, use_rgb=True,
-                 shuffle=False, decode=True, **kwargs):
+                 shuffle=False, decode=False, **kwargs):
         """
         ├── annotations
         │    ├── instances_train2017.json
@@ -278,19 +278,19 @@ class CocoDataset(object):
         assert height == file_info['height']
         return image, width, height, image_file
 
-    def get_object_detection(self, annos):
+    def get_object_detection(self, anns):
         """
         return: boxes=(num_boxes,5), xmin,ymin,xmax,ymax
         """
         labels, rects = [], []
-        for anno in annos:
+        for ann in anns:
             # some annotations have basically no width / height, skip them
-            if anno['bbox'][2] < 1 or anno['bbox'][3] < 1:
+            if ann['bbox'][2] < 1 or ann['bbox'][3] < 1:
                 continue
-            name = self.id2category[anno['category_id']] if not self.unique else "unique"
+            name = self.id2category[ann['category_id']] if not self.unique else "unique"
             if self.class_dict and name not in self.class_dict:
                 continue
-            bbox = anno['bbox']  # x,y,w,h
+            bbox = ann['bbox']  # x,y,w,h
             label = self.class_dict[name]
             rects.append(bbox)
             labels.append(label)
@@ -301,6 +301,10 @@ class CocoDataset(object):
     def get_object_instance(self, anns, h, w, decode=False):
         """
         获得实例分割信息
+        segs，分割轮廓保存格式 ：
+                       [[x1,y1 x2,y2,... xn,yn], # 实例轮廓1
+                        [x1,y1 x2,y2,... xn,yn], # 实例轮廓2
+                        ]
         :param anns:
         :param h:
         :param w:
@@ -313,10 +317,17 @@ class CocoDataset(object):
             name = self.id2category[ann['category_id']] if not self.unique else "unique"
             if self.class_dict and name not in self.class_dict:
                 continue
-            if len(ann['segmentation']) == 0: continue
-            seg = ann['segmentation'][0]
-            # polygons = image_utils.find_mask_contours(m) # bug：多个实例时，bbox有问题
-            # bbox = image_utils.polygons2boxes(polygons)[0]
+            segmentation = ann.get('segmentation', [])  # [[x1,y1,x2,y2,x3,y3,...],[]]
+            bbox = ann.get('bbox', [])  # x,y,w,h
+            if len(segmentation) == 0 and len(bbox) == 0: continue
+            if len(segmentation) > 0:
+                seg = ann['segmentation'][0]
+                # polygons = image_utils.find_mask_contours(m) # bug：多个实例时，bbox有问题
+                # bbox = image_utils.polygons2boxes(polygons)[0]
+            else:
+                boxes = image_utils.xywh2xyxy(np.asarray([bbox]))
+                seg = image_utils.boxes2polygons(boxes)
+                ann['segmentation'] = [seg.reshape(-1).tolist()]
             label = self.class_dict[name]
             rects.append(ann['bbox'])
             labels.append(label)

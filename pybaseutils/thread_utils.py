@@ -15,7 +15,7 @@
 
 import threading
 import time
-from typing import List, Tuple, Callable
+from typing import List, Tuple, Dict, Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from concurrent.futures import ProcessPoolExecutor, wait
 from multiprocessing import Pool, Process
@@ -46,16 +46,16 @@ def thread_safety(func, *args, **kwargs):
     return r
 
 
-def consumer(image_path: str):
+def consumer(args):
     """
-    :param image_path:
+    :param args:
     :return:
     """
-    t = int(image_path.split(".")[0])
-    time.sleep(t)
+    # t = int(image_path.split(".")[0])
+    # time.sleep(t)
     # with thread_lock:
-    print("正在处理数据：{}  ".format(image_path))
-    return image_path
+    print("正在处理数据：{}  ".format(args))
+    return args
 
 
 def consumer_multi(image_path: str, data):
@@ -99,20 +99,20 @@ class ProcessPool(object):
 	str_data = multiprocessing.Manager().Value(ctypes.c_char_p, 'str0')
     """
 
-    def __init__(self, max_workers=2):
+    def __init__(self, max_workers=2, initializer=None, initargs=()):
         """
         :param max_workers:  进程池最大线程数
         """
-        self.pool = Pool(processes=max_workers)
+        self.pool = Pool(processes=max_workers, initializer=initializer, initargs=initargs)
 
-    def task_map(self, func: Callable, inputs: List):
+    def task_map(self, func: Callable, inputs: List or List[Dict], timeout=None):
         """进程任务，返回结果有序"""
         result = []
         for r in self.pool.map(func, inputs):
             result.append(r)
         return result
 
-    def task_apply_async(self, func: Callable, inputs: List, timeout=None):
+    def task_apply_async(self, func: Callable, inputs: List[List] or List[Tuple], timeout=None):
         """进程任务，返回结果有序"""
         result = [self.pool.apply_async(func, args=(*p,)) for p in inputs]
         result = [r.get(timeout=timeout) for r in result]
@@ -151,7 +151,7 @@ class ThreadPool(object):
         t = self.pool.submit(func, *args, **kwargs)
         return t
 
-    def task_map(self, func: Callable, inputs: List, timeout=None):
+    def task_map(self, func: Callable, inputs: List or List[Dict], timeout=None):
         """线程任务，返回结果有序(map与submit的性能基本一致)"""
         # 通过executor的 map 获取已经完成的task的值
         result = []
@@ -254,19 +254,20 @@ def performanceProcessPool():
     from pybaseutils import time_utils
     tp = ProcessPool(max_workers=4)
     # contents = ["1.jpg", "4.jpg", "4.jpg", "4.jpg", "2.jpg"]
-    # contents = ["1.jpg", "5.jpg", "4.jpg", "3.jpg", "2.jpg"]
-    contents = ["1.jpg", "5.jpg", "1.jpg", "1.jpg", "1.jpg"]
+    contents = ["1.jpg", "5.jpg", "4.jpg", "3.jpg", "2.jpg"]
+    # contents = [["1.jpg","image"], ["5.jpg","image"], ["1.jpg","image"]]
+    contents = [{"file": "1.jpg", "image": 1}, {"file": "2.jpg", "image": 2}, {"file": "3.jpg", "image": 3}]
     print(contents)
-    # with time_utils.Performance("task_map") as p:
-    #     result1 = tp.task_map(func=consumer, inputs=contents)
+    with time_utils.Performance("task_map") as p:
+        result1 = tp.task_map(func=consumer, inputs=contents)
     # with time_utils.Performance("task_apply_async") as p:
     #     result2 = tp.task_apply_async(func=consumer, inputs=contents)
-    with time_utils.Performance("mul_tasks") as p:
-        mul_tasks = [consumer] * len(contents)
-        result3 = tp.multi_tasks(mul_tasks, contents)
+    # with time_utils.Performance("mul_tasks") as p:
+    #     mul_tasks = [consumer] * len(contents)
+    #     result3 = tp.multi_tasks(mul_tasks, contents)
     # print(result1)
     # print(result2)
-    print(result3)
+    # print(result3)
 
 
 def performanceProcess():
@@ -279,9 +280,6 @@ def performanceProcess():
     t = TaskProcess()
     r = t.tasks(tasks, contents)
     print(r)
-
-
-
 
 
 if __name__ == "__main__":

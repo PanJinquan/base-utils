@@ -79,6 +79,11 @@ class TextDataset(Dataset):
         self.num_samples = len(self.item_list)
         if self.log: self.info(save_info=kwargs.get("save_info", ""))
 
+    def __len__(self):
+        if self.resample:
+            self.item_list = self.data_resample.update(True)
+        return len(self.item_list)
+
     def info(self, save_info=""):
         self.log("----------------------- {} DATASET INFO -----------------------".format(self.phase.upper()))
         self.log("{:15s} kwargs        :{}".format(self.tag, self.kwargs))
@@ -158,8 +163,7 @@ class TextDataset(Dataset):
         :return:
         """
         dst_list = []
-        print("{:15s} Please wait, it's in checking".format(self.tag))
-        for item in tqdm(item_list):
+        for item in tqdm(item_list, desc="check data"):
             file, label, bbox = item["file"], item[self.label_index], item.get("bbox", [])
             if not os.path.exists(file):
                 print("no file:{}".format(file))
@@ -183,11 +187,6 @@ class TextDataset(Dataset):
             index = int(random.uniform(0, self.num_samples))
             return self.__getitem__(index)
         return dict(image=image, label=label, file=file, name=name)
-
-    def __len__(self):
-        if self.resample:
-            self.item_list = self.data_resample.update(True)
-        return len(self.item_list)
 
     def crop_image(self, image, bbox, crop_scale=[], use_max=False, use_mean=True, **kwargs):
         """

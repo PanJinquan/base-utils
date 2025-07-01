@@ -157,11 +157,10 @@ class YOLODataset(Dataset):
         :param ignore_empty : 是否去除一些空数据
         :return:
         """
-        self.log("Please wait, it's in checking")
         dst_ids = []
         # image_ids = image_ids[:100]
         # image_ids = image_ids[100:]
-        for image_id in tqdm(image_ids):
+        for image_id in tqdm(image_ids, desc="check data"):
             image_file, annotation_file, image_id = self.get_image_anno_file(image_id)
             if not os.path.exists(annotation_file):
                 continue

@@ -103,10 +103,9 @@ class VOCDataset(Dataset):
         :param ignore_empty : 是否去除一些空数据
         :return:
         """
-        print("Please wait, it's in checking")
         dst_ids = []
         class_set = []
-        for image_id in tqdm(image_ids):
+        for image_id in tqdm(image_ids, desc="check data"):
             image_file, annotation_file = self.get_image_anno_file(image_id)
             if not os.path.exists(annotation_file):
                 # print(image_file)

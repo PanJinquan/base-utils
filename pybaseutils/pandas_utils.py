@@ -7,6 +7,40 @@
 import os
 import numpy as np
 import pandas as pd
+import csv
+
+
+class CSVWriter(object):
+    def __init__(self, filename, title=[], keys=[], mode='a'):
+        """
+        :param filename: *.csv file
+        :param title: 表头名称(第一行的表格)
+        :param keys: 表头字典(默认与title一致)
+        :param mode: 打开文件模式
+        """
+        self.filename = filename
+        self.title = title
+        self.keys = keys if keys else self.title
+        self.file = open(self.filename, mode=mode, newline='')
+        self.writer = csv.writer(self.file)
+        # 检查文件是否为空，如果是，写入表头
+        if self.file.tell() == 0:
+            self.writer.writerow(title)
+            self.file.flush()
+
+    def add(self, data: list or dict, flush=True):
+        """
+        :param data:
+        :param flush:
+        :return:
+        """
+        if isinstance(data, dict): data = [data.get(k, None) for k in self.title]
+        self.writer.writerow(data)
+        if flush: self.file.flush()  # 强制写入磁盘
+        return data
+
+    def close(self):  # 手动关闭文件（推荐在程序结束时调用）
+        self.file.close()
 
 
 def read_csv(filename, sep=";"):
@@ -29,7 +63,7 @@ def get_cols(df, keys) -> pd.Series:
     :param keys: list
     :return:
     """
-    data = df[keys] # 或者
+    data = df[keys]  # 或者
     # data = df.loc[:, keys]
     return data
 

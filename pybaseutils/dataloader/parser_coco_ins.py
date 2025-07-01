@@ -54,7 +54,7 @@ def CocoInstances(anno_file=None,
                   target_transform=None,
                   use_rgb=True,
                   shuffle=False,
-                  decode=True,
+                  decode=False,
                   **kwargs):
     """
     :param anno_file: str or List[str]

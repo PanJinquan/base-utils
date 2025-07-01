@@ -22,7 +22,8 @@ def get_plate_licenses(plate):
     :param plate:
     :return:
     """
-    provinces = ["皖", "沪", "津", "渝", "冀", "晋", "蒙", "辽", "吉", "黑", "苏", "浙", "京", "闽", "赣", "鲁", "豫", "鄂", "湘", "粤",
+    provinces = ["皖", "沪", "津", "渝", "冀", "晋", "蒙", "辽", "吉", "黑", "苏", "浙", "京", "闽", "赣", "鲁", "豫",
+                 "鄂", "湘", "粤",
                  "桂", "琼", "川", "贵", "云", "藏", "陕", "甘", "青", "宁", "新", "警", "学", "O"]
     alphabets = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
                  'W', 'X', 'Y', 'Z', 'O']
@@ -115,13 +116,13 @@ def converter_CCPD2voc(image_dir, vis=True):
             continue
         image = cv2.imread(image_file)
         if vis:
-            image = image_utils.draw_image_bboxes_text(image, bboxes, plates, color=(255, 0, 0), thickness=3,
-                                                       fontScale=1.2, drawType="chinese")
+            image = image_utils.draw_image_contours(image, points, plates, color=(255, 0, 0), thickness=1,
+                                                    fontScale=1.2, drawType="chinese")
             # image = image_utils.draw_image_points_lines(image, points=points[0], line_color=(0, 0, 255))
             image_utils.cv_show_image("det", image, use_rgb=False, delay=0)
     print("class_set:{}".format(class_set))
 
 
 if __name__ == "__main__":
-    image_dir = "/home/dm/nasdata/dataset/csdn/plate/dataset/CCPD2020/ccpd_green/train"
+    image_dir = "/home/PKing/nasdata/tmp/tmp/plate/dataset/CCPD2019/ccpd_blur"
     converter_CCPD2voc(image_dir, vis=True)
