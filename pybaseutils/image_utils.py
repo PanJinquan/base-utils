@@ -1094,11 +1094,10 @@ def draw_image_bboxes_labels_text(image, boxes, labels, boxes_name=None, color=N
     return image
 
 
-def draw_image_boxes_labels_texts(image, boxes, labels, texts=None, color=None, thickness=2, fontScale=0.8,
+def draw_image_boxes_labels_texts(image, boxes, labels, texts, color=None, thickness=2, fontScale=0.8,
                                   drawType="custom", top=True, color_table=color_table):
     if isinstance(labels, np.ndarray):
         labels = labels.reshape(-1).tolist()
-    texts = texts if texts else labels
     for label, box, name in zip(labels, boxes, texts):
         box = [int(b) for b in box]
         color_ = color if color else color_table[int(label) + 1]
@@ -1922,7 +1921,7 @@ def convert_anchor(anchors, height, width):
     return boxes_list
 
 
-def get_rect_crop_padding(image, rect, color=(0, 0, 0)):
+def get_rect_crop_padding(image, rect, color=(0, 0, 0), borderType=cv2.BORDER_CONSTANT):
     """
     :param image:
     :param rect:
@@ -1930,37 +1929,49 @@ def get_rect_crop_padding(image, rect, color=(0, 0, 0)):
     :return:
     """
     rect = [int(v) for v in rect]
-    rows, cols = image.shape[:2]  # h,w,d
-    x, y, width, height = rect
-    crop_x1 = max(0, x)
-    crop_y1 = max(0, y)
-    crop_x2 = min(cols, x + width)  # 图像范围
-    crop_y2 = min(rows, y + height)
-    left_x = -x
-    top_y = -y
-    right_x = x + width - cols
-    down_y = y + height - rows
-    roi_image = image[crop_y1:crop_y2, crop_x1:crop_x2]
+    img_h, img_w = image.shape[:2]  # h,w,d
+    x, y, w, h = rect
+    x1 = max(0, x)
+    y1 = max(0, y)
+    x2 = min(img_w, x + w)  # 图像范围
+    y2 = min(img_h, y + h)
+    lx = -x
+    ly = -y
+    rx = x + w - img_w
+    dy = y + h - img_h
+    roi = image[y1:y2, x1:x2]
     # 只要存在边界越界的情况，就需要边界填充
-    if top_y > 0 or down_y > 0 or left_x > 0 or right_x > 0:
-        left_x = max(left_x, 0)
-        right_x = max(right_x, 0)
-        top_y = max(top_y, 0)
-        down_y = max(0, down_y, 0)
-        roi_image = cv2.copyMakeBorder(roi_image, int(top_y), int(down_y), int(left_x), int(right_x),
-                                       cv2.BORDER_CONSTANT, value=color)
-    return roi_image
+    if ly > 0 or dy > 0 or lx > 0 or rx > 0:
+        lx = max(lx, 0)
+        rx = max(rx, 0)
+        ly = max(ly, 0)
+        dy = max(0, dy, 0)
+        roi = cv2.copyMakeBorder(roi, int(ly), int(dy), int(lx), int(rx), borderType=borderType, value=color)
+    return roi
 
 
-def get_box_crop_padding(image, box, color=(0, 0, 0)):
+def get_box_crop_padding(image, box, color=(0, 0, 0), borderType=cv2.BORDER_CONSTANT):
     """
     :param image:
     :param box:
     :return:
     """
     rect = boxes2rects([box])[0]
-    roi_image = get_rect_crop_padding(image, rect, color=color)
+    roi_image = get_rect_crop_padding(image, rect, color=color, borderType=borderType)
     return roi_image
+
+
+def get_box_crop_recover(crop, box, size, borderType=cv2.BORDER_REPLICATE):
+    """
+    恢复裁剪前的图像大小
+    :param crop: 裁剪后的图像
+    :param box: 裁剪前的矩形框
+    :param size: 原始图像大小(w,h)
+    :return:
+    """
+    box = [-box[0], -box[1], size[0] - box[0], size[1] - box[1]]
+    out = get_box_crop_padding(crop, box, borderType=borderType)
+    return out
 
 
 def get_box_crop(image, box):
@@ -2001,7 +2012,7 @@ def get_boxes_crop(image, boxes):
     return crops
 
 
-def get_bboxes_crop_padding(image, bboxes, size=(), color=(0, 0, 0)):
+def get_bboxes_crop_padding(image, bboxes, size=(), color=(0, 0, 0), borderType=cv2.BORDER_CONSTANT):
     """
     已经废弃，使用get_boxes_crop_padding代替
     :param image:
@@ -2013,13 +2024,13 @@ def get_bboxes_crop_padding(image, bboxes, size=(), color=(0, 0, 0)):
     rects = boxes2rects(bboxes)
     crops = []
     for rect in rects:
-        roi = get_rect_crop_padding(image, rect, color=color)
+        roi = get_rect_crop_padding(image, rect, color=color, borderType=borderType)
         if size: roi = resize_image(roi, size=size)
         crops.append(roi)
     return crops
 
 
-def get_boxes_crop_padding(image, boxes, size=(), color=(0, 0, 0)):
+def get_boxes_crop_padding(image, boxes, size=(), color=(0, 0, 0), borderType=cv2.BORDER_CONSTANT):
     """
     :param image:
     :param boxes:
@@ -2030,13 +2041,13 @@ def get_boxes_crop_padding(image, boxes, size=(), color=(0, 0, 0)):
     rects = boxes2rects(boxes)
     crops = []
     for rect in rects:
-        roi = get_rect_crop_padding(image, rect, color=color)
+        roi = get_rect_crop_padding(image, rect, color=color, borderType=borderType)
         if size: roi = resize_image(roi, size=size)
         crops.append(roi)
     return crops
 
 
-def get_rects_crop_padding(image, rects, size=(), color=(0, 0, 0)):
+def get_rects_crop_padding(image, rects, size=(), color=(0, 0, 0), borderType=cv2.BORDER_CONSTANT):
     """
     :param image:
     :param rects:
@@ -2046,7 +2057,7 @@ def get_rects_crop_padding(image, rects, size=(), color=(0, 0, 0)):
     """
     crops = []
     for rect in rects:
-        roi = get_rect_crop_padding(image, rect, color=color)
+        roi = get_rect_crop_padding(image, rect, color=color, borderType=borderType)
         if size: roi = resize_image(roi, size=size)
         crops.append(roi)
     return crops
@@ -2067,7 +2078,7 @@ def center_crop(image, crop_size=[112, 112]):
     return image[y:y + crop_size[1], x:x + crop_size[0]]
 
 
-def center_crop_padding(image, crop_size, color=(0, 0, 0)):
+def center_crop_padding(image, crop_size, color=(0, 0, 0), borderType=cv2.BORDER_CONSTANT):
     """
     :param image:
     :param crop_size: [crop_w,crop_h]
@@ -2077,7 +2088,7 @@ def center_crop_padding(image, crop_size, color=(0, 0, 0)):
     y = int(round((h - crop_size[1]) / 2.))
     x = int(round((w - crop_size[0]) / 2.))
     rect = [x, y, crop_size[0], crop_size[1]]
-    roi_image = get_rect_crop_padding(image, rect, color=color)
+    roi_image = get_rect_crop_padding(image, rect, color=color, borderType=borderType)
     return roi_image
 
 
@@ -2510,6 +2521,22 @@ def pointPolygonTest(point, contour, measureDist=False):
     return dist
 
 
+def draw_contours(image, contours: List[np.ndarray], color=(), thickness=1):
+    """
+    :param image:
+    :param contours: List[np.ndarray],每个列表是一个轮廓(num_points,1,2)
+    :param color:绘制轮廓的颜色
+    :param thickness:轮廓线宽
+    :return:
+    """
+    for i in range(0, len(contours)):
+        c = color if color else color_table[i + 1]
+        p = np.asarray(contours[i], dtype=np.int32)
+        if len(p.shape) == 2: p = [p]
+        image[:] = cv2.drawContours(image, p, contourIdx=-1, color=c, thickness=thickness)
+    return image
+
+
 def draw_image_contours(image, contours: List[np.ndarray], texts=[], color=(), alpha=0.5, thickness=1, fontScale=0.8,
                         drawType="ch"):
     """
@@ -2533,7 +2560,7 @@ def draw_image_contours(image, contours: List[np.ndarray], texts=[], color=(), a
         bgimg = cv2.fillPoly(bgimg, p, color=c)
         image[:] = cv2.addWeighted(src1=image, alpha=1 - alpha, src2=bgimg, beta=alpha, gamma=0)
         if t: image[:] = draw_text(image, point=(b[0], b[1]), color=c, text=t, thickness=thickness,
-                                fontScale=fontScale, drawType=drawType)
+                                   fontScale=fontScale, drawType=drawType)
     return image
 
 
@@ -2799,19 +2826,20 @@ def fig2data(fig):
     return image
 
 
-def addMouseCallback(winname, param, callbackFunc=None, info="%"):
+def addMouseCallback(winname, param, callbackFunc=None, info="{:0=3.3f}"):
     """
-     添加点击事件
-    :param winname:
-    :param param:
+     添加点击事件：
+     >> image_utils.addMouseCallback(winname, param=image, info="D={:0=3.3f}m")
+    :param winname: 窗口名称
+    :param param: 输入参数
     :param callbackFunc:
     :return:
     """
-    cv2.namedWindow(winname)
+    cv2.namedWindow(winname, flags=cv2.WINDOW_NORMAL)
 
     def default_callbackFunc(event, x, y, flags, param):
         if event == cv2.EVENT_LBUTTONDOWN:
-            print("(x,y)=({},{}),".format(x, y) + info % param[y][x])
+            print("(x,y)=({:=4d},{:=4d}) ".format(x, y), info.format(param[y][x]))
 
     if callbackFunc is None:
         callbackFunc = default_callbackFunc

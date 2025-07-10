@@ -31,10 +31,11 @@ if __name__ == "__main__":
     anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-action-cvlm-v2/train-v2/01-核相操作/dataset-test/images"
     anno_dir = [
         # "/home/PKing/nasdata/tmp/tmp/face_person/SMTC/json",
-        "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-action-cvlm-v2/sample/images"
+        # "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-action-cvlm-v2/sample/images"
+        "/home/PKing/nasdata/dataset/face_person/labelme/SMTC/images"
     ]
     names = None
-    # names = {'person': 0, "身穿工作服": 0, "未穿工作服": 0}
+    names = ['person,身穿工作服,未穿工作服']
     # names = ['身穿工作服,未穿工作服', '手,手穿绝缘手套,手穿棉纱手套,手穿其他手套']
     dataset = parser_labelme.LabelMeDatasets(filename=None,
                                              data_root=None,

@@ -76,8 +76,8 @@ def demo_vis_CocoKeypoints():
 
 def demo_vis_CocoDetections():
     # hand
-    anno_file = "/home/PKing/Downloads/labeled_trainval/SSLAD-2D/labeled/val/instance_val.json"
-    anno_file = "/home/PKing/nasdata/tmp/tmp/cat-det/dataset/train/instance_train.json"
+    # anno_file = "/home/PKing/nasdata/tmp/tmp/cat-det/dataset/train/instance_train.json"
+    anno_file = "/home/PKing/nasdata/tmp/tmp/cat-det/dataset/val/instance_val.json"
     class_name = []
     dataset = parser_coco_det.CocoDetections(anno_file, image_dir="", class_name=class_name)
     class_name = dataset.class_name

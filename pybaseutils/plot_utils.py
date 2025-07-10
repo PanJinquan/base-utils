@@ -14,7 +14,7 @@ import PIL.Image as Image
 import platform
 from matplotlib.font_manager import FontProperties
 
-matplotlib.use('TkAgg')
+# matplotlib.use('TkAgg')
 
 ROOT = os.path.dirname(__file__)
 
@@ -264,8 +264,12 @@ def demo_for_skew_kurt():
 
 if __name__ == "__main__":
     # demo_for_skew_kurt()
-    num_classes = 5
-    features = np.random.uniform(0, 1, size=(100, 512))
-    labels = np.random.uniform(0, num_classes, size=(100,))
-    labels = np.asarray(labels, dtype=np.int32)
-    plot_features(features, labels, num_classes)
+    # num_classes = 5
+    # features = np.random.uniform(0, 1, size=(100, 512))
+    # labels = np.random.uniform(0, num_classes, size=(100,))
+    # labels = np.asarray(labels, dtype=np.int32)
+    # plot_features(features, labels, num_classes)
+    x = np.arange(0, 10, 1)
+    y = np.random.uniform(0, 1, size=(10,))
+    plot_line(x, y)
+    print(x, y)

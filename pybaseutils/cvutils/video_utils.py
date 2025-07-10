@@ -280,7 +280,7 @@ def video_iterator(video_file: int or str, save_video: str or int = None, interv
                  speed: 播放速度
     :return: frame, count, w, h, fps =data_info['frame'],data_info['count'],data_info['w'],data_info['h'],data_info['fps']
     """
-    assert os.path.exists(video_file), f"video_file={video_file}"
+    if isinstance(video_file, str): assert os.path.exists(video_file), f"video_file={video_file}"
     video_cap = image_utils.get_video_capture(video_file)
     w, h, num_frames, fps = image_utils.get_video_info(video_cap)
     start = int(kwargs.get("start", 0) * fps)

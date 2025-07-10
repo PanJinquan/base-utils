@@ -14,7 +14,8 @@ from pybaseutils.converter import build_voc, build_labelme
 from pybaseutils import file_utils, image_utils
 
 
-def convert_voc2labelme(filename,
+def convert_voc2labelme(filename=None,
+                        data_root=None,
                         out_root=None,
                         class_name=None,
                         max_num=-1,
@@ -28,7 +29,7 @@ def convert_voc2labelme(filename,
     :param rename: 新名字flag
     """
     dataset = parser_voc.VOCDataset(filename=filename,
-                                    data_root=None,
+                                    data_root=data_root,
                                     anno_dir=None,
                                     image_dir=None,
                                     class_name=class_name,
@@ -36,7 +37,6 @@ def convert_voc2labelme(filename,
                                     use_rgb=False,
                                     check=False,
                                     shuffle=False)
-    print("have num:{}".format(len(dataset)))
     print("have num:{}".format(len(dataset)))
     nums = min(len(dataset), max_num) if max_num > 0 else len(dataset)
     for i in tqdm(range(nums)):
@@ -50,14 +50,17 @@ def convert_voc2labelme(filename,
             image_name = os.path.basename(image_file)
             h, w = image.shape[:2]
             image_id = image_name.split(".")[0]
-            json_file = os.path.join(out_root, "images", f"{image_id}.json")
+            ann_file = os.path.join(out_root, "images", f"{image_id}.json")
             img_file = os.path.join(out_root, "images", image_name)
             file_utils.copy_file(image_file, img_file)
-            build_labelme.maker_labelme(json_file, points, labels, image_name, image_size=[w, h], image_bs64=None)
+            build_labelme.maker_labelme(ann_file, points, labels, image_name, image_size=[w, h], image_bs64=None)
 
 
 if __name__ == "__main__":
-    filename = "/home/PKing/nasdata/tmp/face_person/VOCdevkit/VOC2007/sample.txt"
-    out_root = "/home/PKing/nasdata/tmp/face_person/VOCdevkit/VOC2007/labelme"
+    # data_root = "/home/PKing/nasdata/dataset/face_person/VOC/VOC2007"
+    # data_root = "/home/PKing/nasdata/dataset/face_person/VOC/VOC2012"
+    # data_root = "/home/PKing/nasdata/dataset/face_person/MPII"
+    data_root = "/home/PKing/nasdata/dataset/face_person/COCO"
+    out_root = "/home/PKing/nasdata/dataset/face_person/labelme/{}".format(os.path.basename(data_root))
     class_name = None
-    convert_voc2labelme(filename, out_root=out_root, class_name=class_name, vis=False)
+    convert_voc2labelme(data_root=data_root, out_root=out_root, class_name=class_name, vis=False)

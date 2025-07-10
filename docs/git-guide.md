@@ -74,7 +74,7 @@ git lfs checkout      # 将文件还原到工作区
 
 
 
-- 从GitHub迁移到GitLab
+- 从GitHub迁移到GitHub
   
 ```bash
 # 先拉所有分支

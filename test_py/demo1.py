@@ -23,12 +23,18 @@ import inspect
 from pybaseutils import log
 import asyncio
 
-
-async def search():
-    return "ok"
-
-
 if __name__ == "__main__":
-    json_file = "/home/PKing/Downloads/labeled_trainval/SSLAD-2D/labeled/val/instance_val.json"
-    data = json_utils.load_json(json_file)
-    print(data)
+    data = {
+        'G1': {
+            "stage_time": [],
+            "stage_data": {
+                "T1-1": {"item_time": [],
+                         "item_data": {
+                             "insId1": {},
+                             "insId2": {},
+                         },
+                         }
+            },
+
+        },
+    }

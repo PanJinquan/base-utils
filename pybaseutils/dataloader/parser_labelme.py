@@ -329,8 +329,8 @@ class LabelMeDataset(Dataset):
             annos = annotation.get("shapes", [])
             width = annotation.get('imageWidth', -1)
             height = annotation.get('imageHeight', -1)
-        except:
-            # print("illegal annotation:{}".format(anno_file))
+        except Exception as e:
+            # print(e,"illegal annotation:{}".format(anno_file))
             annos = []
             width = -1
             height = -1
