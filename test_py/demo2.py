@@ -17,10 +17,11 @@ from pybaseutils.cvutils import video_utils
 import cv2
 import re
 import torch
+import subprocess
+
+
+
 
 if __name__ == '__main__':
-    image_file = "/home/PKing/nasdata/release/eduea/eduea-calligraphy-preprocessing/test/image_bug.png"
-    gray = cv2.imread(image_file,flags=cv2.IMREAD_UNCHANGED)
-    edges = cv2.Canny(gray, threshold1=0, threshold2=255, apertureSize=3)
-    cv2.imshow("gray", gray)
-    cv2.waitKey(0)
+    src = "/home/PKing/Downloads/image"
+    file_utils.zip_file(src,s='100k')

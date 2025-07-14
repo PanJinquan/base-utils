@@ -241,33 +241,58 @@ def load_json_files(files: list, max_workers=8):
     return file_list, loss_list
 
 
-def write_data(filename, content_list, split=",", mode='w'):
+class WriterTXT(object):
+    """ write data in txt files"""
+
+    def __init__(self, filename, mode='w'):
+        self.f = None
+        if filename:
+            self.f = open(filename, mode=mode)
+
+    def write_line(self, line, end='\n'):
+        if self.f:
+            self.f.write(line + end)
+            self.f.flush()
+
+    def write_line_list(self, line_list, end='\n'):
+        if self.f:
+            for line in line_list:
+                self.write_line(line, end=end)
+            self.f.flush()
+
+    def close(self):
+        if self.f:
+            self.f.close()
+
+
+def write_file(file, data, mode='wb'):
+    """写二进制数据"""
+    with open(file, mode) as f: f.write(data)
+
+
+def read_file(file, mode='rb'):
+    """读取二进制数据"""
+    with open(file, mode) as f: key = f.read()
+    return key
+
+
+def write_data(file, data: list | str, split=",", mode='w'):
     """保存list[list[]]的数据到txt文件
-    :param filename:文件名
-    :param content_list:需要保存的数据,type->list
+    :param file:文件名
+    :param data:需要保存的数据,支持str,list(str),list[list[str]]
     :param mode:读写模式:'w' or 'a'
     :return: void
     """
-    with open(filename, mode=mode, encoding='utf-8') as f:
-        for line_list in content_list:
-            # 将list转为string
-            line = "{}".format(split).join('%s' % id for id in line_list)
+    if isinstance(data, str): data = [data]
+    with open(file, mode=mode, encoding='utf-8') as f:
+        for line in data:
+            if isinstance(line, list):
+                line = "{}".format(split).join('%s' % s for s in line)
             f.write(line + "\n")
         f.flush()
 
 
-def write_list_data(filename, list_data, mode='w'):
-    """保存list[]的数据到txt文件，每个元素分行
-    :param filename:文件名
-    :param list_data:需要保存的数据,type->list
-    :param mode:读写模式:'w' or 'a'
-    :return: void
-    """
-    with open(filename, mode=mode, encoding='utf-8') as f:
-        for line in list_data:
-            # 将list转为string
-            f.write(str(line) + "\n")
-        f.flush()
+write_list_data = write_data
 
 
 def read_data(filename, split=",", convertNum=True):
@@ -422,17 +447,40 @@ def list2str(content_list):
     return content_str_list
 
 
-def get_basename(file_list):
+def get_files_name(file_list, dirname=None):
     """
     get files basename
     :param file_list:
     :return:
     """
+    if isinstance(file_list, str): file_list = [file_list]
     dest_list = []
-    for file_path in file_list:
-        basename = os.path.basename(file_path)
-        dest_list.append(basename)
+    for file in file_list:
+        path = get_path_name(file, dirname=dirname)
+        dest_list.append(path)
     return dest_list
+
+
+get_basename = get_files_name
+get_paths_name = get_files_name
+
+
+def get_file_name(path, dirname=None):
+    """
+    获得文件名称
+    :param path:
+    :param dirname: path = path - dirname
+    :return:
+    """
+    if dirname:
+        dirname = dirname[:-len(os.sep)] if dirname.endswith(os.sep) else dirname
+        if dirname == path[:len(dirname)]: path = path[len(dirname) + 1:]
+    else:
+        path = os.path.basename(path)
+    return path
+
+
+get_path_name = get_file_name
 
 
 def change_postfix(file: str, postfix: str):
@@ -875,7 +923,7 @@ def get_files_list_v1(file_dir, prefix="", postfix=None, basename=False, sub=Fal
             if prefix_name == prefix and postfix_name in postfix:
                 file_list.append(file)
     file_list.sort()
-    file_list = get_basename(file_list) if basename else file_list
+    file_list = get_files_name(file_list) if basename else file_list
     if sub: file_list = get_sub_list(file_list, dirname=file_dir)
     return file_list
 
@@ -918,7 +966,7 @@ def get_files_list_v2(file_dir, prefix="", postfix=None, basename=False):
             item = glob.glob(dir)
             file_list = file_list + item if item else file_list
     file_list.sort()
-    file_list = get_basename(file_list) if basename else file_list
+    file_list = get_files_name(file_list) if basename else file_list
     return file_list
 
 
@@ -1416,11 +1464,41 @@ def copy_move_voc_dataset(data_file, data_root=None, out_root=None, file_map={},
     return files
 
 
+def unzip_file(src, dst=None):
+    pass
+
+
+def zip_file(src, dst=None, s=None):
+    """
+    (1)zip分卷压缩文件: zip -r -s 3g fold.split.zip fold/
+                    -s 1g(或m)代表分卷大小GB,MB
+                    fold.split.zip为压缩包名
+                    fold/为待压缩的目录
+    (2)zip解压分卷文件: zip -s 0 fold.split.zip --out fold.zip && unzip fold.zip
+    :param src: 原始目录
+    :param dst: 压缩文件目录，默认同一级目录：src + ".zip"
+    :param s:   分卷大小，如3g,500m,500k
+    :return:    返回压缩文件的路径dst
+    """
+    root = os.path.dirname(src)
+    cmd = [f'cd {root}']
+    if s:
+        if not dst: dst = src + ".split.zip"
+        cmd += [f'zip -q -r -s {s} {dst} {os.path.basename(src)}']
+    else:
+        if not dst: dst = src + ".zip"
+        cmd += [f'zip -q -r {dst} {os.path.basename(src)}']
+    cmd = " && ".join(cmd)
+    print(cmd)
+    os.system(cmd)
+    return dst
+
+
 if __name__ == '__main__':
     from pybaseutils import time_utils
 
-    path = "/home/PKing/Downloads/tmp"
-    file_list = get_files_list(path, postfix=["*.json"])
-    with time_utils.Performance():
-        file_data, loss_list = load_json_files(file_list, max_workers=1)  # 12433.96ms
-    print(len(file_data))
+    path = ["/home/PKing/Downloads/image_2022_00001.jpg",
+            "/home/PKing/Downloads/image_2022_00002.jpg"]
+    dirname = "/home/PKing"
+    p = get_files_name(path, dirname=None)
+    print(p)
