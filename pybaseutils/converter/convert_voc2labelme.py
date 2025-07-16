@@ -18,16 +18,19 @@ def convert_voc2labelme(filename=None,
                         data_root=None,
                         out_root=None,
                         class_name=None,
+                        class_dict={},
+                        prefix="",
                         max_num=-1,
                         vis=True):
     """
-    将VOC格式转换为labelme格式，以便重新label重新映射
-    :param filename:
-    :param out_xml_dir: output VOC XML,Annotations
-    :param out_img_dir: output VOC image if not None ,JPEGImages
-    :param class_name: 如{0: "face", 1: "person"} label-map  if not None
-    :param rename: 新名字flag
+    将voc格式转换为labelme格式
+    :param anno_dir:  输入labelme根目录
+    :param out_root:  输出labelme根目录
+    :param class_name: 需要选择的类别，None表示全部
+    :param class_dict: 类别映射
+    :param prefix: 提供文件名前缀，则重新进行重新命令
     """
+    if data_root and not out_root: out_root = os.path.join(data_root, "labelme")
     dataset = parser_voc.VOCDataset(filename=filename,
                                     data_root=data_root,
                                     anno_dir=None,
@@ -40,20 +43,14 @@ def convert_voc2labelme(filename=None,
     print("have num:{}".format(len(dataset)))
     nums = min(len(dataset), max_num) if max_num > 0 else len(dataset)
     for i in tqdm(range(nums)):
-        data = dataset.__getitem__(i)
-        image, bboxes, labels = data["image"], data["boxes"], data["labels"]
-        labels = np.asarray(labels, np.int32).reshape(-1).tolist()
-        labels = [dataset.class_name[i] for i in labels]
-        if out_root:
-            points = image_utils.boxes2polygons(bboxes)
-            image_file = data["image_file"]
-            image_name = os.path.basename(image_file)
-            h, w = image.shape[:2]
-            image_id = image_name.split(".")[0]
-            ann_file = os.path.join(out_root, "images", f"{image_id}.json")
-            img_file = os.path.join(out_root, "images", image_name)
-            file_utils.copy_file(image_file, img_file)
-            build_labelme.maker_labelme(ann_file, points, labels, image_name, image_size=[w, h], image_bs64=None)
+        data_info = dataset.__getitem__(i)
+        image, boxes, label = data_info["image"], data_info["boxes"], data_info["labels"]
+        label = np.asarray(label, np.int32).reshape(-1).tolist()
+        names = [dataset.class_name[i] for i in label]
+        image_file = data_info["image_file"]
+        points = image_utils.boxes2polygons(boxes)
+        build_labelme.save_labelme(out_root, image_file=image_file, points=points, names=names,
+                                   class_dict=class_dict, image=image, prefix=prefix, index=i, vis=vis)
 
 
 if __name__ == "__main__":

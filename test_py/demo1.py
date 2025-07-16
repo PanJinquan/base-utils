@@ -22,19 +22,17 @@ from rich import print_json
 import inspect
 from pybaseutils import log
 import asyncio
+from collections import defaultdict, OrderedDict, namedtuple
 
 if __name__ == "__main__":
-    data = {
-        'G1': {
-            "stage_time": [],
-            "stage_data": {
-                "T1-1": {"item_time": [],
-                         "item_data": {
-                             "insId1": {},
-                             "insId2": {},
-                         },
-                         }
-            },
-
-        },
-    }
+    track_history = defaultdict(list) # 创建了一个默认值为空列表的字典
+    data = [
+        {"B": [0, 0, 0, 0]},
+        {"A": [1, 0, 0, 0]},
+        {"B": [2, 0, 0, 0]},
+        {"A": [3, 0, 0, 0]},
+    ]
+    for info in data:
+        track = track_history[list(info.keys())[0]]
+        track.append(list(info.values())[0])  # x, y center point
+    print(track_history)

@@ -23,6 +23,6 @@ def video2frames_demo(root, out, vis=False):
 
 
 if __name__ == "__main__":
-    root = "/home/PKing/nasdata/tmp/tmp/cat-det/dataset/video/video"
+    root = "/home/PKing/Videos/car-video/video"
     out = os.path.join(os.path.dirname(root), "frame")
     video2frames_demo(root, out)

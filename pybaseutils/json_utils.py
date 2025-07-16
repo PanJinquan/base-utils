@@ -13,6 +13,9 @@ from pybaseutils.file_utils import load_json, read_json_data, save_json, write_j
 from typing import List, Tuple, Dict
 
 
+# 字典队列 dict_queue()
+
+
 class Dict2Obj(object):
     """ dict转类对象"""
 

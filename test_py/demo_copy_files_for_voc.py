@@ -43,6 +43,6 @@ def image_dir_move_file(voc_root, out_dir, max_nums=500, move=True, shuffle=True
 
 
 if __name__ == "__main__":
-    voc_root = "/home/PKing/nasdata/dataset/tmp/drowsy-driving/drowsy-driving/Drowsy-Driving-Det1/trainval"
-    out_dir = "/home/PKing/nasdata/dataset/tmp/drowsy-driving/drowsy-driving/Drowsy-Driving-Det1/test"
-    image_dir_move_file(voc_root, out_dir, max_nums=500, shuffle=True)
+    voc_root = "/home/PKing/nasdata/tmp/tmp/car/UA-DETRAC/DETRAC-VOC/DETRAC-test-voc"
+    out_dir = "/home/PKing/Videos/car-video/DETRAC"
+    image_dir_move_file(voc_root, out_dir, max_nums=200, shuffle=True)

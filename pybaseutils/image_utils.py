@@ -1658,9 +1658,9 @@ def draw_image_arrowed_lines(image,
         if (not check_point(point1)) or (not check_point(point2)):
             continue
         if reverse:
-            cv2.arrowedLine(image, point1, point2, color, thickness=thickness)
+            cv2.arrowedLine(image, point1, point2, color, thickness=thickness, tipLength=thickness)
         else:
-            cv2.arrowedLine(image, point2, point1, color, thickness=thickness)
+            cv2.arrowedLine(image, point2, point1, color, thickness=thickness, tipLength=thickness)
     return image
 
 

@@ -12,6 +12,40 @@ from tqdm import tqdm
 from pybaseutils import image_utils, file_utils, json_utils
 
 
+def save_labelme(out_root, image_file, points, names, class_dict, image=None, prefix="",
+                 index=0, vis=False, delay=0):
+    """
+    :param out_root: 输入根目录
+    :param image_file: 图片路径
+    :param points: 目标轮廓
+    :param names:  目标名称
+    :param class_dict: 需要映射的类别
+    :param image: 图像
+    :param prefix: 前缀，如果提供，则重新名称
+    :param index: 提供前缀需要重新名称
+    :return:
+    """
+    if class_dict: names = [class_dict.get(n, n) for n in names]
+    if image is None: image = cv2.imread(image_file)
+    h, w = image.shape[:2]
+    if image is None:
+        print("Error: image is None,image_file={},names={}".format(image_file, names))
+        return
+    if vis:
+        image = image_utils.draw_image_contours(image, points, texts=names)
+        image = image_utils.show_image("image", image, delay=delay)
+    image_name = os.path.basename(image_file)
+    image_id, postfix = file_utils.split_postfix(image_name)
+    if prefix:
+        flag_ = file_utils.get_time(format="p") if index < 0 else f"{index:0=5d}"
+        image_name = f"{prefix}_{flag_}.{postfix}"
+    image_id, postfix = file_utils.split_postfix(image_name)
+    json_file = file_utils.create_dir(out_root, "images", f"{image_id}.json")
+    file_path = file_utils.create_dir(out_root, "images", f"{image_name}")
+    maker_labelme(json_file, points, names, image_name, image_size=(w, h), image_bs64=None)
+    file_utils.copy_file(image_file, file_path)
+
+
 def maker_labelme(json_file, points, labels, image_name, image_size, image_bs64=None, keypoints=[]):
     """
     制作label数据格式
