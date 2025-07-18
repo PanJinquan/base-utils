@@ -54,30 +54,38 @@ def read_csv(filename, sep=";"):
     return df
 
 
-def get_cols(df, keys) -> pd.Series:
+def get_cols(df, keys: list | int, to_dict=True) -> pd.Series:
     """
     获得某一列的数据
     data =  data[["image_ids","label"]]
     data =  get_cols(df, ["image_ids", "label"]).values
     :param df:
     :param keys: list
+    :param to_dict: 转换为字典
     :return:
     """
     data = df[keys]  # 或者
     # data = df.loc[:, keys]
+    if to_dict: data = data.to_dict()
     return data
 
 
-def get_rows(df, index) -> pd.Series:
+def get_rows(df, index: list | int, to_dict=True) -> pd.Series:
     """
     获得某一行的数据
     loc：基于行标签（index）获取数据。
     iloc：基于行位置（整数索引）获取数据。
     :param df:
     :param index: list
+    :param to_dict: 转换为字典
     :return:
     """
-    data = df.loc[index]  # 获取标签为 1 的行（第二行）
+    if isinstance(index, list):
+        data = df.loc[index]
+        if to_dict: data = data.to_dict(orient='index')
+    else:
+        data = df.loc[index]
+        if to_dict: data = data.to_dict() # 无需index
     return data
 
 

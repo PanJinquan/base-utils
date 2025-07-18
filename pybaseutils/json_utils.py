@@ -9,6 +9,7 @@ import os
 import toolz
 import json
 import numbers
+from collections import Counter
 from pybaseutils.file_utils import load_json, read_json_data, save_json, write_json_path
 from typing import List, Tuple, Dict
 
@@ -43,6 +44,17 @@ def dict_sort(data: Dict, reverse=False, use_key=True):
     else:
         dst = dict(sorted(data.items(), key=lambda x: x[1], reverse=reverse))
     return dst
+
+
+def get_most_common(data: list, topK=None):
+    """
+    Counter类来统计列表元素的出现次数，然后找到出现次数最多的元素
+    :param data:
+    :return:
+    """
+    counter = Counter(data)  # # 使用 Counter 统计元素出现的次数
+    # 返回TopK，其中包含出现次数最多的元素及其次数（按从高到低排序)
+    return counter.most_common(topK)
 
 
 def formatting(data):

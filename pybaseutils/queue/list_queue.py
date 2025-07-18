@@ -10,49 +10,55 @@
 import queue
 
 
-class Queue(queue.Queue):
+class Queue():
     """普通队列，多个POD请求时，无法实现同步数据"""
 
-    def __init__(self, name="defaultlist", maxsize=10, expire=None):
+    def __init__(self, name="defaultlist", maxsize=10, **kwargs):
         """
         queue是一个列表队列，队列大小由maxsize指定
         :param name: 队列名称
         :param maxsize:
-        :param expire:
         """
         self.name = name
         self.maxsize = maxsize
-        self.expire = expire
-        super(Queue, self).__init__(maxsize=maxsize)
+        self.queue = queue.Queue(maxsize=maxsize)
+
+    def empty(self, ):
+        return self.queue.empty()
 
     def __del__(self):
-        if not self.empty(): self.queue.clear()
+        if not self.queue.empty(): self.queue.queue.clear()
 
     def get_queue(self, ):
-        return self.queue
+        return self.queue.queue
 
-    def set_queue(self, value):
-        self.queue = value
+    def set_queue(self, queue):
+        self.queue = queue
 
     def qsize(self) -> int:
-        return super(Queue, self).qsize()
+        return self.queue.qsize()
 
-    def size(self) -> int:
-        return self.qsize()
-
-    def pop(self, **kwargs):
+    def pop(self, block=True, timeout=None):
         """Remove and return an item from the queue,index=0"""
-        return super(Queue, self).get(**kwargs)
+        return self.queue.get(block=block, timeout=timeout)
 
-    def get(self, **kwargs):
+    def get(self, index):
         """Remove and return an item from the queue,index=0"""
-        return self.pop(**kwargs)
+        return self.queue.queue[index]
 
-    def put(self, **kwargs):
+    def put(self, item, block=True, timeout=None):
         """Put an item into the queue,index=n"""
-        while self.size() >= self.maxsize: self.get()
-        return super(Queue, self).put(**kwargs)
+        while self.qsize() >= self.maxsize: self.pop()
+        return self.queue.put(item, block=block, timeout=timeout)
 
 
 if __name__ == '__main__':
-    q = Queue(tag="tag", tid="tid", maxsize=3)
+    q = Queue(maxsize=3)
+    q.put(10)
+    q.put(11)
+    q.put(12)
+    q.put(13)
+    q.put(14)
+    print(q.get_queue())
+    print(q.get(0))
+    print(q.get_queue())

@@ -9,6 +9,25 @@ import re
 import difflib
 
 
+def find_match_text_index(text: str, pattern: str):
+    """
+    使用通配符，在text中，查找符合条件内容的index
+    :param text: 输入长字符串
+    :param pattern: 需要匹配的子串
+    :return:
+    """
+    index = []
+    if not pattern:  return index  # 如果 str2 是空字符串，直接返回空列表
+    start = 0
+    while True:
+        i = text.find(pattern, start)
+        if i == -1:  # 如果没有找到，退出循环
+            break
+        index.append(i)
+        start = i + 1  # 更新搜索起始位置，避免重复匹配
+    return index
+
+
 def find_match_text(text: str, pattern: str):
     """
     使用通配符，在text中，查找符合条件内容

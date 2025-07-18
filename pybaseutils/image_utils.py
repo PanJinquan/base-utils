@@ -1804,14 +1804,17 @@ def nms_boxes_cv2(boxes: np.ndarray, scores: np.ndarray, labels: np.ndarray, sco
     return index
 
 
-def image2bytes(image):
-    """将numpy数据转换为JPEG编码格式的字节数据"""
-    _, image = cv2.imencode('.jpg', image)
+def image2bytes(image: np.ndarray, use_rgb=False, ext='.jpg'):
+    """将numpy图像(BGR)数据转换为JPEG编码格式的字节数据"""
+    if use_rgb: image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)  # 将BGR转为RGB
+    _, image = cv2.imencode(ext, image)
     return image.tobytes()
 
 
-def bytes2image(bytes):
-    image = cv2.imdecode(np.frombuffer(bytes, np.uint8), cv2.IMREAD_COLOR)
+def bytes2image(bytes, use_rgb=False):
+    """将二进制数据转换image(BGR)"""
+    image = cv2.imdecode(np.frombuffer(bytes, np.uint8), cv2.IMREAD_COLOR)  # BGR
+    if use_rgb: image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # 将BGR转为RGB
     return image
 
 
@@ -1874,16 +1877,6 @@ def read_image_base64(image_file, size=None):
         bgr_image = read_image(image_file, size=size, use_rgb=False)
         image_base64 = image2base64(bgr_image)
     return image_base64
-
-
-def bin2image(bin_data, size, norm=False, use_rgb=True):
-    data = np.asarray(bytearray(bin_data), dtype="uint8")
-    image = cv2.imdecode(data, cv2.IMREAD_COLOR)
-    if use_rgb:
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # 将BGR转为RGB
-    image = resize_image(image, size=size)
-    if norm: image = image_normalize(image)
-    return image
 
 
 def softmax(x, axis=1):

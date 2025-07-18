@@ -6,9 +6,10 @@
     @Brief  : Series是一维数据结构，DataFrame二维表格结构，由多个Series组成（每列是一个Series）
 """
 import os
-
+import re
 import cv2
 import numpy as np
+from future.types import newstr
 from tqdm import tqdm
 from pybaseutils import file_utils, image_utils, numpy_utils, pandas_utils, json_utils, text_utils
 from pybaseutils.cvutils import corner_utils
@@ -22,17 +23,20 @@ from rich import print_json
 import inspect
 from pybaseutils import log
 import asyncio
+import time
 from collections import defaultdict, OrderedDict, namedtuple
+from collections import Counter
+from pybaseutils import image_utils, file_utils, json_utils
+
+# np.set_printoptions(precision=2,  # 小数点后3位
+#                     floatmode='fixed',  # 固定小数位数
+#                     suppress=True  # 禁止科学计数法
+#                     )
+#
+
 
 if __name__ == "__main__":
-    track_history = defaultdict(list) # 创建了一个默认值为空列表的字典
-    data = [
-        {"B": [0, 0, 0, 0]},
-        {"A": [1, 0, 0, 0]},
-        {"B": [2, 0, 0, 0]},
-        {"A": [3, 0, 0, 0]},
-    ]
-    for info in data:
-        track = track_history[list(info.keys())[0]]
-        track.append(list(info.values())[0])  # x, y center point
-    print(track_history)
+    data1 = time.time()
+    data2 = np.array(data1,dtype=np.float64).tolist()
+    print(data1)
+    print(float(data2))

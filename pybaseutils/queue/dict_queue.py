@@ -49,9 +49,6 @@ class Queue(object):
     def qsize(self, key) -> int:
         return len(self.queue[key])
 
-    def size(self, key) -> int:
-        return self.qsize(key)
-
     def pop(self, key, index=0):
         """Remove and return an item from the queue,index=0"""
         return self.queue[key].pop(index)
@@ -124,7 +121,7 @@ class TimeQueue(Queue):
 
 
 if __name__ == '__main__':
-    q = TimeQueue(name="time-queue", maxsize=3, sleep=1, expire=3, disp=False)
+    q = TimeQueue(name="time-queue", maxsize=3, sleep=1, expire=3, disp=True)
     q.put(key="key1", value={"file": "image1.jpg"})
     q.put(key="key1", value={"file": "image2.jpg"})
     q.put(key="key1", value={"file": "image3.jpg"})

@@ -10,6 +10,14 @@ import math
 from sklearn import metrics, preprocessing
 from scipy.spatial.distance import cdist
 
+# 设置全局打印选项
+# np.set_printoptions(precision=3,  # 小数点后3位
+#                     floatmode='fixed',  # 固定小数位数
+#                     suppress=True  # 禁止科学计数法
+#                     )
+# 设置格式化器，强制所有浮点数显示3位小数
+# np.set_printoptions(formatter={'float': '{:0.3f}'.format}, suppress=True)
+
 
 def softmax(x, axis=1):
     # 计算每行的最大值

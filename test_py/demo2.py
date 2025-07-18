@@ -19,9 +19,7 @@ import re
 import torch
 import subprocess
 
-
-
-
 if __name__ == '__main__':
-    src = "/home/PKing/Downloads/image"
-    file_utils.zip_file(src,s='100k')
+    print(round(3.14159, 1))  # 输出: 3.1
+    print(round(3.14159, 2))  # 输出: 3.14
+    print(round(3.14159, 3))  # 输出: 3.142
