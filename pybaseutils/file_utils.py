@@ -21,6 +21,7 @@ import pickle
 import argparse
 import hashlib
 import itertools
+from collections import defaultdict, Counter
 from datetime import datetime
 from tqdm import tqdm
 from pybaseutils import text_utils, thread_utils
@@ -70,6 +71,18 @@ def get_kwargs_name(**kwargs):
             prefix.append(f)
     prefix = "_".join(prefix)
     return prefix
+
+
+def get_count_nums(data: list, topK=None):
+    """
+    Counter类来统计列表元素的出现次数，然后找到出现次数最多的元素
+    :param data:
+    :param topK: None表示全部
+    :return:
+    """
+    counter = Counter(data)  # # 使用 Counter 统计元素出现的次数
+    # 返回TopK，其中包含出现次数最多的元素及其次数（按从高到低排序)
+    return counter.most_common(topK)
 
 
 def get_file_size(file, rate=1024):

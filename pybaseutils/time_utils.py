@@ -11,14 +11,26 @@ import numpy as np
 from typing import Dict, List
 
 
-def date2stamp(date, format='%Y-%m-%d %H:%M:%S'):
-    """将日期格式转换为时间戳"""
-    return time.mktime(time.strptime(date, format))
+def date2stamp(date, format='%Y-%m-%d %H:%M:%S') -> float:
+    """
+    将日期格式转换为时间戳
+    PS: 使用numpy保存时间戳，如果要精确到毫秒，则使用float64；如果仅需要精确到秒，则使用int64
+    float32和int32会导致精度丢失
+    """
+    try:
+        stamp = time.mktime(time.strptime(date, format))
+    except:
+        stamp = -1
+    return stamp
 
 
-def stamp2date(stamp, format='%Y-%m-%d %H:%M:%S'):
+def stamp2date(stamp, format='%Y-%m-%d %H:%M:%S') -> str:
     """将时间戳转换为日期格式"""
-    return datetime.fromtimestamp(stamp).strftime(format)
+    try:
+        date = datetime.fromtimestamp(stamp).strftime(format)
+    except:
+        date = ""
+    return date
 
 
 class Recorder(object):

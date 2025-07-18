@@ -278,6 +278,7 @@ def get_class_count(item_list, label_index):
 
 def get_label_count(label):
     """
+    file_utils.get_count_nums()统计列表元素的出现次数，然后找到出现次数最多的元素
     统计每个类别的个数
     :param label: [int,int,...]
     :return:

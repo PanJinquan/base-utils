@@ -85,7 +85,7 @@ def get_rows(df, index: list | int, to_dict=True) -> pd.Series:
         if to_dict: data = data.to_dict(orient='index')
     else:
         data = df.loc[index]
-        if to_dict: data = data.to_dict() # 无需index
+        if to_dict: data = data.to_dict()  # 无需index
     return data
 
 
@@ -172,7 +172,10 @@ def sort_df(df: pd.DataFrame, key, ascending=True) -> pd.DataFrame:
 
 def concat_df(df1: pd.DataFrame, df2: pd.DataFrame, key=None) -> pd.DataFrame:
     """
-    合并两个DF数据
+    合并两个DF数据,以key作为索引删除重复的Key，避免存在相同的key的数据(优先用df2的值填充df1)
+    如果df2本身有重复key,则不会删除重复key；但可以连续两次重复key,如
+    df = concat_df(df1,df2,key)
+    df = concat_df(df,df,key) # 去除重复的key
     :param df1:
     :param df2:
     :param key: 以key作为索引删除重复的Key，避免存在相同的key的数据(优先用df2的值填充df1)
