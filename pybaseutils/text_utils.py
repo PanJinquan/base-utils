@@ -245,6 +245,46 @@ def find_substring_all(string: str, sub: str):
     return r
 
 
+def insert_string(text, index: int, sub: str):
+    """
+    在字符串指定位置插入子串
+    :param text:
+    :param index:
+    :param sub:
+    :return:
+    """
+    if index < 0: index = len(text) + index + 1
+    if 0 <= index <= len(text):
+        text = text[:index] + sub + text[index:]
+    return text
+
+
+def find_numbers(text):
+    """
+    提取字符串中的所有数字（包括小数和负号）
+    -?  匹配可选的负号
+    \d+ 匹配一个或多个数字
+    \.? 匹配可选的小数点
+    \d* 匹配零个或多个数字（小数部分）
+    :param text:  要提取数字的字符串字
+    :return: 所有数字的列表
+    """
+    out = re.findall(r'-?\d+\.?\d*', text)
+    return out
+
+
+def find_digits(text):
+    """
+    提取字符串中的所有数字(仅数字，不包括小数点和负号）
+    \d 匹配数字字符（0-9）
+    +  表示匹配一个或多个连续的数字字符
+    :param text:  要提取数字的字符串字
+    :return: 所有数字的列表
+    """
+    out = re.findall(r'\d+', text)
+    return out
+
+
 if __name__ == "__main__":
     text1 = 'ABCE'
     text2 = 'ACDB'

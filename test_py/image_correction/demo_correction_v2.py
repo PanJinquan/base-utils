@@ -11,8 +11,9 @@ from pybaseutils.cvutils import mouse_utils, corner_utils
 from pybaseutils import file_utils, image_utils
 
 
-def get_target_points(src_pts: np.ndarray):
+def get_target_points(src_pts: np.ndarray, crop=True):
     """
+    参考：corner_utils.get_target_points()
     根据输入的四个角点，计算其矫正后的目标四个角点,src_pts四个点分布：
         0--(w01)---1
         |          |
@@ -36,6 +37,8 @@ def get_target_points(src_pts: np.ndarray):
         ymax = np.sqrt(np.mean([h03, h21]))
     dst_pts = [[xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax]]
     dst_pts = np.asarray(dst_pts)
+    if not crop:
+        dst_pts = dst_pts + (np.min(src_pts[:, 0]), np.min(src_pts[:, 1]))
     return dst_pts
 
 
@@ -55,7 +58,7 @@ def document_image_correct(src, src_pts, dst_pts=None, out_size=None, use_ransac
         print("输入src_pts必须含有4个角点:{}".format(src_pts))
         return src
     src_pts = np.float32(src_pts)
-    if dst_pts is None: dst_pts = get_target_points(src_pts)
+    if dst_pts is None: dst_pts = get_target_points(src_pts, crop=False)
     dst_pts = np.float32(dst_pts)
     if out_size is None:
         # xmin = min(pts_dst[:, 0])
@@ -126,16 +129,17 @@ def document_correct_image_example(image, use_mouse=False, winname="document", v
     else:
         corners = document_correct_by_auto(image)  # 通过算法自动获得文档的四个角点
     # 在原图显示角点
-    image = image_utils.draw_image_points_lines(image, corners, circle_color=(255, 0, 0), fontScale=4.0, thickness=8)
+    # image = image_utils.draw_image_points_lines(image, corners, circle_color=(255, 0, 0), fontScale=4.0, thickness=8)
     image_utils.cv_show_image(winname, image, use_rgb=False, delay=10)
     # 实现文档矫正
-    document_image_correct(image, corners, vis=vis)
+    h, w = image.shape[:2]
+    document_image_correct(image, corners, out_size=(w, h), vis=vis)
 
 
 if __name__ == '__main__':
     # image_dir = "data/image2"  # 测试图片
-    image_dir = "0000.jpg"  # 测试图片
-    use_mouse = False  # 是否通过鼠标操作获得文档的四个角点
+    image_dir = "/home/PKing/nasdata/dataset/字帖/字帖.jpg"  # 测试图片
+    use_mouse = True  # 是否通过鼠标操作获得文档的四个角点
     image_list = file_utils.get_files_lists(image_dir)
     for image_file in image_list:
         print(image_file)

@@ -54,7 +54,7 @@ def get_obb_points(pts: np.ndarray, order=True):
     return pts
 
 
-def get_target_points(src_pts: np.ndarray):
+def get_target_points(src_pts: np.ndarray, crop=True):
     """
     根据输入的四个角点，计算其矫正后的目标四个角点,src_pts四个点分布：
         0--(w01)---1
@@ -73,6 +73,8 @@ def get_target_points(src_pts: np.ndarray):
     xmin, ymin, xmax, ymax = 0, 0, (w01 + w23) / 2, (h03 + h21) / 2
     dst_pts = [[xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax]]
     dst_pts = np.asarray(dst_pts)
+    if not crop:
+        dst_pts = dst_pts + (np.min(src_pts[:, 0]), np.min(src_pts[:, 1]))
     return dst_pts
 
 

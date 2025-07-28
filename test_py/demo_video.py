@@ -19,10 +19,10 @@ def video2frames_demo(root, out, vis=False):
     for video_file in files:
         print(video_file)
         # video_utils.video2frames_similarity(video_file, out_dir=out, func=None, interval=20, thresh=0.3, vis=True)
-        video_utils.video2frames(video_file, out_dir=out, func=None, interval=50, vis=vis)
+        video_utils.video2frames(video_file, out_dir=out, func=None, interval=-1, vis=vis)
 
 
 if __name__ == "__main__":
-    root = "/home/PKing/Videos/car-video/video"
-    out = os.path.join(os.path.dirname(root), "frame")
+    root = "/home/PKing/Videos/aije-video/左视.mp4"
+    out = os.path.join(os.path.dirname(root), "左视")
     video2frames_demo(root, out)

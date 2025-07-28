@@ -1,0 +1,175 @@
+{
+  "rep": {
+    "code": 0,
+    "data": {
+      "reqid": "aije-job-mcy9qc8s-1cpb-212",
+      "result": {
+        "path": [
+          "/data/cv-history/aije-job-mcy9qc8s-1cpb/aije-job-mcy9qc8s-1cpb-camera-1-107.jpg",
+          "/data/cv-history/aije-job-mcy9qc8s-1cpb/aije-job-mcy9qc8s-1cpb-camera-2-107.jpg"
+        ],
+        "image_id": [
+          "107",
+          "107"
+        ],
+        "video_id": [
+          "aije-job-mcy9qc8s-1cpb-camera-1",
+          "aije-job-mcy9qc8s-1cpb-camera-2"
+        ],
+        "camera_id": [
+          "主视",
+          "平视"
+        ],
+        "session": [
+          "aije-job-mcy9qc8s-1cpb",
+          "aije-job-mcy9qc8s-1cpb"
+        ],
+        "code": 0,
+        "msg": "OK",
+        "metadata": null,
+        "config": {
+          "use_series": 1,
+          "use_action": 1,
+          "use_depth": 1,
+          "scene": "2",
+          "use_classifier": 1,
+          "use_equipment": 1
+        },
+        "component": {
+          "C2": {
+            "args": {},
+            "comp_name": "testpen",
+            "result": {
+              "title": "验电笔",
+              "viewer": {
+                "主视": "1.0",
+                "俯视": "0.5",
+                "平视": "0.8",
+                "全景": "0.2"
+              },
+              "winsize": 3,
+              "boxes": [],
+              "label": [],
+              "score": 0.0,
+              "value": 0.0,
+              "series": [
+                0,
+                0,
+                0
+              ],
+              "confidence": 0.0,
+              "info": {
+                "index": 0,
+                "path": "/data/cv-history/aije-job-mcy9qc8s-1cpb/aije-job-mcy9qc8s-1cpb-camera-1-107.jpg",
+                "session": "aije-job-mcy9qc8s-1cpb",
+                "video_freq": 1,
+                "camera_id": "主视",
+                "image_id": 107,
+                "video_id": "aije-job-mcy9qc8s-1cpb-camera-1",
+                "code": 0,
+                "msg": "OK",
+                "size": [
+                  1280,
+                  720
+                ],
+                "reduce": 1
+              },
+              "msg": "",
+              "code": 0
+            }
+          }
+        },
+        "multiview": [
+          {
+            "path": "/data/cv-history/aije-job-mcy9qc8s-1cpb/aije-job-mcy9qc8s-1cpb-camera-1-107.jpg",
+            "video_id": "aije-job-mcy9qc8s-1cpb-camera-1",
+            "image_id": 107,
+            "camera_id": "主视",
+            "component": {
+              "C2": {
+                "args": {},
+                "comp_name": "testpen",
+                "result": {
+                  "title": "验电笔",
+                  "viewer": {
+                    "主视": "1.0",
+                    "俯视": "0.5",
+                    "平视": "0.8",
+                    "全景": "0.2"
+                  },
+                  "winsize": 3,
+                  "boxes": [],
+                  "label": [],
+                  "score": 0.0,
+                  "value": 0.0,
+                  "series": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "confidence": 0.0,
+                  "info": {
+                    "index": 0,
+                    "path": "/data/cv-history/aije-job-mcy9qc8s-1cpb/aije-job-mcy9qc8s-1cpb-camera-1-107.jpg",
+                    "session": "aije-job-mcy9qc8s-1cpb",
+                    "video_freq": 1,
+                    "camera_id": "主视",
+                    "image_id": 107,
+                    "video_id": "aije-job-mcy9qc8s-1cpb-camera-1",
+                    "code": 0,
+                    "msg": "OK",
+                    "size": [
+                      1280,
+                      720
+                    ],
+                    "reduce": 1
+                  },
+                  "msg": "",
+                  "code": 0
+                }
+              }
+            },
+            "videoIndex": 0
+          },
+          {
+            "path": "/data/cv-history/aije-job-mcy9qc8s-1cpb/aije-job-mcy9qc8s-1cpb-camera-2-107.jpg",
+            "video_id": "aije-job-mcy9qc8s-1cpb-camera-2",
+            "image_id": 107,
+            "camera_id": "平视",
+            "component": {
+              "C2": {
+                "args": {},
+                "comp_name": "testpen",
+                "result": {
+                  "title": "验电笔",
+                  "viewer": {
+                    "主视": "1.0",
+                    "俯视": "0.5",
+                    "平视": "0.8",
+                    "全景": "0.2"
+                  },
+                  "winsize": 3,
+                  "boxes": [],
+                  "label": [],
+                  "score": 0.0,
+                  "value": 0.0,
+                  "series": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "confidence": 0.0,
+                  "info": {},
+                  "msg": "",
+                  "code": 0
+                }
+              }
+            },
+            "videoIndex": 1
+          }
+        ]
+      }
+    },
+    "msg": "OK"
+  }
+}

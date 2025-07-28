@@ -289,9 +289,9 @@ def read_file(file, mode='rb'):
     return key
 
 
-def write_data(file, data: list | str, split=",", mode='w'):
+def write_data(file, data, split=",", mode='w'):
     """保存list[list[]]的数据到txt文件
-    :param file:文件名
+    :param file:文件名 list | str
     :param data:需要保存的数据,支持str,list(str),list[list[str]]
     :param mode:读写模式:'w' or 'a'
     :return: void

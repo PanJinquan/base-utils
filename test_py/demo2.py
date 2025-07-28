@@ -20,6 +20,14 @@ import torch
 import subprocess
 
 if __name__ == '__main__':
-    print(round(3.14159, 1))  # 输出: 3.1
-    print(round(3.14159, 2))  # 输出: 3.14
-    print(round(3.14159, 3))  # 输出: 3.142
+    import numpy as np
+    from scipy.ndimage import median_filter
+
+    # 原始数据（含噪声）
+    data = [1, 2, 3, 50, 5, 6, 7, 800, 9, 10]
+
+    # 中值滤波（窗口大小=3）
+    smoothed_data = median_filter(data, size=3)
+
+    print("原始数据:", data)
+    print("中值滤波:", smoothed_data)

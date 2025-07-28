@@ -1,42 +1,35 @@
 # -*- coding: utf-8 -*-
 """
-    @Author : PKing
-    @E-mail :
-    @Date   : 2024-05-23 11:24:37
-    @Brief  : Series是一维数据结构，DataFrame二维表格结构，由多个Series组成（每列是一个Series）
+# --------------------------------------------------------
+# @Author : Pan
+# @E-mail :
+# @Date   : 2025-07-22 10:40:45
+# @Brief  :
+# --------------------------------------------------------
 """
-import os
-import re
-import cv2
-import numpy as np
-from future.types import newstr
-from tqdm import tqdm
-from pybaseutils import file_utils, image_utils, numpy_utils, pandas_utils, json_utils, text_utils
-from pybaseutils.cvutils import corner_utils
-from pybaseutils.dataloader import parser_labelme
-from pybaseutils.converter import build_labelme
-from scipy.spatial.distance import cdist
-import hashlib
-import pandas as pd
-import nltk
-from rich import print_json
-import inspect
-from pybaseutils import log
-import asyncio
 import time
-from collections import defaultdict, OrderedDict, namedtuple
-from collections import Counter
-from pybaseutils import image_utils, file_utils, json_utils
-
-# np.set_printoptions(precision=2,  # 小数点后3位
-#                     floatmode='fixed',  # 固定小数位数
-#                     suppress=True  # 禁止科学计数法
-#                     )
-#
+import numpy as np
+import re
+from pybaseutils import text_utils
 
 
+def date2stamp(date, format='%Y-%m-%d %H:%M:%S') -> float:
+    """将日期格式转换为时间戳"""
+    try:
+        stamp = time.mktime(time.strptime(date, format))
+    except:
+        stamp = -1
+    return stamp
+
+
+# 示例用法
 if __name__ == "__main__":
-    data1 = time.time()
-    data2 = np.array(data1,dtype=np.float64).tolist()
-    print(data1)
-    print(float(data2))
+    format = '%Y%m%d %H%M%S'  # 年月日 时分秒(中间有一个空格)
+    data_list = ['2025-05-07&14:28:22']
+    ymd_len = 8
+    for data in data_list:
+        video_date = text_utils.find_digits(data)
+        video_date = "".join(video_date)
+        video_date = text_utils.insert_string(video_date, ymd_len, sub=" ")
+        video_time = date2stamp(video_date,format)
+        print(video_time,video_date)

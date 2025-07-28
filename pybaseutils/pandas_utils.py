@@ -54,13 +54,13 @@ def read_csv(filename, sep=";"):
     return df
 
 
-def get_cols(df, keys: list | int, to_dict=True) -> pd.Series:
+def get_cols(df, keys , to_dict=True) -> pd.Series:
     """
     获得某一列的数据
     data =  data[["image_ids","label"]]
     data =  get_cols(df, ["image_ids", "label"]).values
     :param df:
-    :param keys: list
+    :param keys:  list | int
     :param to_dict: 转换为字典
     :return:
     """
@@ -70,13 +70,13 @@ def get_cols(df, keys: list | int, to_dict=True) -> pd.Series:
     return data
 
 
-def get_rows(df, index: list | int, to_dict=True) -> pd.Series:
+def get_rows(df, index, to_dict=True) -> pd.Series:
     """
     获得某一行的数据
     loc：基于行标签（index）获取数据。
     iloc：基于行位置（整数索引）获取数据。
     :param df:
-    :param index: list
+    :param index: list | int
     :param to_dict: 转换为字典
     :return:
     """

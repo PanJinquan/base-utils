@@ -36,8 +36,8 @@ def dict_sort(data: Dict, reverse=False, use_key=True):
     """
     按照字典的key/value值排序
     :param data:
-    :param reverse: False 升序
-                    True  降序
+    :param reverse: False 升序,True  降序
+    :param use_key: True使用key进行排序，False使用value进行排序
     """
     if use_key:
         dst = dict(sorted(data.items(), key=lambda x: x[0], reverse=reverse))
