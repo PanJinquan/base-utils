@@ -212,7 +212,7 @@ def resize_image_like(image_list, dst_img=None, is_rgb=False, use_pad=False, int
     return image_list
 
 
-def image_hstack(images, split_line=False, is_rgb=False, texts=[], fontScale=-1.0, thickness=-1, use_pad=False):
+def image_hstack(images, split_line=False, is_rgb=False, texts=[], fontScale=0, thickness=0, use_pad=False):
     """图像左右拼接"""
     if len(images) == 0: return images
     dst_images = resize_image_like(image_list=images, is_rgb=is_rgb, use_pad=use_pad)
@@ -233,7 +233,7 @@ def image_hstack(images, split_line=False, is_rgb=False, texts=[], fontScale=-1.
     return dst_images
 
 
-def image_vstack(images, split_line=False, is_rgb=False, texts=[], fontScale=-1.0, thickness=-1, use_pad=False):
+def image_vstack(images, split_line=False, is_rgb=False, texts=[], fontScale=0, thickness=0, use_pad=False):
     """图像上下拼接"""
     if len(images) == 0: return images
     dst_images = resize_image_like(image_list=images, is_rgb=is_rgb, use_pad=use_pad)
@@ -998,8 +998,12 @@ def get_box_intersection(box1, box2):
     return (x1, y1, x2, y2)
 
 
-def draw_image_rects(image, rects, color=(0, 0, 255), thickness=-1):
-    thickness, fontScale = get_linesize(max(image.shape), thickness=thickness, fontScale=-1.0)
+def draw_image_rects(image, rects, color=(0, 0, 255), thickness=0, alpha=0):
+    if alpha > 0:
+        out = draw_image_rects(image.copy(), rects, color=color, thickness=thickness, alpha=0)
+        out = cv2.addWeighted(out, 1 - alpha, image, alpha, 0)
+        return out
+    thickness, fontScale = get_linesize(max(image.shape), thickness=thickness, fontScale=0)
     for rect in rects:
         x, y, w, h = rect
         point1 = (int(x), int(y))
@@ -1008,8 +1012,12 @@ def draw_image_rects(image, rects, color=(0, 0, 255), thickness=-1):
     return image
 
 
-def draw_image_boxes(image, boxes, color=(0, 0, 255), thickness=-1):
-    thickness, fontScale = get_linesize(max(image.shape), thickness=thickness, fontScale=-1.0)
+def draw_image_boxes(image, boxes, color=(0, 0, 255), thickness=0, alpha=0):
+    if alpha > 0:
+        bgimg = draw_image_boxes(image.copy(), boxes, color=color, thickness=thickness, alpha=0)
+        image[:] = cv2.addWeighted(bgimg, 1 - alpha, image, alpha, 0)
+        return image
+    thickness, fontScale = get_linesize(max(image.shape), thickness=thickness, fontScale=0)
     if isinstance(color[0], numbers.Number): color = [color] * len(boxes)
     for i, box in enumerate(boxes):
         x1, y1, x2, y2 = box[:4]
@@ -1043,8 +1051,7 @@ def show_image_boxes(title, image, boxes, color=(0, 0, 255), delay=0, use_rgb=Fa
     return image
 
 
-def draw_image_bboxes_text(image, boxes, boxes_name, color=(), thickness=-1, fontScale=-1.0,
-                           drawType="custom", top=True):
+def draw_image_bboxes_text(image, boxes, boxes_name, color=(), thickness=0, fontScale=0, drawType="custom", top=True):
     """
     已经废弃，使用draw_image_boxes_texts代替
     :param boxes_name:
@@ -1062,7 +1069,8 @@ def draw_image_bboxes_text(image, boxes, boxes_name, color=(), thickness=-1, fon
     return image
 
 
-def draw_image_boxes_texts(image, boxes, texts, color=(), thickness=-1, fontScale=-1.0, drawType="custom", top=True):
+def draw_image_boxes_texts(image, boxes, texts, color=(), thickness=0, fontScale=0, alpha=0, drawType="custom",
+                           top=True):
     """
     :param image:
     :param boxes:
@@ -1077,7 +1085,7 @@ def draw_image_boxes_texts(image, boxes, texts, color=(), thickness=-1, fontScal
     for i, (box, text) in enumerate(zip(boxes, texts)):
         box = [int(b) for b in box]
         c = color if color else color_table[i + 1]
-        draw_image_box_text(image, box, c, text, thickness, fontScale, drawType=drawType, top=top)
+        draw_image_box_text(image, box, c, text, thickness, fontScale, alpha=alpha, drawType=drawType, top=top)
     return image
 
 
@@ -1122,8 +1130,8 @@ def draw_image_rects_labels_texts(image, rects, labels, texts=None, color=None, 
     return image
 
 
-def show_image_boxes_texts(title, image, boxes, texts, color=None, thickness=-1, fontScale=-1.0,
-                           drawType="custom", delay=0, top=True):
+def show_image_boxes_texts(title, image, boxes, texts, color=None, thickness=0, fontScale=0, drawType="custom",
+                           delay=0, top=True):
     """
     :param texts:
     :param bgr_image: bgr image
@@ -1137,7 +1145,7 @@ def show_image_boxes_texts(title, image, boxes, texts, color=None, thickness=-1,
     return image
 
 
-def draw_image_rects_text(image, rects, texts, color=None, thickness=-1, fontScale=-1.0,
+def draw_image_rects_text(image, rects, texts, color=None, thickness=0, fontScale=0,
                           drawType="custom", top=True):
     """已经废弃，使用draw_image_rects_texts代替"""
     boxes = rects2boxes(rects)
@@ -1146,7 +1154,7 @@ def draw_image_rects_text(image, rects, texts, color=None, thickness=-1, fontSca
     return image
 
 
-def draw_image_rects_texts(image, rects, texts, color=None, thickness=-1, fontScale=-1.0,
+def draw_image_rects_texts(image, rects, texts, color=None, thickness=0, fontScale=0,
                            drawType="custom", top=True):
     boxes = rects2boxes(rects)
     image = draw_image_boxes_texts(image, boxes, texts=texts, color=color, thickness=thickness,
@@ -1154,7 +1162,7 @@ def draw_image_rects_texts(image, rects, texts, color=None, thickness=-1, fontSc
     return image
 
 
-def show_image_rects_text(title, image, rects, rects_name, color=None, thickness=-1, fontScale=-1.0, drawType="custom",
+def show_image_rects_text(title, image, rects, rects_name, color=None, thickness=0, fontScale=0, drawType="custom",
                           delay=0, top=True):
     """
     已经废弃，使用show_image_rects_texts代替
@@ -1169,7 +1177,7 @@ def show_image_rects_text(title, image, rects, rects_name, color=None, thickness
     return image
 
 
-def show_image_rects_texts(title, image, rects, texts, color=None, thickness=-1, fontScale=-1.0, drawType="custom",
+def show_image_rects_texts(title, image, rects, texts, color=None, thickness=0, fontScale=0, drawType="custom",
                            delay=0, top=True):
     """
     :param texts:
@@ -1184,7 +1192,7 @@ def show_image_rects_texts(title, image, rects, texts, color=None, thickness=-1,
 
 
 def draw_image_bboxes_labels(image, boxes, labels, class_name=None, color=None,
-                             thickness=-1, fontScale=-1.0, drawType="custom"):
+                             thickness=0, fontScale=0, drawType="custom"):
     """
     :param image:
     :param boxes:  [[x1,y1,x2,y2],[x1,y1,x2,y2]]
@@ -1208,7 +1216,7 @@ def draw_image_bboxes_labels(image, boxes, labels, class_name=None, color=None,
 draw_image_boxes_labels = draw_image_bboxes_labels
 
 
-def draw_image_rects_labels(image, rects, labels, class_name=None, color=None, thickness=-1, fontScale=-1.0):
+def draw_image_rects_labels(image, rects, labels, class_name=None, color=None, thickness=0, fontScale=0):
     """
     :param image:
     :param rects:
@@ -1221,7 +1229,7 @@ def draw_image_rects_labels(image, rects, labels, class_name=None, color=None, t
     return image
 
 
-def draw_image_detection_rects(image, rects, probs, labels, class_name=None, thickness=-1, fontScale=-1.0,
+def draw_image_detection_rects(image, rects, probs, labels, class_name=None, thickness=0, fontScale=0,
                                drawType="custom"):
     """
     :param image:
@@ -1240,7 +1248,7 @@ def draw_image_detection_rects(image, rects, probs, labels, class_name=None, thi
     return image
 
 
-def draw_image_detection_boxes(image, boxes, probs, labels, class_name=None, thickness=-1, fontScale=-1.0,
+def draw_image_detection_boxes(image, boxes, probs, labels, class_name=None, thickness=0, fontScale=0,
                                drawType="custom"):
     """
     :param image:
@@ -1269,13 +1277,13 @@ def draw_image_detection_boxes(image, boxes, probs, labels, class_name=None, thi
 draw_image_detection_bboxes = draw_image_detection_boxes
 
 
-def get_linesize(length, thickness=-1, fontScale=-1.0):
+def get_linesize(length, thickness=0, fontScale=0):
     """
     自动计算绘图的大小thickness，fontScale
     thickness, fontScale = get_linesize(max(image.shape), thickness=thickness, fontScale=fontScale)
     """
-    if fontScale <= 0: fontScale = max(2.0 * length / 850.0, 0.6)
-    if thickness <= 0: thickness = int(2.0 * fontScale + 1)
+    if fontScale == 0: fontScale = max(2.0 * length / 850.0, 0.6)
+    if thickness == 0: thickness = int(2.0 * fontScale + 1)
     return thickness, fontScale
 
 
@@ -1361,7 +1369,7 @@ def show_landmark(title, image, landmarks, vis_id=False, delay=0):
     return image
 
 
-def draw_points_texts(image, points, texts=None, color=(255, 0, 0), thickness=-1, fontScale=-1.0, drawType="simple"):
+def draw_points_texts(image, points, texts=None, color=(255, 0, 0), thickness=0, fontScale=0, drawType="simple"):
     """
     :param image:
     :param points:
@@ -1386,13 +1394,13 @@ def draw_points_texts(image, points, texts=None, color=(255, 0, 0), thickness=-1
 draw_points_text = draw_points_texts
 
 
-def draw_texts(image, points, texts, color=(255, 0, 0), fontScale=-1.0, thickness=-1, drawType="simple"):
+def draw_texts(image, points, texts, color=(255, 0, 0), fontScale=0, thickness=0, drawType="simple"):
     for point, text in zip(points, texts):
         image = draw_text(image, point, text, color=color, fontScale=fontScale, thickness=thickness, drawType=drawType)
     return image
 
 
-def draw_text(image, point, text, color=(255, 0, 0), fontScale=-1.0, thickness=-1, drawType="custom"):
+def draw_text(image, point, text, color=(255, 0, 0), fontScale=0, thickness=0, drawType="custom"):
     """
     :param image:
     :param point:
@@ -1405,21 +1413,21 @@ def draw_text(image, point, text, color=(255, 0, 0), fontScale=-1.0, thickness=-
     fontFace = cv2.FONT_HERSHEY_SIMPLEX
     # fontFace=cv2.FONT_HERSHEY_SIMPLEX
     if drawType == "custom" or drawType == "en":
-        text_size, baseline = cv2.getTextSize(str(text), fontFace, fontScale, thickness)
+        text_size, baseline = cv2.getTextSize(str(text), fontFace, fontScale, abs(thickness))
         text_loc = (point[0], point[1] + text_size[1])
         cv2.rectangle(image, (text_loc[0] - 2 // 2, text_loc[1] - 2 - baseline),
                       (text_loc[0] + text_size[0], text_loc[1] + text_size[1]), color=color, thickness=-1)
         # draw score value
         cv2.putText(image, str(text), (text_loc[0], text_loc[1] + baseline), fontFace, fontScale, (255, 255, 255),
-                    thickness, 2)
+                    abs(thickness), 2)
     elif drawType == "simple":
-        cv2.putText(image, str(text), (point[0], point[1]), fontFace, fontScale, color=color, thickness=thickness)
+        cv2.putText(image, str(text), (point[0], point[1]), fontFace, fontScale, color=color, thickness=abs(thickness))
     if drawType == "chinese" or drawType == "ch":
-        cv2_putText(image, str(text), point, color=color, fontScale=fontScale, thickness=thickness)
+        cv2_putText(image, str(text), point, color=color, fontScale=fontScale, thickness=abs(thickness))
     return image
 
 
-def draw_image_box_text(image, bbox, color, text, thickness=2, fontScale=0.8, drawType="custom", top=True):
+def draw_image_box_text(image, bbox, color, text, thickness=2, fontScale=0.8, alpha=0, drawType="custom", top=True):
     """
     :param image:
     :param bbox:
@@ -1429,10 +1437,16 @@ def draw_image_box_text(image, bbox, color, text, thickness=2, fontScale=0.8, dr
     :param top:
     :return:
     """
+    text = str(text)
+    if alpha > 0:
+        bgimg = draw_image_box_text(image.copy(), bbox, text=text, color=color, thickness=thickness,
+                                    fontScale=fontScale, drawType=drawType, top=top, alpha=0)
+        image[:] = cv2.addWeighted(bgimg, 1 - alpha, image, alpha, 0)
+        return image
     thickness, fontScale = get_linesize(max(image.shape), thickness=thickness, fontScale=fontScale)
     # text_loc = (bbox[0], bbox[1]) if top else (bbox[0], bbox[3])
     if not text: drawType = "simple"
-    text_size, baseline = cv2.getTextSize(str(text), cv2.FONT_HERSHEY_SIMPLEX, fontScale, thickness)
+    text_size, baseline = cv2.getTextSize(str(text), cv2.FONT_HERSHEY_SIMPLEX, fontScale, abs(thickness))
     if top:
         # text_loc = (bbox[0], bbox[1] + text_size[1])  # 在左上角下方绘制文字
         text_loc = (bbox[0], bbox[1] - baseline // 2)  # 在左上角上方绘制文字
@@ -1441,10 +1455,10 @@ def draw_image_box_text(image, bbox, color, text, thickness=2, fontScale=0.8, dr
     if drawType == "chinese" or drawType == "ch":
         if not top: text_loc = (text_loc[0], text_loc[1] - baseline)
         cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness)
-        cv2_putText(image, str(text), text_loc, color=color, fontScale=fontScale, thickness=thickness)
+        cv2_putText(image, str(text), text_loc, color=color, fontScale=fontScale, thickness=abs(thickness))
     elif drawType == "simple" or drawType == "en":
         cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness, 8, 0)
-        cv2.putText(image, str(text), text_loc, cv2.FONT_HERSHEY_SIMPLEX, fontScale, color, thickness)
+        cv2.putText(image, str(text), text_loc, cv2.FONT_HERSHEY_SIMPLEX, fontScale, color, abs(thickness))
     elif drawType == "custom":
         cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness)
         bg1 = (text_loc[0], text_loc[1] - text_size[1] - baseline // 2)
@@ -1454,11 +1468,11 @@ def draw_image_box_text(image, bbox, color, text, thickness=2, fontScale=0.8, dr
         cv2.rectangle(image, bg1, bg2, color, -1)
         # draw score value
         cv2.putText(image, str(text), (text_loc[0], text_loc[1]), cv2.FONT_HERSHEY_SIMPLEX, fontScale,
-                    (255, 255, 255), thickness)
+                    (255, 255, 255), abs(thickness))
     return image
 
 
-def draw_text_line(image, point, text_line: str, bg_color=(255, 0, 0), thickness=-1, fontScale=-1.0, drawType="custom"):
+def draw_text_line(image, point, text_line: str, bg_color=(255, 0, 0), thickness=0, fontScale=0, drawType="custom"):
     """
     :param image:
     :param point:
@@ -1523,7 +1537,7 @@ def get_font_type(size, font=""):
 
 def cv2_putText(img, text, point, fontFace=None, fontScale=0.8, color=(255, 0, 0), thickness=None):
     # cv2.putText(img, str(text), point, fontFace, fontScale, color=color, thickness=thickness)
-    text_size, baseline = cv2.getTextSize(str(text), cv2.FONT_HERSHEY_SIMPLEX, fontScale, thickness)
+    text_size, baseline = cv2.getTextSize(str(text), cv2.FONT_HERSHEY_SIMPLEX, fontScale, abs(thickness))
     pilimg = Image.fromarray(img)  # Image.fromarray()将数组类型转成图片格式，与np.array()相反
     draw = ImageDraw.Draw(pilimg)  # PIL图片上打印汉字
     size = text_size[1]  # 字体大小
@@ -3069,6 +3083,7 @@ def get_video_info(video_cap: cv2.VideoCapture, vis=True):
     :param video_cap:视频对象
     :return:
     """
+    if isinstance(video_cap, str): video_cap = get_video_capture(video_cap)
     width = int(video_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(video_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     num_frames = int(video_cap.get(cv2.CAP_PROP_FRAME_COUNT))

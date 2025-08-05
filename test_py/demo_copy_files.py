@@ -33,7 +33,7 @@ def demo_copy_move_by_sub_names_v1():
         sub_names += word
     sub_names = list(set(sub_names))
     sub_names = sorted(sub_names)
-    file_utils.copy_move_file_dir(image_dir, out_dir, sub_names=sub_names, max_nums=30*6, shuffle=True, move=True)
+    file_utils.copy_move_file_dir(image_dir, out_dir, sub_names=sub_names, max_nums=30 * 6, shuffle=True, move=True)
     out_file = os.path.join(os.path.dirname(file), "new_class_name.txt")
     file_utils.write_list_data(out_file, sub_names)
 
@@ -76,7 +76,7 @@ def demo_copy_move():
     file_utils.copy_move_file_dir(image_dir, out_dir, sub_names=None, max_nums=500, move=False, shuffle=True)
 
 
-def copy_files(shuffle=False):
+def copy_image_files(shuffle=False):
     root = "/home/dm/nasdata/dataset/tmp/fall/Fall-detection-Dataset/train"
     out = "/home/dm/nasdata/dataset/tmp/fall/fall-v3"
     sub_list = file_utils.get_sub_paths(root)
@@ -104,6 +104,13 @@ def copy_files(shuffle=False):
                 file_utils.copy_file(src, dst)
 
 
+def copy_files(shuffle=False):
+    src = "/home/PKing/nasdata/tmp/tmp/audio/baby-cry/baby-cry/test"
+    dst = "/home/PKing/nasdata/tmp/tmp/audio/baby-cry/baby-cry/test-out"
+    files = file_utils.get_files_lists(src, postfix=file_utils.AUDIO_POSTFIX)
+    file_utils.nam
+
+
 if __name__ == "__main__":
     # demo_copy_move()
     # demo_copy_move_by_sub_names_v1()
@@ -111,4 +118,5 @@ if __name__ == "__main__":
     # demo_copy_move_by_sub_names_v2()
     # demo_copy_move_by_sub_names_v3()
     # copy_files()
-    demo_copy_move()
+    # demo_copy_move()
+    copy_files()

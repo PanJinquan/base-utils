@@ -50,11 +50,12 @@ index-url = https://pypi.tuna.tsinghua.edu.cn/simple
 disable-pip-version-check = true
 timeout = 120
 ```
+
 - apt install python3.10-distutils && wget https://bootstrap.pypa.io/get-pip.py && python3.10 get-pip.py
 - pip install --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple opencv-python
 - 若出现超时：pip install --default-timeout=1000000 -i https://pypi.tuna.tsinghua.edu.cn/simple
 - 设置默认的镜像源：pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
-- 
+-
 
 ## 远程挂载
 
@@ -165,7 +166,9 @@ alias countdir='ls -lR|grep "^d"|wc -l'
 ```
 
 ## 安装opencv-python常见的错误
+
 - 依赖库
+
 ```bash
 sudo apt-get update
 sudo apt-get install build-essential
@@ -238,7 +241,6 @@ git config --global credential.helper store
 
 ```
 
-
 ## 解决Github克隆失败的问题
 
 - 解决hugging face终端无法访问问题： https://zhuanlan.zhihu.com/p/676420788
@@ -263,12 +265,23 @@ export HF_ENDPOINT=https://hf-mirror.com # 或者写入~/.bashrc中
 - 方法1：https://blog.csdn.net/gmmmmmmmm/article/details/135953651 (将下载连接huggingface.co`替换为 hf-mirror.com)
 - 方法2：https://modelscope.cn/my/overview
 - import huggingface_hub.constants 可以修改访问路径
-- 默认保持地址：~/.cache/huggingface/hub
 
 ```bash
 # !pip install -U "huggingface_hub[cli]"
 export HF_ENDPOINT=https://hf-mirror.com
 huggingface-cli download KwaiVGI/LivePortrait --local-dir pretrained_weights --exclude "*.git*" "README.md" "docs"
+```
+
+- 默认保持地址：~/.cache/huggingface/hub
+
+```bash
+from transformers import AutoImageProcessor, AutoModel
+model_dir = "facebook/dinov2-base" # TODO 默认保持在~/.cache/huggingface/hub/models--facebook--dinov2-base
+# TODO 如果移动到其他地方，则model_dir修改为path/to/models--facebook--dinov2-base-bk/snapshots/f9e44c814b77203eaa57a6bdbbd535f21ede1415
+# TODO 即修改为preprocessor_config.json所在的根目录
+processor = AutoImageProcessor.from_pretrained(model_dir)
+model = AutoModel.from_pretrained(model_dir)
+
 ```
 
 ## 表格
@@ -277,7 +290,6 @@ huggingface-cli download KwaiVGI/LivePortrait --local-dir pretrained_weights --e
 |---------|-----|------|
 | YOLOv5s | 640 | 36.7 |
 | YOLOv5m | 640 | 44.5 |
-
 
 ## 文档注释
 
@@ -294,7 +306,9 @@ huggingface-cli download KwaiVGI/LivePortrait --local-dir pretrained_weights --e
 ```
 
 ## 解决终端粘贴出现^[[200~
+
 在~/.bashrc中配置
+
 - bind 'set enable-bracketed-paste off'
 
 

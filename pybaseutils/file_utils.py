@@ -593,6 +593,28 @@ def get_prefix_files(file_dir, prefix):
     return file_list
 
 
+def rename_files(src, dst, prefix="", postfix="", remove=False):
+    """
+    对当前目录的文件进行重命名
+    :param src: 原始目录
+    :param dst: 输出目录
+    :param prefix: 重命名前缀
+    :param remove: 是否删除原始文件
+    :return:
+    """
+    file_list = get_files_lists(src, postfix=postfix)
+    prefix = prefix if prefix else get_time(format="s")
+    create_dir(dst)
+    for i, old in enumerate(tqdm(file_list)):
+        file = get_file_name(old, src)
+        name_id, postfix = split_postfix(file)
+        name = "{}_{:0=4d}.{}".format(prefix, i, postfix)
+        new = os.path.join(dst, os.path.dirname(file), name)
+        copy_file(old, new)
+        # print(f"{old} --> {new}")
+        if remove: remove_file(old)
+
+
 def remove_prefix_files(file_dir, prefix):
     """
     删除符合前缀条件所有文件
@@ -620,6 +642,9 @@ def remove_file(path):
     """
     if os.path.exists(path):
         os.remove(path)
+
+
+del_file = remove_file
 
 
 def remove_file_list(file_list):

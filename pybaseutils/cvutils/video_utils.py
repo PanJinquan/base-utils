@@ -212,7 +212,7 @@ def resize_video(video_file, save_video, size=(), start=0, interval=1, vis=True,
     video_writer.release()
 
 
-def video_capture(video_file: int or str, save_video: str or int = None, interval=1, task: Callable = None,
+def video_capture(video_file: int or str, save_video: str or int = None, interval=1, freq=0, task: Callable = None,
                   vis=True, **kwargs):
     """
     读取摄像头或者视频流
@@ -220,6 +220,7 @@ def video_capture(video_file: int or str, save_video: str or int = None, interva
                        Int 摄像头ID，如0，1，2
     :param save_video: 保存task视频处理后的结果
     :param interval: 抽帧处理间隔
+    :param freq: 抽帧频率，当freq>0，表示interval=int(fps / freq)
     :param task: 回调函数： def task(frame, **kwargs)
     :param kwargs:回调函数输入参数,
                  delay: 控制显示延时
@@ -234,6 +235,7 @@ def video_capture(video_file: int or str, save_video: str or int = None, interva
     if num_frames <= 0: num_frames = end
     end = min(end, num_frames)  # TODO 当num_frames<0时，使用0<end<count继续播放
     interval = fps if interval == -1 else interval  # 当interval=-1，表示interval=fps,即一秒一帧
+    interval = int(fps / freq) if freq > 0 else interval
     save_fps = max(kwargs.get("speed", 1) * fps // interval, 1)
     count = 0
     video_writer = None
@@ -257,7 +259,7 @@ def video_capture(video_file: int or str, save_video: str or int = None, interva
         video_writer.release()
 
 
-def video_iterator(video_file: int or str, save_video: str or int = None, interval=1, task: Callable = None,
+def video_iterator(video_file: int or str, save_video: str or int = None, interval=1, freq=0, task: Callable = None,
                    vis=False, **kwargs):
     """
     读取摄像头或者视频流迭代器
@@ -271,6 +273,7 @@ def video_iterator(video_file: int or str, save_video: str or int = None, interv
                        Int 摄像头ID，如0，1，2
     :param save_video: 保存task视频处理后的结果
     :param interval: 抽帧处理间隔，当interval=-1，表示当interval=fps,即一秒一帧
+    :param freq: 抽帧频率，当freq>0，表示interval=int(fps / freq)
     :param task: 回调函数： def task(frame, **kwargs)
     :param kwargs:回调函数输入参数,
                  delay: 控制显示延时,默认10S
@@ -287,6 +290,7 @@ def video_iterator(video_file: int or str, save_video: str or int = None, interv
     end = int(kwargs.get("end", num_frames / fps) * fps) if fps > 0 else 0
     end = min(end, num_frames) if end > 0 else num_frames  # TODO 当num_frames<0时，使用0<end<count继续播放
     interval = fps if interval == -1 else interval  # 当interval=-1，表示interval=fps,即一秒一帧
+    interval = int(fps / freq) if freq > 0 else interval
     save_fps = max(kwargs.get("speed", 1) * fps // interval, 1)
     count = 0
     video_writer = None

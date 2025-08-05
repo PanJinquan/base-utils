@@ -15,12 +15,12 @@ for zipfile in *.zip; do
         if [ "$DEST_DIR" == "./" ]; then
             dir_name="${zipfile%.zip}"
             mkdir -p "$dir_name"
-            unzip -qo "$zipfile" -d "$dir_name"
+            unzip -O CP936 -qo "$zipfile" -d "$dir_name"
             echo "解压完成: $zipfile → $dir_name/"
         else
             # 解压到指定的目标目录
             mkdir -p "$DEST_DIR"
-            unzip -qo "$zipfile" -d "$DEST_DIR"
+            unzip -O CP936 -qo "$zipfile" -d "$DEST_DIR"
             echo "解压完成: $zipfile → $DEST_DIR/"
         fi
     fi

@@ -8,28 +8,45 @@
 # --------------------------------------------------------
 """
 import time
+
+import cv2
 import numpy as np
 import re
-from pybaseutils import text_utils
+from pybaseutils import text_utils, image_utils
 
 
-def date2stamp(date, format='%Y-%m-%d %H:%M:%S') -> float:
-    """将日期格式转换为时间戳"""
-    try:
-        stamp = time.mktime(time.strptime(date, format))
-    except:
-        stamp = -1
-    return stamp
+def draw_rectangle(image, boxes, color=(255, 0, 0), thickness=10):
+    """
+    :param image: BGR image
+    :param boxes: 矩形框[(xmin,ymin,xmax,ymax), ...]
+    :param color: (b,g,r)或者(b,g,r,a) 其中a是透明度
+    :return:
+    """
+    # 创建一个与图像大小相同的透明层
+    bgim = Image.new('RGBA', image.size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(bgim)
+    # 在透明层上绘制半透明矩形
+    for box in boxes:
+        draw.rectangle(box, fill=color, outline=color, width=thickness)
+    # 将透明层与原图像合并
+    image = Image.alpha_composite(image.convert('RGBA'), bgim)
+    image = image.convert('RGB')
+    image = np.array(image)
+    # image = cv2.cvtColor(image, cv2.COLOR_BGRA2BGR)
+    return image
 
 
 # 示例用法
 if __name__ == "__main__":
-    format = '%Y%m%d %H%M%S'  # 年月日 时分秒(中间有一个空格)
-    data_list = ['2025-05-07&14:28:22']
-    ymd_len = 8
-    for data in data_list:
-        video_date = text_utils.find_digits(data)
-        video_date = "".join(video_date)
-        video_date = text_utils.insert_string(video_date, ymd_len, sub=" ")
-        video_time = date2stamp(video_date,format)
-        print(video_time,video_date)
+    from PIL import Image, ImageDraw
+
+    # 打开现有图像或创建RGB图像
+    file = "/home/PKing/Pictures/ragimg/image-2025-05-30-14h04m34s468.jpg"
+    boxes = [(100, 100, 400, 200)]
+    texts = ["ABCD"]
+    color = (128, 128, 128, 0)
+    alpha = 0
+    image = cv2.imread(file)
+    image = Image.fromarray(image)
+    image = draw_rectangle(image, boxes, color=color, thickness=2)
+    image_utils.show_image("image", image)

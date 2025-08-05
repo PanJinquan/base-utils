@@ -182,26 +182,28 @@ class YOLODataset(Dataset):
         :return:
         """
         if isinstance(data_root, str):
-            anno_dir = os.path.join(data_root, "json") if not anno_dir else anno_dir
+            anno_dir = os.path.join(data_root, "labels") if not anno_dir else anno_dir
             image_dir = os.path.join(data_root, "images") if not image_dir else image_dir
         image_ids = []
         if isinstance(filename, str) and filename:
             image_ids = self.read_file(filename, split=",")
             data_root = os.path.dirname(filename)
         if not anno_dir:  # 如果anno_dir为空，则自动搜寻可能存在图片目录
-            image_sub = ["labels"]
-            anno_dir = self.search_path(data_root, image_sub)
+            anno_dir = self.search_path(data_root, sub_dir=["labels"])
+        if not data_root and anno_dir:  #
+            data_root = os.path.dirname(anno_dir)
+            image_dir = self.search_path(data_root, ["images", "JPEGImages"])
         if not image_dir:
-            image_dir = self.search_path(data_root, ["JPEGImages", "images"])
-        if anno_dir and not image_ids:
-            image_ids = self.get_file_list(anno_dir, postfix=["*.json"], basename=False)
-            image_ids = [os.path.basename(f) for f in image_ids]
-        elif image_dir and not image_ids:
-            image_ids = self.get_file_list(anno_dir, postfix=["*.jpg"], basename=False)
-            image_ids = [os.path.basename(f) for f in image_ids]
-        # assert os.path.exists(image_dir), Exception("no directory:{}".format(image_dir))
-        # assert os.path.exists(anno_dir), Exception("no directory:{}".format(anno_dir))
-        assert len(image_ids) > 0, f"image_dir={image_dir} is empty"
+            image_dir = self.search_path(data_root, ["images", "JPEGImages"])
+        if image_dir and not image_ids:
+            image_ids = self.get_file_list(image_dir, postfix=file_utils.IMG_POSTFIX, sub=True, basename=False)
+            if not anno_dir: anno_dir = image_dir
+        elif anno_dir and not image_ids:
+            image_ids = self.get_file_list(anno_dir, postfix=file_utils.IMG_POSTFIX, sub=True, basename=False)
+            if not image_dir: image_dir = anno_dir
+        assert isinstance(anno_dir, str) and os.path.exists(anno_dir), "no anno_dir :{}".format(anno_dir)
+        assert isinstance(image_dir, str) and os.path.exists(image_dir), "no image_dir:{}".format(image_dir)
+        assert len(image_ids) > 0, f"image_ids is empty,image_dir={image_dir},anno_dir={anno_dir}"
         return data_root, anno_dir, image_dir, image_ids
 
     def __getitem__(self, index):
@@ -262,7 +264,11 @@ class YOLODataset(Dataset):
             label = anno[0]
             polys = np.asarray(anno[1:]).reshape(-1, 2)
             polys = polys * [w, h]
-            boxes = image_utils.polygons2boxes([polys])[0]
+            if len(anno) == 5:
+                cx, cy, cw, ch = polys.reshape(-1)
+                boxes = [cx - cw / 2, cy - ch / 2, cx + cw / 2, cy + ch / 2]
+            else:
+                boxes = image_utils.polygons2boxes([polys])[0]
             labels.append(label)
             points.append(polys)
             bboxes.append(boxes)
@@ -316,22 +322,10 @@ class YOLODataset(Dataset):
         return annos
 
 
-def parser_labelme(anno_file, class_dict={}, shape=None):
-    """
-    :param annotation:  labelme标注的数据
-    :param class_dict:  label映射
-    :param shape: 图片shape(H,W,C),可进行坐标点的维度检查，避免越界
-    :return:
-    """
-    annotation = YOLODataset.load_annotations(anno_file)
-    bboxes, labels, points = YOLODataset.parser_annotation(annotation, shape, class_dict)
-    return bboxes, labels
-
-
-def show_target_image(image, bboxes, labels, points=[], class_name=None, use_rgb=True):
+def show_target_image(image, boxes, labels, points=[], class_name=None, use_rgb=True, thickness=2):
     """
     :param image:
-    :param bboxes:
+    :param boxes:
     :param labels:
     :param points: [shape(n,2),[shape(n,2)]]
     :param class_name:
@@ -339,7 +333,11 @@ def show_target_image(image, bboxes, labels, points=[], class_name=None, use_rgb
     :return:
     """
     dst = image.copy()
-    dst = image_utils.draw_image_contours(dst, contours=points, alpha=0.1, thickness=1)
+    if class_name: labels = [class_name[i] for i in labels]
+    if len(points) > 0 and len(points[0]) > 2:
+        dst = image_utils.draw_image_contours(dst, contours=points, texts=labels, alpha=0.5, thickness=thickness)
+    else:
+        dst = image_utils.draw_image_boxes_texts(dst, boxes=boxes, texts=labels, thickness=thickness)
     dst = image_utils.image_hstack([image, dst])
     image_utils.cv_show_image("det", dst, use_rgb=use_rgb)
 
@@ -348,9 +346,9 @@ if __name__ == "__main__":
     # filename = "/home/dm/nasdata/dataset/csdn/helmet/helmet-dataset-v2/train.txt"
     # filename = "/home/dm/nasdata/dataset/csdn/helmet/helmet-asian/total.txt"
     # filename = "/home/dm/nasdata/dataset/csdn/helmet/helmet-asian/total.txt"
-    filename = "/home/PKing/nasdata/tmp/tmp/medical/肾结石CT/valid/sample.txt"
-    dataset = YOLODataset(filename=filename,
-                          data_root=None,
+    data_root = "/home/PKing/nasdata/tmp/tmp/Fish/test"
+    dataset = YOLODataset(filename=None,
+                          data_root=data_root,
                           anno_dir=None,
                           image_dir=None,
                           class_name=None,
@@ -359,10 +357,12 @@ if __name__ == "__main__":
                           shuffle=False)
     print("have num:{}".format(len(dataset)))
     for i in range(len(dataset)):
+        # i = 16
         print(i)  # i=20
         data = dataset.__getitem__(i)
-        image, bboxes, labels = data["image"], data["boxes"], data["labels"]
+        image, boxes, labels = data["image"], data["boxes"], data["labels"]
         points = data["points"]
         h, w = image.shape[:2]
         image_file = data["image_file"]
-        show_target_image(image, bboxes, labels, points=points)
+        print(image_file)
+        show_target_image(image, boxes, labels, points=points)
