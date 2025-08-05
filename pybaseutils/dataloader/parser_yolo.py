@@ -326,7 +326,8 @@ class YOLODataset(Dataset):
         return annos
 
 
-def save_yolo(out_root, image_file, labels, boxes=[], points=[], use_seg=True, image=None, vis=False, delay=0):
+def save_yolo(out_root, image_file, labels, boxes=[], points=[], use_seg=True, image=None,
+              vis=False, delay=0, thickness=2):
     """
     保存YOLO数据格式
     :param out_root: 输出根目录
@@ -337,7 +338,8 @@ def save_yolo(out_root, image_file, labels, boxes=[], points=[], use_seg=True, i
     :param use_seg: 数据格式，True是YOLO实例分割数据格式 [class_index, cx, cy, w,  h]
                             False是YOLO目标检测格式 [class_index, x1, y1, x2, y2, x3, y3, x4, y4,....]
 
-    :param image: 图像
+    :param image: 图像(np.ndarray)
+    :param vis: 可视化标注效果
     :return:
     """
     if image is None: image = cv2.imread(image_file)
@@ -346,9 +348,9 @@ def save_yolo(out_root, image_file, labels, boxes=[], points=[], use_seg=True, i
         return
     if len(points) == 0: return
     if vis:
-        image = image_utils.draw_image_contours(image, points, texts=labels, alpha=0.3)
-        image = image_utils.draw_image_boxes_texts(image, boxes, texts=labels)
-        image = image_utils.show_image("image", image, delay=delay)
+        dst = image_utils.draw_image_contours(image.copy(), points, texts=labels, alpha=0.3, thickness=thickness)
+        dst = image_utils.draw_image_boxes_texts(dst, boxes, texts=labels, thickness=thickness)
+        dst = image_utils.show_image("image", dst, delay=delay)
     h, w = image.shape[:2]
     if use_seg:
         conts = [np.asarray(p) / (w, h) for p in points]
@@ -375,9 +377,10 @@ def show_target_image(image, boxes, labels, points=[], class_name=None, use_rgb=
     """
     dst = image.copy()
     if class_name: labels = [class_name[i] for i in labels]
+    dst = image_utils.draw_image_boxes_texts(dst, boxes, texts=labels, thickness=thickness)
     dst = image_utils.draw_image_contours(dst, contours=points, texts=labels, alpha=0.3, thickness=thickness)
     dst = image_utils.image_hstack([image, dst])
-    image_utils.cv_show_image("det", dst, use_rgb=use_rgb)
+    image_utils.cv_show_image("image", dst, use_rgb=use_rgb)
 
 
 if __name__ == "__main__":

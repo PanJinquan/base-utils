@@ -25,6 +25,7 @@ def convert_labelme2yolo(anno_dir, out_root=None, class_name=None, use_seg=False
     :param use_seg: 数据格式，True是YOLO实例分割数据格式 [class_index, cx, cy, w,  h]
                             False是YOLO目标检测格式 [class_index, x1, y1, x2, y2, x3, y3, x4, y4,....]
     :param max_num: 最多转换样本个数
+    :param vis: 可视化标注效果
     """
     if anno_dir and not out_root: out_root = os.path.join(os.path.dirname(anno_dir), "yolo")
     dataset = parser_labelme.LabelMeDatasets(filename=None,
@@ -50,4 +51,4 @@ if __name__ == "__main__":
                   'PlatyFish', 'RibbonedSweetlips', 'ThreeStripedDamselfish', 'YellowCichlid', 'YellowTang',
                   'ZebraFish']
     anno_dir = "/home/PKing/nasdata/tmp/tmp/Fish/test/images"
-    convert_labelme2yolo(anno_dir, class_name=class_name, use_seg=True, vis=True)
+    convert_labelme2yolo(anno_dir, class_name=class_name, use_seg=False, vis=True)
