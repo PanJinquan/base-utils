@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-    @Author : PKing
-    @E-mail :
-    @Date   : 2023-08-10 10:18:32
-    @Brief  :
+# --------------------------------------------------------
+# @Author : Pan
+# @E-mail :
+# @Date   : 2025-04-29 09:13:09
+# @Brief  :
+# --------------------------------------------------------
 """
 import os
 import numpy as np
@@ -217,7 +219,8 @@ class YOLODataset(Dataset):
         shape = image.shape
         annotation = self.load_annotations(anno_file)
         boxes, labels, points = self.parser_annotation_segs(annotation, shape, self.class_dict)
-        data = {"image": image, "boxes": boxes, "labels": labels, "points": points,
+        names = [self.class_name[i] for i in labels] if self.class_name else labels
+        data = {"image": image, "boxes": boxes, "labels": labels, "names": names, "points": points,
                 "image_file": image_file, "anno_file": anno_file}
         return data
 
@@ -267,6 +270,7 @@ class YOLODataset(Dataset):
             if len(anno) == 5:
                 cx, cy, cw, ch = polys.reshape(-1)
                 boxes = [cx - cw / 2, cy - ch / 2, cx + cw / 2, cy + ch / 2]
+                polys = image_utils.boxes2polygons([boxes])[0]
             else:
                 boxes = image_utils.polygons2boxes([polys])[0]
             labels.append(label)
@@ -322,6 +326,43 @@ class YOLODataset(Dataset):
         return annos
 
 
+def save_yolo(out_root, image_file, labels, boxes=[], points=[], use_seg=True, image=None, vis=False, delay=0):
+    """
+    保存YOLO数据格式
+    :param out_root: 输出根目录
+    :param image_file: 图片路径
+    :param labels:  目标label index
+    :param boxes: 目标矩形框(xmin, ymin, xmax, ymax)
+    :param points: 目标轮廓
+    :param use_seg: 数据格式，True是YOLO实例分割数据格式 [class_index, cx, cy, w,  h]
+                            False是YOLO目标检测格式 [class_index, x1, y1, x2, y2, x3, y3, x4, y4,....]
+
+    :param image: 图像
+    :return:
+    """
+    if image is None: image = cv2.imread(image_file)
+    if image is None:
+        print("Error: image is None,image_file={},names={}".format(image_file, labels))
+        return
+    if len(points) == 0: return
+    if vis:
+        image = image_utils.draw_image_contours(image, points, texts=labels, alpha=0.3)
+        image = image_utils.draw_image_boxes_texts(image, boxes, texts=labels)
+        image = image_utils.show_image("image", image, delay=delay)
+    h, w = image.shape[:2]
+    if use_seg:
+        conts = [np.asarray(p) / (w, h) for p in points]
+    else:
+        conts = image_utils.xyxy2cxcywh(boxes).reshape(-1, 2, 2) / (w, h)
+    image_name = os.path.basename(image_file)
+    image_id, postfix = file_utils.split_postfix(image_name)
+    anno_file = file_utils.create_dir(out_root, "labels", f"{image_id}.txt")
+    file_path = file_utils.create_dir(out_root, "images", f"{image_name}")
+    text_data = [[l] + np.asarray(p).reshape(-1).tolist() for l, p in zip(labels, conts)]
+    file_utils.write_data(anno_file, text_data, split=" ")
+    file_utils.copy_file(image_file, file_path)
+
+
 def show_target_image(image, boxes, labels, points=[], class_name=None, use_rgb=True, thickness=2):
     """
     :param image:
@@ -334,24 +375,24 @@ def show_target_image(image, boxes, labels, points=[], class_name=None, use_rgb=
     """
     dst = image.copy()
     if class_name: labels = [class_name[i] for i in labels]
-    if len(points) > 0 and len(points[0]) > 2:
-        dst = image_utils.draw_image_contours(dst, contours=points, texts=labels, alpha=0.5, thickness=thickness)
-    else:
-        dst = image_utils.draw_image_boxes_texts(dst, boxes=boxes, texts=labels, thickness=thickness)
+    dst = image_utils.draw_image_contours(dst, contours=points, texts=labels, alpha=0.3, thickness=thickness)
     dst = image_utils.image_hstack([image, dst])
     image_utils.cv_show_image("det", dst, use_rgb=use_rgb)
 
 
 if __name__ == "__main__":
+    class_name = ['AngelFish', 'BlueTang', 'ButterflyFish', 'ClownFish', 'GoldFish', 'Gourami', 'MorishIdol',
+                  'PlatyFish', 'RibbonedSweetlips', 'ThreeStripedDamselfish', 'YellowCichlid', 'YellowTang',
+                  'ZebraFish']
     # filename = "/home/dm/nasdata/dataset/csdn/helmet/helmet-dataset-v2/train.txt"
     # filename = "/home/dm/nasdata/dataset/csdn/helmet/helmet-asian/total.txt"
     # filename = "/home/dm/nasdata/dataset/csdn/helmet/helmet-asian/total.txt"
-    data_root = "/home/PKing/nasdata/tmp/tmp/Fish/test"
+    data_root = "/home/PKing/nasdata/tmp/tmp/Fish/test/yolo"
     dataset = YOLODataset(filename=None,
                           data_root=data_root,
                           anno_dir=None,
                           image_dir=None,
-                          class_name=None,
+                          class_name=class_name,
                           check=False,
                           phase="val",
                           shuffle=False)
@@ -360,9 +401,9 @@ if __name__ == "__main__":
         # i = 16
         print(i)  # i=20
         data = dataset.__getitem__(i)
-        image, boxes, labels = data["image"], data["boxes"], data["labels"]
+        image, boxes, names = data["image"], data["boxes"], data["names"]
         points = data["points"]
         h, w = image.shape[:2]
         image_file = data["image_file"]
         print(image_file)
-        show_target_image(image, boxes, labels, points=points)
+        show_target_image(image, boxes, names, points=points)

@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-    @Author : Pan
-    @E-mail : 390737991@qq.com
-    @Date   : 2022-10-12 16:21:55
-    @Brief  :
+# --------------------------------------------------------
+# @Author : Pan
+# @E-mail :
+# @Date   : 2025-04-29 09:13:09
+# @Brief  :
+# --------------------------------------------------------
 """
 import os
 import numpy as np
@@ -28,7 +30,7 @@ def convert_labelme2labelme(anno_dir,
     :param out_root:  输出labelme根目录
     :param class_name: 需要选择的类别，None表示全部
     :param class_dict: 类别映射
-    :param prefix: 提供文件名前缀，则重新进行重新命令
+    :param prefix: 提供文件名前缀，则进行重新命名
     :param max_num: 最多转换样本个数
     """
     if anno_dir and not out_root: out_root = os.path.join(os.path.dirname(anno_dir), "labelme")

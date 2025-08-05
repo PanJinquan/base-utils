@@ -15,13 +15,13 @@ from pybaseutils import image_utils, file_utils, json_utils
 def save_labelme(out_root, image_file, points, names, class_dict, image=None, prefix="",
                  index=0, vis=False, delay=0):
     """
-    :param out_root: 输入根目录
+    :param out_root: 输出根目录
     :param image_file: 图片路径
     :param points: 目标轮廓
     :param names:  目标名称
     :param class_dict: 需要映射的类别
     :param image: 图像
-    :param prefix: 前缀，如果提供，则重新名称
+    :param prefix: 前缀，如果提供，则重新命名
     :param index: 提供前缀需要重新名称
     :return:
     """
@@ -32,7 +32,7 @@ def save_labelme(out_root, image_file, points, names, class_dict, image=None, pr
         print("Error: image is None,image_file={},names={}".format(image_file, names))
         return
     if vis:
-        image = image_utils.draw_image_contours(image, points, texts=names)
+        image = image_utils.draw_image_contours(image, points, texts=names, alpha=0.3)
         image = image_utils.show_image("image", image, delay=delay)
     image_name = os.path.basename(image_file)
     image_id, postfix = file_utils.split_postfix(image_name)

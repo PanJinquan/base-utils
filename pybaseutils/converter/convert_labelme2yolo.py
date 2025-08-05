@@ -1,85 +1,53 @@
 # -*- coding: utf-8 -*-
 """
 # --------------------------------------------------------
-# @Project:
-# @Author : panjq
-# @Date   : 2020-02-12 18:28:16
-# @url    :
+# @Author : Pan
+# @E-mail :
+# @Date   : 2025-04-29 09:13:09
+# @Brief  :
 # --------------------------------------------------------
 """
 
-import argparse
-import sys
 import os
 import numpy as np
-import json
 import cv2
-import time
 from tqdm import tqdm
-from pybaseutils import file_utils, json_utils, image_utils
-from pybaseutils.dataloader import parser_labelme
-from pybaseutils.converter import build_coco
+from pybaseutils.dataloader import parser_labelme, parser_yolo
+from pybaseutils import file_utils, image_utils
 
 
-class Labelme2YOLO(object):
-    """Convert Labelme to COCO dataset format"""
-
-    def __init__(self, image_dir, anno_dir, init_id=None):
-        """
-        :param image_dir: 图片目录(*.json)
-        :param anno_dir:  标注文件目录
-        :param init_id: 初始的image_id,if None,will reset to current time
-        """
-        print(anno_dir)
-        print(image_dir)
-        self.anno_dir = anno_dir
-        self.image_dir = image_dir
-        self.labelme = parser_labelme.LabelMeDataset(filename=None, data_root=None, image_dir=image_dir,
-                                                     anno_dir=anno_dir, class_name=None, use_rgb=False,
-                                                     shuffle=False, check=False, )
-
-    def build_instance_dataset(self, out_labels, class_name: list = []):
-        """
-        构建COCO的目标检测和实例分割数据集
-        :param class_name: 只选择的类别转换,默认全部
-        :return: 
-        """
-        for i in tqdm(range(len(self.labelme.image_ids))):
-            image_id = self.labelme.index2id(i)
-            image_file, anno_file, image_id = self.labelme.get_image_anno_file(image_id)
-            annotation, width, height = self.labelme.load_annotations(anno_file)
-            if not annotation: continue
-            objects = self.labelme.get_instance_object(annotation, width, height, class_name=class_name)
-            contents = []
-            for group_id, object in objects.items():
-                name = object["labels"]
-                box = object['boxes'] / (width, height, width, height)
-                seg = object['segs'] / (width, height)
-                box = box.tolist()
-                seg = seg.reshape(-1).tolist()
-                if name in class_name:
-                    label = class_name.index(name)
-                    c = [label] + seg
-                    contents.append(c)
-            if len(contents) > 0:
-                format = os.path.basename(image_file).split(".")[-1]
-                image_id = os.path.basename(image_file)[:-len(format) - 1]
-                text_path = file_utils.create_dir(out_labels, None, "{}.txt".format(image_id))
-                file_utils.write_data(text_path, contents, split=" ")
+def convert_labelme2yolo(anno_dir, out_root=None, class_name=None, use_seg=False, max_num=-1, vis=True, **kwargs):
+    """
+    将labelme格式转换为YOLO数据格式
+    :param anno_dir:  输入labelme根目录(图片和json文件必须放在同一目录)
+    :param out_root:  输出YOLO数据格根目录
+    :param class_name: 需要选择的类别，None表示全部
+    :param use_seg: 数据格式，True是YOLO实例分割数据格式 [class_index, cx, cy, w,  h]
+                            False是YOLO目标检测格式 [class_index, x1, y1, x2, y2, x3, y3, x4, y4,....]
+    :param max_num: 最多转换样本个数
+    """
+    if anno_dir and not out_root: out_root = os.path.join(os.path.dirname(anno_dir), "yolo")
+    dataset = parser_labelme.LabelMeDatasets(filename=None,
+                                             data_root=None,
+                                             anno_dir=anno_dir,
+                                             image_dir=None,
+                                             class_name=class_name,
+                                             check=False,
+                                             phase="val",
+                                             shuffle=False)
+    print("have num:{}".format(len(dataset)))
+    nums = min(len(dataset), max_num) if max_num > 0 else len(dataset)
+    for i in tqdm(range(nums)):
+        data_info = dataset.__getitem__(i)
+        labels, points, boxes = data_info["labels"], data_info["points"], data_info["boxes"]
+        image, image_file = data_info["image"], data_info["image_file"]
+        parser_yolo.save_yolo(out_root, image_file=image_file, boxes=boxes, points=points, labels=labels,
+                              use_seg=use_seg, image=image, vis=vis)
 
 
-def demo_for_yolo():
-    class_name = ["other", "car", "person"]
-    # VOC数据目录
-    data_root = "/media/PKing/新加卷1/SDK/base-utils/data/coco"
-    image_dir = "/media/PKing/新加卷1/SDK/base-utils/data/coco/JPEGImages"
-    anno_dir = "/media/PKing/新加卷1/SDK/base-utils/data/coco/json"
-    # data_root = "/path/to/VOC2007"
-    # 保存输出yolo格式数据目录
-    out_text_dir = os.path.join(data_root, "labels")
-    build = Labelme2YOLO(image_dir=image_dir, anno_dir=anno_dir, init_id=None)
-    build.build_instance_dataset(out_text_dir, class_name=class_name)
-
-
-if __name__ == '__main__':
-    demo_for_yolo()
+if __name__ == "__main__":
+    class_name = ['AngelFish', 'BlueTang', 'ButterflyFish', 'ClownFish', 'GoldFish', 'Gourami', 'MorishIdol',
+                  'PlatyFish', 'RibbonedSweetlips', 'ThreeStripedDamselfish', 'YellowCichlid', 'YellowTang',
+                  'ZebraFish']
+    anno_dir = "/home/PKing/nasdata/tmp/tmp/Fish/test/images"
+    convert_labelme2yolo(anno_dir, class_name=class_name, use_seg=True, vis=True)
