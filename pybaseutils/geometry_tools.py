@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-    @Author : PKing
-    @E-mail :
-    @Date   : 2024-05-23 11:24:37
-    @Brief  :
+# --------------------------------------------------------
+# @Author : Pan
+# @E-mail :
+# @Date   : 2022-04-29 09:13:09
+# @Brief  :
+# --------------------------------------------------------
 """
 import numpy as np
 from scipy.spatial.distance import cdist
