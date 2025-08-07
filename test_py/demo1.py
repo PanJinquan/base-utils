@@ -40,13 +40,5 @@ def draw_rectangle(image, boxes, color=(255, 0, 0), thickness=10):
 if __name__ == "__main__":
     from PIL import Image, ImageDraw
 
-    # 打开现有图像或创建RGB图像
-    file = "/home/PKing/Pictures/ragimg/image-2025-05-30-14h04m34s468.jpg"
-    boxes = [(100, 100, 400, 200)]
-    texts = ["ABCD"]
-    color = (128, 128, 128, 0)
-    alpha = 0
-    image = cv2.imread(file)
-    image = Image.fromarray(image)
-    image = draw_rectangle(image, boxes, color=color, thickness=2)
-    image_utils.show_image("image", image)
+    num = [929, 984, 933, 901, 1018, 902, 943, 1046, 1003, 837]
+    print(len(num),sum(num))

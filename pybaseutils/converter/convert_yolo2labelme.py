@@ -50,11 +50,12 @@ def convert_yolo2labelme(data_root,
         image_file = data_info["image_file"]
         build_labelme.save_labelme(out_root, image_file=image_file, points=points, names=names,
                                    class_dict=class_dict, image=image, prefix=prefix, index=i, vis=vis)
+    file_utils.write_data(os.path.join(out_root, "class_name.txt"), dataset.class_name)
 
 
 if __name__ == "__main__":
     class_name = ['AngelFish', 'BlueTang', 'ButterflyFish', 'ClownFish', 'GoldFish', 'Gourami', 'MorishIdol',
                   'PlatyFish', 'RibbonedSweetlips', 'ThreeStripedDamselfish', 'YellowCichlid', 'YellowTang',
                   'ZebraFish']
-    data_root = "/home/PKing/nasdata/tmp/tmp/Fish/test"
+    data_root = "/home/PKing/nasdata/tmp/tmp/Fish/test/labelme/images"
     convert_yolo2labelme(data_root, class_name=class_name, prefix="test", vis=False)

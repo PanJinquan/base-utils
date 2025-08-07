@@ -367,8 +367,8 @@ class CocoDataset(object):
                 continue
             keypoint = ann.get('keypoints', [])
             if len(keypoint) == 0: continue
-            keypoint = np.asarray(keypoint).reshape(num_joints, 3)
-            keypoint = keypoint[:, 0:2]
+            keypoint = np.asarray(keypoint).reshape(num_joints, 3)  # (N,3)
+            # keypoint = keypoint[:, 0:2]
             keypoints.append(keypoint)
             label = self.class_dict[name]
             rects.append(ann['bbox'])

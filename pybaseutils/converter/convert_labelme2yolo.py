@@ -44,11 +44,12 @@ def convert_labelme2yolo(anno_dir, out_root=None, class_name=None, use_seg=False
         image, image_file = data_info["image"], data_info["image_file"]
         parser_yolo.save_yolo(out_root, image_file=image_file, boxes=boxes, points=points, labels=labels,
                               use_seg=use_seg, image=image, vis=vis)
+    file_utils.write_data(os.path.join(out_root, "class_name.txt"), dataset.class_name)
 
 
 if __name__ == "__main__":
     class_name = ['AngelFish', 'BlueTang', 'ButterflyFish', 'ClownFish', 'GoldFish', 'Gourami', 'MorishIdol',
                   'PlatyFish', 'RibbonedSweetlips', 'ThreeStripedDamselfish', 'YellowCichlid', 'YellowTang',
                   'ZebraFish']
-    anno_dir = "/home/PKing/nasdata/tmp/tmp/Fish/test/images"
-    convert_labelme2yolo(anno_dir, class_name=class_name, use_seg=False, vis=True)
+    anno_dir = "/home/PKing/nasdata/tmp/tmp/Fish/train/images"
+    convert_labelme2yolo(anno_dir, class_name=class_name, use_seg=False, vis=False)

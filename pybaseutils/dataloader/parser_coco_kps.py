@@ -73,6 +73,7 @@ class CocoKeypoint(base_coco.CocoDataset):
         anns_info, file_info = self.get_object_annotations(image_id)
         image, width, height, image_file = self.get_object_image(file_info)
         boxes, labels, keypoints = self.get_keypoint_info(anns_info, self.num_joints)
+        # keypoints is (1,N,3)
         data = {"image": image, "boxes": boxes, "labels": labels,
                 "segs": [], "mask": [], "keypoints": keypoints, "target": [],
                 "image_id": image_id, "annotations": anns_info, "file_info": file_info,
@@ -137,16 +138,16 @@ if __name__ == "__main__":
     # image_dir = coco_root + 'val2017/images'
     # anno_file = coco_root + 'annotations/person_keypoints_val2017.json'
 
-    image_dir = "/media/PKing/新加卷1/SDK/base-utils/data/coco/JPEGImages"
-    anno_file = "/media/PKing/新加卷1/SDK/base-utils/data/coco/coco_kps.json"
+    image_dir = "../../data/coco/JPEGImages"
+    anno_file = "../../data/coco/coco_kps.json"
     class_name = ["person"]
 
     # hand
-    image_dir = ""
+    # image_dir = ""
     # anno_file = "/home/PKing/nasdata/dataset/tmp/hand-pose/HandPose-v2/train/train_anno.json"
     # anno_file = "/home/PKing/nasdata/dataset/tmp/hand-pose/HandPose-v1/test/test_anno.json"
-    anno_file = "/home/PKing/nasdata/dataset/tmp/hand-pose/HandPose-v2/train/train_anno.json"
-    class_name = []
+    # anno_file = "/home/PKing/nasdata/dataset/tmp/hand-pose/HandPose-v2/train/train_anno.json"
+    # class_name = []
     dataset = CocoKeypoint(anno_file, image_dir, class_name=class_name)
     skeleton = dataset.skeleton
     for i in range(len(dataset)):

@@ -390,7 +390,7 @@ if __name__ == "__main__":
     # filename = "/home/dm/nasdata/dataset/csdn/helmet/helmet-dataset-v2/train.txt"
     # filename = "/home/dm/nasdata/dataset/csdn/helmet/helmet-asian/total.txt"
     # filename = "/home/dm/nasdata/dataset/csdn/helmet/helmet-asian/total.txt"
-    data_root = "/home/PKing/nasdata/tmp/tmp/Fish/test/yolo"
+    data_root = "/home/PKing/nasdata/tmp/tmp/Fish/train/yolo"
     dataset = YOLODataset(filename=None,
                           data_root=data_root,
                           anno_dir=None,
