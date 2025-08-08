@@ -73,7 +73,7 @@ class CocoKeypoint(base_coco.CocoDataset):
         anns_info, file_info = self.get_object_annotations(image_id)
         image, width, height, image_file = self.get_object_image(file_info)
         boxes, labels, keypoints = self.get_keypoint_info(anns_info, self.num_joints)
-        # keypoints is (1,N,3)
+        # TODO keypoints is (1,N,3); v=0未标注点; v=1标注了但是图像中不可见（例如遮挡）;v=2标注了并图像可见
         data = {"image": image, "boxes": boxes, "labels": labels,
                 "segs": [], "mask": [], "keypoints": keypoints, "target": [],
                 "image_id": image_id, "annotations": anns_info, "file_info": file_info,

@@ -1062,10 +1062,11 @@ def draw_image_bboxes_text(image, boxes, boxes_name, color=(), thickness=0, font
     """
     if isinstance(boxes_name, np.ndarray):
         boxes_name = boxes_name.reshape(-1).tolist()
-    for i, (name, box) in enumerate(zip(boxes_name, boxes)):
-        box = [int(b) for b in box]
+    for i, (name, bbox) in enumerate(zip(boxes_name, boxes)):
+        bbox = [int(b) for b in bbox]
         c = color if color else color_table[i + 1]
-        draw_image_box_text(image, box, c, name, thickness, fontScale, drawType=drawType, top=top)
+        draw_image_bbox_text(image, bbox, name, color=c, thickness=thickness, fontScale=fontScale,
+                             drawType=drawType, top=top)
     return image
 
 
@@ -1082,10 +1083,11 @@ def draw_image_boxes_texts(image, boxes, texts, color=(), thickness=0, fontScale
     :param top:
     :return:
     """
-    for i, (box, text) in enumerate(zip(boxes, texts)):
-        box = [int(b) for b in box]
+    for i, (bbox, text) in enumerate(zip(boxes, texts)):
+        bbox = [int(b) for b in bbox]
         c = color if color else color_table[i + 1]
-        draw_image_box_text(image, box, c, text, thickness, fontScale, alpha=alpha, drawType=drawType, top=top)
+        draw_image_bbox_text(image, bbox, text, color=c, thickness=thickness, fontScale=fontScale, alpha=alpha,
+                             drawType=drawType, top=top)
     return image
 
 
@@ -1097,8 +1099,9 @@ def draw_image_bboxes_labels_text(image, boxes, labels, boxes_name=None, color=N
     boxes_name = boxes_name if boxes_name else labels
     for label, box, name in zip(labels, boxes, boxes_name):
         box = [int(b) for b in box]
-        color_ = color if color else color_map[int(label) + 1]
-        image = draw_image_box_text(image, box, color_, str(name), thickness, fontScale, drawType, top)
+        c = color if color else color_map[int(label) + 1]
+        image = draw_image_bbox_text(image, box, str(name), color=c, thickness=thickness, fontScale=fontScale,
+                                     drawType=drawType, top=top)
     return image
 
 
@@ -1106,10 +1109,11 @@ def draw_image_boxes_labels_texts(image, boxes, labels, texts, color=None, thick
                                   drawType="custom", top=True, color_table=color_table):
     if isinstance(labels, np.ndarray):
         labels = labels.reshape(-1).tolist()
-    for label, box, name in zip(labels, boxes, texts):
-        box = [int(b) for b in box]
-        color_ = color if color else color_table[int(label) + 1]
-        image = draw_image_box_text(image, box, color_, str(name), thickness, fontScale, drawType, top)
+    for label, bbox, name in zip(labels, boxes, texts):
+        bbox = [int(b) for b in bbox]
+        c = color if color else color_table[int(label) + 1]
+        image = draw_image_bbox_text(image, bbox, str(name), color=c, thickness=thickness, fontScale=fontScale,
+                                     drawType=drawType, top=top)
     return image
 
 
@@ -1191,8 +1195,8 @@ def show_image_rects_texts(title, image, rects, texts, color=None, thickness=0, 
     return image
 
 
-def draw_image_bboxes_labels(image, boxes, labels, class_name=None, color=None,
-                             thickness=0, fontScale=0, drawType="custom"):
+def draw_image_bboxes_labels(image, boxes, labels, class_name=None, color=None, thickness=0, fontScale=0,
+                             drawType="custom", top=True):
     """
     :param image:
     :param boxes:  [[x1,y1,x2,y2],[x1,y1,x2,y2]]
@@ -1200,16 +1204,16 @@ def draw_image_bboxes_labels(image, boxes, labels, class_name=None, color=None,
     :return:
     """
     if isinstance(labels, np.ndarray): labels = labels.astype(np.int32).reshape(-1).tolist()
-    for label, box in zip(labels, boxes):
-        box = [int(b) for b in box]
+    for label, bbox in zip(labels, boxes):
+        bbox = [int(b) for b in bbox]
         name = label
-        color_ = color
+        c = color
         if isinstance(name, numbers.Number) and class_name:
-            color_ = color_table[int(name) + 1]
+            c = color_table[int(name) + 1]
             name = class_name[int(name)]
-        if not color_: color_ = color_table[1]
-        image = draw_image_box_text(image, box, color_, str(name), thickness=thickness,
-                                    fontScale=fontScale, drawType=drawType)
+        if not c: c = color_table[1]
+        image = draw_image_bbox_text(image, bbox, str(name), color=c, thickness=thickness, fontScale=fontScale,
+                                     drawType=drawType, top=top)
     return image
 
 
@@ -1249,7 +1253,7 @@ def draw_image_detection_rects(image, rects, probs, labels, class_name=None, thi
 
 
 def draw_image_detection_boxes(image, boxes, probs, labels, class_name=None, thickness=0, fontScale=0,
-                               drawType="custom"):
+                               drawType="custom", top=True):
     """
     :param image:
     :param boxes:
@@ -1264,13 +1268,14 @@ def draw_image_detection_boxes(image, boxes, probs, labels, class_name=None, thi
     thickness, fontScale = get_linesize(max(image.shape), thickness=thickness, fontScale=fontScale)
     labels = labels if isinstance(labels, list) else np.asarray(labels, dtype=np.int32).reshape(-1)
     probs = np.asarray(probs).reshape(-1)
-    for label, box, prob in zip(labels, boxes, probs):
-        color = color_table[1] if isinstance(label, str) else color_table[int(label) + 1]
-        box = [int(b) for b in box]
+    for label, bbox, prob in zip(labels, boxes, probs):
+        c = color_table[1] if isinstance(label, str) else color_table[int(label) + 1]
+        bbox = [int(b) for b in bbox]
         if class_name:
             label = class_name[int(label)]
-        boxes_name = "{}:{:3.2f}".format(label, prob)
-        draw_image_box_text(image, box, color, boxes_name, thickness=thickness, fontScale=fontScale, drawType=drawType)
+        text = "{}:{:3.2f}".format(label, prob)
+        draw_image_bbox_text(image, bbox, text, color=c, thickness=thickness, fontScale=fontScale,
+                             drawType=drawType, top=top)
     return image
 
 
@@ -1427,7 +1432,7 @@ def draw_text(image, point, text, color=(255, 0, 0), fontScale=0, thickness=0, d
     return image
 
 
-def draw_image_box_text(image, bbox, color, text, thickness=2, fontScale=0.8, alpha=0, drawType="custom", top=True):
+def draw_image_bbox_text(image, bbox, text, color, thickness=2, fontScale=0.8, alpha=0, drawType="custom", top=True):
     """
     :param image:
     :param bbox:
@@ -1439,8 +1444,8 @@ def draw_image_box_text(image, bbox, color, text, thickness=2, fontScale=0.8, al
     """
     text = str(text)
     if alpha > 0:
-        bgimg = draw_image_box_text(image.copy(), bbox, text=text, color=color, thickness=thickness,
-                                    fontScale=fontScale, drawType=drawType, top=top, alpha=0)
+        bgimg = draw_image_bbox_text(image.copy(), bbox, text=text, color=color, thickness=thickness,
+                                     fontScale=fontScale, drawType=drawType, top=top, alpha=0)
         image[:] = cv2.addWeighted(bgimg, 1 - alpha, image, alpha, 0)
         return image
     thickness, fontScale = get_linesize(max(image.shape), thickness=thickness, fontScale=fontScale)
