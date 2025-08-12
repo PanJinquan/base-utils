@@ -58,5 +58,40 @@ BONES = {
 }
 
 
-def get_target_bones(target):
-    return BONES.get(target, {})
+def get_target_bones(target, kpts=[]):
+    if target in BONES:
+        return BONES[target]
+    nums = max([len(kpt) for kpt in kpts])
+    info = {
+        "skeleton": circle_line(nums, iscircle=True),
+        "keypoint": [],
+        "num_joints": nums,
+        "names": {},
+        "colors": [[153, 0, 0], [204, 0, 0], [255, 0, 0], [255, 51, 51], [255, 102, 102],
+                   [102, 102, 0], [153, 153, 0], [204, 204, 0],
+                   [255, 255, 0], [0, 102, 51], [0, 153, 76], [0, 204, 102],
+                   [0, 255, 127], [0, 51, 102], [0, 76, 153], [0, 102, 204],
+                   [0, 127, 255], [102, 0, 102], [153, 0, 153], [178, 0, 204], [255, 0, 255]]
+
+    }
+    return info
+
+
+def circle_line(num_point, iscircle=True):
+    """
+    产生连接线的点,用于绘制连接线
+    points_line=circle_line(len(points),iscircle=True)
+    >> [(0, 1), (1, 2), (2, 0)]
+    :param num_point:
+    :param iscircle: 首尾是否相连
+    :return:
+    """
+    start = 0
+    end = num_point - 1
+    points_line = []
+    for i in range(start, end + 1):
+        if i == end and iscircle:
+            points_line.append([end, start])
+        elif i != end:
+            points_line.append([i, i + 1])
+    return points_line

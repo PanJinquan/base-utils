@@ -1567,9 +1567,11 @@ def draw_key_point_in_image(image, key_points, pointline=[], boxes=[], colors=No
         if len(key_points) > 0:
             points = key_points[p]
             if points is None or len(points) == 0: continue
-            text = list(range(len(points))) if vis_id else [""] * len(points)
+            texts = list(range(len(points))) if vis_id else [""] * len(points)
+            # 可视化(x,y,v)的v
+            # if vis_id and len(points[0]) == 3: texts = [f"{t}[{int(points[i][2])}]" for i, t in enumerate(texts)]
             image = draw_image_points_lines(image, points, pointline, circle_color=color, line_color=color,
-                                            texts=text, thickness=thickness)
+                                            texts=texts, thickness=thickness)
         if len(boxes) > 0:
             image = draw_image_boxes(image, boxes=[boxes[p]], color=color, thickness=thickness)
     return image

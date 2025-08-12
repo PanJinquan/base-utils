@@ -19,10 +19,18 @@ if __name__ == "__main__":
     Sedan     # 轿车
     Truck     # 卡车
     """
-    data_root = "/home/PKing/nasdata/tmp/tmp/car/Vehicle-Dataset"
+    data_root = "/home/PKing/nasdata/tmp/tmp/car-det/dataset-v3"
     out_root = data_root + "/labelme"
-    class_name = {"Bus": "bus", "Microbus": "bus",
-                  "Minivan": "truck", "Truck": "truck",
-                  "SUV": "car", "Sedan": "car",
+    class_dict = {"car": "car",
+                  "person": "pedestrian",
+                  "bicycle": "bike",
+                  "truck": "truck",
+                  "motorcycle": "bike",
+                  "bus": "bus"
                   }
-    convert_voc2labelme.convert_voc2labelme(data_root=data_root, out_root=out_root, class_name={}, vis=False)
+    convert_voc2labelme.convert_voc2labelme(data_root=data_root,
+                                            out_root=out_root,
+                                            prefix="image2025",
+                                            class_name=None,
+                                            class_dict=class_dict,
+                                            vis=False)

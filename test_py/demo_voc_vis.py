@@ -16,24 +16,11 @@ if __name__ == "__main__":
              '电能表': 13, '尖嘴钳': 14, '验电笔': 15, '螺丝刀': 16, '接线盒': 17, '电流互感器': 18, '表箱关': 19,
              '表箱开': 19, '竹梯': 20, '准备区域': 21, '工作台': 22}
 
-    # from models.transforms import data_transforms
-    # filename = "/home/dm/nasdata/dataset/csdn/traffic light/VOC/train.txt"
-    # class_name = "/home/dm/nasdata/dataset/csdn/traffic light/VOC/class_name.txt"
-    # filename = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/word-v1/train.txt"
-    # filename = "/home/dm/nasdata/dataset/csdn/face_person/MPII/test.txt"
-    # filename = "/home/dm/nasdata/dataset/csdn/Eyeglasses/dataset/face-eyeglasses/trainval.txt"
-    # filename = "/home/dm/nasdata/dataset/tmp/insects/VOC2/VOC/VOCdevkit/trainval.txt"
-    # filename = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-det-dataset/dataset-v4/train.txt"
-    filename = "/home/PKing/nasdata/dataset/tmp/pen/dataset-pen-finger-tip-v2/train/train.txt"
-    filename = "/home/PKing/Downloads/黑白彩色混合的数据集/黑白彩色混合的数据集/file.txt"
-    # filename = "/home/dm/nasdata/dataset-dmai/handwriting/word-det/word-old/train.txt"
-    # class_name = ["face", "face-eyeglasses"]
-    # class_name = "/home/dm/nasdata/dataset/tmp/traffic-sign/TT100K/VOC/train/class_name.txt"
-    # class_name = ["unique"]
+
     class_name =None
-    # class_name = ['pen_tip',"finger_tip"]
-    dataset = parser_voc.VOCDataset(filename=filename,
-                                    data_root=None,
+    data_root ="/home/PKing/nasdata/dataset/指针表计/meter_seg"
+    dataset = parser_voc.VOCDataset(filename=None,
+                                    data_root=data_root,
                                     anno_dir=None,
                                     image_dir=None,
                                     class_name=class_name,

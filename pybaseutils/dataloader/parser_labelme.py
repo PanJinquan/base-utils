@@ -14,6 +14,8 @@ import glob
 import random
 import numbers
 import json
+
+from shapely.predicates import is_valid
 from tqdm import tqdm
 from pybaseutils import image_utils, file_utils, json_utils, text_utils
 from pybaseutils.dataloader.base_dataset import Dataset, ConcatDataset
@@ -27,6 +29,9 @@ class LabelMeDataset(Dataset):
                  anno_dir=None,
                  image_dir=None,
                  class_name=None,
+                 kpts_name=None,
+                 kpts_size=None,
+                 use_kpts=False,
                  use_rgb=False,
                  shuffle=False,
                  check=False,
@@ -53,10 +58,12 @@ class LabelMeDataset(Dataset):
         super(LabelMeDataset, self).__init__()
         self.min_area = 1 / 1000  # 如果前景面积不足0.1%,则去除
         self.use_rgb = use_rgb
+        self.use_kpts = use_kpts
         self.min_points = min_points
         self.kwargs = kwargs
         self.log = kwargs.get('log', print) if kwargs.get('log', print) else print
         self.class_name, self.class_dict = self.parser_classes(class_name)
+        self.kpts_name, self.kpts_dict, self.kpts_size, self.total_name = self.parser_kpts_name(kpts_name, kpts_size)
         parser = self.parser_paths(filename, data_root, anno_dir, image_dir)
         self.data_root, self.anno_dir, self.image_dir, self.image_ids = parser
         self.classes = list(self.class_dict.values()) if self.class_dict else None
@@ -73,9 +80,26 @@ class LabelMeDataset(Dataset):
         self.log("{:15s} image_dir     :{}".format(self.tag, self.image_dir))
         self.log("{:15s} class_name    :{}".format(self.tag, self.class_name))
         self.log("{:15s} class_dict    :{}".format(self.tag, self.class_dict))
+        self.log("{:15s} kpts_info     :size={},name={}".format(self.tag, self.kpts_size, self.kpts_dict))
         self.log("{:15s} num images    :{}".format(self.tag, len(self.image_ids)))
         # self.log("{:15s} num_classes   :{}".format(self.tag,self.num_classes))
         self.log("------" * 10)
+
+    def parser_kpts_name(self, kpts_name, kpts_size):
+        """
+        v=0未标注点; v=1标注了但是图像中不可见（例如遮挡）;v=2标注了并图像可见
+        :param kpts_name: 关键点名称，当class_name是多目标时，建议使用str(0~n)字符串数字表示，即多目标kpts_name必须一致
+        :param kpts_size: 关键点的维度，默认是(17, 3)，对于coco-person,有17个关键点，3表示(x,y,v)
+        :return:
+        """
+        if not self.use_kpts: return [], {}, tuple(), self.class_dict
+        if kpts_name and not kpts_size: kpts_size = (len(kpts_name), 3)
+        if not kpts_size: kpts_size = (17, 3)
+        kpts_name = kpts_name if kpts_name else [str(i) for i in range(kpts_size[0])]
+        kpts_dict = {k: i for i, k in enumerate(kpts_name)}
+        kpts_size = kpts_size
+        total_name = {**self.class_dict, **kpts_dict}
+        return kpts_name, kpts_dict, kpts_size, total_name
 
     def __len__(self):
         return len(self.image_ids)
@@ -117,8 +141,11 @@ class LabelMeDataset(Dataset):
             if not os.path.exists(image_file):
                 continue
             annotation, width, height = self.load_annotations(anno_file)
-            info = self.parser_annotation(annotation, self.class_dict, min_points=self.min_points, unique=self.unique)
-            labels = info["labels"]
+            data_info = self.parser_annotation(annotation, self.total_name, min_points=self.min_points,
+                                               unique=self.unique)
+            if self.use_kpts:
+                data_info = self.get_kpts_info(data_info, anno_file=anno_file, disp=True)
+            labels = data_info["labels"]
             if len(labels) == 0:
                 continue
             dst_ids.append(image_id)
@@ -176,53 +203,56 @@ class LabelMeDataset(Dataset):
             size = (shape[1], shape[0])
         else:
             image, shape, size = None, None, (width, height)
-        data_info = self.parser_annotation(annotation, self.class_dict, shape=shape,
+        data_info = self.parser_annotation(annotation, self.total_name, shape=shape,
                                            min_points=self.min_points, unique=self.unique)
+        if self.use_kpts:
+            data_info = self.get_kpts_info(data_info, anno_file=anno_file)
         # TODO dict(boxes, labels, points, groups, names, keypoints)
         data_info.update({"image": image, "image_file": image_file, "anno_file": anno_file,
                           "size": tuple(size)})
         return data_info
 
-    @staticmethod
-    def parser_annotation(annotation: dict, class_dict={}, shape=None, min_points=-1, unique=False):
+    def get_kpts_info(self, data_info, anno_file="", disp=False):
         """
-        :param annotation:  labelme标注的数据
-        :param class_dict:  label映射
-        :param shape: 图片shape(H,W,C),可进行坐标点的维度检查，避免越界
-        :param min_points: 当标注的轮廓点的个数小于等于min_points，会被剔除；负数不剔除
+        获得目标和关键点信息
+        :param data_info:
+        :param anno_file:
+        :param disp:
         :return:
         """
-        bboxes, labels, points, groups, names, keypoints = [], [], [], [], [], []
-        for anno in annotation:
-            name = "unique" if unique else anno["label"]
-            shape_type = anno.get("shape_type", "polygon")
-            label = name
-            if class_dict:
-                if not name in class_dict:
-                    continue
-                if isinstance(class_dict, dict):
-                    label = class_dict[name]
-                    if isinstance(label, str): name = label
-            pts = np.asarray(anno["points"], dtype=np.int32)
-            if min_points > 0 and len(pts) <= min_points:
-                continue
-            gid = json_utils.get_value(anno, key=["group_id"], default=0)
-            gid = gid if gid else 0
-            kpt = json_utils.get_value(anno, key=["keypoints"], default=[])
-            if shape:
-                h, w = shape[:2]
-                pts[:, 0] = np.clip(pts[:, 0], 0, w - 1)
-                pts[:, 1] = np.clip(pts[:, 1], 0, h - 1)
-            box = image_utils.polygons2boxes([pts])[0]
-            if shape_type == "rectangle":
-                pts = image_utils.boxes2polygons([box])[0]
-            names.append(name)
-            labels.append(label)
-            bboxes.append(box)
-            points.append(pts)
-            groups.append(gid)
-            keypoints.append(kpt)
-        return dict(boxes=bboxes, labels=labels, points=points, groups=groups, names=names, keypoints=keypoints)
+        keys = list(data_info.keys())  # keys = ['boxes', 'labels', 'points', 'groups', 'names', 'keypoints']
+        groups = data_info["groups"]
+        objects = {}
+        for i, gid in enumerate(groups):
+            info = objects.get(gid, {})
+            for key in keys:
+                info[key] = info[key] + [data_info[key][i]] if key in info else [data_info[key][i]]
+            info["keypoints"] = []
+            objects[gid] = info
+        out_info = {n: [] for n in keys}
+        for gid, info in objects.items():
+            c_index = {i: n for i, n in enumerate(info["names"]) if n in self.class_dict}  # 实例index
+            k_index = {i: n for i, n in enumerate(info["names"]) if n in self.kpts_dict}  # 关键点index
+            if not c_index: continue  # 如果没有目标框
+            for key in keys:
+                if key == "keypoints":
+                    kpts = np.zeros(shape=tuple(self.kpts_size), dtype=np.float32)
+                    poin = {n: info['points'][i] for i, n in k_index.items()}
+                    poin = {self.kpts_dict[n]: v for n, v in poin.items()}
+                    k = np.array(list(poin.keys()), dtype=np.int32)
+                    v = np.array(list(poin.values()), dtype=np.float32).reshape(-1, 2)
+                    if self.kpts_size[1] == 3: v = np.hstack([v, np.zeros((len(v), 1)) + 2])  # (n,2)->(n,3)
+                    kpts[k] = v
+                    data = [kpts]
+                else:
+                    data = [info[key][i] for i, n in c_index.items()]
+                out_info[key] = out_info[key] + data if key in out_info else data
+        # 如果存在目标没有标注关键点,则将该目标的所有信息设置为空
+        valid_kpts = [np.sum(kpts) for kpts in out_info["keypoints"]]
+        if any(v < 1 for v in valid_kpts) or len(valid_kpts) != len(out_info["boxes"]):
+            if disp: print("标注文件存在错误:{}".format(anno_file))
+            out_info = {n: [] for n in keys}
+        return out_info
 
     def index2id(self, index):
         """
@@ -269,7 +299,48 @@ class LabelMeDataset(Dataset):
             raise Exception("empty image:{}".format(image_file))
         return image
 
-    def get_keypoint_object(self, annotation: list, w, h, class_name=[]):
+    @staticmethod
+    def parser_annotation(annotation: dict, class_dict={}, shape=None, min_points=-1, unique=False):
+        """
+        :param annotation:  labelme标注的数据
+        :param class_dict:  label映射,如{"person":0,"car":1}
+        :param shape: 图片shape(H,W,C),可进行坐标点的维度检查，避免越界
+        :param min_points: 当标注的轮廓点的个数小于等于min_points，会被剔除；负数不剔除
+        :return:
+        """
+        bboxes, labels, points, groups, names, keypoints = [], [], [], [], [], []
+        gid_index = 100000  # TODO bug 若gid_index=0,当某个实例未标注group_id,会导致关键点分组异常
+        for anno in annotation:
+            name = "unique" if unique else anno["label"]
+            shape_type = anno.get("shape_type", "polygon")
+            label = name
+            if class_dict:
+                if not name in class_dict:
+                    continue
+                if isinstance(class_dict, dict):
+                    label = class_dict[name]
+                    if isinstance(label, str): name = label
+            pts = np.asarray(anno["points"], dtype=np.int32)
+            if min_points > 0 and len(pts) <= min_points:
+                continue
+            gid = anno.get("group_id", gid_index) or gid_index
+            kpt = anno.get("keypoints", [])
+            if shape:
+                h, w = shape[:2]
+                pts[:, 0] = np.clip(pts[:, 0], 0, w - 1)
+                pts[:, 1] = np.clip(pts[:, 1], 0, h - 1)
+            box = image_utils.polygons2boxes([pts])[0]
+            if shape_type == "rectangle":
+                pts = image_utils.boxes2polygons([box])[0]
+            names.append(name)
+            labels.append(label)
+            bboxes.append(box)
+            points.append(pts)
+            groups.append(gid)
+            keypoints.append(kpt)
+        return dict(boxes=bboxes, labels=labels, points=points, groups=groups, names=names, keypoints=keypoints)
+
+    def get_keypoint_object(self, annotation: list, w, h, class_name=[], kpts_name=[]):
         """
         获得labelme关键点检测数据
         :param annotation:
@@ -278,24 +349,26 @@ class LabelMeDataset(Dataset):
         :param class_name:
         :return:
         """
+        if not kpts_name: kpts_name = self.kpts_name
         objects = {}
+        gid_index = 100000  # TODO bug 若gid_index=0,当某个实例未标注group_id,会导致关键点分组异常
         for i, anno in enumerate(annotation):
             label = anno["label"]
-            points = np.asarray(anno["points"], dtype=np.int32)
-            group_id = anno["group_id"] if "group_id" in anno and anno["group_id"] else 0  # 通过group_id标记同一实例
-            if file_utils.is_int(label):
-                keypoints: dict = json_utils.get_value(objects, [group_id, "keypoints"], default={})
-                keypoints.update({int(label): points.tolist()[0]})
-                objects = json_utils.set_value(objects, key=[group_id, "keypoints"], value=keypoints)
+            pts = np.asarray(anno["points"], dtype=np.int32)
+            gid = anno.get("group_id", gid_index) or gid_index
+            if label in kpts_name:
+                keypoints: dict = json_utils.get_value(objects, [gid, "keypoints"], default={})
+                keypoints.update({label: pts.tolist()[0]})
+                objects = json_utils.set_value(objects, key=[gid, "keypoints"], value=keypoints)
             elif label in class_name:
-                contours = points
+                contours = pts
                 contours[:, 0] = np.clip(contours[:, 0], 0, w - 1)
                 contours[:, 1] = np.clip(contours[:, 1], 0, h - 1)
                 boxes = image_utils.polygons2boxes([contours])
-                if group_id in objects:
-                    objects[group_id].update({"labels": label, "boxes": boxes[0], "segs": contours})
+                if gid in objects:
+                    objects[gid].update({"labels": label, "boxes": boxes[0], "segs": contours})
                 else:
-                    objects[group_id] = {"labels": label, "boxes": boxes[0], "segs": contours}
+                    objects[gid] = {"labels": label, "boxes": boxes[0], "segs": contours}
         return objects
 
     def get_instance_object(self, annotation: list, w, h, class_name=[]):
@@ -310,16 +383,14 @@ class LabelMeDataset(Dataset):
         objects = {}
         for i, anno in enumerate(annotation):
             label = anno["label"]
-            points = np.asarray(anno["points"], dtype=np.int32)
-            group_id = i
-            if file_utils.is_int(label):
-                continue
-            elif class_name is None or len(class_name) == 0 or label in class_name:
-                segs = points
+            pts = np.asarray(anno["points"], dtype=np.int32)
+            gid = i
+            if class_name is None or len(class_name) == 0 or label in class_name:
+                segs = pts
                 segs[:, 0] = np.clip(segs[:, 0], 0, w - 1)
                 segs[:, 1] = np.clip(segs[:, 1], 0, h - 1)
                 box = image_utils.polygons2boxes([segs])[0]
-                objects = json_utils.set_value(objects, key=[group_id],
+                objects = json_utils.set_value(objects, key=[gid],
                                                value={"labels": label, "boxes": box, "segs": segs})
         return objects
 
@@ -451,37 +522,28 @@ def parser_labelme(anno_file, class_dict={}, shape=None):
     :return:
     """
     annotation, width, height = LabelMeDataset.load_annotations(anno_file)
-    info = LabelMeDataset.parser_annotation(annotation, class_dict, shape)
-    return info
+    data_info = LabelMeDataset.parser_annotation(annotation, class_dict, shape)
+    return data_info
 
 
-def draw_keypoints_image(image, boxes=[], keypoints=[], thickness=1, vis_id=False):
+def draw_keypoints_image(image, boxes=[], keypoints=[], bones_type="coco_person", thickness=1, vis_id=False):
     """绘制keypoints"""
     h, w = image.shape[:2]
     if len(keypoints) == 0: return image
     if len(boxes) == 0: boxes = [(0, 0, w, h)] * len(keypoints)
     from pybaseutils.pose import bones_utils
-    target_bones = bones_utils.get_target_bones("coco_person")
-    image = image_utils.draw_key_point_in_image(image, keypoints, pointline=target_bones["skeleton"],
-                                                colors=target_bones["colors"], thickness=thickness,
+    bones_info = bones_utils.get_target_bones(bones_type, kpts=keypoints)
+    image = image_utils.draw_key_point_in_image(image, keypoints, pointline=bones_info["skeleton"],
+                                                colors=bones_info["colors"], thickness=thickness,
                                                 boxes=boxes, vis_id=vis_id)
-
-    if vis_id:
-        for kpts in keypoints:
-            if len(kpts) == 0: continue
-            print(kpts)
-            kpts = np.asarray(kpts)
-            point = kpts[:, 0:2]
-            texts = [f"{t:3.2f}" for t in kpts[:, 2]]
-            image = image_utils.draw_texts(image, points=point, texts=texts, fontScale=0.8, thickness=2)
     return image
 
 
-def show_target_image(image, boxes, labels, points, keypoints=[], color=(), thickness=2):
+def show_target_image(image, boxes, labels, points, keypoints=[], bones_type="coco_person", color=(), thickness=2):
     # image = image_utils.draw_image_bboxes_text(image, boxes, labels, color=(255, 0, 0),
     #                                            thickness=2, fontScale=1.2, drawType="chinese")
     image = image_utils.draw_image_contours(image, points, labels, color=color, thickness=thickness)
-    image = draw_keypoints_image(image, boxes, keypoints, thickness=thickness, vis_id=True)
+    image = draw_keypoints_image(image, boxes, keypoints, bones_type=bones_type, thickness=thickness, vis_id=True)
     image_utils.cv_show_image("det", image)
     return image
 

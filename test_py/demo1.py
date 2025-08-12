@@ -7,38 +7,34 @@
 # @Brief  :
 # --------------------------------------------------------
 """
-import time
+import os
+from pybaseutils.dataloader import parser_labelme
 
-import cv2
-import numpy as np
-import re
-from pybaseutils import text_utils, image_utils
-
-
-def draw_rectangle(image, boxes, color=(255, 0, 0), thickness=10):
-    """
-    :param image: BGR image
-    :param boxes: 矩形框[(xmin,ymin,xmax,ymax), ...]
-    :param color: (b,g,r)或者(b,g,r,a) 其中a是透明度
-    :return:
-    """
-    # 创建一个与图像大小相同的透明层
-    bgim = Image.new('RGBA', image.size, (0, 0, 0, 0))
-    draw = ImageDraw.Draw(bgim)
-    # 在透明层上绘制半透明矩形
-    for box in boxes:
-        draw.rectangle(box, fill=color, outline=color, width=thickness)
-    # 将透明层与原图像合并
-    image = Image.alpha_composite(image.convert('RGBA'), bgim)
-    image = image.convert('RGB')
-    image = np.array(image)
-    # image = cv2.cvtColor(image, cv2.COLOR_BGRA2BGR)
-    return image
-
-
-# 示例用法
 if __name__ == "__main__":
-    from PIL import Image, ImageDraw
-
-    num = [929, 984, 933, 901, 1018, 902, 943, 1046, 1003, 837]
-    print(len(num),sum(num))
+    anno_dir = "/media/PKing/新加卷/SDK/base-utils/data/labelme/images"
+    # names = ['person', 'car']
+    names = ['car']
+    # names = ['person']
+    kpts_name = ['p0', 'p1', "p2", "p3", "p4", "p5"]
+    kpts_name = ['p1', 'p0', "p2", "p3", "p4", "p5"]
+    dataset = parser_labelme.LabelMeDatasets(filename=None,
+                                             data_root=None,
+                                             anno_dir=anno_dir,
+                                             image_dir=None,
+                                             class_name=names,
+                                             use_kpts=True,
+                                             kpts_name=kpts_name,
+                                             check=True,
+                                             phase="val",
+                                             shuffle=False)
+    print("have num:{}".format(len(dataset)))
+    for i in range(len(dataset)):
+        # i = 5
+        print(i)  # i=20
+        data = dataset.__getitem__(i)
+        image, points, boxes, labels = data["image"], data["points"], data["boxes"], data["labels"]
+        h, w = image.shape[:2]
+        image_file = data["image_file"]
+        annot_file = os.path.join("masker", "{}.json".format(os.path.basename(image_file).split(".")[0]))
+        print(image_file)
+        parser_labelme.show_target_image(image, boxes, labels, points, bones_type="", keypoints=data["keypoints"])
