@@ -212,11 +212,13 @@ class LabelMeDataset(Dataset):
                           "size": tuple(size)})
         return data_info
 
-    def get_kpts_info(self, data_info, anno_file="", disp=False):
+    def get_kpts_info(self, data_info, anno_file="", check_kpts=False, disp=False):
         """
         获得目标和关键点信息
         :param data_info:
         :param anno_file:
+        :param check_kpts: True会检查关键点的完整性,图像中仅当所有目标都标注和对应的关键点,才返回数据
+                           False不会检查关键点的完整性,,图像中只要标注的目标和对应的关键点(漏标注),会返回数据
         :param disp:
         :return:
         """
@@ -234,6 +236,7 @@ class LabelMeDataset(Dataset):
             c_index = {i: n for i, n in enumerate(info["names"]) if n in self.class_dict}  # 实例index
             k_index = {i: n for i, n in enumerate(info["names"]) if n in self.kpts_dict}  # 关键点index
             if not c_index: continue  # 如果没有目标框
+            if not check_kpts and not k_index: continue  # 如果目标框存在,但关键点不存在
             for key in keys:
                 if key == "keypoints":
                     kpts = np.zeros(shape=tuple(self.kpts_size), dtype=np.float32)

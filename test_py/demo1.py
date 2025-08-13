@@ -12,8 +12,8 @@ from pybaseutils.dataloader import parser_labelme
 
 if __name__ == "__main__":
     anno_dir = "/media/PKing/新加卷/SDK/base-utils/data/labelme/images"
-    # names = ['person', 'car']
-    names = ['car']
+    names = ['person', 'car']
+    # names = ['car']
     # names = ['person']
     kpts_name = ['p0', 'p1', "p2", "p3", "p4", "p5"]
     kpts_name = ['p1', 'p0', "p2", "p3", "p4", "p5"]
@@ -24,7 +24,7 @@ if __name__ == "__main__":
                                              class_name=names,
                                              use_kpts=True,
                                              kpts_name=kpts_name,
-                                             check=True,
+                                             check=False,
                                              phase="val",
                                              shuffle=False)
     print("have num:{}".format(len(dataset)))
