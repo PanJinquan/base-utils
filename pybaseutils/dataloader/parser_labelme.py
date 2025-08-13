@@ -35,6 +35,7 @@ class LabelMeDataset(Dataset):
                  use_rgb=False,
                  shuffle=False,
                  check=False,
+                 check_kpts=True,
                  min_points=-1,
                  **kwargs):
         """
@@ -51,6 +52,8 @@ class LabelMeDataset(Dataset):
         :param use_rgb:
         :param shuffle:
         :param check: 当class_name=None且check=True,将自动获取所有class
+        :param check_kpts: True会检查关键点的完整性,图像中仅当所有目标都标注和对应的关键点(无漏标注),才返回数据
+                           False不会检查关键点的完整性,,图像中只要标注的目标和对应的关键点(漏标注),会返回数据
         :param min_points: 当标注的轮廓点的个数小于min_points，会被剔除；负数不剔除
         :param kwargs: read_image: 是否读取图片，否则image=None
         """
@@ -60,6 +63,7 @@ class LabelMeDataset(Dataset):
         self.use_rgb = use_rgb
         self.use_kpts = use_kpts
         self.min_points = min_points
+        self.check_kpts = check_kpts
         self.kwargs = kwargs
         self.log = kwargs.get('log', print) if kwargs.get('log', print) else print
         self.class_name, self.class_dict = self.parser_classes(class_name)
@@ -144,7 +148,7 @@ class LabelMeDataset(Dataset):
             data_info = self.parser_annotation(annotation, self.total_name, min_points=self.min_points,
                                                unique=self.unique)
             if self.use_kpts:
-                data_info = self.get_kpts_info(data_info, anno_file=anno_file, disp=True)
+                data_info = self.get_kpts_info(data_info, anno_file=anno_file, check_kpts=self.check_kpts, disp=True)
             labels = data_info["labels"]
             if len(labels) == 0:
                 continue
@@ -206,7 +210,7 @@ class LabelMeDataset(Dataset):
         data_info = self.parser_annotation(annotation, self.total_name, shape=shape,
                                            min_points=self.min_points, unique=self.unique)
         if self.use_kpts:
-            data_info = self.get_kpts_info(data_info, anno_file=anno_file)
+            data_info = self.get_kpts_info(data_info, anno_file=anno_file, check_kpts=self.check_kpts)
         # TODO dict(boxes, labels, points, groups, names, keypoints)
         data_info.update({"image": image, "image_file": image_file, "anno_file": anno_file,
                           "size": tuple(size)})
@@ -217,7 +221,7 @@ class LabelMeDataset(Dataset):
         获得目标和关键点信息
         :param data_info:
         :param anno_file:
-        :param check_kpts: True会检查关键点的完整性,图像中仅当所有目标都标注和对应的关键点,才返回数据
+        :param check_kpts: True会检查关键点的完整性,图像中仅当所有目标都标注和对应的关键点(无漏标注),才返回数据
                            False不会检查关键点的完整性,,图像中只要标注的目标和对应的关键点(漏标注),会返回数据
         :param disp:
         :return:
@@ -236,7 +240,7 @@ class LabelMeDataset(Dataset):
             c_index = {i: n for i, n in enumerate(info["names"]) if n in self.class_dict}  # 实例index
             k_index = {i: n for i, n in enumerate(info["names"]) if n in self.kpts_dict}  # 关键点index
             if not c_index: continue  # 如果没有目标框
-            if not check_kpts and not k_index: continue  # 如果目标框存在,但关键点不存在
+            if not k_index: continue  # 如果目标框存在,但关键点不存在
             for key in keys:
                 if key == "keypoints":
                     kpts = np.zeros(shape=tuple(self.kpts_size), dtype=np.float32)
@@ -251,8 +255,9 @@ class LabelMeDataset(Dataset):
                     data = [info[key][i] for i, n in c_index.items()]
                 out_info[key] = out_info[key] + data if key in out_info else data
         # 如果存在目标没有标注关键点,则将该目标的所有信息设置为空
+        c_names = [n for n in data_info['names'] if n in self.class_dict]  # 有效实例
         valid_kpts = [np.sum(kpts) for kpts in out_info["keypoints"]]
-        if any(v < 1 for v in valid_kpts) or len(valid_kpts) != len(out_info["boxes"]):
+        if any(v < 1 for v in valid_kpts) or (check_kpts and len(valid_kpts) != len(c_names)):
             if disp: print("标注文件存在错误:{}".format(anno_file))
             out_info = {n: [] for n in keys}
         return out_info

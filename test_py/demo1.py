@@ -12,9 +12,9 @@ from pybaseutils.dataloader import parser_labelme
 
 if __name__ == "__main__":
     anno_dir = "/media/PKing/新加卷/SDK/base-utils/data/labelme/images"
-    names = ['person', 'car']
+    # names = ['person', 'car']
     # names = ['car']
-    # names = ['person']
+    names = ['person']
     kpts_name = ['p0', 'p1', "p2", "p3", "p4", "p5"]
     kpts_name = ['p1', 'p0', "p2", "p3", "p4", "p5"]
     dataset = parser_labelme.LabelMeDatasets(filename=None,
@@ -29,7 +29,7 @@ if __name__ == "__main__":
                                              shuffle=False)
     print("have num:{}".format(len(dataset)))
     for i in range(len(dataset)):
-        # i = 5
+        # i = 3
         print(i)  # i=20
         data = dataset.__getitem__(i)
         image, points, boxes, labels = data["image"], data["points"], data["boxes"], data["labels"]
