@@ -10,13 +10,12 @@
 import sys
 import os
 import time
+import tornado
 import tornado.ioloop
 import tornado.web
 import tornado.websocket
 import asyncio
-from tornado.options import define, options
 
-define("port", default=8888, help="运行端口", type=int)
 expires = 60  # 60秒不活跃则删除
 clients = {}  # 改为字典存储，key为cid，value为连接对象
 clients_id = 0  # 用于生成唯一ID
@@ -31,27 +30,29 @@ class IndexHandler(tornado.web.RequestHandler):
 async def check_inactive_clients():
     while True:
         await asyncio.sleep(expires)  # 每分钟检查一次
-        current_time = time.time()
-        inactive_users = []
-        for cid, client in list(clients.items()):
-            if current_time - client.last_active > expires:  # 超过60秒未活动
-                inactive_users.append(cid)
-        for cid in inactive_users:
-            try:
-                clients[cid].write_message("系统: 你的ID因长时间未活动已被删除")
-                clients[cid].close()
-            except:
-                print(f"无法通知{cid}用户")
-            del clients[cid]
-            print(f"清理不活跃用户(ID:{cid})")
+        t = time.time()
+        for cid in list(clients.keys()):
+            if t - clients[cid].time > expires:  # 超过60秒未活动
+                try:
+                    clients[cid].write_message("系统: 你的ID因长时间未活动已被删除")
+                    clients[cid].close()
+                except:
+                    print(f"无法通知{cid}用户")
+                del clients[cid]
+                print(f"清理不活跃用户(ID:{cid})")
 
 
-class ChatWebSocketHandler(tornado.websocket.WebSocketHandler):
+class MainSocketHandler(tornado.websocket.WebSocketHandler):
+    def __init__(self, application, request, **kwargs):
+        super().__init__(application, request, **kwargs)
+        self.time = None
+        self.cid = None
+
     def open(self):
         global clients_id
         clients_id += 1
         self.cid = f"用户{clients_id}"
-        self.last_active = time.time()  # 记录最后活跃时间
+        self.time = time.time()  # 记录最后活跃时间
         clients[self.cid] = self
         print(f"客户端建立连接(ID:{self.cid}),当前连接数: {len(clients)}")
         self.write_message(f"系统: 欢迎使用，你的ID是{self.cid}")
@@ -59,7 +60,7 @@ class ChatWebSocketHandler(tornado.websocket.WebSocketHandler):
             self.write_message(msg)
 
     def on_message(self, message):
-        self.last_active = time.time()  # 更新最后活跃时间
+        self.time = time.time()  # 更新最后活跃时间
         print(f"收到来自{self.cid}的消息: {message}")
         formatted_msg = f"{self.cid}: {message}"  # 使用分配的ID
         clients_data.append(formatted_msg)
@@ -78,19 +79,20 @@ class ChatWebSocketHandler(tornado.websocket.WebSocketHandler):
         return True  # 允许跨域
 
 
-def application():
+def web_app():
     return tornado.web.Application([
         (r"/", IndexHandler),
-        (r"/ws", ChatWebSocketHandler)
+        (r"/ws", MainSocketHandler)
     ],
         template_path="templates",  # 你的HTML模板目录
         debug=True)
 
 
 async def main():
-    app = application()
-    app.listen(options.port)
-    print(f"服务器启动在 http://localhost:{options.port}")
+    app = web_app()
+    tornado.options.define("port", default=8888, help="运行端口", type=int)
+    app.listen(tornado.options.options.port)
+    print(f"服务器启动在 http://localhost:{tornado.options.options.port}")
     asyncio.create_task(check_inactive_clients())  # 将任务启动移到这里
     await asyncio.Event().wait()
 
