@@ -51,5 +51,5 @@ if __name__ == "__main__":
     class_name = ['AngelFish', 'BlueTang', 'ButterflyFish', 'ClownFish', 'GoldFish', 'Gourami', 'MorishIdol',
                   'PlatyFish', 'RibbonedSweetlips', 'ThreeStripedDamselfish', 'YellowCichlid', 'YellowTang',
                   'ZebraFish']
-    anno_dir = "/home/PKing/nasdata/tmp/tmp/Fish/train/images"
+    anno_dir = "/home/PKing/nasdata/tmp/tmp/Fish/test/labelme/images"
     convert_labelme2yolo(anno_dir, class_name=class_name, use_seg=False, vis=False)

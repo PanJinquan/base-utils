@@ -105,6 +105,13 @@ def cxcywh2xyxy(cxcywh: np.ndarray, width=None, height=None, normalized=False):
 
 def extend_xyxy(xyxy: np.ndarray, scale=[1.0, 1.0], valid_range=[], fixed=False, use_max=True):
     """
+    scale = (0.8,0.4,0.8,1.0)
+    boxes = [[100, 100, 300, 400]]
+    image = image_utils.draw_image_boxes(img.copy(), boxes, color=(255, 0, 0), thickness=10)
+    boxes = image_utils.extend_xyxy(boxes, scale=scale)  # （sx1,sy1,sx2,sy2）
+    print(scale, boxes)
+    image = image_utils.draw_image_boxes(image, boxes, color=(0, 255, 0), thickness=3)
+    image_utils.show_image("image", image)
     :param bboxes: [[xmin, ymin, xmax, ymax]]
     :param scale: [sx,sy]==>(W,H),（sx1,sy1,sx2,sy2）,1.0表示不缩放，<1.0表示缩小倍数，>1.0表示扩大倍数
     :param valid_range:有效范围(xmin,ymin,xmax,ymax)
@@ -133,12 +140,12 @@ def extend_xyxy(xyxy: np.ndarray, scale=[1.0, 1.0], valid_range=[], fixed=False,
             cxcywh[:, 3] = (xyxy[:, 3] - xyxy[:, 1]) * scale[1]  # h
         dxyxy = cxcywh2xyxy(cxcywh, width=None, height=None, normalized=False)
     elif len(scale) == 4:
+        dxyxy = xyxy.copy()
         xywh = xyxy2xywh(xyxy)
-        xyxy[:, 0] = xyxy[:, 0] + xywh[:, 2] * (1 - scale[0])
-        xyxy[:, 1] = xyxy[:, 1] + xywh[:, 3] * (1 - scale[1])
-        xyxy[:, 2] = xyxy[:, 2] - xywh[:, 2] * (1 - scale[2])
-        xyxy[:, 3] = xyxy[:, 3] - xywh[:, 3] * (1 - scale[3])
-        dxyxy = xyxy
+        dxyxy[:, 0] = xyxy[:, 0] + xywh[:, 2] * (1 - scale[0])
+        dxyxy[:, 1] = xyxy[:, 1] + xywh[:, 3] * (1 - scale[1])
+        dxyxy[:, 2] = xyxy[:, 2] - xywh[:, 2] * (1 - scale[2])
+        dxyxy[:, 3] = xyxy[:, 3] - xywh[:, 3] * (1 - scale[3])
     else:
         raise ValueError('scale should have length 2 or 4 ')
     if valid_range: dxyxy = clip_xyxy(dxyxy, valid_range=valid_range)

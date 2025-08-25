@@ -12,23 +12,32 @@ import re
 import difflib
 
 
+
 def find_match_text_index(text: str, pattern: str):
     """
-    使用通配符，在text中，查找符合条件内容的index
-    :param text: 输入长字符串
-    :param pattern: 需要匹配的子串
-    :return:
+    在text中，查找符合条件内容的所有index
+        .  匹配任意单个字符(除换行符)
+        ^  匹配字符串开头
+        $  匹配字符串结尾
+        *  前一个字符0次或多次
+        +  前一个字符1次或多次
+        ?  前一个字符0次或1次
+        {m} 前一个字符m次
+        {m,n} 前一个字符m到n次
+        [] 字符集，匹配其中任意一个字符
+        | 或，匹配左边或右边
+        () 分组
+    :param text:
+    :param pattern:
+    :return: index, 符合条件内容的所有index,如果要获得匹配的文本则 match = [text[i:j] for (i, j) in index]
     """
     index = []
     if not pattern:  return index  # 如果 str2 是空字符串，直接返回空列表
-    start = 0
-    while True:
-        i = text.find(pattern, start)
-        if i == -1:  # 如果没有找到，退出循环
-            break
-        index.append(i)
-        start = i + 1  # 更新搜索起始位置，避免重复匹配
+    res = re.finditer(pattern, text)
+    for m in res:
+        index.append([m.start(), m.end()])
     return index
+
 
 
 def find_match_text(text: str, pattern: str):

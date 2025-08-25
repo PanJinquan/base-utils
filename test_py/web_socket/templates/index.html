@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>简易聊天室</title>
+</head>
+<body>
+    <h1>简易聊天室</h1>
+    <div id="messages" style="height: 300px; overflow-y: scroll; border: 1px solid #ccc; margin-bottom: 10px; padding: 5px;"></div>
+    <input type="text" id="messageInput" placeholder="输入消息...">
+    <button onclick="sendMessage()">发送</button>
+
+    <script>
+        var ws = new WebSocket("ws://" + window.location.host + "/ws");
+        var messagesDiv = document.getElementById('messages');
+        var messageInput = document.getElementById('messageInput');
+
+        ws.onopen = function() {
+            appendMessage("系统: 连接已建立！");
+        };
+
+        ws.onmessage = function (event) {
+            appendMessage(event.data);
+        };
+
+        ws.onclose = function() {
+            appendMessage("系统: 连接已关闭。");
+        };
+
+        function appendMessage(message) {
+            var messageElement = document.createElement('div');
+            messageElement.textContent = message;
+            messagesDiv.appendChild(messageElement);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight; // 自动滚动到底部
+        }
+
+        function sendMessage() {
+            var message = messageInput.value;
+            if (message) {
+                ws.send(message);
+                messageInput.value = '';
+            }
+        }
+
+        messageInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -33,6 +33,7 @@ class YOLODataset(Dataset):
                  anno_dir=None,
                  image_dir=None,
                  class_name=None,
+                 task="",
                  use_rgb=True,
                  shuffle=False,
                  check=False,
@@ -60,7 +61,8 @@ class YOLODataset(Dataset):
         :param data_root:
         :param anno_dir:
         :param image_dir:
-        :param transform:
+        :param class_name:
+        :param task:  任务类型:det,obb,seg,pose:
         :param use_rgb:
         :param shuffle:
         """
@@ -69,6 +71,7 @@ class YOLODataset(Dataset):
         self.log = kwargs.get('log', print) if kwargs.get('log', print) else print
         self.min_area = 1 / 1000  # 如果前景面积不足0.1%,则去除
         self.use_rgb = use_rgb
+        self.task = task
         self.class_name, self.class_dict = self.parser_classes(class_name)
         parser = self.parser_paths(filename, data_root, anno_dir, image_dir)
         self.data_root, self.anno_dir, self.image_dir, self.image_ids = parser
@@ -218,60 +221,42 @@ class YOLODataset(Dataset):
         image = self.read_image(image_file, use_rgb=self.use_rgb)
         shape = image.shape
         annotation = self.load_annotations(anno_file)
-        boxes, labels, points = self.parser_annotation_segs(annotation, shape, self.class_dict)
+        boxes, labels, points = self.parser_annotation(annotation, shape, task=self.task)
         names = [self.class_name[i] for i in labels] if self.class_name else labels
         data = {"image": image, "boxes": boxes, "labels": labels, "names": names, "points": points,
                 "image_file": image_file, "anno_file": anno_file}
         return data
 
     @staticmethod
-    def parser_annotation_boxes(annotation: dict, shape, class_dict):
+    def parser_annotation(annotation: dict, shape, task=""):
         """
+        - 检测任务  size=5   <class-index> <x_center> <y_center> <width> <height>
+        - 分割任务: size=n   <class-index> <x1> <y1> <x2> <y2> ... <xn> <yn>
+        - OBB任务: size=9   <class-index> <x1> <y1> <x2> <y2> <x3> <y3> <x4> <y4>
+        - 姿态估计: size=5+n <class-index> <x_center> <y_center> <width> <height> <px1> <py1> <px2> <py2> ... <pxn> <pyn>
+                        或者<class-index> <x_center> <y_center> <width> <height> <px1> <py1> <p1-vis> <px2> <py2> <p2-vis> <pxn> <pyn> <pn-vis>
         :param annotation:  labelme标注的数据
-        :param class_dict:  label映射
         :param shape: 图片shape(H,W,C),可进行坐标点的维度检查，避免越界
+        :param task:  任务类型:det,obb,seg,pose
         :return:
         """
-        # dim=5,annotation is [class_index, cx, cy, w,  h]
-        # dim=9,annotation is [class_index, x1, y1, x2, y2, x3, y3, x4, y4],四个角点
-        annotation = np.asarray(annotation)
-        num, dim = annotation.shape
-        labels = annotation[:, 0:1].astype(int)
-        points = annotation[:, 1:]
-        h, w = shape[:2]
-        if dim == 5:
-            if shape:
-                bboxes = coords_utils.cxcywh2xyxy(points, width=w, height=h, normalized=True)
-            else:
-                bboxes = coords_utils.cxcywh2xyxy(points)
-            points = image_utils.boxes2polygons(bboxes)
-        else:
-            points = points.reshape(-1, 4, 2)
-            points = points * [w, h]
-            bboxes = image_utils.points2bbox(points)
-        return bboxes, labels, points
-
-    @staticmethod
-    def parser_annotation_segs(annotation: dict, shape, class_dict):
-        """
-        :param annotation:  labelme标注的数据
-        :param class_dict:  label映射
-        :param shape: 图片shape(H,W,C),可进行坐标点的维度检查，避免越界
-        :return:
-        """
-        # dim=5,annotation is [class_index, cx, cy, w,  h]
-        # dim=9,annotation is [class_index, x1, y1, x2, y2, x3, y3, x4, y4],四个角点
         h, w = shape[:2]
         bboxes, labels, points = [], [], []
         for anno in annotation:
             label = anno[0]
-            polys = np.asarray(anno[1:]).reshape(-1, 2)
-            polys = polys * [w, h]
-            if len(anno) == 5:
-                cx, cy, cw, ch = polys.reshape(-1)
+            datas = np.asarray(anno[1:])
+            if task == "pose":
+                cx, cy, cw, ch = datas[0:4] * (w, h, w, h)
+                boxes = [cx - cw / 2, cy - ch / 2, cx + cw / 2, cy + ch / 2]
+                polys = datas[4:].reshape(-1, 3)
+                # polys = polys[polys[:, 2] > 0]  # 只选择可见的关键点
+                polys = polys[:, 0:3] * (w, h, 1)
+            elif len(anno) == 5 or task == "det":
+                cx, cy, cw, ch = datas[0:4] * (w, h, w, h)
                 boxes = [cx - cw / 2, cy - ch / 2, cx + cw / 2, cy + ch / 2]
                 polys = image_utils.boxes2polygons([boxes])[0]
             else:
+                polys = datas.reshape(-1, 2) * (w, h)
                 boxes = image_utils.polygons2boxes([polys])[0]
             labels.append(label)
             points.append(polys)
@@ -360,7 +345,7 @@ def save_yolo(out_root, image_file, labels, boxes=[], points=[], use_seg=True, i
     image_id, postfix = file_utils.split_postfix(image_name)
     anno_file = file_utils.create_dir(out_root, "labels", f"{image_id}.txt")
     file_path = file_utils.create_dir(out_root, "images", f"{image_name}")
-    text_data = [[l] + np.asarray(p).reshape(-1).tolist() for l, p in zip(labels, conts)]
+    text_data = [[l] + [f"{s:3.5f}" for s in np.asarray(p).reshape(-1).tolist()] for l, p in zip(labels, conts)]
     file_utils.write_data(anno_file, text_data, split=" ")
     file_utils.copy_file(image_file, file_path)
 

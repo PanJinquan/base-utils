@@ -1064,7 +1064,7 @@ def draw_image_bboxes_text(image, boxes, boxes_name, color=(), thickness=0, font
         boxes_name = boxes_name.reshape(-1).tolist()
     for i, (name, bbox) in enumerate(zip(boxes_name, boxes)):
         bbox = [int(b) for b in bbox]
-        c = color if color else color_table[i + 1]
+        c = color if color else color_table[(i + 1) % 20]
         draw_image_bbox_text(image, bbox, name, color=c, thickness=thickness, fontScale=fontScale,
                              drawType=drawType, top=top)
     return image
@@ -1085,7 +1085,7 @@ def draw_image_boxes_texts(image, boxes, texts, color=(), thickness=0, fontScale
     """
     for i, (bbox, text) in enumerate(zip(boxes, texts)):
         bbox = [int(b) for b in bbox]
-        c = color if color else color_table[i + 1]
+        c = color if color else color_table[(i + 1) % 20]
         draw_image_bbox_text(image, bbox, text, color=c, thickness=thickness, fontScale=fontScale, alpha=alpha,
                              drawType=drawType, top=top)
     return image
@@ -1111,7 +1111,7 @@ def draw_image_boxes_labels_texts(image, boxes, labels, texts, color=None, thick
         labels = labels.reshape(-1).tolist()
     for label, bbox, name in zip(labels, boxes, texts):
         bbox = [int(b) for b in bbox]
-        c = color if color else color_table[int(label) + 1]
+        c = color if color else color_table[(int(label) + 1) % 20]
         image = draw_image_bbox_text(image, bbox, str(name), color=c, thickness=thickness, fontScale=fontScale,
                                      drawType=drawType, top=top)
     return image
@@ -1206,13 +1206,12 @@ def draw_image_bboxes_labels(image, boxes, labels, class_name=None, color=None, 
     if isinstance(labels, np.ndarray): labels = labels.astype(np.int32).reshape(-1).tolist()
     for label, bbox in zip(labels, boxes):
         bbox = [int(b) for b in bbox]
-        name = label
         c = color
-        if isinstance(name, numbers.Number) and class_name:
-            c = color_table[int(name) + 1]
-            name = class_name[int(name)]
+        if isinstance(label, numbers.Number) and class_name:
+            c = color_table[(int(label) + 1) % 20]
+            label = class_name[int(label)]
         if not c: c = color_table[1]
-        image = draw_image_bbox_text(image, bbox, str(name), color=c, thickness=thickness, fontScale=fontScale,
+        image = draw_image_bbox_text(image, bbox, str(label), color=c, thickness=thickness, fontScale=fontScale,
                                      drawType=drawType, top=top)
     return image
 
@@ -1269,7 +1268,7 @@ def draw_image_detection_boxes(image, boxes, probs, labels, class_name=None, thi
     labels = labels if isinstance(labels, list) else np.asarray(labels, dtype=np.int32).reshape(-1)
     probs = np.asarray(probs).reshape(-1)
     for label, bbox, prob in zip(labels, boxes, probs):
-        c = color_table[1] if isinstance(label, str) else color_table[int(label) + 1]
+        c = color_table[1] if isinstance(label, str) else color_table[(int(label) + 1) % 20]
         bbox = [int(b) for b in bbox]
         if class_name:
             label = class_name[int(label)]
@@ -1562,10 +1561,10 @@ def draw_key_point_in_image(image, key_points, pointline=[], boxes=[], colors=No
     :return:
     """
     nums = max(len(key_points), len(boxes))
-    for p in range(nums):
-        color = color_table[p + 1] if not colors else colors
+    for i in range(nums):
+        color = color_table[(i + 1) % 20] if not colors else colors
         if len(key_points) > 0:
-            points = key_points[p]
+            points = key_points[i]
             if points is None or len(points) == 0: continue
             texts = list(range(len(points))) if vis_id else [""] * len(points)
             # 可视化(x,y,v)的v
@@ -1573,7 +1572,7 @@ def draw_key_point_in_image(image, key_points, pointline=[], boxes=[], colors=No
             image = draw_image_points_lines(image, points, pointline, circle_color=color, line_color=color,
                                             texts=texts, thickness=thickness)
         if len(boxes) > 0:
-            image = draw_image_boxes(image, boxes=[boxes[p]], color=color, thickness=thickness)
+            image = draw_image_boxes(image, boxes=[boxes[i]], color=color, thickness=thickness)
     return image
 
 
@@ -1654,6 +1653,7 @@ def draw_image_lines(image, points, pointline=[], color=(0, 0, 255), thickness=2
         pointline = circle_line(len(points), iscircle=True)
     if isinstance(color[0], numbers.Number): color = [color] * len(points)
     for index in pointline:
+        if not index: continue
         point1 = tuple(points[index[0]])
         point2 = tuple(points[index[1]])
         if (not check_point(point1)) or (not check_point(point2)):
@@ -1661,6 +1661,35 @@ def draw_image_lines(image, points, pointline=[], color=(0, 0, 255), thickness=2
         point1 = (int(point1[0]), int(point1[1]))
         point2 = (int(point2[0]), int(point2[1]))
         cv2.line(image, point1, point2, color[index[1]], thickness)  # 绿色，3个像素宽度
+    return image
+
+
+def arrowed_line(image, pt1, pt2, color, arrow_length=20, **kwargs):
+    """
+    cv2.arrowedLine 的 tipLength 参数是相对于线段总长的比例，这导致箭头大小会随着线段长度变化
+    使用fixed_arrowedLine可以修复这个问题
+    绘制一条带有固定长度箭头的线段。
+    :param image: 目标图像
+    :param pt1: 箭尾/起点坐标 (x1, y1)
+    :param pt2: 箭头/终点坐标 (x2, y2)
+    :param color: 线条颜色 (B, G, R)
+    :param arrow_length: 箭头三角形的固定长度（像素）
+    :param **kwargs: 传递给cv2.arrowedLine的其他参数（如thickness, lineType等）
+    """
+    pt1 = np.array(pt1)
+    pt2 = np.array(pt2)
+    vec = pt1 - pt2
+    length = np.linalg.norm(vec)  # 计算该向量的长度（即线段原本的长度）
+    if length == 0:  # 避免除以零
+        return image
+    unit_vec = vec / length  # 将方向向量标准化（单位化）
+    pt3 = pt2 + unit_vec * arrow_length
+    # TODO pt1-------pt3->pt2
+    pt1 = tuple(pt1.astype(int))
+    pt2 = tuple(pt2.astype(int))
+    pt3 = tuple(pt3.astype(int))
+    cv2.line(image, pt1, pt2, color, **kwargs)  # 绘制线杆部分
+    cv2.arrowedLine(image, pt3, pt2, color, tipLength=0.99, **kwargs)  # 绘制箭头
     return image
 
 
@@ -2544,7 +2573,7 @@ def draw_contours(image, contours: List[np.ndarray], color=(), thickness=1):
     :return:
     """
     for i in range(0, len(contours)):
-        c = color if color else color_table[i + 1]
+        c = color if color else color_table[(i + 1) % 20]
         p = np.asarray(contours[i], dtype=np.int32)
         if len(p.shape) == 2: p = [p]
         image[:] = cv2.drawContours(image, p, contourIdx=-1, color=c, thickness=thickness)
@@ -2564,7 +2593,7 @@ def draw_image_contours(image, contours: List[np.ndarray], texts=[], color=(), a
     :return:
     """
     for i in range(0, len(contours)):
-        c = color if color else color_table[i + 1]
+        c = color if color else color_table[(i + 1) % 20]
         t = str(texts[i]) if texts else ""
         p = np.asarray(contours[i], dtype=np.int32)
         b = (min(p[:, 0]), min(p[:, 1]), max(p[:, 0]), max(p[:, 1]))

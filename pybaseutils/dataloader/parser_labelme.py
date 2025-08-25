@@ -29,13 +29,13 @@ class LabelMeDataset(Dataset):
                  anno_dir=None,
                  image_dir=None,
                  class_name=None,
-                 kpts_name=None,
-                 kpts_size=None,
-                 use_kpts=False,
+                 kpt_names=None,
+                 kpt_shape=None,
+                 use_kpt=False,
                  use_rgb=False,
                  shuffle=False,
                  check=False,
-                 check_kpts=True,
+                 check_kpt=True,
                  min_points=-1,
                  **kwargs):
         """
@@ -52,7 +52,7 @@ class LabelMeDataset(Dataset):
         :param use_rgb:
         :param shuffle:
         :param check: 当class_name=None且check=True,将自动获取所有class
-        :param check_kpts: True会检查关键点的完整性,图像中仅当所有目标都标注和对应的关键点(无漏标注),才返回数据
+        :param check_kpt: True会检查关键点的完整性,图像中仅当所有目标都标注和对应的关键点(无漏标注),才返回数据
                            False不会检查关键点的完整性,,图像中只要标注的目标和对应的关键点(漏标注),会返回数据
         :param min_points: 当标注的轮廓点的个数小于min_points，会被剔除；负数不剔除
         :param kwargs: read_image: 是否读取图片，否则image=None
@@ -61,13 +61,13 @@ class LabelMeDataset(Dataset):
         super(LabelMeDataset, self).__init__()
         self.min_area = 1 / 1000  # 如果前景面积不足0.1%,则去除
         self.use_rgb = use_rgb
-        self.use_kpts = use_kpts
+        self.use_kpt = use_kpt
         self.min_points = min_points
-        self.check_kpts = check_kpts
+        self.check_kpt = check_kpt
         self.kwargs = kwargs
         self.log = kwargs.get('log', print) if kwargs.get('log', print) else print
         self.class_name, self.class_dict = self.parser_classes(class_name)
-        self.kpts_name, self.kpts_dict, self.kpts_size, self.total_name = self.parser_kpts_name(kpts_name, kpts_size)
+        self.kpt_names, self.kpt_dict, self.kpt_shape, self.total_names = self.parser_kpt_names(kpt_names, kpt_shape)
         parser = self.parser_paths(filename, data_root, anno_dir, image_dir)
         self.data_root, self.anno_dir, self.image_dir, self.image_ids = parser
         self.classes = list(self.class_dict.values()) if self.class_dict else None
@@ -84,26 +84,33 @@ class LabelMeDataset(Dataset):
         self.log("{:15s} image_dir     :{}".format(self.tag, self.image_dir))
         self.log("{:15s} class_name    :{}".format(self.tag, self.class_name))
         self.log("{:15s} class_dict    :{}".format(self.tag, self.class_dict))
-        self.log("{:15s} kpts_info     :size={},name={}".format(self.tag, self.kpts_size, self.kpts_dict))
+        self.log("{:15s} kpt_info      :shape={},name={}".format(self.tag, self.kpt_shape, self.kpt_dict))
         self.log("{:15s} num images    :{}".format(self.tag, len(self.image_ids)))
         # self.log("{:15s} num_classes   :{}".format(self.tag,self.num_classes))
         self.log("------" * 10)
 
-    def parser_kpts_name(self, kpts_name, kpts_size):
+    def parser_kpt_names(self, kpt_names, kpt_shape):
         """
         v=0未标注点; v=1标注了但是图像中不可见（例如遮挡）;v=2标注了并图像可见
-        :param kpts_name: 关键点名称，当class_name是多目标时，建议使用str(0~n)字符串数字表示，即多目标kpts_name必须一致
-        :param kpts_size: 关键点的维度，默认是(17, 3)，对于coco-person,有17个关键点，3表示(x,y,v)
+        :param kpt_names: 关键点名称列表，
+                          当kpt_names.ndim=1时，要求所有类别且所有目标的关键点名称必须一致
+                          当kpt_names.ndim=2时，仅要求相同类别目标的关键点名称必须一致，且len(kpt_names)==len(self.class_name)
+        :param kpt_shape: 关键点的维度，默认是(17, 3)，对于coco-person,有17个关键点，3表示(x,y,v)
         :return:
         """
-        if not self.use_kpts: return [], {}, tuple(), self.class_dict
-        if kpts_name and not kpts_size: kpts_size = (len(kpts_name), 3)
-        if not kpts_size: kpts_size = (17, 3)
-        kpts_name = kpts_name if kpts_name else [str(i) for i in range(kpts_size[0])]
-        kpts_dict = {k: i for i, k in enumerate(kpts_name)}
-        kpts_size = kpts_size
-        total_name = {**self.class_dict, **kpts_dict}
-        return kpts_name, kpts_dict, kpts_size, total_name
+        if not self.use_kpt: return [], {}, tuple(), self.class_dict
+        if kpt_names and not kpt_shape: kpt_shape = (len(kpt_names), 3)
+        if not kpt_shape: kpt_shape = (17, 3)
+        if np.asarray(kpt_names).ndim == 1:
+            kpt_names = [kpt_names] * len(self.class_name)
+        kpt_dict, total_names = {}, self.class_dict.copy()
+        for cls, name in enumerate(kpt_names):
+            kpt_dict.update({f"{self.class_name[cls]}#{n}": i for i, n in enumerate(name)})
+            total_names.update({n: len(self.class_dict) + cls + i for i, n in enumerate(name)})
+        for i, names in enumerate(kpt_names):
+            assert len(names) == kpt_shape[0], (f"维度不一致,"
+                                                f"class={self.class_name[i]},kpt_names={names},kpt_shape={kpt_shape}")
+        return kpt_names, kpt_dict, kpt_shape, total_names
 
     def __len__(self):
         return len(self.image_ids)
@@ -145,10 +152,10 @@ class LabelMeDataset(Dataset):
             if not os.path.exists(image_file):
                 continue
             annotation, width, height = self.load_annotations(anno_file)
-            data_info = self.parser_annotation(annotation, self.total_name, min_points=self.min_points,
+            data_info = self.parser_annotation(annotation, self.total_names, min_points=self.min_points,
                                                unique=self.unique)
-            if self.use_kpts:
-                data_info = self.get_kpts_info(data_info, anno_file=anno_file, check_kpts=self.check_kpts, disp=True)
+            if self.use_kpt:
+                data_info = self.get_kpts_info(data_info, anno_file=anno_file, check_kpt=self.check_kpt, disp=True)
             labels = data_info["labels"]
             if len(labels) == 0:
                 continue
@@ -207,21 +214,21 @@ class LabelMeDataset(Dataset):
             size = (shape[1], shape[0])
         else:
             image, shape, size = None, None, (width, height)
-        data_info = self.parser_annotation(annotation, self.total_name, shape=shape,
+        data_info = self.parser_annotation(annotation, self.total_names, shape=shape,
                                            min_points=self.min_points, unique=self.unique)
-        if self.use_kpts:
-            data_info = self.get_kpts_info(data_info, anno_file=anno_file, check_kpts=self.check_kpts)
+        if self.use_kpt:
+            data_info = self.get_kpts_info(data_info, anno_file=anno_file, check_kpt=self.check_kpt)
         # TODO dict(boxes, labels, points, groups, names, keypoints)
         data_info.update({"image": image, "image_file": image_file, "anno_file": anno_file,
                           "size": tuple(size)})
         return data_info
 
-    def get_kpts_info(self, data_info, anno_file="", check_kpts=False, disp=False):
+    def get_kpts_info(self, data_info, anno_file="", check_kpt=False, disp=False):
         """
         获得目标和关键点信息
         :param data_info:
         :param anno_file:
-        :param check_kpts: True会检查关键点的完整性,图像中仅当所有目标都标注和对应的关键点(无漏标注),才返回数据
+        :param check_kpt: True会检查关键点的完整性,图像中仅当所有目标都标注和对应的关键点(无漏标注),才返回数据
                            False不会检查关键点的完整性,,图像中只要标注的目标和对应的关键点(漏标注),会返回数据
         :param disp:
         :return:
@@ -238,18 +245,22 @@ class LabelMeDataset(Dataset):
         out_info = {n: [] for n in keys}
         for gid, info in objects.items():
             c_index = {i: n for i, n in enumerate(info["names"]) if n in self.class_dict}  # 实例index
-            k_index = {i: n for i, n in enumerate(info["names"]) if n in self.kpts_dict}  # 关键点index
-            if not c_index: continue  # 如果没有目标框
+            if len(c_index) != 1: continue  # TODO 同一组仅有一个实例框
+            c_name = list(c_index.values())[0]
+            k_index = {i: f"{c_name}#{n}" for i, n in enumerate(info["names"]) if
+                       f"{c_name}#{n}" in self.kpt_dict}  # 关键点index
             if not k_index: continue  # 如果目标框存在,但关键点不存在
             for key in keys:
                 if key == "keypoints":
-                    kpts = np.zeros(shape=tuple(self.kpts_size), dtype=np.float32)
+                    kpts = np.zeros(shape=tuple(self.kpt_shape), dtype=np.float32)
                     poin = {n: info['points'][i] for i, n in k_index.items()}
-                    poin = {self.kpts_dict[n]: v for n, v in poin.items()}
+                    poin = {self.kpt_dict[n]: v for n, v in poin.items()}
                     k = np.array(list(poin.keys()), dtype=np.int32)
-                    v = np.array(list(poin.values()), dtype=np.float32).reshape(-1, 2)
-                    if self.kpts_size[1] == 3: v = np.hstack([v, np.zeros((len(v), 1)) + 2])  # (n,2)->(n,3)
-                    kpts[k] = v
+                    p = np.array(list(poin.values()), dtype=np.float32).reshape(-1, 2)
+                    if self.kpt_shape[1] == 3:
+                        m = np.where((p[..., 0] < 0) | (p[..., 1] < 0), 0.0, 2.0).astype(np.float32)
+                        p = np.concatenate([p, m[..., None]], axis=-1)  # (nl, nkpt, 3)
+                    kpts[k] = p
                     data = [kpts]
                 else:
                     data = [info[key][i] for i, n in c_index.items()]
@@ -257,7 +268,7 @@ class LabelMeDataset(Dataset):
         # 如果存在目标没有标注关键点,则将该目标的所有信息设置为空
         c_names = [n for n in data_info['names'] if n in self.class_dict]  # 有效实例
         valid_kpts = [np.sum(kpts) for kpts in out_info["keypoints"]]
-        if any(v < 1 for v in valid_kpts) or (check_kpts and len(valid_kpts) != len(c_names)):
+        if any(v < 1 for v in valid_kpts) or (check_kpt and len(valid_kpts) != len(c_names)):
             if disp: print("标注文件存在错误:{}".format(anno_file))
             out_info = {n: [] for n in keys}
         return out_info
@@ -348,7 +359,7 @@ class LabelMeDataset(Dataset):
             keypoints.append(kpt)
         return dict(boxes=bboxes, labels=labels, points=points, groups=groups, names=names, keypoints=keypoints)
 
-    def get_keypoint_object(self, annotation: list, w, h, class_name=[], kpts_name=[]):
+    def get_keypoint_object(self, annotation: list, w, h, class_name=[], kpt_names=[]):
         """
         获得labelme关键点检测数据
         :param annotation:
@@ -357,14 +368,14 @@ class LabelMeDataset(Dataset):
         :param class_name:
         :return:
         """
-        if not kpts_name: kpts_name = self.kpts_name
+        if not kpt_names: kpt_names = self.kpt_names
         objects = {}
         gid_index = 100000  # TODO bug 若gid_index=0,当某个实例未标注group_id,会导致关键点分组异常
         for i, anno in enumerate(annotation):
             label = anno["label"]
             pts = np.asarray(anno["points"], dtype=np.int32)
             gid = anno.get("group_id", gid_index) or gid_index
-            if label in kpts_name:
+            if label in kpt_names:
                 keypoints: dict = json_utils.get_value(objects, [gid, "keypoints"], default={})
                 keypoints.update({label: pts.tolist()[0]})
                 objects = json_utils.set_value(objects, key=[gid, "keypoints"], value=keypoints)
@@ -534,31 +545,67 @@ def parser_labelme(anno_file, class_dict={}, shape=None):
     return data_info
 
 
-def draw_keypoints_image(image, boxes=[], keypoints=[], bones_type="coco_person", thickness=1, vis_id=False):
+def draw_keypoints_image(image, boxes=[], kpts=[], bones_type="coco_person", thickness=1, vis_id=False):
     """绘制keypoints"""
     h, w = image.shape[:2]
-    if len(keypoints) == 0: return image
-    if len(boxes) == 0: boxes = [(0, 0, w, h)] * len(keypoints)
+    if len(kpts) == 0: return image
+    if len(boxes) == 0: boxes = [(0, 0, w, h)] * len(kpts)
     from pybaseutils.pose import bones_utils
-    bones_info = bones_utils.get_target_bones(bones_type, kpts=keypoints)
-    image = image_utils.draw_key_point_in_image(image, keypoints, pointline=bones_info["skeleton"],
+    bones_info = bones_utils.get_target_bones(bones_type, kpts=kpts)
+    image = image_utils.draw_key_point_in_image(image, kpts, pointline=bones_info["skeleton"],
                                                 colors=bones_info["colors"], thickness=thickness,
                                                 boxes=boxes, vis_id=vis_id)
     return image
 
 
-def show_target_image(image, boxes, labels, points, keypoints=[], bones_type="coco_person", color=(), thickness=2):
+def show_target_image(image, boxes, labels, points, kpts=[], bones_type="coco_person", color=(), thickness=2):
     # image = image_utils.draw_image_bboxes_text(image, boxes, labels, color=(255, 0, 0),
     #                                            thickness=2, fontScale=1.2, drawType="chinese")
     image = image_utils.draw_image_contours(image, points, labels, color=color, thickness=thickness)
-    image = draw_keypoints_image(image, boxes, keypoints, bones_type=bones_type, thickness=thickness, vis_id=True)
+    image = draw_keypoints_image(image, boxes, kpts, bones_type=bones_type, thickness=thickness, vis_id=True)
     image_utils.cv_show_image("det", image)
     return image
 
 
-if __name__ == "__main__":
-    from pybaseutils.converter import build_labelme
+def example_for_keypoints():
+    anno_dir = "/home/PKing/nasdata/tmp/tmp/pressure_meter/dataset-v2/val/images"
+    class_name = ['pointer', 'range_start', 'range_end']
+    kpt_names = [['p0', 'p1', "p2", "p3"], ['p1', 'p2', "p0", "p3"], ['p1', 'p2', "p3", "p0"]]
+    # anno_dir = "/home/PKing/nasdata/tmp/tmp/pressure_meter/dataset-v1/val/images"
+    # class_name = ['pressure_meter']
+    # kpt_names = ['pointer_start', 'pointer_end', 'range_start', 'range_end']
+    # class_name = ['person', 'car']
+    # class_name = ['car']
+    # kpt_names = ["p0", "p1", "p2", "p3", "p4"]
+    # class_name = ['person']
+    # anno_dir = "../../data/labelme/images"
+    kpt_shape = (4, 3)
+    # class_name = ['range_start']
+    dataset = LabelMeDatasets(filename=None,
+                              data_root=None,
+                              anno_dir=anno_dir,
+                              image_dir=None,
+                              class_name=class_name,
+                              use_kpt=True,
+                              kpt_names=kpt_names,
+                              kpt_shape=kpt_shape,
+                              check_kpt=False,
+                              check=False,
+                              phase="val",
+                              shuffle=False)
+    print("have num:{}".format(len(dataset)))
+    for i in range(len(dataset)):
+        # i = 3
+        print(i)  # i=20
+        data = dataset.__getitem__(i)
+        image, points, boxes, names = data["image"], data["points"], data["boxes"], data["names"]
+        image_file = data["image_file"]
+        kpts = data["keypoints"]
+        print(image_file)
+        show_target_image(image, boxes, names, points, bones_type="", kpts=kpts)
 
+
+def example_for_segment():
     anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-action-cvlm-v2/train-v2/01-核相操作/dataset-v01/images"
     names = None
     dataset = LabelMeDatasets(filename=None,
@@ -574,7 +621,12 @@ if __name__ == "__main__":
         print(i)  # i=20
         data = dataset.__getitem__(i)
         image, points, boxes, labels = data["image"], data["points"], data["boxes"], data["labels"]
-        h, w = image.shape[:2]
         image_file = data["image_file"]
-        anno_file = os.path.join("masker", "{}.json".format(os.path.basename(image_file).split(".")[0]))
-        show_target_image(image, boxes, labels, points, keypoints=data["keypoints"])
+        kpts = data["keypoints"]
+        print(image_file)
+        show_target_image(image, boxes, labels, points, kpts=kpts)
+
+
+if __name__ == "__main__":
+    # example_for_segment()
+    example_for_keypoints()

@@ -12,40 +12,9 @@ import toolz
 import json
 import numbers
 from collections import Counter
-from pybaseutils.file_utils import load_json, read_json_data, save_json, write_json_path
 from typing import List, Tuple, Dict
-
-
-# 字典队列 dict_queue()
-
-
-class Dict2Obj(object):
-    """ dict转类对象"""
-
-    def __init__(self, args):
-        self.__dict__.update(args)
-
-
-def str2dict(data: str):
-    try:
-        return json.loads(data)
-    except Exception as e:
-        print(e)
-    return None
-
-
-def dict_sort(data: Dict, reverse=False, use_key=True):
-    """
-    按照字典的key/value值排序
-    :param data:
-    :param reverse: False 升序,True  降序
-    :param use_key: True使用key进行排序，False使用value进行排序
-    """
-    if use_key:
-        dst = dict(sorted(data.items(), key=lambda x: x[0], reverse=reverse))
-    else:
-        dst = dict(sorted(data.items(), key=lambda x: x[1], reverse=reverse))
-    return dst
+from pybaseutils.file_utils import load_json, read_json_data, save_json, write_json_path
+from pybaseutils.dict_uils import *
 
 
 def get_most_common(data: list, topK=None):

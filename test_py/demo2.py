@@ -10,6 +10,7 @@ import cv2
 import random
 import types
 import torch
+from typing import List, Tuple, Dict
 import numpy as np
 from typing import Callable
 from pybaseutils import image_utils, file_utils, text_utils, pandas_utils, json_utils
@@ -49,7 +50,27 @@ def image_data(image_dir, annot_dir, vis=True):
             image_utils.show_image("image", image, delay=0)
 
 
+class Result(object):
+    def __init__(self, boxes=[], label=[], score=[]):
+        self.boxes = boxes
+        self.score = score
+        self.label = label
+
+    def update(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v) if hasattr(self, k) else None
+
+    def dict(self, keys: List=[]):
+        out = self.__dict__
+        if keys: out = {k: out.get(k, None) for k in keys}
+        return out
+
+
 if __name__ == '__main__':
-    annot_dir = "/home/PKing/nasdata/dataset/指针表计/labels_label_studio"
-    image_dir = "/home/PKing/nasdata/dataset/指针表计/images"
-    image_data(image_dir, annot_dir)
+    boxes = [(0, 0, 1, 1)]
+    label = [1]
+    score = [0.9]
+    r = Result()
+    print(r.dict())
+    r.update(boxes=boxes, label=label, score=score)
+    print(r.dict(keys=['boxes', "ffff"]))

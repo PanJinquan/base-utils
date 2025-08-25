@@ -11,49 +11,31 @@ import cv2
 import numpy as np
 from pybaseutils import file_utils, image_utils
 
+import os
+from pybaseutils.dataloader import parser_coco_kps
 
-def process_image_border(image, scale=(0.96, 0.96), vis=True):
-    """
-    对原图边界进行修复
-    :param image: BGR原始图像
-    :param scale: 缩放大小
-    :param vis: 可视化效果
-    :return: dest_： 返回边界修复后的原图
-             gray2： 返回边界修复后的灰度图
-    """
-    h, w = image.shape[:2]
-    gray1 = 255 - cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    mask1 = image_utils.get_image_mask(gray1, inv=False)
-    point = image_utils.find_mask_contours(mask1, max_nums=1, mode=cv2.RETR_EXTERNAL)
-    boxes = image_utils.points2boxes(point)
-    boxes = image_utils.extend_xyxy(boxes, scale=scale)
-    box2 = boxes[0]
-    # box2 = [50, 50, 200, 200]
-    crop_ = image_utils.get_box_crop(image, box2)
-    dest_ = image_utils.get_box_crop_recover(crop_, box2, size=(w, h), borderType=cv2.BORDER_REPLICATE)
-    gray2 = 255 - cv2.cvtColor(dest_, cv2.COLOR_BGR2GRAY)
-    if vis:
-        v1 = image_utils.image_hstack([image, gray1], split_line=True)
-        v2 = image_utils.image_hstack([dest_, gray2], split_line=True)
-        res = image_utils.image_vstack([v1, v2], split_line=True)
-        image_utils.show_image("result", res)
-    return dest_, gray2
+import os
+from pybaseutils.dataloader import parser_voc
 
-
-def test_image_dir(image_dir, vis=True):
-    """
-    :param image_dir: 图片文件或图片文件夹
-    :param vis:
-    :return:
-    """
-    image_list = file_utils.get_files_lists(image_dir)
-    for image_file in image_list:
-        image = cv2.imread(image_file)
-        image = image_utils.resize_image(image, size=(200, 200))
-        dest, gray = process_image_border(image, vis=vis)
-
-
-if __name__ == '__main__':
-    """pip install --upgrade pybaseutils -i https://pypi.org/simple"""
-    image_dir = "/home/PKing/Downloads/转灰度/20250708-095351.jpg"
-    test_image_dir(image_dir)
+if __name__ == "__main__":
+    # 修改为自己数据集的路径
+    data_root = "/home/PKing/nasdata/tmp/tmp/pen/笔尖指尖标注方法"
+    class_name = []
+    dataset = parser_voc.VOCDataset(filename=None,
+                                    data_root=data_root,
+                                    anno_dir=None,
+                                    image_dir=None,
+                                    class_name=class_name,
+                                    transform=None,
+                                    use_rgb=False,
+                                    check=False,
+                                    shuffle=False)
+    print("have num:{}".format(len(dataset)))
+    class_name = dataset.class_name
+    for i in range(len(dataset)):
+        data = dataset.__getitem__(i)
+        image, targets, image_id = data["image"], data["target"], data["image_id"]
+        print(image_id)
+        bboxes, labels = targets[:, 0:4], targets[:, 4:5]
+        parser_voc.show_target_image(image, bboxes, labels, normal=False, transpose=False,
+                                     class_name=class_name, use_rgb=False, thickness=3, fontScale=1.2)
