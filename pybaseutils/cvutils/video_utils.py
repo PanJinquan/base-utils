@@ -259,8 +259,8 @@ def video_capture(video_file: int or str, save_video: str or int = None, interva
         video_writer.release()
 
 
-def video_iterator(video_file: int or str, save_video: str or int = None, interval=1, freq=0, task: Callable = None,
-                   vis=False, **kwargs):
+def video_iterator(video_file: int or str, save_video: str or int = None, interval=1, size=(), freq=0,
+                   task: Callable = None, vis=False, **kwargs):
     """
     读取摄像头或者视频流迭代器
     Usage:
@@ -273,6 +273,7 @@ def video_iterator(video_file: int or str, save_video: str or int = None, interv
                        Int 摄像头ID，如0，1，2
     :param save_video: 保存task视频处理后的结果
     :param interval: 抽帧处理间隔，当interval=-1，表示当interval=fps,即一秒一帧
+    :param size: 设置视频分辨率大小
     :param freq: 抽帧频率，当freq>0，表示interval=int(fps / freq)
     :param task: 回调函数： def task(frame, **kwargs)
     :param kwargs:回调函数输入参数,
@@ -284,7 +285,7 @@ def video_iterator(video_file: int or str, save_video: str or int = None, interv
     :return: frame, count, w, h, fps =data_info['frame'],data_info['count'],data_info['w'],data_info['h'],data_info['fps']
     """
     if isinstance(video_file, str): assert os.path.exists(video_file), f"video_file={video_file}"
-    video_cap = image_utils.get_video_capture(video_file)
+    video_cap = image_utils.get_video_capture(video_file, fps=None)
     w, h, num_frames, fps = image_utils.get_video_info(video_cap)
     start = int(kwargs.get("start", 0) * fps)
     end = int(kwargs.get("end", num_frames / fps) * fps) if fps > 0 else 0
@@ -303,6 +304,7 @@ def video_iterator(video_file: int or str, save_video: str or int = None, interv
                 video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
                 ret, frame = video_cap.read()
             if not ret or 0 < end < count or frame is None: break
+            if size: frame = image_utils.resize_image(frame, size=size)
             if task: frame = task(frame, **kwargs)
             data_info = {"frame": frame, "count": count, "w": w, "h": h, "fps": fps}
             # TODO 返回data_info
