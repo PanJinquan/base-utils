@@ -1,6 +1,7 @@
 # Docker使用方法
-- 国内镜像： 
-- docker-0.unsee.tech 
+
+- 国内镜像：
+- docker-0.unsee.tech
 - docker.1ms.run
 - dhub.kubesre.xyz
 
@@ -28,6 +29,7 @@ sudo systemctl restart docker
 ```bash
 # 登录docker: 
 sudo docker login docker.dm-ai.cn
+sudo docker login --username=390737991@qq.com crpi-r7ny3w7dyvydm6vb.cn-guangzhou.personal.cr.aliyuncs.com # 登录阿里云docker镜像仓库
 # 查看所有镜像
 docker images
 # 查看所有容器
@@ -64,6 +66,7 @@ pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
 ## 镜像安装opencv依赖库
+
 ```bash
 apt update
 # 安装一些基础的编译工具和依赖库
@@ -84,6 +87,20 @@ apt install -y libtbb-dev libatlas-base-dev gfortran
 - https://dockers.xuanyuan.me/ docker.1ms.run/{原始镜像名称}
 
 ```bash
+#TODO 可以添加--name $name 指定容器别名
+#image="docker.dm-ai.cn/algorithm-research/py38-cuda11.2-cudnn8.1-ubuntu18.04:latest"
+#image="docker.dm-ai.cn/algorithm-research/llama2-chinese:latest"
+image="docker.dm-ai.cn/algorithm-research/panjinquan/py3.10-cuda11.7-cudnn8.5-torch2.0:llm"
+image="docker.dm-ai.cn/algorithm-research/panjinquan/py3.10-cuda11.7-cudnn8.5-torch2.0:llm-v2"
+image="docker.dm-ai.cn/algorithm-research/panjinquan/py3.10-cuda11.7-cudnn8.5-torch2.0:llm-v2.1"
+image="docker.dm-ai.cn/algorithm-research/panjinquan/py3.10-cuda11.7-cudnn8.5-torch2.0:llm-gradio"
+
+image="crpi-r7ny3w7dyvydm6vb.cn-guangzhou.personal.cr.aliyuncs.com/python-image-rep/py3.10-cuda11.7-cudnn8.5-torch2.0:llm"
+
+#docker build -t=$image .
+#docker run -it --gpus all -p 7860:7860 -v `pwd`:/app $image /bin/bash
+docker run -it --gpus all -p 7860:7860 --ulimit memlock=-1 --ulimit stack=67108864 --memory-swap=-1 --memory=256G --runtime=nvidia --ipc host --privileged --network host  -v `pwd`:/app $image /bin/bash
+
 # TODO
 docker pull nvidia/cuda:11.2.2-cudnn8-devel-ubuntu18.04 # nvidia-docker基础镜像,无python
 image=nvidia/cuda:11.2.0-cudnn8-devel-ubuntu18.04 # nvidia-docker基础镜像,无python

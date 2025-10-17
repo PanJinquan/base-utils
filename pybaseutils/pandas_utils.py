@@ -57,7 +57,7 @@ def read_csv(filename, sep=";"):
     return df
 
 
-def get_cols(df, keys , to_dict=True) -> pd.Series:
+def get_cols(df, keys, to_dict=True) -> pd.Series:
     """
     获得某一列的数据
     data =  data[["image_ids","label"]]
@@ -284,6 +284,55 @@ def combine_path(d1: dict, d2: dict) -> dict:
             if v2: v1 = {k_: v_ for k_, v_ in v1.items() if v_}  # 剔除空数据
             out[k] = {**v2, **v1}
     return out
+
+
+def df_apply(df: pd.DataFrame, func, axis=0, *args):
+    """
+    对DataFrame的每一行或每一列应用一个函数
+    :param df:
+    :param func: 应用的函数
+    :param axis: 0表示按行应用，1表示按列应用
+    :param args: 应用函数func的额外参数
+    :return:
+    """
+    return df.apply(func, axis=axis, *args)
+
+
+def read_merged_tables(xlsx_file, sheet="Sheet1"):
+    """
+    读取合并单元格的表格数据,并填充合并单元格的值
+    :param xlsx_file:
+    :param sheet: 工作表名称
+    :return:
+    """
+    from openpyxl import load_workbook
+
+    # 使用openpyxl加载工作簿
+    wb = load_workbook(xlsx_file)
+    ws = wb[sheet]
+    # 获取所有合并单元格
+    merged_cells = ws.merged_cells.ranges
+    # 创建一个字典来存储合并单元格的值
+    merged_values = {}
+    # 对于每个合并区域，获取左上角单元格的值
+    for merged_range in merged_cells:
+        top_left_cell = ws.cell(merged_range.min_row, merged_range.min_col)
+        value = top_left_cell.value
+        # 将合并区域内的所有单元格都标记为需要填充这个值
+        for row in range(merged_range.min_row, merged_range.max_row + 1):
+            for col in range(merged_range.min_col, merged_range.max_col + 1):
+                merged_values[(row, col)] = value
+    # 读取表格数据
+    df = pd.read_excel(xlsx_file, sheet_name=sheet, header=0)
+    # 填充合并单元格
+    for idx, row in df.iterrows():
+        for col_idx, value in enumerate(row):
+            cell_row = idx + 2  # +2是因为第一行是表头，pandas从0开始索引
+            cell_col = col_idx + 1  # +1是因为openpyxl从1开始索引
+
+            if (cell_row, cell_col) in merged_values and pd.isna(value):
+                df.iloc[idx, col_idx] = merged_values[(cell_row, cell_col)]
+    return df
 
 
 if __name__ == "__main__":

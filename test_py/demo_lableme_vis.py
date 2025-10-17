@@ -35,16 +35,20 @@ if __name__ == "__main__":
         "/home/PKing/nasdata/dataset/face_person/labelme/SMTC/images"
     ]
     names = None
-    names = ['person,身穿工作服,未穿工作服']
+    # names = ['person,身穿工作服,未穿工作服']
     # names = ['身穿工作服,未穿工作服', '手,手穿绝缘手套,手穿棉纱手套,手穿其他手套']
+    anno_dir = ["/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/01-东莞-投退重合闸操作/dataset-v01/images"]
+
+    anno_dir = ["/media/PKing/新加卷/project/smart-dinner/dataset/smart-dinner-01/images"]
+    names = [ '人体', '转盘' ]
     dataset = parser_labelme.LabelMeDatasets(filename=None,
                                              data_root=None,
                                              anno_dir=anno_dir,
                                              image_dir=None,
                                              class_name=names,
-                                             check=True,
+                                             check=False,
                                              phase="val",
-                                             shuffle=True)
+                                             shuffle=False)
     class_name = dataset.class_name
     class_file = os.path.join(os.path.dirname(anno_dir[0]), "class_name.txt")
     file_utils.write_list_data(class_file, class_name)
@@ -52,11 +56,11 @@ if __name__ == "__main__":
     for i in tqdm(range(len(dataset))):
         print(i)  # i=20
         data = dataset.__getitem__(i)
-        image, points, bboxes, labels = data["image"], data["points"], data["boxes"], data["labels"]
+        image, points, bboxes, names = data["image"], data["points"], data["boxes"], data["names"]
         h, w = image.shape[:2]
-        if class_name: labels = [class_name[l] for l in labels]
+        # if class_name: labels = [class_name[l] for l in labels]
         image_file = data["image_file"]
         anno_file = os.path.join("masker", "{}.json".format(os.path.basename(image_file).split(".")[0]))
-        print(image_file, labels)
-        result = parser_labelme.show_target_image(image, bboxes, labels, points, thickness=2)
+        print(image_file, names)
+        result = parser_labelme.show_target_image(image, bboxes, names, points, thickness=2)
         # image_utils.save_image("./"+os.path.basename(image_file), result)

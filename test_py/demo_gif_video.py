@@ -24,8 +24,8 @@ def resize_android(frame):
 
 def resize_fun(frame):
     h, w = frame.shape[:2]
-    frame = image_utils.resize_image(frame, size=(196, None))
-    # frame = image_utils.resize_image(frame, size=(512, None))
+    # frame = image_utils.resize_image(frame, size=(196, None))
+    frame = image_utils.resize_image(frame, size=(500, None))
     # frame = image_utils.resize_image(frame, size=(960, None))
     # frame = image_utils.resize_image(frame, size=(None, 640))  # android-video
     return frame
@@ -33,13 +33,13 @@ def resize_fun(frame):
 
 def android_gif():
     # video_file = "/media/dm/新加卷/SDK/CSDN/双目测距/demo/image-nouse-wls.mp4"
-    video_file = "/home/PKing/nasdata/tmp/tmp/Face-Gesture/code/android-demo1.mp4"
+    video_file = "/home/PKing/nasdata/tmp/tmp/Face-Gesture/code/android-demo2.mp4"
     video_utils.video2gif(video_file, interval=12, func=resize_android, fps=3, use_pil=False, vis=True)
 
 
 def python_gif():
-    video_file = "/home/PKing/nasdata/tmp/tmp/Face-Gesture/code/python-demo2.avi"
-    video_utils.video2gif(video_file, interval=6, func=resize_fun, fps=8, use_pil=False, vis=True)
+    video_file = "/home/PKing/nasdata/Project/3D/Car-Distance-Speed-Estimation/data/output/video1_003.mp4"
+    video_utils.video2gif(video_file, interval=6, func=resize_fun, fps=4,start=3,end=10, use_pil=True, vis=True)
 
 
 def image_gif():
@@ -51,6 +51,7 @@ def image_gif():
 
 
 if __name__ == "__main__":
+    """博文GIF图不能超过50M"""
     # image_gif()
-    android_gif()
-    # python_gif()
+    # android_gif()
+    python_gif()

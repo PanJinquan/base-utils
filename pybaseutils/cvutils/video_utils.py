@@ -20,40 +20,35 @@ get_video_info = image_utils.get_video_info
 get_video_writer = image_utils.get_video_writer
 
 
-def video2gif(video_file, gif_file=None, func=None, interval=1, use_pil=False, fps=-1, vis=True):
+def merge_video(video1, video2, output="./output.mp4"):
+    cmd = f'ffmpeg -i {video1} -i {video2} -filter_complex "[0:v:0][1:v:0]concat=n=2:v=1:a=0[outv]" -map "[outv]" {output}'
+
+
+def video2gif(video_file, gif_file=None, func=None, interval=1, fps=-1, use_pil=False, vis=True, **kwargs):
     """
     将视频文件直接转为GIF图像
     :param video_file: 输入视频文件
     :param gif_file: 保存GIF图文件
     :param func:
-    :param interval:
+    :param interval: 视频抽帧间隔
+    :param fps: gif图的播放帧率
     :param use_pil: True使用PIL库生成GIF图，文件小，但质量较差
                     False使用imageio库生成GIF图，文件大，但质量较好
     :param vis:
     :return:
     """
     name = os.path.basename(video_file).split(".")[0]
-    if not gif_file:
-        gif_file = os.path.join(os.path.dirname(video_file), name + ".gif")
-    video_cap = get_video_capture(video_file)
-    width, height, num_frames, _fps = get_video_info(video_cap)
+    if not gif_file:  gif_file = os.path.join(os.path.dirname(video_file), name + ".gif")
     if not os.path.exists(gif_file): file_utils.create_file_path(gif_file)
-    count = 0
+    width, height, num_frames, _fps = get_video_info(video_file)
+    video_cap = video_iterator(video_file, save_video=None, interval=interval, **kwargs)
     frames = []
-    while True:
-        if count % interval == 0 and count >= 0:
-            # 设置抽帧的位置
-            video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
-            isSuccess, frame = video_cap.read()
-            if not isSuccess or 0 < num_frames < count: break
-            if func:
-                frame = func(frame)
-            if vis:
-                image_utils.cv_show_image("frame", frame, use_rgb=False, delay=30)
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            frames.append(frame)
-        count += 1
-    video_cap.release()
+    for data_info in video_cap:
+        frame = data_info["frame"]
+        if func: frame = func(frame)
+        if vis:  image_utils.cv_show_image("frame", frame, use_rgb=False, delay=10)
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frames.append(frame)
     fps = _fps / interval if fps <= 0 else fps
     if use_pil:
         image_utils.frames2gif_by_pil(frames, gif_file=gif_file, fps=fps, loop=0)

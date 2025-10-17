@@ -32,7 +32,7 @@ def load_pcm(filename):
 
 def float32toint16(data_f32):
     omin = -32768
-    omax = 32767
+    omax = 32768
     imin = -1.0
     imax = 1.0
     # 将数据float32从[-1.0,1.0]映射到int16
@@ -43,7 +43,7 @@ def float32toint16(data_f32):
 
 def int16tofloat32(data_int16):
     imin = -32768
-    imax = 32767
+    imax = 32768
     omin = -1.0
     omax = 1.0
     audio_data = np.array(data_int16, dtype=np.float32)
@@ -148,7 +148,7 @@ def save_pcm_from_numpy(audio_data: np.ndarray, pcm_file, data_type=np.int16):
     :return:
     """
     omin = -32768
-    omax = 32767
+    omax = 32768
     imin = -1.0
     imax = 1.0
     # 将数据float32转换到int16
@@ -159,7 +159,7 @@ def save_pcm_from_numpy(audio_data: np.ndarray, pcm_file, data_type=np.int16):
     return bytes
 
 
-def librosa_load(audio_file, sr=None, mono=True):
+def librosa_load(audio_file, sr=None, mono=True, dtype="float32"):
     """
     默认将多声道音频文件转换为单声道，并返回一维数组；
     如果你需要处理多声道音频文件，可以使用 mono=False,参数来保留所有声道，并返回二维数组。
@@ -168,47 +168,55 @@ def librosa_load(audio_file, sr=None, mono=True):
     :param mono: 设置为true是单通道，否则是双通道
     :return:
     """
-    audio_data, sr = librosa.load(audio_file, sr=sr, mono=mono)  # 非常耗时
+    # TODO 已经对齐soundfile_load的效果
+    audio_data, sr = librosa.load(audio_file, sr=sr, mono=mono)  # 非常耗时，返回是float32的数据
+    if dtype == "int16":  # 将 float32 [-1.0, 1.0] 转换为 int16,
+        audio_data = float32toint16(audio_data)
     return audio_data, sr
 
 
-def soundfile_load(audio_file, sr=None, mono=True):
+def soundfile_load(audio_file, sr=None, mono=True, dtype="float32"):
     """
     默认会将多声道音频文件的每个声道分别存储在二维数组的不同列中，因此返回的是一个二维数组
+
     :param audio_file:
     :param sr: sampling rate 当设置的采样率与音频原始采样率不一致时，会进行重采样，导致非常耗时
     :param mono: 设置为true是单通道，否则是双通道
     :return:
     """
+    # TODO 默认情况下，soundfile会将数据归一化到 [-1.0, 1.0] 的浮点数范围内
+    # audio_data, orig_sr = sf.read(audio_file, samplerate=None, dtype="int16")  # int16不支持重采样
     audio_data, orig_sr = sf.read(audio_file, samplerate=None, dtype="float32")  # 不能直接修改samplerate
     if mono and audio_data.ndim == 2:
         audio_data = np.mean(audio_data, axis=-1)
     if sr is None or orig_sr == sr:
         sr = orig_sr
-    else:
+    else:  # TODO librosa.resample 要求输入是浮点数float32
         audio_data = librosa.resample(y=audio_data, orig_sr=orig_sr, target_sr=sr)  # 使用librosa进行重采样至目标采样率
+    if dtype == "int16":  # 将 float32 [-1.0, 1.0] 转换为 int16,
+        audio_data = float32toint16(audio_data)
     return audio_data, sr
 
 
 def wavfile_load(audio_file):
     sr, wav_data = wavfile.read(audio_file)  # int16类型
-    # 转为float64类型
-    wav_data = wav_data / (32768)
-    # wav_data:[-0.03305054 -0.03561401 -0.038114697]
     return wav_data, sr
 
 
-def read_audio(audio_file, sr=16000, mono=True):
+def read_audio(audio_file, sr=16000, mono=True, dtype="float32", use_sf=True):
     """
     默认将多声道音频文件转换为单声道，并返回一维数组；
     如果你需要处理多声道音频文件，可以使用 mono=False,参数来保留所有声道，并返回二维数组。
     :param audio_file:
     :param sr: sampling rate
     :param mono: 设置为true是单通道，否则是双通道
+    :param dtype: 数据类型，int16, float32
     :return:
     """
-    audio_data, sr = librosa_load(audio_file, sr=sr, mono=mono)  # 巨慢
-    # audio_data, sr = soundfile_load(audio_file, sr=sr, mono=mono)  # 巨慢
+    if use_sf:
+        audio_data, sr = soundfile_load(audio_file, sr=sr, mono=mono, dtype=dtype)  # 巨慢
+    else:
+        audio_data, sr = librosa_load(audio_file, sr=sr, mono=mono, dtype=dtype)  # 巨慢
     return audio_data, sr
 
 
@@ -216,10 +224,11 @@ def save_audio(audio_file, audio_data, sr=16000):
     """
     save audio file
     :param audio_file:
-    :param audio_data:
+    :param audio_data: float32
     :param sr: sampling rate
     :return:
     """
+    assert audio_data.dtype == np.float32, "input data must be float32"
     sf.write(audio_file, audio_data, samplerate=sr)
 
 

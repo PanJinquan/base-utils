@@ -2,7 +2,7 @@
 """
 # --------------------------------------------------------
 # @Author : Pan
-# @E-mail : 
+# @E-mail :
 # @Date   : 2025-07-08 14:10:15
 # @Brief  :
 # --------------------------------------------------------
@@ -11,31 +11,57 @@ import cv2
 import numpy as np
 from pybaseutils import file_utils, image_utils
 
-import os
-from pybaseutils.dataloader import parser_coco_kps
+import cv2
 
-import os
-from pybaseutils.dataloader import parser_voc
 
-if __name__ == "__main__":
-    # 修改为自己数据集的路径
-    data_root = "/home/PKing/nasdata/tmp/tmp/pen/笔尖指尖标注方法"
-    class_name = []
-    dataset = parser_voc.VOCDataset(filename=None,
-                                    data_root=data_root,
-                                    anno_dir=None,
-                                    image_dir=None,
-                                    class_name=class_name,
-                                    transform=None,
-                                    use_rgb=False,
-                                    check=False,
-                                    shuffle=False)
-    print("have num:{}".format(len(dataset)))
-    class_name = dataset.class_name
-    for i in range(len(dataset)):
-        data = dataset.__getitem__(i)
-        image, targets, image_id = data["image"], data["target"], data["image_id"]
-        print(image_id)
-        bboxes, labels = targets[:, 0:4], targets[:, 4:5]
-        parser_voc.show_target_image(image, bboxes, labels, normal=False, transpose=False,
-                                     class_name=class_name, use_rgb=False, thickness=3, fontScale=1.2)
+def find_optimal_splits(data):
+    """
+    找到最优分割点i和j，使得 |sum(data2)-sum(data1)| + |sum(data2)-sum(data3)| 最大化
+
+    参数:
+        data: 输入列表
+
+    返回:
+        (max_value, i, j, data1, data2, data3): 最大值和对应的分割点及切片
+    """
+    n = len(data)
+    max_value = float('-inf')
+    best_i, best_j = 0, 0
+
+    # 计算前缀和以便快速计算区间和
+    prefix_sum = [0] * (n + 1)
+    for i in range(1, n + 1):
+        prefix_sum[i] = prefix_sum[i - 1] + data[i - 1]
+
+    # 遍历所有可能的分割点
+    for i in range(1, n - 1):  # i从1到n-2，确保data1和data2至少有一个元素
+        for j in range(i + 1, n):  # j从i+1到n-1，确保data2和data3至少有一个元素
+            sum1 = prefix_sum[i] - prefix_sum[0]  # data[0:i]的和
+            sum2 = prefix_sum[j] - prefix_sum[i]  # data[i:j]的和
+            sum3 = prefix_sum[n] - prefix_sum[j]  # data[j:]的和
+
+            # 计算目标函数值
+            value = abs(sum2 - sum1) + abs(sum2 - sum3)
+
+            if value > max_value:
+                max_value = value
+                best_i, best_j = i, j
+
+    # 获取最优分割后的数据切片
+    data1 = data[:best_i]
+    data2 = data[best_i:best_j]
+    data3 = data[best_j:]
+
+    return max_value, best_i, best_j, data1, data2, data3
+
+
+# 测试函数
+data = [1, 2, 3, 4, 100, 101, 102, 5, 6, 7, 8]
+max_value, i, j, data1, data2, data3 = find_optimal_splits(data)
+
+print(f"最优分割点: i={i}, j={j}")
+print(f"最大值: {max_value}")
+print(f"data1: {data1}, sum={sum(data1)}")
+print(f"data2: {data2}, sum={sum(data2)}")
+print(f"data3: {data3}, sum={sum(data3)}")
+print(f"验证: |{sum(data2)}-{sum(data1)}| + |{sum(data2)}-{sum(data3)}| = {abs(sum(data2) - sum(data1)) + abs(sum(data2) - sum(data3))}")

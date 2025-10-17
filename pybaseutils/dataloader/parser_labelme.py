@@ -558,10 +558,10 @@ def draw_keypoints_image(image, boxes=[], kpts=[], bones_type="coco_person", thi
     return image
 
 
-def show_target_image(image, boxes, labels, points, kpts=[], bones_type="coco_person", color=(), thickness=2):
-    # image = image_utils.draw_image_bboxes_text(image, boxes, labels, color=(255, 0, 0),
+def show_target_image(image, boxes, names, points, kpts=[], bones_type="coco_person", color=(), thickness=2):
+    # image = image_utils.draw_image_bboxes_text(image, boxes, names, color=(255, 0, 0),
     #                                            thickness=2, fontScale=1.2, drawType="chinese")
-    image = image_utils.draw_image_contours(image, points, labels, color=color, thickness=thickness)
+    image = image_utils.draw_image_contours(image, points, names, color=color, thickness=thickness)
     image = draw_keypoints_image(image, boxes, kpts, bones_type=bones_type, thickness=thickness, vis_id=True)
     image_utils.cv_show_image("det", image)
     return image

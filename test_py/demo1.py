@@ -1,19 +1,13 @@
-# -*- coding: utf-8 -*-
-"""
-# --------------------------------------------------------
-# @Author : Pan
-# @E-mail :
-# @Date   : 2025-07-22 10:40:45
-# @Brief  :
-# --------------------------------------------------------
-"""
-import os
-import cv2
 import numpy as np
-from pybaseutils import json_utils, image_utils
-from pybaseutils.dataloader import parser_labelme
+from pybaseutils import file_utils, image_utils
+from collections import defaultdict
+
 
 if __name__ == "__main__":
-    data =[5,1,1,5,16]
-    outs = np.median(data)
-    print(outs)
+    inp_tensor = np.random.random(size=(10, 3, 224, 224))
+    out_tensor = defaultdict(list)  # TODO  CPU模式逐个推理，比批量推理快
+    for i in range(len(inp_tensor)):
+        out = [np.mean()]
+        for k in range(len(out)):
+            out_tensor[k].append(out[k])
+    out_tensor = [np.concatenate(v, axis=0) for k, v in out_tensor.items()]

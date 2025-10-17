@@ -80,12 +80,14 @@ class MainSocketHandler(tornado.websocket.WebSocketHandler):
 
 
 def web_app():
-    return tornado.web.Application([
+    handlers = [
         (r"/", IndexHandler),
         (r"/ws", MainSocketHandler)
-    ],
-        template_path="templates",  # 你的HTML模板目录
-        debug=True)
+    ]
+    app = tornado.web.Application(handlers,
+                                  template_path="templates",  # 你的HTML模板目录
+                                  debug=True)
+    return app
 
 
 async def main():

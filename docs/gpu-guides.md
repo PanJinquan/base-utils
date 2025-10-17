@@ -116,3 +116,9 @@ CUDA_VISIBLE_DEVICES=0 OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 python train.py
 ## 没有root权限安装CUDA
 
 - 参考：https://blog.csdn.net/qq_41105401/article/details/126038851 
+```bash
+# 安装与你PyTorch版本兼容的CUDA Toolkit，例如11.8版本
+conda install cudatoolkit=11.8 -c nvidia
+# 或者
+conda install -c nvidia/label/cuda-11.8.0 cuda-nvcc
+```

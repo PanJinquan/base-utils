@@ -16,7 +16,7 @@ pip install -e ".[torch,metrics]"
 ## 运行
 
 ```bash
-export CUDA_VISIBLE_DEVICES=0 # 指定运行GPU
+export CUDA_VISIBLE_DEVICES=6 # 指定运行GPU
 export GRADIO_SERVER_PORT=30000 # 指定gradio的端口
 export GRADIO_TEMP_DIR="~/.cache/gradio" # 指定gradio临时缓存路径，解决上传图片权限的问题
 llamafactory-cli webui

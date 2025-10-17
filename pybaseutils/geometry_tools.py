@@ -378,6 +378,25 @@ def points_smoothing(points, winsize=3):
     return out
 
 
+def extend_line(p1, p2, scale=(1.0, 1.0)):
+    """p1->p2延伸"""
+    x, y = (p2[0] + (p2[0] - p1[0]) * scale[0], p2[1] + (p2[1] - p1[1]) * scale[1])
+    return (x, y)
+
+
+def extend_lines(p1: np.ndarray, p2: np.ndarray, scale=(1.0, 1.0)):
+    """
+    p1->p2->p(x,y)延伸
+    :param p1: (N,2)
+    :param p2: (N,2)
+    :param scale:
+    :return:
+    """
+    x = p2[:, 0] + (p2[:, 0] - p1[:, 0]) * scale[0]
+    y = p2[:, 1] + (p2[:, 1] - p1[:, 1]) * scale[1]
+    return np.vstack((x, y)).T
+
+
 def rotate_points(points, centers, angle, height):
     """
     eg.:

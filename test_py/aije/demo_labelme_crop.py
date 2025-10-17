@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
-'''
-    @Author : PKing
-    @E-mail : 390737991@qq.com
-    @Date   : 2022-11-29 18:11:47
-    @Brief  :
-'''
+"""
+# --------------------------------------------------------
+# @Author : Pan
+# @E-mail :
+# @Date   : 2025-07-22 10:40:45
+# @Brief  :
+# --------------------------------------------------------
+"""
 import os
 import cv2
 from tqdm import tqdm
@@ -92,10 +94,17 @@ def get_sub_dataset(data_root):
 
 
 if __name__ == '__main__':
-    '''
+    """
     对labelme的数据目标进行裁剪，用于制作分类数据集
-    '''
-
+    """
+    # 接地引线'
+    names = ['保护屏标示牌', '显示屏', '通道切换开关', '信号复归按钮', '红色圆形标签,黄色圆形标签', '地极端子',
+             '地极标签',
+             '红色压板开关合上,红色压板开关断开,白色压板开关合上,白色压板开关断开', '重合闸把手停用,重合闸把手单重',
+             '本体端子箱关闭,本体端子箱打开', '主变端子箱关闭,主变端子箱打开', '分接开关箱关闭,分接开关箱打开',
+             '主变压器标示牌', '端子箱标示牌', '油温表', '绕组温度表', '油位指示标示牌', '本体阀门', '呼吸器油杯',
+             '沉降观察点标示牌', '冷却器控制箱打开,冷却器控制箱关闭', '冷却器', '风扇', '潜油泵', '油流指示器', '喷淋启动装置'
+             ]
     target_name = ['身穿工作服', '未穿工作服',
                    '绝缘鞋', '脚穿绝缘鞋', '长筒靴', '脚穿长筒靴', '其他鞋', '脚穿其他鞋',
                    '手', '绝缘手套', '手穿绝缘手套', '棉纱手套', '手穿棉纱手套', '其他手套', '手穿其他手套',
@@ -107,22 +116,23 @@ if __name__ == '__main__':
                    '柱上开关刀闸分闸', '柱上开关刀闸合闸',  # 01-核相操作 02-柱上开关
                    '低压开关断开', '低压开关合上',  # 32-绝缘包扎 36-低压开关，37-带电接火
                    '表箱关', '表箱开', '其他',
+                   "红色圆形标签", "黄色圆形标签",
+                   "白色压板开关合上", "白色压板开关断开", "红色压板开关合上", "红色压板开关断开",
+                   "重合闸把手停用", "重合闸把手单重",
+                   '本体端子箱关闭', '本体端子箱打开',
+                   '主变端子箱关闭', '主变端子箱打开',
+                   '分接开关箱关闭', '分接开关箱打开',
+                   '冷却器控制箱打开', '冷却器控制箱关闭',
+                   '万用表线头', '万用表红色线头', '万用表黑色线头'
                    ]
     # 还差核相的数据
     datasets = [
         # TODO 训练集
-        '/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/08-更换熔丝/dataset-v25-special/images',
-        '/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/08-更换熔丝/dataset-v25-special-val/images',
-        '/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/08-更换熔丝/dataset-v26/images',
-        '/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/08-更换熔丝/dataset-v26-val/images',
-        '/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/01-核相操作/dataset-v05-special/images',
-        '/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/01-核相操作/dataset-v05-special-val/images',
-        '/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/02-柱上开关/dataset-v02/images',
-        '/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/02-柱上开关/dataset-v02-val/images',
-        '/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/36-低压开关/dataset-v03-special/images',
-        '/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/36-低压开关/dataset-v03-special-val/images',
-        '/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/37-带电接火/dataset-v05-special/images',
-        '/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/37-带电接火/dataset-v05-special-val/images',
+        '/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/02-东莞-220KV主变压器日常巡视/dataset-test01/images',
+        '/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/02-东莞-220KV主变压器日常巡视/dataset-test02/images',
+        '/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/01-东莞-投退重合闸操作/dataset-test01/images',
+        '/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/01-东莞-投退重合闸操作/dataset-test02/images',
+
     ]
     # dataroot = '/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det'
     # datasets = get_sub_dataset(dataroot)

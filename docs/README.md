@@ -141,6 +141,9 @@ ls -lR|grep "^-"|wc -l
 ls -lR|grep "^d"|wc -l
 # 统计当前目录(含子目录)下有多张图片
 find . -type f -iname "*.jpg" | wc -l
+
+# 获得images/文件夹下所有图片的路径，写入images.txt文件中
+find images/ -type f > images.txt
 ```
 
 ## 一些个性化别名
@@ -232,57 +235,6 @@ PyQt5==5.15.11 PyQt5-Qt5==5.15.16 PyQt5_sip==12.17.0
 
 ```
 
-## 解决git pull/push需要输入密码的问题
-
-- https://zhuanlan.zhihu.com/p/537646478
-
-```bash
-git config --global credential.helper store
-
-```
-
-## 解决Github克隆失败的问题
-
-- 解决hugging face终端无法访问问题： https://zhuanlan.zhihu.com/p/676420788
-- https://hf-mirror.com/
-- https://blog.csdn.net/weixin_43431218/article/details/135403324
-- https://blog.csdn.net/weixin_43431218/article/details/135544365
-- 克隆github的仓库，请将github.com替换为githubfast.com
-- 下载github的文件，则可以在这里下载：https://down.npee.cn/
-- 如果是huggingface.co的地址，则直接替换为hf-mirror.com
-
-```bash
-# Linux
-export HF_ENDPOINT=https://hf-mirror.com # 或者写入~/.bashrc中
-# 如果要下载 https://huggingface.co/BAAI/DIVA/blob/main/OpenAICLIP/OpenAI-ViT-L-14-224.pth
-# 则只需要把huggingface.co改为hf-mirror.com，即可在浏览器正常访问
-./hfd.sh BAAI/DIVA --tool aria2c -x 4
-```
-
-## huggingface.co资源下载
-
-- https://huggingface.co/
-- 方法1：https://blog.csdn.net/gmmmmmmmm/article/details/135953651 (将下载连接huggingface.co`替换为 hf-mirror.com)
-- 方法2：https://modelscope.cn/my/overview
-- import huggingface_hub.constants 可以修改访问路径
-
-```bash
-# !pip install -U "huggingface_hub[cli]"
-export HF_ENDPOINT=https://hf-mirror.com
-huggingface-cli download KwaiVGI/LivePortrait --local-dir pretrained_weights --exclude "*.git*" "README.md" "docs"
-```
-
-- 默认保持地址：~/.cache/huggingface/hub
-
-```bash
-from transformers import AutoImageProcessor, AutoModel
-model_dir = "facebook/dinov2-base" # TODO 默认保持在~/.cache/huggingface/hub/models--facebook--dinov2-base
-# TODO 如果移动到其他地方，则model_dir修改为path/to/models--facebook--dinov2-base-bk/snapshots/f9e44c814b77203eaa57a6bdbbd535f21ede1415
-# TODO 即修改为preprocessor_config.json所在的根目录
-processor = AutoImageProcessor.from_pretrained(model_dir)
-model = AutoModel.from_pretrained(model_dir)
-
-```
 
 ## 表格
 

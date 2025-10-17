@@ -189,19 +189,30 @@ class WriterTXT(object):
 def parser_classes(class_name):
     """
     class_dict = {class_name: i for i, class_name in enumerate(class_name)}
-    :param class_name: filename,or list,dict
-    :return: class_name,class_dict
+    :param class_name:
+                str : class file
+                list: ["face","person"]
+                dict: 可以自定义label的id{'BACKGROUND': 0, 'person': 1, 'person_up': 1, 'person_down': 1}
+    :return:
     """
     if isinstance(class_name, str):
         class_name = read_data(class_name, split=None)
-    elif isinstance(class_name, numbers.Number):
-        class_name = [str(i) for i in range(int(class_name))]
-    if isinstance(class_name, list):
-        class_dict = {str(class_name): i for i, class_name in enumerate(class_name)}
-    elif isinstance(class_name, dict):
+    if isinstance(class_name, list) and len(class_name) > 0:
+        class_dict = {}
+        for i, name in enumerate(class_name):
+            name = name.split(",")
+            for n in name: class_dict[n] = i
+    elif isinstance(class_name, dict) and len(class_name) > 0:
         class_dict = class_name
+        class_name = list(class_dict.keys())
     else:
         class_dict = None
+    if class_dict:
+        # class_dict = json_utils.dict_sort(class_dict, reverse=False)
+        class_name = {}
+        for n, i in class_dict.items():
+            class_name[i] = "{},{}".format(class_name[i], n) if i in class_name else n
+        class_name = list(class_name.values())
     return class_name, class_dict
 
 

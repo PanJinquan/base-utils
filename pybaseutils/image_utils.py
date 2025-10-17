@@ -136,16 +136,19 @@ def show_batch_image(title, batch_images, index=0):
         cv_show_image(title, image)
 
 
-def show_image_plt(title, image):
+def show_image_plt(title, image, use_rgb=True):
     """
     use matplotlib to show image
     调用matplotlib显示RGB图片
     :param title: 图像标题
-    :param image: 图像的数据
+    :param image: 图像的数据 BGR格式
+    :param use_rgb: True:输入image是RGB的图像, False:返输入image是BGR格式的图像
     :return:
     """
     # plt.figure("show_image")
     # print(image.dtype)
+    if image.shape[-1] == 3 and (not use_rgb):
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # 将BGR转为RGB
     channel = len(image.shape)
     if channel == 3:
         plt.imshow(image)
@@ -154,6 +157,7 @@ def show_image_plt(title, image):
     plt.axis('on')  # 关掉坐标轴为 off
     plt.title(title)  # 图像题目
     plt.show()
+    return image
 
 
 plot_image = show_image_plt
@@ -297,8 +301,10 @@ image_chw2hwc = untranspose
 
 
 def swap_image(image):
-    # image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-    image = image[:, :, ::-1]  # RGB->BGR
+    """BGR2BGR,BGR2RGB"""
+    image = image[:, :, ::-1]  # RGB->BGR,性能最快
+    # image = image[:, :, [2, 1, 0]]  # BGR -> RGB，性能其次
+    # image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)  # 性能最慢
     return image
 
 
@@ -537,7 +543,7 @@ def requests_url(url, timeout=None):
     return stream
 
 
-def read_images_url(url: str, size=None, norm=False, use_rgb=False, timeout=5):
+def read_image_url(url: str, size=None, norm=False, use_rgb=False, timeout=5):
     """
     根据url或者图片路径，读取图片
     :param url:
@@ -568,6 +574,16 @@ def read_images_url(url: str, size=None, norm=False, use_rgb=False, timeout=5):
     if size: image = resize_image(image, size=size)
     if norm: image = image_normalize(image)
     return image
+
+
+def read_images_url(url: str or list, size=None, norm=False, use_rgb=False, timeout=5):
+    if isinstance(url, str): return read_image_url(url, size=size, norm=norm, use_rgb=use_rgb, timeout=timeout)
+    batch = []
+    for path in url:
+        image = read_image_url(path, size=size, norm=norm, use_rgb=use_rgb, timeout=timeout)
+        if image is None:  print("no image:{}".format(path))
+        batch.append(image)
+    return batch
 
 
 def read_image_batch(image_list):
@@ -1106,12 +1122,16 @@ def draw_image_bboxes_labels_text(image, boxes, labels, boxes_name=None, color=N
 
 
 def draw_image_boxes_labels_texts(image, boxes, labels, texts, color=None, thickness=2, fontScale=0.8,
-                                  drawType="custom", top=True, color_table=color_table):
+                                  drawType="custom", top=True, colors=None, color_type="class"):
     if isinstance(labels, np.ndarray):
         labels = labels.reshape(-1).tolist()
-    for label, bbox, name in zip(labels, boxes, texts):
+    colors = [(0, 0, 0)] + colors if colors else color_table
+    for i, (label, bbox, name) in enumerate(zip(labels, boxes, texts)):
         bbox = [int(b) for b in bbox]
-        c = color if color else color_table[(int(label) + 1) % 20]
+        if color_type == "class":
+            c = color if color else colors[(int(label) + 1) % 20]  # 相同类别相同颜色
+        else:
+            c = color if color else colors[(i + 1) % 20]  # 每个实例不同颜色
         image = draw_image_bbox_text(image, bbox, str(name), color=c, thickness=thickness, fontScale=fontScale,
                                      drawType=drawType, top=top)
     return image
@@ -2389,48 +2409,40 @@ def get_mask_iou1(mask1, mask2, binarize=True):
     return iou
 
 
-def get_contours_iou(contour1, contour2, image_size: Tuple = None, vis=False):
+def get_contours_iou(contour1, contour2, size: Tuple = None):
     """
     计算两个轮廓(多边形)交并比(Intersection-over-Union,IoU)
     :param contour1: 多边形1 (num_points,2),由num_points个点构成的封闭多边形
     :param contour2: 多边形2 (num_points,2),由num_points个点构成的封闭多边形
-    :param image_size: (W,H) image size,用于可视化,不会影响contours,iou的结果
-    :param vis: 是否可视化Mask
-    :return: contours: 多边形1和多边形2重叠区域
-             iou: 多边形1和多边形2的交并比
+    :param size: (W,H) image size,用于可视化,不会影响contours,iou的结果
+    :return: iou: 多边形1和多边形2的交并比
     """
     contour1 = np.asarray(contour1, dtype=np.int32)
     contour2 = np.asarray(contour2, dtype=np.int32)
-    if image_size:
-        w, h = image_size
-        xmin, ymin = (0, 0)
+    # 自动确定图像尺寸
+    if size is None:
+        # 获取两个轮廓的边界矩形来确定最小需要的图像尺寸
+        x1, y1, w1, h1 = cv2.boundingRect(contour1)
+        x2, y2, w2, h2 = cv2.boundingRect(contour2)
+        w = max(x1 + w1, x2 + w2) + 1
+        h = max(y1 + h1, y2 + h2) + 1
     else:
-        xmin = min(min(contour1[:, 0]), min(contour2[:, 0]))
-        ymin = min(min(contour1[:, 1]), min(contour2[:, 1]))
-        contour1 = contour1 - (xmin, ymin)
-        contour2 = contour2 - (xmin, ymin)
-        w = max(max(contour1[:, 0]), max(contour2[:, 0])) + 1
-        h = max(max(contour1[:, 1]), max(contour2[:, 1])) + 1
-    area1 = cv2.contourArea(contour1)
-    area2 = cv2.contourArea(contour2)
-    mask = np.zeros(shape=(h, w), dtype=np.uint8)
-    mask1 = np.zeros(shape=(h, w), dtype=np.uint8)
-    mask2 = np.zeros(shape=(h, w), dtype=np.uint8)
-    mask1 = cv2.fillPoly(mask1, [contour1], color=55)
-    mask2 = cv2.fillPoly(mask2, [contour2], color=200)
-    mask[(mask1 + mask2) == 255] = 255
-    contours, hierarchy = cv2.findContours(mask, mode=cv2.RETR_LIST, method=cv2.CHAIN_APPROX_SIMPLE)
-    area = sum([cv2.contourArea(c) for c in contours])
-    contours = [c.reshape(-1, 2) + (xmin, ymin) for c in contours]
-    # area = np.sum(mask > 0)
-    iou = area / max((area1 + area2 - area), 1e-8)
-    if vis:
-        print("U(mask1,mask2)={}".format(iou))
-        cv_show_image("mask1", mask1, delay=1)
-        cv_show_image("mask2", mask2, delay=1)
-        cv_show_image("mask1+mask2", mask1 + mask2, delay=1)
-        cv_show_image("U(mask1,mask2)={:3.3f}".format(iou), mask, delay=0)
-    return contours, iou
+        w, h = size
+    # 创建两个空白mask
+    mask1 = np.zeros((h, w), dtype=np.uint8)
+    mask2 = np.zeros((h, w), dtype=np.uint8)
+    # 在mask上填充轮廓区域
+    cv2.fillPoly(mask1, [contour1], 1)
+    cv2.fillPoly(mask2, [contour2], 1)
+    # 计算交集和并集
+    inter = np.logical_and(mask1, mask2)
+    union = np.logical_or(mask1, mask2)
+    # 计算IOU
+    inter_area = np.sum(inter)
+    union_area = np.sum(union)
+    if union_area == 0:   return 0.0
+    iou = inter_area / union_area
+    return iou
 
 
 def get_image_mask(image: np.ndarray, inv=False):
@@ -2581,7 +2593,7 @@ def draw_contours(image, contours: List[np.ndarray], color=(), thickness=1):
 
 
 def draw_image_contours(image, contours: List[np.ndarray], texts=[], color=(), alpha=0.5, thickness=1, fontScale=0.8,
-                        drawType="ch"):
+                        drawType="ch", colors=None):
     """
     参考：draw_image_mask_color
     :param image:
@@ -2592,8 +2604,9 @@ def draw_image_contours(image, contours: List[np.ndarray], texts=[], color=(), a
     :param thickness:轮廓线宽
     :return:
     """
+    colors = [(0, 0, 0)] + colors if colors else color_table
     for i in range(0, len(contours)):
-        c = color if color else color_table[(i + 1) % 20]
+        c = color if color else colors[(i + 1) % 20]
         t = str(texts[i]) if texts else ""
         p = np.asarray(contours[i], dtype=np.int32)
         b = (min(p[:, 0]), min(p[:, 1]), max(p[:, 0]), max(p[:, 1]))
@@ -3116,16 +3129,18 @@ def get_video_capture(video, width=None, height=None, fps=None):
 def get_video_info(video_cap: cv2.VideoCapture, vis=True):
     """
     获得视频的基础信息
-    :param video_cap:视频对象
+    :param video_cap:视频对象 或者视频文件路径
     :return:
     """
-    if isinstance(video_cap, str): video_cap = get_video_capture(video_cap)
+    isfile = isinstance(video_cap, str)
+    if isfile: video_cap = get_video_capture(video_cap)
     width = int(video_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(video_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     num_frames = int(video_cap.get(cv2.CAP_PROP_FRAME_COUNT))
     fps = video_cap.get(cv2.CAP_PROP_FPS)
     fps = math.ceil(fps)
     if vis: print("read video:width:{},height:{},fps:{},num_frames:{}".format(width, height, fps, num_frames))
+    if isfile: video_cap.release()
     return width, height, num_frames, fps
 
 
