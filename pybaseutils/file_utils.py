@@ -207,7 +207,7 @@ def parser_classes(class_name):
         class_name = list(class_dict.keys())
     else:
         class_dict = None
-    if class_dict:
+    if class_dict and not class_name:
         # class_dict = json_utils.dict_sort(class_dict, reverse=False)
         class_name = {}
         for n, i in class_dict.items():
