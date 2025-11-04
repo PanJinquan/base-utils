@@ -7,6 +7,7 @@
 # @Brief  : 列表队列
 # --------------------------------------------------------
 """
+import math
 import queue
 
 
@@ -39,26 +40,77 @@ class Queue():
         return self.queue.qsize()
 
     def pop(self, block=True, timeout=None):
-        """Remove and return an item from the queue,index=0"""
-        return self.queue.get(block=block, timeout=timeout)
+        """
+        Remove and return an item from the queue,index=0
+        :param block: 是否阻塞等待
+        :param timeout: 超时时间
+        :return: 弹出的队列数据
+        """
+        out = self.queue.get(block=block, timeout=timeout)
+        return out
 
-    def get(self, index):
-        """Remove and return an item from the queue,index=0"""
+    def pop_items(self, nums=1, block=True, timeout=None):
+        """
+        弹出队列的多个项
+        :param nums: 弹出队列的数量
+        :param block: 是否阻塞等待
+        :param timeout: 超时时间
+        :return: 弹出的队列数据
+        """
+        items = [self.pop(block=block, timeout=timeout) for i in range(nums)]
+        return items
+
+    def get(self, index=0):
+        """get an item from the queue,index=0"""
         return self.queue.queue[index]
 
-    def put(self, item, block=True, timeout=None):
-        """Put an item into the queue,index=n"""
-        while self.qsize() >= self.maxsize: self.pop()
+    def get_items(self, nums=1, index: list = []):
+        """
+        获取队列的多个项
+        :param nums: 获取队列的数量
+        :param index: 获取队列的索引
+        :return: 获取的队列数据
+        """
+        if index:
+            items = [self.queue.queue[i] for i in index]
+        else:
+            items = [self.queue.queue[i] for i in range(nums)]
+        return items
+
+    def put(self, item, block=False, timeout=None):
+        """
+        Put an item into the queue,index=n
+        :param item: 要放入队列的项
+        :param block: True当队列满了,阻塞等待插入数据; False,不等待,直接弹出队头数据再插入数据
+        :param timeout: 超时时间
+        :return:
+        """
+        while self.qsize() >= self.maxsize and not block: self.pop()
         return self.queue.put(item, block=block, timeout=timeout)
+
+    def get_window(self, winsize=1, overlap=0.0, block=True, timeout=None):
+        """
+        获取队列的窗口数据
+        :param winsize: 窗口大小
+        :param overlap: 窗口重叠率
+        :return: 队列窗口数据
+        """
+        size = int(winsize * overlap)
+        data1 = self.pop_items(nums=winsize - size, block=block, timeout=timeout)
+        data2 = self.get_items(nums=size)
+        return data1 + data2
 
 
 if __name__ == '__main__':
     q = Queue(maxsize=3)
-    q.put(10)
-    q.put(11)
-    q.put(12)
-    q.put(13)
-    q.put(14)
+    q.put({"file": "1.jpg"})
+    q.put({"file": "2.jpg"})
+    q.put({"file": "3.jpg"})
+    q.put({"file": "4.jpg"})
+    q.put({"file": "5.jpg"})
     print(q.get_queue())
     print(q.get(0))
     print(q.get_queue())
+    print(q.pop(3))
+    print(q.get_queue())
+    print(1 / 2)

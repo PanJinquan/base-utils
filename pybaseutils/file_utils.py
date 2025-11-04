@@ -31,6 +31,31 @@ VIDEO_POSTFIX = ['*.mp4', '*.avi', '*.mov', "*.flv", "*.dav"]
 AUDIO_POSTFIX = ['*.mp3', '*.wav']
 
 
+def check_postfix(file, postfix=IMG_POSTFIX):
+    """
+    判断文件是否是指定的后缀名
+    :param file:
+    :param postfix:
+    :return:
+    """
+    return any(file.endswith(p[1:]) for p in postfix)
+
+
+def is_image(file):
+    """判断文件是否是图片"""
+    return check_postfix(file, postfix=IMG_POSTFIX)
+
+
+def is_video(file):
+    """判断文件是否是视频"""
+    return check_postfix(file, postfix=VIDEO_POSTFIX)
+
+
+def is_audio(file):
+    """判断文件是否是音频"""
+    return check_postfix(file, postfix=AUDIO_POSTFIX)
+
+
 def str2bool(v):
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
         return True
@@ -188,31 +213,19 @@ class WriterTXT(object):
 
 def parser_classes(class_name):
     """
-    class_dict = {class_name: i for i, class_name in enumerate(class_name)}
-    :param class_name:
-                str : class file
-                list: ["face","person"]
-                dict: 可以自定义label的id{'BACKGROUND': 0, 'person': 1, 'person_up': 1, 'person_down': 1}
+    TODO 很多模型使用parser_classes，不要做任何修改！！！
     :return:
     """
     if isinstance(class_name, str):
         class_name = read_data(class_name, split=None)
-    if isinstance(class_name, list) and len(class_name) > 0:
-        class_dict = {}
-        for i, name in enumerate(class_name):
-            name = name.split(",")
-            for n in name: class_dict[n] = i
-    elif isinstance(class_name, dict) and len(class_name) > 0:
+    elif isinstance(class_name, numbers.Number):
+        class_name = [i for i in range(int(class_name))]
+    if isinstance(class_name, list):
+        class_dict = {class_name: i for i, class_name in enumerate(class_name)}
+    elif isinstance(class_name, dict):
         class_dict = class_name
-        class_name = list(class_dict.keys())
     else:
         class_dict = None
-    if class_dict and not class_name:
-        # class_dict = json_utils.dict_sort(class_dict, reverse=False)
-        class_name = {}
-        for n, i in class_dict.items():
-            class_name[i] = "{},{}".format(class_name[i], n) if i in class_name else n
-        class_name = list(class_name.values())
     return class_name, class_dict
 
 
@@ -1546,8 +1559,6 @@ def zip_file(src, dst=None, s=None):
 if __name__ == '__main__':
     from pybaseutils import time_utils
 
-    path = ["/home/PKing/Downloads/image_2022_00001.jpg",
-            "/home/PKing/Downloads/image_2022_00002.jpg"]
-    dirname = "/home/PKing"
-    p = get_files_name(path, dirname=None)
-    print(p)
+    path = '/tmp/gradio/b988f43f2c87669461bbb6c831c5b3801017bc02cf6076c57ad1f4d581f76b35/image01.j'
+    print(is_image(path))
+

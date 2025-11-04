@@ -20,7 +20,7 @@ pybaseutils是个人开发常用的python库，集成了python等常用的算法
 
 - 安装方法1：pip install --upgrade -i https://pypi.tuna.tsinghua.edu.cn/simple pybaseutils (有延时，可能不是最新版本)
 - 安装方法2：pip install --upgrade -i https://pypi.org/simple pybaseutils (从pypi源下载最新版本)
-- 设置默认的镜像源：pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple)
+- 设置默认的镜像源：pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 - 超时异常：pip --default-timeout=1000000000 
 
 ## 一些问题修复说明

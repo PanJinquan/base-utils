@@ -1938,14 +1938,19 @@ def base642image(image_bs64, use_rgb=False) -> np.ndarray:
     return image
 
 
-def read_image_base64(image_file, size=None):
-    if not size:
-        with open(image_file, 'rb') as f_in:
-            image_base64 = base64.b64encode(f_in.read())
-            image_base64 = str(image_base64, encoding='utf-8')
+def read_image_base64(image_file: str, size=None):
+    """
+    读取图片并转换为base64编码
+    :param image_file: 图片文件路径
+    :param size: 图片大小, (width,height)
+    :return: base64编码字符串
+    """
+    if size:
+        bgr = read_image(image_file, size=size, use_rgb=False)
+        image_base64 = image2base64(bgr)
     else:
-        bgr_image = read_image(image_file, size=size, use_rgb=False)
-        image_base64 = image2base64(bgr_image)
+        with open(image_file, 'rb') as f:
+            image_base64 = base64.b64encode(f.read()).decode('utf-8')
     return image_base64
 
 
@@ -3132,7 +3137,7 @@ def get_video_info(video_cap: cv2.VideoCapture, vis=True):
     :param video_cap:视频对象 或者视频文件路径
     :return:
     """
-    isfile = isinstance(video_cap, str)
+    isfile = isinstance(video_cap, str) or isinstance(video_cap, int)
     if isfile: video_cap = get_video_capture(video_cap)
     width = int(video_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(video_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
