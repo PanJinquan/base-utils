@@ -21,7 +21,7 @@ extensions = {"application/json": "json",
               }
 
 
-def post(url, params=None, headers=None, timeout=6, max_retries=1, **kwargs):
+def post(url, params=None, headers=None, timeout=None, max_retries=1, **kwargs):
     """
     :param url: 请求URL
     :param params: 请求参数
@@ -52,7 +52,7 @@ def post(url, params=None, headers=None, timeout=6, max_retries=1, **kwargs):
     return result
 
 
-def get(url, params=None, headers=None, timeout=6, max_retries=1, **kwargs):
+def get(url, params=None, headers=None, timeout=None, max_retries=1, **kwargs):
     """
     type = r.headers.get('Content-Type', '').lower() # 数据类型
     :param url: 请求URL
