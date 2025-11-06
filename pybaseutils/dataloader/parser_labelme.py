@@ -152,7 +152,8 @@ class LabelMeDataset(Dataset):
             if not os.path.exists(image_file):
                 continue
             annotation, width, height = self.load_annotations(anno_file)
-            data_info = self.parser_annotation(annotation, self.total_names, min_points=self.min_points,
+            data_info = self.parser_annotation(annotation, self.total_names, size=(width, height),
+                                               min_points=self.min_points,
                                                unique=self.unique)
             if self.use_kpt:
                 data_info = self.get_kpts_info(data_info, anno_file=anno_file, check_kpt=self.check_kpt, disp=True)
@@ -210,12 +211,12 @@ class LabelMeDataset(Dataset):
         annotation, width, height = self.load_annotations(anno_file)
         if self.kwargs.get("read_image", True):  # 是否读取图片
             image = self.read_image(image_file, use_rgb=self.use_rgb)
-            shape = image.shape
-            size = (shape[1], shape[0])
+            height, width = image.shape[:2]
+            size = (width, height)
         else:
-            image, shape, size = None, None, (width, height)
-        data_info = self.parser_annotation(annotation, self.total_names, shape=shape,
-                                           min_points=self.min_points, unique=self.unique)
+            image, size = None, (width, height)
+        data_info = self.parser_annotation(annotation, self.total_names, size=size, min_points=self.min_points,
+                                           unique=self.unique)
         if self.use_kpt:
             data_info = self.get_kpts_info(data_info, anno_file=anno_file, check_kpt=self.check_kpt)
         # TODO dict(boxes, labels, points, groups, names, keypoints)
@@ -319,11 +320,11 @@ class LabelMeDataset(Dataset):
         return image
 
     @staticmethod
-    def parser_annotation(annotation: dict, class_dict={}, shape=None, min_points=-1, unique=False):
+    def parser_annotation(annotation: dict, class_dict={}, size=(), min_points=-1, unique=False):
         """
         :param annotation:  labelme标注的数据
         :param class_dict:  label映射,如{"person":0,"car":1}
-        :param shape: 图片shape(H,W,C),可进行坐标点的维度检查，避免越界
+        :param size: 图片(W,H),可进行坐标点的维度检查，避免越界
         :param min_points: 当标注的轮廓点的个数小于等于min_points，会被剔除；负数不剔除
         :return:
         """
@@ -344,10 +345,9 @@ class LabelMeDataset(Dataset):
                 continue
             gid = anno.get("group_id", gid_index) or gid_index
             kpt = anno.get("keypoints", [])
-            if shape:
-                h, w = shape[:2]
-                pts[:, 0] = np.clip(pts[:, 0], 0, w - 1)
-                pts[:, 1] = np.clip(pts[:, 1], 0, h - 1)
+            if size:
+                pts[:, 0] = np.clip(pts[:, 0], 0, size[0] - 1)
+                pts[:, 1] = np.clip(pts[:, 1], 0, size[1] - 1)
             box = image_utils.polygons2boxes([pts])[0]
             if shape_type == "rectangle":
                 pts = image_utils.boxes2polygons([box])[0]
@@ -533,15 +533,15 @@ def LabelMeDatasets(filename=None,
     return datasets
 
 
-def parser_labelme(anno_file, class_dict={}, shape=None):
+def parser_labelme(anno_file, class_dict={}, size=()):
     """
     :param annotation:  labelme标注的数据
     :param class_dict:  label映射
-    :param shape: 图片shape(H,W,C),可进行坐标点的维度检查，避免越界
+    :param size: 图片shape(W,H),可进行坐标点的维度检查，避免越界
     :return:
     """
     annotation, width, height = LabelMeDataset.load_annotations(anno_file)
-    data_info = LabelMeDataset.parser_annotation(annotation, class_dict, shape)
+    data_info = LabelMeDataset.parser_annotation(annotation, class_dict, size=size)
     return data_info
 
 

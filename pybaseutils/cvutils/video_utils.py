@@ -222,7 +222,8 @@ def video_capture(video_file: int or str, save_video: str or int = None, interva
                  title: 控制显示窗口名
     :return:
     """
-    assert os.path.exists(video_file), f"video_file={video_file}"
+    video_file = file_utils.str2number(video_file)
+    if isinstance(video_file, str): assert os.path.exists(video_file), f"video_file={video_file}"
     video_cap = image_utils.get_video_capture(video_file)
     w, h, num_frames, fps = image_utils.get_video_info(video_cap)
     start = int(kwargs.get("start", 0) * fps)
@@ -279,6 +280,7 @@ def video_iterator(video_file: int or str, save_video: str or int = None, interv
                  speed: 播放速度
     :return: frame, count, w, h, fps =data_info['frame'],data_info['count'],data_info['w'],data_info['h'],data_info['fps']
     """
+    video_file = file_utils.str2number(video_file)
     if isinstance(video_file, str): assert os.path.exists(video_file), f"video_file={video_file}"
     video_cap = image_utils.get_video_capture(video_file, fps=None)
     w, h, num_frames, fps = image_utils.get_video_info(video_cap)
@@ -291,6 +293,7 @@ def video_iterator(video_file: int or str, save_video: str or int = None, interv
     count = 0
     video_writer = None
     use_fast = kwargs.get("use_fast", False)
+    data_info = {}
     while True:
         ret, frame = (False, None) if use_fast else video_cap.read()
         if count % interval == 0 and count >= start:
@@ -301,7 +304,8 @@ def video_iterator(video_file: int or str, save_video: str or int = None, interv
             if not ret or 0 < end < count or frame is None: break
             if size: frame = image_utils.resize_image(frame, size=size)
             if task: frame = task(frame, **kwargs)
-            data_info = {"frame": frame, "count": count, "w": w, "h": h, "fps": fps}
+            t = round(count / fps, 3)
+            data_info = {"count": count, "time": t, "frame": frame, "w": w, "h": h, "fps": fps, "offset": count}
             # TODO 返回data_info
             yield data_info
             frame = data_info["frame"]
@@ -315,6 +319,7 @@ def video_iterator(video_file: int or str, save_video: str or int = None, interv
     if video_writer:
         print("save video:{}".format(save_video))
         video_writer.release()
+    # yield data_info # TODO FIX 最后一帧数据重复返回
 
 
 def resize_task(frame, **kwargs):

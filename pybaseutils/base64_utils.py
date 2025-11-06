@@ -14,7 +14,7 @@ import base64
 import numpy as np
 from typing import Any
 
-IMG_PREFIX = "image/png"  # 图片base64字符串前缀
+IMG_PREFIX = "image/jpg"  # 图片base64字符串前缀
 precision = 6  # 小数点精度
 
 
@@ -35,7 +35,7 @@ def base642image(bs64, prefix=IMG_PREFIX, use_rgb=False) -> np.ndarray:
         bs64 = bs64[len(prefix):]
     bs64 = bytes(bs64, 'utf-8')
     image = base64.b64decode(bs64)
-    image = np.fromstring(image, np.uint8)
+    image = np.frombuffer(image, np.uint8)
     image = cv2.imdecode(image, flags=cv2.IMREAD_UNCHANGED)
     # image = cv2.imdecode(image, cv2.IMREAD_COLOR)
     if use_rgb:
@@ -63,7 +63,8 @@ def image2base64(image: np.ndarray, prefix=IMG_PREFIX, use_rgb=False) -> str:
     if len(img.shape) == 3 and use_rgb:
         img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
     ext = prefix.split("/")
-    ext = "." + ext[1] if len(ext) == 2 else ".png"
+    # ext = "." + ext[1] if len(ext) == 2 else ".png" # TODO libpng error: bad parameters to zlib
+    ext = "." + ext[1] if len(ext) == 2 else ".jpg"
     img = cv2.imencode(ext, img)[1]
     bs64 = prefix + base64.b64encode(img).decode()
     return bs64
@@ -142,10 +143,17 @@ def base642array(data: Any, prefix=IMG_PREFIX, use_rgb=False) -> Any:
 
 serialization = array2base64  # 序列化
 deserialization = base642array  # 反序列化
-
 if __name__ == "__main__":
-    file = "/home/dm/project/python-learning-notes/utils/test.jpg"
-    bgr1 = cv2.imread(file)
-    image_base64 = image2base64(bgr1)
-    image_base64 = file2base64(file)
-    bgr2 = base642image(image_base64, use_rgb=False)
+    from pybaseutils import file_utils, image_utils
+
+    image_dir = "/home/PKing/Downloads/image"
+    image_dir = "/media/PKing/dev1/SDK/base-utils/data/labelme/JPEGImages"
+    image_list = file_utils.get_images_list(image_dir)
+    for image_file in image_list:
+        print(image_file)
+        src = image_utils.read_image(image_file, use_rgb=True)
+        image_utils.show_image("src", src, delay=10)
+        data = {"image": src, "file": image_file}
+        data = serialization(data)
+        data = deserialization(data)
+        print(data.keys())

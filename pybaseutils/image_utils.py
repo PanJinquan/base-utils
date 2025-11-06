@@ -1916,7 +1916,8 @@ def image2base64(image: np.ndarray, prefix="", use_rgb=False) -> str:
     if len(img.shape) == 3 and use_rgb:
         img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
     ext = prefix.split("/")
-    ext = "." + ext[1] if len(ext) == 2 else ".png"
+    # ext = "." + ext[1] if len(ext) == 2 else ".png" # TODO libpng error: bad parameters to zlib
+    ext = "." + ext[1] if len(ext) == 2 else ".jpg"
     img = cv2.imencode(ext, img)[1]
     bs64 = prefix + base64.b64encode(img).decode()
     return bs64
@@ -1931,7 +1932,7 @@ def base642image(image_bs64, use_rgb=False) -> np.ndarray:
     """
     image_bs64 = bytes(image_bs64, 'utf-8')
     image = base64.b64decode(image_bs64)
-    image = np.fromstring(image, np.uint8)
+    image = np.frombuffer(image, np.uint8)
     image = cv2.imdecode(image, cv2.IMREAD_COLOR)
     if use_rgb:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -2876,7 +2877,7 @@ def fig2data(fig):
 
     # Get the RGBA buffer from the figure
     w, h = fig.canvas.get_width_height()
-    buf = np.fromstring(fig.canvas.tostring_argb(), dtype=np.uint8)
+    buf = np.frombuffer(fig.canvas.tostring_argb(), dtype=np.uint8)
     buf.shape = (w, h, 4)
 
     # canvas.tostring_argb give pixmap in ARGB mode. Roll the ALPHA channel to have it in RGBA mode

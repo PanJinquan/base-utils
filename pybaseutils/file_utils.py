@@ -38,6 +38,7 @@ def check_postfix(file, postfix=IMG_POSTFIX):
     :param postfix:
     :return:
     """
+    if not isinstance(file, str): return False
     return any(file.endswith(p[1:]) for p in postfix)
 
 
@@ -72,7 +73,7 @@ def get_time(format="p"):
     """
     if format.lower() == "s":  # 精确到秒
         # time = datetime.strftime(datetime.now(), '%Y%m%d%H%M%S')
-        time = datetime.now().strftime("%Y%m%d%H%M%S")
+        time = datetime.now().strftime("%Y%m%d%H%M%S")  # 20200508143059
     elif format.lower() == "p":  # 精确到微妙
         # time = datetime.strftime(datetime.now(), '%Y%m%d_%H%M%S_%f')  # 20200508_143059_379116
         time = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
@@ -80,6 +81,9 @@ def get_time(format="p"):
     elif format.lower() == "y":  # 2025-06-18 11:02:05
         # time = datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M:%S")  #
         time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    elif format.lower() == "id":  #
+        # time = datetime.strftime(datetime.now(), '%Y%m%d_%H%M%S_%f')  # 20200508-14-30-59-379116
+        time = datetime.now().strftime("%Y%m%d-%H-%M-%S-%f")
     else:
         time = (str(datetime.now())[:-10]).replace(' ', '-').replace(':', '-')
     return time
@@ -302,15 +306,17 @@ class WriterTXT(object):
             self.f.close()
 
 
-def write_file(file, data, mode='wb'):
-    """写二进制数据"""
+def write_file(file, data, mode='w'):
+    """写数据"""
     with open(file, mode) as f: f.write(data)
 
 
-def read_file(file, mode='rb'):
-    """读取二进制数据"""
-    with open(file, mode) as f: key = f.read()
-    return key
+def read_file(file, mode='r'):
+    """读取数据"""
+    with open(file, mode) as f: data = f.read()
+    if mode == 'r':
+        data = data.strip().strip('\ufeff').strip('\xef\xbb\xbf')
+    return data
 
 
 def write_data(file, data, split=",", mode='w'):
@@ -348,13 +354,11 @@ def read_data(filename, split=",", convertNum=True):
     with open(filename, mode="r", encoding='utf-8') as f:
         lines = f.readlines()
     lines = [line.strip().strip('\ufeff').strip('\xef\xbb\xbf') for line in lines]
-    if split is None:
-        return lines
-    else:
+    if split:
         lines = [line.split(split) for line in lines]
     if convertNum:
         for i, line in enumerate(lines):
-            line = [str2number(l) for l in line]
+            line = [str2number(l) for l in line] if isinstance(line, list) else str2number(line)
             lines[i] = line
     return lines
 
@@ -362,7 +366,7 @@ def read_data(filename, split=",", convertNum=True):
 def str2number(x):
     """
     :param x:
-    :return:
+    :return: 数值类型(int, float)或原始字符串
     """
     # 如果已经是数值类型，直接处理
     if isinstance(x, (int, float)):
@@ -1561,4 +1565,3 @@ if __name__ == '__main__':
 
     path = '/tmp/gradio/b988f43f2c87669461bbb6c831c5b3801017bc02cf6076c57ad1f4d581f76b35/image01.j'
     print(is_image(path))
-

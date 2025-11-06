@@ -37,16 +37,16 @@ if __name__ == "__main__":
     names = None
     # names = ['person,身穿工作服,未穿工作服']
     # names = ['身穿工作服,未穿工作服', '手,手穿绝缘手套,手穿棉纱手套,手穿其他手套']
-    anno_dir = ["/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/01-东莞-投退重合闸操作/dataset-v01/images"]
+    anno_dir = ["/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/23-更换绝缘子/dataset-v14-special/bugs/images"]
 
-    anno_dir = ["/media/PKing/新加卷/project/smart-dinner/dataset/smart-dinner-01/images"]
-    names = [ '人体', '转盘' ]
+    # anno_dir = ["/media/PKing/新加卷/project/smart-dinner/dataset/smart-dinner-01/images"]
+    # names = [ '人体', '转盘' ]
     dataset = parser_labelme.LabelMeDatasets(filename=None,
                                              data_root=None,
                                              anno_dir=anno_dir,
                                              image_dir=None,
                                              class_name=names,
-                                             check=False,
+                                             check=True ,
                                              phase="val",
                                              shuffle=False)
     class_name = dataset.class_name

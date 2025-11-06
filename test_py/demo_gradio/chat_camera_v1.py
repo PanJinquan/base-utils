@@ -25,12 +25,12 @@ class WebState:
 state = WebState()
 
 
-def finish():
+def finish(*args):
     state.code = 0  # 结束状态
-    print(f"state={state.msgs[state.code]}")
+    print(f"state={state.msgs[state.code]},input={args}")
 
 
-def start():
+def display():
     if state.code == 4:
         state.code = 3  # 如何在播放状态，则切换为暂停状态
     else:
@@ -62,15 +62,15 @@ def video_generator(video: int | str):
     print(f"state={state.msgs[state.code]},video={video}")
     if video == "" or video is None:
         state.code = -1  # TODO 避免循环播放
-        return None, None
+        yield None, None
     # w, h, num, fps = video_utils.get_video_info(video, vis=False)
     video_cap = video_utils.video_iterator(video, save_video=None)
     state.code = 1  # TODO 开始处理视频
     print(f"state={state.msgs[state.code]},video={video}")
     for data_info in video_cap:
-        if state.code == 0: break
         while state.code == 3:  # 暂停状态，等待继续状态
             time.sleep(0.05)
+        if state.code == 0: break
         src = data_info["frame"]
         src = src[:, :, ::-1]  # BGR to RGB
         src, out = image_process(src)
@@ -78,7 +78,7 @@ def video_generator(video: int | str):
         yield src, out  # RGB image
     state.code = 0  # TODO 处理完成
     print(f"state={state.msgs[state.code]},video={video}")
-    return None, None
+    yield None, None
 
 
 def get_history(history=[]):
@@ -99,7 +99,24 @@ def get_history(history=[]):
     return texts, files
 
 
-def chat_process(message: dict, history=[]):
+def request_process(texts="", image=None, video=None, history=[]):
+    """
+    处理系统返回的文本消息和文件
+    :param result: 系统返回的消息，包含文本消息和文件
+    :return: 系统返回的文本消息和文件
+    """
+    try:
+        inputs = {'role': 'user', 'content': texts, 'image': image, 'video': video}
+        params = {"reqid": file_utils.get_time(), "data": {"prompts": inputs, "history": history}}
+        result = http_utils.post(url, params=params)
+        print(result)
+        result = result.get("data", {})
+    except Exception as e:
+        result = {"role": "assistant", "content": "系统错误:接口请求失败,url={}".format(url)}
+    return result
+
+
+def chat_image_process(message: dict, history=[]):
     """
     处理用户输入的文本消息和文件，返回系统的文本消息和文件
     :param message: 用户输入的消息，包含文本消息和文件
@@ -116,26 +133,20 @@ def chat_process(message: dict, history=[]):
     use_file = inp_file[0] if inp_file else his_files[-1] if his_files else ""
     print("history files ={}".format(his_files))
     print("select  file  ={}".format(use_file))
-    # TODO 2.系统处理文本和文件消息
+    # TODO 2.用户显示的文本和文件消息
+    if inp_file:
+        history.append({"role": "user", "content": inp_file})
+    if inp_text:
+        history.append({"role": "user", "content": inp_text})
+    # TODO 3.系统处理文本和文件消息
+    print(f"state={state.msgs[state.code]},use_file={use_file}")
     image, video = None, None
     if file_utils.is_image(use_file):
         image = image_utils.read_image_base64(use_file)
     elif file_utils.is_video(use_file):
         video = None
-    inputs = {'role': 'user', 'content': inp_text, 'image': image, 'video': video}
-    params = {"reqid": file_utils.get_time(), "data": {"prompts": inputs, "history": his_texts}}
-    result = http_utils.post(url, params=params)
-    print(result)
-    result = result.get("data", {})
-    out_file = use_file
-    # TODO 4.用户显示的文本和文件消息
-    if inp_file:
-        history.append({"role": "user", "content": inp_file})
-    if inp_text:
-        history.append({"role": "user", "content": inp_text})
+    result = request_process(texts=inp_text, image=image, video=video, history=his_texts)
     # TODO 5.系统显示的文本和文件消息
-    # if out_file:
-    #     history.append({"role": "assistant", "content": [out_file]})
     if result:
         history.append(result)
     # TODO 第一个元素为空,用于清空输入框
@@ -193,9 +204,12 @@ def ui_chatbot(name=""):
                                    placeholder="输入文本消息，或者上传图片/视频/音频文件",
                                    show_label=False,
                                    file_types=["image", "video", "audio", ".pdf", ".txt"],
+                                   stop_btn="停止",
                                    )
-        inp.submit(fn=chat_process,
-                   inputs=[inp],
+        inp.stop(fn=finish)
+        inp.submit(fn=chat_image_process,
+                   show_progress_on=[out],
+                   inputs=[inp, out],
                    outputs=[inp, out]
                    )
 
@@ -220,7 +234,7 @@ def ui_videos(name=""):
             out = gr.Image(label="结果", streaming=True, elem_classes=["gradio-image"])
         # inp.change(fn=video_generator, inputs=inp, outputs=[src, out], scroll_to_output=False)
         btn1.click(fn=video_generator, inputs=inp, outputs=[src, out], scroll_to_output=False)
-        btn1.click(fn=start, outputs=[btn1])
+        btn1.click(fn=display, outputs=[btn1])
         btn2.click(fn=finish)
 
 
@@ -235,7 +249,7 @@ def ui_camera(name=""):
             out = gr.Image(label="结果", streaming=True, elem_classes=["gradio-image"])
         # inp.submit(fn=video_generator, inputs=inp, outputs=[src, out], scroll_to_output=False)
         btn1.click(fn=video_generator, inputs=inp, outputs=[src, out], scroll_to_output=False)
-        btn1.click(fn=start, outputs=[btn1])
+        btn1.click(fn=display, outputs=[btn1])
         btn2.click(fn=finish)
 
 
