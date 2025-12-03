@@ -9,6 +9,7 @@
 """
 import math
 import queue
+import time
 
 
 class Queue():
@@ -46,7 +47,10 @@ class Queue():
         :param timeout: 超时时间
         :return: 弹出的队列数据
         """
-        out = self.queue.get(block=block, timeout=timeout)
+        try:
+            out = self.queue.get(block=block, timeout=timeout)
+        except:
+            out = None
         return out
 
     def pop_items(self, nums=1, block=True, timeout=None):
@@ -57,7 +61,10 @@ class Queue():
         :param timeout: 超时时间
         :return: 弹出的队列数据
         """
-        items = [self.pop(block=block, timeout=timeout) for i in range(nums)]
+        items = []
+        for i in range(nums):
+            item = self.pop(block=block, timeout=timeout)
+            if item: items.append(item)
         return items
 
     def get(self, index=0):
@@ -93,12 +100,18 @@ class Queue():
         获取队列的窗口数据
         :param winsize: 窗口大小
         :param overlap: 窗口重叠率
+        :param block: 是否阻塞等待
+        :param timeout: 超时时间
         :return: 队列窗口数据
         """
-        size = int(winsize * overlap)
-        data1 = self.pop_items(nums=winsize - size, block=block, timeout=timeout)
-        data2 = self.get_items(nums=size)
-        return data1 + data2
+        while self.qsize() < winsize and block:  # 等待队列数据足够
+            time.sleep(0.05)
+        if self.qsize() >= winsize:
+            size = int(winsize * overlap)
+            data1 = self.pop_items(nums=winsize - size, block=block, timeout=timeout)
+            data2 = self.get_items(nums=size)
+            return data1 + data2
+        return []
 
 
 if __name__ == '__main__':

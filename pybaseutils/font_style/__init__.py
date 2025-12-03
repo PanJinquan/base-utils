@@ -6,9 +6,9 @@
 """
 import os
 
-# TODO 如果字体缺失，可以把字体拷贝到系统字体目录：cp -r font_style/*
+# TODO 如果字体缺失，可以把字体拷贝到系统字体目录：cp -r font_style/*  ~/.fonts
 # windows: C:\Windows\Fonts可查看系统支持的字体
-# Linux  : /usr/share/fonts/truetype 或者~/.local/share/fonts中 可查看系统支持的字体
+# Linux  : /usr/share/fonts/truetype  、 ~/.fonts 或者~/.local/share/fonts中 可查看系统支持的字体
 
 BASE_FONT = os.path.dirname(__file__)
 

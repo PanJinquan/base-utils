@@ -75,7 +75,6 @@ def video2frames_similarity(video_file, out_dir=None, func=None, interval=1, thr
 thresh_dict = {"第一视角": 0.50, "主视角": 0.50, "主视": 0.50, "平视": 0.30, "俯视": 0.30, "右视": 0.35, "左视": 0.35,
                "全景": 0.30}
 
-
 # thresh_dict = {"1号位": 0.58, "平视": 0.35, "全景": 0.35, "俯视": 0.35, "右视": 0.25, "左视": 0.3}
 
 
@@ -92,7 +91,7 @@ def video2frames_demo(root, out, prefix="", thresh=0.2):
 
 
 if __name__ == "__main__":
-    root = "/home/PKing/Downloads/video/08-更换熔丝"
+    root = "/home/PKing/edudata/dataset/AIJE/【TOP】技能人才系统_数据集管理/06-联通岗评/02-训练数据/联通入户布线_106_20251201_181042/头戴20251201_181042.h264.m4v"
     prefix = ""
-    out = root + "-train"
+    out = root + "-frame"
     video2frames_demo(root, out, prefix=prefix)

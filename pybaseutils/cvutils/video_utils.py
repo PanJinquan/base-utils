@@ -56,7 +56,7 @@ def video2gif(video_file, gif_file=None, func=None, interval=1, fps=-1, use_pil=
         image_utils.frames2gif_by_imageio(frames, gif_file=gif_file, fps=fps, loop=0)
 
 
-def video2frames(video_file, out_dir=None, func=None, interval=1, start=0, end=-1, vis=True, delay=10):
+def video2frames(video_file, out_dir=None, func=None, interval=1, start=0, end=-1, vis=True, delay=10, **kwargs):
     """
     视频抽帧图像
     :param video_file: 视频文件
@@ -69,13 +69,18 @@ def video2frames(video_file, out_dir=None, func=None, interval=1, start=0, end=-
     name = os.path.basename(video_file).split(".")[0]
     if not out_dir:  out_dir = os.path.join(os.path.dirname(video_file), name)
     video_cap = video_iterator(video_file, save_video=None, interval=interval, start=start, end=end)
+    frame_files = []
+    prefix = kwargs.get("prefix", "")
+    filename = "{}_{}".format(prefix, name) if prefix else name
     for data_info in video_cap:
         frame = data_info["frame"]
         count = data_info["count"]
         if func: frame = func(frame)
         if vis: image_utils.cv_show_image("frame", frame, use_rgb=False, delay=delay)
-        frame_file = os.path.join(out_dir, "{}_{:0=4d}.jpg".format(name, count))
+        frame_file = os.path.join(out_dir, "{}_{:0=4d}.jpg".format(filename, count))
         cv2.imwrite(frame_file, frame)
+        frame_files.append(frame_file)
+    return frame_files
 
 
 def video2frames_similarity(video_file, out_dir=None, func=None, interval=1, thresh=0.3, vis=True):
@@ -96,6 +101,7 @@ def video2frames_similarity(video_file, out_dir=None, func=None, interval=1, thr
     if not os.path.exists(out_dir): os.makedirs(out_dir)
     count = 0
     last_frame = None
+    frame_files = []
     while True:
         if count % interval == 0:
             # 设置抽帧的位置
@@ -110,6 +116,7 @@ def video2frames_similarity(video_file, out_dir=None, func=None, interval=1, thr
                 frame_file = os.path.join(out_dir, "{}_{:0=4d}.jpg".format(name, count))
                 last_frame = curr_frame.copy()
                 cv2.imwrite(frame_file, curr_frame)
+                frame_files.append(frame_file)
             if vis:
                 text = "TH={},diff={:3.3f}".format(thresh, diff)
                 image = image_utils.draw_text(curr_frame, point=(10, 70), color=(0, 255, 0),
@@ -118,6 +125,7 @@ def video2frames_similarity(video_file, out_dir=None, func=None, interval=1, thr
         count += 1
     video_cap.release()
     cv2.destroyAllWindows()
+    return frame_files
 
 
 def frames2video(image_dir, video_file=None, func=None, size=None, postfix=["*.png", "*.jpg"], interval=1, fps=30,
@@ -255,7 +263,7 @@ def video_capture(video_file: int or str, save_video: str or int = None, interva
         video_writer.release()
 
 
-def video_iterator(video_file: int or str, save_video: str or int = None, interval=1, size=(), freq=0,
+def video_iterator(video_file: int | str, save_video: str or int = None, interval=1, size=(), freq=0,
                    task: Callable = None, vis=False, **kwargs):
     """
     读取摄像头或者视频流迭代器
@@ -279,9 +287,12 @@ def video_iterator(video_file: int or str, save_video: str or int = None, interv
                  end: 结束播放时间，单位S
                  speed: 播放速度
     :return: frame, count, w, h, fps =data_info['frame'],data_info['count'],data_info['w'],data_info['h'],data_info['fps']
+             当输入是视频文件时，返回视频偏移量time和duration都是播放时间，单位S，差异不大
+             当输入是摄像头时， 返回视频偏移量time是视频播放时间，duration是根据count计算的播放的时间
     """
     video_file = file_utils.str2number(video_file)
-    if isinstance(video_file, str): assert os.path.exists(video_file), f"video_file={video_file}"
+    if isinstance(video_file, str) and os.path.isfile(video_file):
+        assert os.path.exists(video_file), f"video_file={video_file}"
     video_cap = image_utils.get_video_capture(video_file, fps=None)
     w, h, num_frames, fps = image_utils.get_video_info(video_cap)
     start = int(kwargs.get("start", 0) * fps)
@@ -294,24 +305,32 @@ def video_iterator(video_file: int or str, save_video: str or int = None, interv
     video_writer = None
     use_fast = kwargs.get("use_fast", False)
     data_info = {}
+    t0 = -1
     while True:
         ret, frame = (False, None) if use_fast else video_cap.read()
+        t = video_cap.get(cv2.CAP_PROP_POS_MSEC) / 1000  # 获得视频偏移量毫秒为单位
+        if t0 < 0 < t: t0 = t
+        if t0 > 0: t = t - t0  # 获得视频偏移量毫秒为单位
+        finish = 0 < end <= (count + interval)
         if count % interval == 0 and count >= start:
             # TODO 设置抽帧的位置，但某些格式视频容易出现问题
             if use_fast and isinstance(video_file, str):
                 video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
                 ret, frame = video_cap.read()
-            if not ret or 0 < end < count or frame is None: break
+            if not ret or 0 < end <= count or frame is None: break
             if size: frame = image_utils.resize_image(frame, size=size)
             if task: frame = task(frame, **kwargs)
-            t = round(count / fps, 3)
-            data_info = {"count": count, "time": t, "frame": frame, "w": w, "h": h, "fps": fps, "offset": count}
+            h, w = frame.shape[:2]
+            d = round(count / fps, 3)  # TODO 通过fps计算播放时间
+            t = round(t, 3)  # 通过视频偏移量计算播放时间
+            data_info = {"count": count, "time": t, "frame": frame, "w": w, "h": h, "fps": fps,
+                         "finish": finish, 'duration': d}
             # TODO 返回data_info
             yield data_info
             frame = data_info["frame"]
-            h, w = frame.shape[:2]
             if vis: image_utils.cv_show_image(kwargs.get("title", "video"), frame, delay=kwargs.get("delay", 10))
             if save_video:
+                h, w = frame.shape[:2]
                 if not video_writer: video_writer = image_utils.get_video_writer(save_video, w, h, save_fps)
                 video_writer.write(frame)
         count += 1

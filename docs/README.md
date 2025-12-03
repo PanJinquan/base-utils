@@ -130,6 +130,11 @@ ps aux|grep python|grep -v grep
 ## 文件信息统计
 
 ```bash
+# TODO 统计当前目录下每个文件夹的空间大小
+du -h --max-depth=1
+du -h -d 1
+du -h --max-depth=1 | sort -hr # 按大小排序显示
+du -h --max-depth=1 | sort -hr > file_size.txt # 按大小排序显示
 # 查找某文件的位置使用whereis，例如：
 whereis cuda # 查找cuda路径
 whereis whereis cudnn_version # 查找cudnn路径
@@ -234,7 +239,6 @@ pip install -i https://pypi.tuna.tsinghua.edu.cn/simple PySide2
 PyQt5==5.15.11 PyQt5-Qt5==5.15.16 PyQt5_sip==12.17.0
 
 ```
-
 
 ## 表格
 

@@ -172,6 +172,32 @@ def get_image_heatmap(image, points: list, input_size=[448, 448], radius=2, fusi
     return overlay, out_mask
 
 
+def generate_curve_heatmap(points, size, sigma=5, thickness=1):
+    """
+    使用 OpenCV绘制曲线并生成热力图
+    参数:
+        points: (N,nums, 2) array or list of [x, y] points
+        size: (width, height) 输出图像尺寸
+        sigma: 高斯热力图标准差
+        thickness: 绘制曲线的线宽（建议=1）
+    返回:
+        heatmap: (height, width) float32 热力图
+    """
+    width, height, = size
+    # 1. 创建空白二值掩码（全黑）
+    mask = np.zeros((height, width), dtype=np.uint8)
+    # 2. 将曲线点转换为 int32 并绘制连线
+    for pts in points:
+        pts = np.array(pts, dtype=np.int32)
+        cv2.polylines(mask, [pts], isClosed=False, color=255, thickness=thickness)
+    # 3. 计算每个像素到最近白色像素（曲线）的距离,使用 cv2.distanceTransform 计算 L2 距离（欧氏距离）
+    dist = cv2.distanceTransform(255 - mask, distanceType=cv2.DIST_L2, maskSize=cv2.DIST_MASK_PRECISE)
+    # 4. 转换为高斯热力图: exp(-dist^2 / (2*sigma^2))
+    heatmap = np.exp(- (dist ** 2) / (2 * sigma ** 2))
+    heatmap = heatmap.astype(np.float32)
+    return heatmap
+
+
 if __name__ == "__main__":
     from pybaseutils import image_utils
 

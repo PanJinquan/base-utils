@@ -49,3 +49,17 @@ sudo apt install mesa-vulkan-drivers
 vulkaninfo --summary
 vkcube
 ```
+
+## 安装 (RK3588)
+
+```bash
+sudo apt update
+sudo apt install vulkan-tools libvulkan1 libvulkan-dev
+# 或者搜索vulkan相关的工具包
+# 验证
+vulkaninfo --summary
+vkcube
+# 对于AMD或Intel集成显卡，通常使用开源的Mesa驱动。安装以下包即可
+sudo apt install mesa-vulkan-drivers
+```
+

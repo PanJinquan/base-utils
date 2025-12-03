@@ -30,17 +30,14 @@ if __name__ == "__main__":
     # anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-date/date-det/dataset-v01/images"
     anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-action-cvlm-v2/train-v2/01-核相操作/dataset-test/images"
     anno_dir = [
-        # "/home/PKing/nasdata/tmp/tmp/face_person/SMTC/json",
-        # "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-action-cvlm-v2/sample/images"
-        "/home/PKing/nasdata/dataset/face_person/labelme/SMTC/images"
+        # TODO 训练集
+        '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-v01/images',
+        '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-v01-val/images',
+        '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-v02/images',
+        '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-v02-val/images',
+        '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-v03/images',
     ]
     names = None
-    # names = ['person,身穿工作服,未穿工作服']
-    # names = ['身穿工作服,未穿工作服', '手,手穿绝缘手套,手穿棉纱手套,手穿其他手套']
-    anno_dir = ["/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det/23-更换绝缘子/dataset-v14-special/bugs/images"]
-
-    # anno_dir = ["/media/PKing/新加卷/project/smart-dinner/dataset/smart-dinner-01/images"]
-    # names = [ '人体', '转盘' ]
     dataset = parser_labelme.LabelMeDatasets(filename=None,
                                              data_root=None,
                                              anno_dir=anno_dir,

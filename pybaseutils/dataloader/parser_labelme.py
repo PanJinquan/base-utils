@@ -14,8 +14,6 @@ import glob
 import random
 import numbers
 import json
-
-from shapely.predicates import is_valid
 from tqdm import tqdm
 from pybaseutils import image_utils, file_utils, json_utils, text_utils
 from pybaseutils.dataloader.base_dataset import Dataset, ConcatDataset

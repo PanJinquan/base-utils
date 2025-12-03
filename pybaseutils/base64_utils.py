@@ -9,6 +9,8 @@
 """
 import sys
 import os
+
+import PIL.Image as Image
 import cv2
 import base64
 import numpy as np
@@ -64,8 +66,8 @@ def image2base64(image: np.ndarray, prefix=IMG_PREFIX, use_rgb=False) -> str:
         img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
     ext = prefix.split("/")
     # ext = "." + ext[1] if len(ext) == 2 else ".png" # TODO libpng error: bad parameters to zlib
-    ext = "." + ext[1] if len(ext) == 2 else ".jpg"
-    img = cv2.imencode(ext, img)[1]
+    # ext = "." + ext[1] if len(ext) == 2 else ".jpg"
+    img = cv2.imencode('.jpg', img)[1]
     bs64 = prefix + base64.b64encode(img).decode()
     return bs64
 
@@ -105,6 +107,8 @@ def array2base64(data: Any, prefix=IMG_PREFIX, use_rgb=False) -> Any:
     """
     if isinstance(data, np.ndarray) and data.dtype == np.uint8:
         return image2base64(data, prefix=prefix, use_rgb=use_rgb)
+    elif isinstance(data, Image.Image):
+        return image2base64(np.asarray(data), prefix=prefix, use_rgb=use_rgb)
     elif isinstance(data, np.ndarray):
         return data.tolist()
     elif isinstance(data, np.integer):
@@ -122,22 +126,25 @@ def array2base64(data: Any, prefix=IMG_PREFIX, use_rgb=False) -> Any:
     return data
 
 
-def base642array(data: Any, prefix=IMG_PREFIX, use_rgb=False) -> Any:
+def base642array(data: Any, prefix=IMG_PREFIX, use_rgb=False, img_type="numpy") -> Any:
     """
     反序列化:将输入数据含有base64字符串都解码为图像数据(ndarray)
     :param data: 输入数据
     :param prefix: base64字符串前缀,用于表识字符串的类型
     :param use_rgb: True:输入image是RGB的图像, False:输入image是BGR格式的图像
+    :param img_type: numpy:返回numpy图像, pil:返回PIL图像
     :return:
     """
     if isinstance(data, str) and prefix == data[0:len(prefix)]:
-        return base642image(data, prefix=prefix, use_rgb=use_rgb)
+        data = base642image(data, prefix=prefix, use_rgb=use_rgb)  # numpy image
+        if img_type == "pil": data = Image.fromarray(data)
+        return data
     elif isinstance(data, list):
         for i in range(len(data)):
-            data[i] = base642array(data[i], prefix=prefix, use_rgb=use_rgb)
+            data[i] = base642array(data[i], prefix=prefix, use_rgb=use_rgb, img_type=img_type)
     elif isinstance(data, dict):
         for k, v in data.items():
-            data[k] = base642array(v, prefix=prefix, use_rgb=use_rgb)
+            data[k] = base642array(v, prefix=prefix, use_rgb=use_rgb, img_type=img_type)
     return data
 
 
@@ -147,13 +154,14 @@ if __name__ == "__main__":
     from pybaseutils import file_utils, image_utils
 
     image_dir = "/home/PKing/Downloads/image"
-    image_dir = "/media/PKing/dev1/SDK/base-utils/data/labelme/JPEGImages"
     image_list = file_utils.get_images_list(image_dir)
     for image_file in image_list:
         print(image_file)
         src = image_utils.read_image(image_file, use_rgb=True)
-        image_utils.show_image("src", src, delay=10)
-        data = {"image": src, "file": image_file}
+        image_base64 = image2base64(src, prefix="data:image/jpeg;base64,", )
+        img = Image.fromarray(src)
+        data = {"image": img, "file": image_file}
         data = serialization(data)
         data = deserialization(data)
-        print(data.keys())
+        dst = data["image"]
+        image_utils.show_image("src", src, delay=0)

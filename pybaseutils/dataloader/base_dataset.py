@@ -329,7 +329,7 @@ def cat_targets(objs: list, keys=[], out_info={}):
     return out_info
 
 
-def get_targets(obj_info: dict, targets=[], key='label', keys=[]):
+def get_targets(obj_info: dict, targets=[], key='names', keys=[]):
     """
     从obj_info查找符合条件的目标，支持正则表达式
     :param obj_info:
@@ -338,9 +338,9 @@ def get_targets(obj_info: dict, targets=[], key='label', keys=[]):
     :param keys: 用于指定返回的keys
     :return:
     """
-    if not obj_info: return {}
+    output = {k: [] for k in keys}
+    if not obj_info: return output
     label = obj_info[key]
-    output = {}
     for i in range(len(label)):
         matches = text_utils.find_match_texts(texts=[label[i]], pattern=targets, org=True)
         if len(matches) == 0: continue

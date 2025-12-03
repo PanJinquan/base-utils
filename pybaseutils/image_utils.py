@@ -3132,7 +3132,7 @@ def get_video_capture(video, width=None, height=None, fps=None):
     return video_cap
 
 
-def get_video_info(video_cap: cv2.VideoCapture, vis=True):
+def get_video_info(video_cap: int | str | cv2.VideoCapture, vis=True):
     """
     获得视频的基础信息
     :param video_cap:视频对象 或者视频文件路径

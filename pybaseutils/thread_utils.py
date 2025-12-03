@@ -46,16 +46,17 @@ def thread_safety(func, *args, **kwargs):
     return r
 
 
-def consumer(args):
+def consumer(data1, data2):
     """
     :param args:
     :return:
     """
+    tid = threading.get_ident()
     # t = int(image_path.split(".")[0])
-    # time.sleep(t)
+    time.sleep(2)
     # with thread_lock:
-    print("正在处理数据：{}  ".format(args))
-    return args
+    print("{},正在处理数据：{}  ".format(tid, data1))
+    return data1, data2
 
 
 def consumer_multi(image_path: str, data):
@@ -147,7 +148,15 @@ class ThreadPool(object):
         self.pool = ThreadPoolExecutor(max_workers=max_workers)
 
     def submit(self, func: Callable, *args, **kwargs):
-        """递交线程任务"""
+        """
+         递交线程任务
+         pool=thread_utils.ThreadPool(max_workers=1)
+         pool.submit(func, args=(参数1,参数2,参数3,...))
+        :param func:
+        :param args:
+        :param kwargs:
+        :return:
+        """
         t = self.pool.submit(func, *args, **kwargs)
         return t
 
@@ -238,16 +247,30 @@ def thread_lock_decorator():
 
 def performanceThreadPool():
     from pybaseutils import time_utils
-    tp = ThreadPool(max_workers=2)
+    pool = ThreadPool(max_workers=2)
+    future = pool.submit(consumer, "1.jpg", "2.jpg")
+    future = pool.submit(consumer, "1.jpg", "2.jpg")
+    future = pool.submit(consumer, "1.jpg", "2.jpg")
+    print(future.done())
+    result = future.result()
+    print(future.done())
+    print("result:{}".format(result))
+    time.sleep(1)
+
+def performanceThreadPool2():
+    from pybaseutils import time_utils
+    pool = ThreadPool(max_workers=2)
     contents1 = ["4.jpg", "1.jpg", "4.jpg", "4.jpg", "2.jpg"]
     contents2 = [["0.jpg", "a"], ["4.jpg", "b"], ["2.jpg", "c"]]
-    with time_utils.Performance("task_map") as p:
-        #     result1 = tp.task_map(func=consumer, inputs=contents1)
-        result2 = tp.task_maps(func=consumer_multi, inputs=contents2, timeout=1)
+    # with time_utils.Performance("task_map") as p:
+    #     result1 = pool.task_map(func=consumer, inputs=contents1)
+    # result2 = pool.task_maps(func=consumer_multi, inputs=contents2, timeout=1)
     # with time_utils.Performance("task_submit") as p:
-    #     result2 = tp.task_submit(func=consumer, inputs=contents1)
+    #     result2 = pool.task_submit(func=consumer, inputs=contents1)
     # print("result1:{}".format(result1))
+    result2 = pool.submit(consumer, "1.jpg", "2.jpg")
     print("result2:{}".format(result2))
+    time.sleep(1)
 
 
 def performanceProcessPool():
@@ -283,7 +306,8 @@ def performanceProcess():
 
 
 if __name__ == "__main__":
-    # performanceThreadPool()
+    performanceThreadPool()
+    # performanceThreadPool2()
     # performanceProcessPool()
     # performanceProcess()
-    performanceProcessPool()
+    # performanceProcessPool()

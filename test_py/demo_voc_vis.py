@@ -18,7 +18,7 @@ if __name__ == "__main__":
 
 
     class_name =None
-    data_root ="/home/PKing/nasdata/dataset/指针表计/meter_seg"
+    data_root ="/home/PKing/Downloads/其他数据集/helmet(DST1563)/train"
     dataset = parser_voc.VOCDataset(filename=None,
                                     data_root=data_root,
                                     anno_dir=None,

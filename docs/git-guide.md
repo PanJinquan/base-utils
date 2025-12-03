@@ -4,6 +4,9 @@
 ```bash
 git config --global user.name "Jinquan"
 git config --global user.email "Jinquan"
+# 自动转换CRLF为LF, 避免在Windows和Linux之间切换时出现问题
+git config --global core.autocrlf input
+
 ```
 
 
@@ -79,7 +82,7 @@ git lfs checkout      # 将文件还原到工作区
 ```bash
 # 先拉所有分支
 git branch -r | grep -v 'HEAD' | while read branch; do 
-  git checkout -b ${branch#origin/} $branch
+  git checkout -b ${branch#origin/} $branch && git pull
 done
 # 确保本地是最新的
 git fetch --all
@@ -91,8 +94,8 @@ git remote rename origin old-origin
 git remote add origin https://gitcode.com/ai-sdk/Pytorch-Segment-Trainer.git
 # 如果出现错误：远程origin已经存在，则需要添加多仓库推送
 # git remote set-url --add origin https://gitcode.com/ai-sdk/Pytorch-Segment-Trainer.git
-git push -u origin --all
-git push -u origin --tags
+git push -u origin --all   # 如果文件太大，建议逐个分支推送： git push -u origin master
+git push -u origin --tags  # 如果有标签，也需要推送
 ```
 
 

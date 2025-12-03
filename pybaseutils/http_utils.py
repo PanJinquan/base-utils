@@ -41,7 +41,7 @@ def post(url, params=None, headers=None, timeout=None, max_retries=1, **kwargs):
             code = r.status_code
             if code == 200:
                 logger.info(f'code={code}, url={url}, elapsed:{elapsed:3.3f}ms')
-                result = r.json() if type == "application/json" else r.content
+                result = r.json() if type.startswith("application/json") else r.content
                 break
             else:
                 r.raise_for_status()  # 如果响应状态码不是200，抛出异常
@@ -74,7 +74,7 @@ def get(url, params=None, headers=None, timeout=None, max_retries=1, **kwargs):
             code = r.status_code
             if code == 200:
                 if log: logger.info(f'code={code}, url={url}, elapsed:{elapsed:3.3f}ms')
-                result = r.json() if type == "application/json" else r.content
+                result = r.json() if type.startswith("application/json") else r.content
                 break
             else:
                 r.raise_for_status()  # 如果响应状态码不是200，抛出异常

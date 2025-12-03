@@ -75,7 +75,7 @@ class YOLODataset(Dataset):
         self.class_name, self.class_dict = self.parser_classes(class_name)
         parser = self.parser_paths(filename, data_root, anno_dir, image_dir)
         self.data_root, self.anno_dir, self.image_dir, self.image_ids = parser
-        self.image_ids = self.add_image_postfix(self.image_dir, self.image_ids)
+        self.image_ids = self.parser_dataset(self.image_dir, self.image_ids)
         self.classes = list(self.class_dict.values()) if self.class_dict else None
         self.num_classes = max(list(self.class_dict.values())) + 1 if self.class_dict else None
         self.class_weights = None
@@ -121,7 +121,7 @@ class YOLODataset(Dataset):
             class_dict = None
         return class_name, class_dict
 
-    def add_image_postfix(self, image_dir, image_ids):
+    def parser_dataset(self, image_dir, image_ids):
         """
         获得图像文件后缀名
         :param image_dir:
@@ -139,10 +139,8 @@ class YOLODataset(Dataset):
         :return:
         """
         image_id = self.index2id(index)
-        image_file, annotation_file, image_id = self.__get_image_anno_file(self.image_dir,
-                                                                           self.anno_dir,
-                                                                           image_id)
-        return image_file, annotation_file, image_id
+        image_file, anno_file, image_id = self.__get_image_anno_file(self.image_dir,  self.anno_dir, image_id)
+        return image_file, anno_file, image_id
 
     def __get_image_anno_file(self, image_dir, anno_dir, image_name: str):
         """
@@ -153,8 +151,8 @@ class YOLODataset(Dataset):
         """
         image_id, img_postfix = file_utils.split_postfix(image_name)
         image_file = os.path.join(image_dir, "{}.{}".format(image_id, img_postfix))
-        annotation_file = os.path.join(anno_dir, "{}.txt".format(image_id))
-        return image_file, annotation_file, image_id
+        anno_file = os.path.join(anno_dir, "{}.txt".format(image_id))
+        return image_file, anno_file, image_id
 
     def checking(self, image_ids: list, ignore_empty=True):
         """
@@ -163,18 +161,16 @@ class YOLODataset(Dataset):
         :return:
         """
         dst_ids = []
-        # image_ids = image_ids[:100]
-        # image_ids = image_ids[100:]
         for image_id in tqdm(image_ids, desc="check data"):
-            image_file, annotation_file, image_id = self.get_image_anno_file(image_id)
-            if not os.path.exists(annotation_file):
+            image_file, anno_file, image_id = self.get_image_anno_file(image_id)
+            if not os.path.exists(anno_file):
                 continue
             if not os.path.exists(image_file):
                 continue
-            annotation = self.load_annotations(annotation_file)
+            annotation = self.load_annotations(anno_file)
             if len(annotation) == 0:
                 continue
-            dst_ids.append(image_id)
+            dst_ids.append(os.path.basename(image_file))
         self.log("have nums image:{},legal image:{}".format(len(image_ids), len(dst_ids)))
         return dst_ids
 

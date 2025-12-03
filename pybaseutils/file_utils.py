@@ -965,6 +965,9 @@ def get_files_lists(file_dir, postfix=IMG_POSTFIX, subname="", shuffle=False, su
     return file_list
 
 
+get_files = get_files_lists
+
+
 def get_files_list_v1(file_dir, prefix="", postfix=None, basename=False, sub=False):
     """
     获得file_dir目录下，后缀名为postfix所有文件列表，包括子目录所有文件
@@ -998,7 +1001,7 @@ def get_files_list(file_dir, prefix="", postfix=None, sub=False, basename=False)
     """
     获得file_dir目录下，后缀名为postfix所有文件列表，包括子目录所有文件
     :param file_dir:
-    :param prefix: 前缀
+    :param prefix: 前缀,如*image,则表示匹配所有以image开头的文件
     :param postfix: 后缀
     :param sub: 是否去除根路径
     :param basename: 返回的列表是文件名（True），还是文件的完整路径(False)

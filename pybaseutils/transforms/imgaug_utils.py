@@ -10,12 +10,11 @@ import os
 import cv2
 import numpy as np
 from typing import List, Tuple
-import torch
+import imgaug as ia
+import imgaug.augmenters.meta as meta
 from imgaug import augmenters as iaa
 from imgaug import parameters as iap
-import imgaug.augmenters.meta as meta
 from pybaseutils import file_utils, image_utils
-import imgaug as ia
 from imgaug.augmentables.segmaps import SegmentationMapsOnImage
 from imgaug.augmentables.kps import KeypointsOnImage
 from imgaug.augmentables import Keypoint, KeypointsOnImage
@@ -90,15 +89,71 @@ class Normalize(meta.Augmenter):
         return images
 
     def task(self, image, **kwargs):
+        """
+        kwargs = ["image","images", "heatmaps", "segmentation_maps",
+                "keypoints", "bounding_boxes", "polygons",
+                "line_strings"]
+        :param image:
+        :param kwargs:
+        :return:
+        """
         image = np.asarray(image, dtype=np.float32) / 255.0
         image = (image - self.mean) / self.std
         return image
 
 
+class DecodePolygons(meta.Augmenter):
+    def __init__(self, p=1, seed=None, name=None, random_state="deprecated", deterministic="deprecated"):
+        super(DecodePolygons, self).__init__(
+            seed=seed, name=name,
+            random_state=random_state, deterministic=deterministic)
+        self.p = iap.handle_probability_param(p, "p")
+
+    def get_parameters(self):
+        """See :func:`~imgaug.augmenters.meta.Augmenter.get_parameters`."""
+        return [self.p]
+
+    def task(self, image=None, images=None, **kwargs):
+        """
+        kwargs = ["image","images", "heatmaps", "segmentation_maps",
+                "keypoints", "bounding_boxes", "polygons",
+                "line_strings"]
+        :param image:
+        :param kwargs:
+        :return:
+        """
+        kwargs = {k: decode_polygons(v, image.shape) for k, v in kwargs.items()}
+        return image, kwargs
+
+
+class EncodePolygons(meta.Augmenter):
+    def __init__(self, p=1, seed=None, name=None, random_state="deprecated", deterministic="deprecated"):
+        super(EncodePolygons, self).__init__(
+            seed=seed, name=name,
+            random_state=random_state, deterministic=deterministic)
+        self.p = iap.handle_probability_param(p, "p")
+
+    def get_parameters(self):
+        """See :func:`~imgaug.augmenters.meta.Augmenter.get_parameters`."""
+        return [self.p]
+
+    def task(self, image=None, images=None, **kwargs):
+        """
+        kwargs = ["image","images", "heatmaps", "segmentation_maps",
+                "keypoints", "bounding_boxes", "polygons",
+                "line_strings"]
+        :param image:
+        :param kwargs:
+        :return:
+        """
+        kwargs = {k: encode_polygons(v) for k, v in kwargs.items()}
+        return image, kwargs
+
+
 def decode_polygons(polygons: List, shape) -> ia.PolygonsOnImage:
     """
     :param polygons: [(N,2),(N,2),....,]
-    :param shape:
+    :param shape: image.shape
     :return:
     """
     polygons = [Polygon(c) for c in polygons]
@@ -133,9 +188,9 @@ def augment_example(input_size=(224, 224)):
     transforms = [
         iaa.Resize({"width": int(input_size[0] * 1.2), "height": "keep-aspect-ratio"}),
         iaa.Fliplr(0.5),  # 以75%的概率水平翻转图像
-        iaa.LinearContrast((0.75, 1.5)),  # 加强或减弱图像的对比度
-        iaa.ContrastNormalization((0.8, 1.2)),  # 随机调整对比度
-        iaa.Multiply((0.8, 1.2), per_channel=0.2),  # 亮度变化
+        iaa.Multiply((0.8, 1.2)),  # 亮度：等效于 brightness ∈ [0.8, 1.2] → 用 Multiply
+        iaa.LinearContrast((0.8, 1.2)),  # 对比度：contrast ∈ [0.8, 1.2]
+        iaa.AddToHueAndSaturation(value_hue=(-100, 100), value_saturation=(-100, 100)),  # 饱和度 + 色调（hue）
         iaa.Affine(scale={"x": (0.8, 1.2), "y": (0.8, 1.2)},
                    translate_percent={"x": (-0.1, 0.1), "y": (-0.1, 0.1)},
                    rotate=(-5, 5),
@@ -212,14 +267,15 @@ def demo_for_polygons():
         image = image_utils.read_image("../../data/test.png")
         mask = image_utils.read_image("../../data/mask.png")
         mask = image_utils.get_image_mask(mask)
-        contours = image_utils.find_mask_contours(mask)
-        contours = contours * 3
-        polygons = decode_polygons(contours, image.shape)
+        polygons = image_utils.find_mask_contours(mask)  # List[np.ndarray(num_point,2)]
+        # contours = contours * 3
+        polygons.append(np.asarray([[50, 50], [50, 100], [100, 100]], dtype=np.int32))
+        # polygons = decode_polygons(polygons, image.shape)
         auimg, polygons = augment(image=image, polygons=polygons)
-        contours = encode_polygons(polygons)
+        # polygons = encode_polygons(polygons)
         h, w = auimg.shape[:2]
-        mask = image_utils.draw_mask_contours(contours, size=(w, h))
-        color_image = image_utils.draw_image_contours(auimg, contours)
+        mask = image_utils.draw_mask_contours(polygons, size=(w, h))
+        color_image = image_utils.draw_image_contours(auimg, polygons)
         result = image_utils.image_hstack([image, color_image, mask])
         image_utils.cv_show_image("image", result)
 
