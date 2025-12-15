@@ -7,6 +7,7 @@
                https://imgaug.readthedocs.io/en/latest/index.html
 """
 import os
+import PIL
 import cv2
 import numpy as np
 from typing import List, Tuple
@@ -71,6 +72,43 @@ class Transpose(meta.Augmenter):
         return image
 
 
+class ColorJitter(meta.Augmenter):
+    """
+    imgaug_utils.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.1, hue=0.1),
+    """
+    from torchvision.transforms import transforms
+    def __init__(self, brightness=0.5, contrast=0.5, saturation=0.5, hue=0.5,
+                 p=1, seed=None, name=None, random_state="deprecated", deterministic="deprecated"):
+        super(ColorJitter, self).__init__(
+            seed=seed, name=name,
+            random_state=random_state, deterministic=deterministic)
+        self.p = iap.handle_probability_param(p, "p")
+        self.t = self.transforms.ColorJitter(brightness=brightness, contrast=contrast,
+                                             saturation=saturation, hue=hue)
+
+    def get_parameters(self):
+        """See :func:`~imgaug.augmenters.meta.Augmenter.get_parameters`."""
+        return [self.p]
+
+    def _augment_images(self, images, random_state, parents, hooks):
+        images = [self.task(img) for img in images]
+        return images
+
+    def task(self, image, **kwargs):
+        """
+        kwargs = ["image","images", "heatmaps", "segmentation_maps",
+                "keypoints", "bounding_boxes", "polygons",
+                "line_strings"]
+        :param image:
+        :param kwargs:
+        :return:
+        """
+        image = PIL.Image.fromarray(image)
+        image = self.t(image)
+        image = np.asarray(image)
+        return image
+
+
 class Normalize(meta.Augmenter):
     def __init__(self, mean, std, p=1, seed=None, name=None, random_state="deprecated", deterministic="deprecated"):
         self.mean = np.array(mean, dtype=np.float32)
@@ -102,9 +140,10 @@ class Normalize(meta.Augmenter):
         return image
 
 
-class DecodePolygons(meta.Augmenter):
+class ToTensor(meta.Augmenter):
+    import torch
     def __init__(self, p=1, seed=None, name=None, random_state="deprecated", deterministic="deprecated"):
-        super(DecodePolygons, self).__init__(
+        super(ToTensor, self).__init__(
             seed=seed, name=name,
             random_state=random_state, deterministic=deterministic)
         self.p = iap.handle_probability_param(p, "p")
@@ -113,7 +152,11 @@ class DecodePolygons(meta.Augmenter):
         """See :func:`~imgaug.augmenters.meta.Augmenter.get_parameters`."""
         return [self.p]
 
-    def task(self, image=None, images=None, **kwargs):
+    def _augment_images(self, images, random_state, parents, hooks):
+        images = [self.task(img) for img in images]
+        return images
+
+    def task(self, image, **kwargs):
         """
         kwargs = ["image","images", "heatmaps", "segmentation_maps",
                 "keypoints", "bounding_boxes", "polygons",
@@ -122,32 +165,8 @@ class DecodePolygons(meta.Augmenter):
         :param kwargs:
         :return:
         """
-        kwargs = {k: decode_polygons(v, image.shape) for k, v in kwargs.items()}
-        return image, kwargs
-
-
-class EncodePolygons(meta.Augmenter):
-    def __init__(self, p=1, seed=None, name=None, random_state="deprecated", deterministic="deprecated"):
-        super(EncodePolygons, self).__init__(
-            seed=seed, name=name,
-            random_state=random_state, deterministic=deterministic)
-        self.p = iap.handle_probability_param(p, "p")
-
-    def get_parameters(self):
-        """See :func:`~imgaug.augmenters.meta.Augmenter.get_parameters`."""
-        return [self.p]
-
-    def task(self, image=None, images=None, **kwargs):
-        """
-        kwargs = ["image","images", "heatmaps", "segmentation_maps",
-                "keypoints", "bounding_boxes", "polygons",
-                "line_strings"]
-        :param image:
-        :param kwargs:
-        :return:
-        """
-        kwargs = {k: encode_polygons(v) for k, v in kwargs.items()}
-        return image, kwargs
+        image = self.torch.from_numpy(image).permute(2, 0, 1)
+        return image
 
 
 def decode_polygons(polygons: List, shape) -> ia.PolygonsOnImage:
@@ -167,6 +186,9 @@ def encode_polygons(polygons: ia.PolygonsOnImage) -> List:
 
 
 aug_seq = iaa.Sequential([
+    iaa.AddToHueAndSaturation(value_hue=(-25, 25), value_saturation=(-25, 25)),  # 饱和度 + 色调（hue）
+    iaa.Multiply((0.5, 1.5)),  # 亮度：等效于 brightness ∈ [0.8, 1.2] → 用 Multiply
+    iaa.LinearContrast((0.5, 1.5)),  # 对比度：contrast ∈ [0.8, 1.2]
     iaa.MotionBlur(k=15),  # 运动模糊
     iaa.Clouds(),  # 云雾
     iaa.imgcorruptlike.Fog(severity=1),  # 多雾/霜
@@ -188,9 +210,9 @@ def augment_example(input_size=(224, 224)):
     transforms = [
         iaa.Resize({"width": int(input_size[0] * 1.2), "height": "keep-aspect-ratio"}),
         iaa.Fliplr(0.5),  # 以75%的概率水平翻转图像
-        iaa.Multiply((0.8, 1.2)),  # 亮度：等效于 brightness ∈ [0.8, 1.2] → 用 Multiply
-        iaa.LinearContrast((0.8, 1.2)),  # 对比度：contrast ∈ [0.8, 1.2]
-        iaa.AddToHueAndSaturation(value_hue=(-100, 100), value_saturation=(-100, 100)),  # 饱和度 + 色调（hue）
+        iaa.AddToHueAndSaturation(value_hue=(-25, 25), value_saturation=(-25, 25)),  # 饱和度 + 色调（hue）
+        iaa.Multiply((0.5, 1.5)),  # 亮度：等效于 brightness ∈ [0.8, 1.2] → 用 Multiply
+        iaa.LinearContrast((0.5, 1.5)),  # 对比度：contrast ∈ [0.8, 1.2]
         iaa.Affine(scale={"x": (0.8, 1.2), "y": (0.8, 1.2)},
                    translate_percent={"x": (-0.1, 0.1), "y": (-0.1, 0.1)},
                    rotate=(-5, 5),
