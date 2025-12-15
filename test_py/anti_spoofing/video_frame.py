@@ -21,7 +21,7 @@ def video2frames_demo(root, out):
         out_dir = os.path.join(out, label)
         print(video_file)
         # video_utils.video2frames_similarity(video_file, out_dir=out_dir, func=None, interval=20, thresh=0.3, vis=True)
-        video_utils.video2frames(video_file, out_dir=out_dir, func=None, interval=15, vis=False)
+        video_utils.video2frames(video_file, out_dir=out_dir, task=None, interval=15, vis=False)
 
 
 if __name__ == "__main__":

@@ -12,7 +12,7 @@ from tqdm import tqdm
 from pybaseutils import image_utils, file_utils, json_utils
 
 
-def save_labelme(out_root, image_file, points, names, class_dict, group=None, image=None, prefix="",
+def save_labelme(out_root, image_file, points, names, class_dict={}, group=None, image=None, prefix="",
                  index=0, vis=False, delay=0):
     """
     :param out_root:   输出根目录
@@ -39,14 +39,18 @@ def save_labelme(out_root, image_file, points, names, class_dict, group=None, im
     image_id, postfix = file_utils.split_postfix(image_name)
     if prefix:
         flag_ = file_utils.get_time(format="p") if index < 0 else f"{index:0=5d}"
-        image_name = f"{prefix}_{flag_}.{postfix}"
+        image_name = f"{prefix}_{flag_}.jpg"
     image_id, postfix = file_utils.split_postfix(image_name)
     json_file = file_utils.create_dir(out_root, "images", f"{image_id}.json")
     file_path = file_utils.create_dir(out_root, "images", f"{image_name}")
     maker_labelme(json_file, points, names, image_name, group=group, image_size=(w, h), image_bs64=None)
-    file_utils.copy_file(image_file, file_path)
+    if isinstance(image, np.ndarray):
+        cv2.imwrite(file_path, image)
+    else:
+        file_utils.copy_file(image_file, file_path)
     if len(points) == 0:
         print("points is empty,file={}".format(file_path))
+
 
 def maker_labelme(json_file, points, labels, image_name, image_size, group=None, image_bs64=None, keypoints=[]):
     """

@@ -321,6 +321,7 @@ def rotate_point(point1, point2, angle, height):
 def get_cut_points(start, end, nums=2, scale=1.0, dtype=None):
     """
     均匀划分nums个线段，并返回截断点(nums+1)
+    如果要获得阶段区间： clips = [(out[i], out[i + 1]) for i in range(len(out) - 1)]
     :param start: 起点
     :param end: 终点
     :param nums: 将范围[start,end]均匀划分的段数，默认2段

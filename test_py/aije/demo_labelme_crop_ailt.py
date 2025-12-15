@@ -103,16 +103,12 @@ if __name__ == '__main__':
                    '绝缘鞋', '脚穿绝缘鞋', '长筒靴', '脚穿长筒靴', '其他鞋', '脚穿其他鞋', '脚穿鞋套',
                    '手', '绝缘手套', '手穿绝缘手套', '棉纱手套', '手穿棉纱手套', '其他手套', '手穿其他手套',
                    '胶枪灯', '胶枪灯红色', '胶枪灯绿色',
-                   '手与*接触'
+                   'PDA', 'PDA*', '手与*接触','电视柜台面'
                    ]
-    #
+    # '*长条标签'
     datasets = [
-        # TODO 训练集
-        # '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-v01-val/images',
-        # '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-v02/images',
-        # '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-v02-val/images',
-        '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-v03/images',
-        # '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-v03-val/images',
+        '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-20251208-PDA/images',
+        '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-20251208-PDA-val/images',
     ]
     # dataroot = '/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det'
     # datasets = get_sub_dataset(dataroot)

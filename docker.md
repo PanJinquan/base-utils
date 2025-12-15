@@ -40,6 +40,8 @@ docker start container_name/container_id
 docker stop container_name/container_id
 docker restart container_name/container_id
 docker attach container_name/container_id # 后台启动一个容器后，如果想进入到这个容器，可以使用attach命令
+# 删除所有停止的容器、所有未被使用的网络、所有悬空镜像、所有构建缓存
+docker system prune -a
 ```
 
 ## 制作镜像

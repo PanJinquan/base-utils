@@ -79,7 +79,7 @@ def file2base64(file, prefix=IMG_PREFIX) -> str:
     :param prefix: base64字符串前缀,用于表识字符串的类型
     :return:base64字符串
     """
-    bs64 = prefix + base64.b64encode(open(file, 'rb').read()).decode()
+    bs64 = prefix + base64.b64encode(open(file, 'rb').read()).decode("utf-8")
     return bs64
 
 

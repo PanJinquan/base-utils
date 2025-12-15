@@ -532,6 +532,7 @@ def change_postfix(file: str, postfix: str):
     :return:
     """
     src_pos = file.split(".")[-1]
+    if postfix[0] == "*": postfix = postfix[1:]
     file = file[:-len(f".{src_pos}")] + postfix
     return file
 
@@ -569,21 +570,21 @@ def get_files_id(file_list):
     return image_idx
 
 
-def randam_select_images(image_list, nums, shuffle=True):
+def select_files(files, max_nums, shuffle=True):
     """
     randam select nums images
-    :param image_list:
-    :param nums:
+    :param files:
+    :param max_nums:
     :param shuffle:
     :return:
     """
-    image_nums = len(image_list)
-    if image_nums <= nums:
-        return image_list
+    file_nums = len(files)
+    if file_nums <= max_nums:
+        return files
     if shuffle:
         random.seed(100)
-        random.shuffle(image_list)
-    out = image_list[:nums]
+        random.shuffle(files)
+    out = files[:max_nums]
     return out
 
 
@@ -798,32 +799,32 @@ def copy_file(srcfile, dstfile):
         # time.sleep(1 / 1000.)
 
 
-def copy_file_to_dir(srcfile, des_dir):
+def copy_file_to_dir(srcfile, dst_dir):
     if not os.path.isfile(srcfile):
         print("%s not exist!" % (srcfile))
     else:
         fpath, fname = os.path.split(srcfile)  # 分离文件名和路径
-        os.makedirs(des_dir, exist_ok=True)  # 创建路径
-        dstfile = os.path.join(des_dir, fname)
+        os.makedirs(dst_dir, exist_ok=True)  # 创建路径
+        dstfile = os.path.join(dst_dir, fname)
         shutil.copyfile(srcfile, dstfile)  # 复制文件
 
 
-def move_file_to_dir(srcfile, des_dir):
+def move_file_to_dir(srcfile, dst_dir):
     if not os.path.isfile(srcfile):
         print("%s not exist!" % (srcfile))
     else:
         fpath, fname = os.path.split(srcfile)  # 分离文件名和路径
-        os.makedirs(des_dir, exist_ok=True)  # 创建路径
-        dstfile = os.path.join(des_dir, fname)
+        os.makedirs(dst_dir, exist_ok=True)  # 创建路径
+        dstfile = os.path.join(dst_dir, fname)
         # shutil.copyfile(srcfile, dstfile)  # 复制文件
         move_file(srcfile, dstfile)  # 复制文件
 
 
-def copy_file_list(file_list, dst_dir):
+def copy_files_to_dir(file_list, dst_dir):
     [copy_file_to_dir(file, dst_dir) for file in file_list]
 
 
-def move_file_list(file_list, dst_dir):
+def move_files_to_dir(file_list, dst_dir):
     [move_file_to_dir(file, dst_dir) for file in file_list]
 
 
@@ -1403,6 +1404,37 @@ def save_pickle(obj, file):
 def load_pickle(file):
     with open(file, 'rb') as f: obj = pickle.load(f)
     return obj
+
+
+def copy_move_multi_files(src_dir, dst_dir, postfix1=IMG_POSTFIX, postfix2=["*.json"], max_nums=10, shuffle=True,
+                          move=False):
+    """
+    复制(移动)文件到目标目录，如后缀名1为["*.jpg", "*.jpg"]，其他后缀名列表为["*.json"]，
+    则匹配所有jpg文件和对应的json文件，复制(移动)到目标目录
+    :param src_dir: 源目录
+    :param dst_dir: 目标目录
+    :param postfix1: 后缀名1，如["*.jpg", "*.jpg"]
+    :param postfix2: 其他后缀名列表，如["*.json"]
+    :param max_nums: 最大复制文件数
+    :param shuffle: 是否随机打乱文件列表
+    :param move: 是否移动文件，而不是复制
+    :return: 复制或移动的文件列表
+    """
+    file_list = get_files_list(src_dir, prefix="", postfix=postfix1, basename=False)
+    file_list = select_files(file_list, max_nums=max_nums, shuffle=shuffle)
+    out_files = file_list.copy()
+    for file1 in file_list:
+        for ext in postfix2:
+            file2 = change_postfix(file1, ext)
+            out_files.append(file2)
+    if move:
+        move_files_to_dir(out_files, dst_dir=dst_dir)
+    else:
+        copy_files_to_dir(out_files, dst_dir=dst_dir)
+    return out_files
+
+
+copy_move_labelme_dataset = copy_move_multi_files
 
 
 def copy_move_file_dir(src, dst, postfix=None, sub_names=None, max_nums=None, shuffle=True, move=False):

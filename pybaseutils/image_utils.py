@@ -87,6 +87,25 @@ def points_protection(points, height, width):
     return points
 
 
+def scale_points(points, input_size, out_size, shift=()):
+    """
+    缩放关键点坐标到输出热力图大小,然后再平移
+    scale_points(pts, input_size=pts_img.shape[:2][::-1], out_size=out_img.shape[:2][::-1])
+    :param points: shape is (num_joints, 2)
+    :param input_size: shape is (width,height),points在图像input_size中的坐标
+    :param out_size: shape is (width,height),输出热力图out_size的大小
+    :param shift:  shape is (2,),  对关键点坐标进行平移，默认不平移
+    :return: 返回缩放后在out_size的关键点坐标
+    """
+    points = np.asarray(points)
+    points[:, 0] = points[:, 0] * (out_size[0] / input_size[0])
+    points[:, 1] = points[:, 1] * (out_size[1] / input_size[1])
+    if len(shift) == 2:
+        points[:, 0] = points[:, 0] + shift[0]
+        points[:, 1] = points[:, 1] + shift[1]
+    return points
+
+
 def boxes_protection(boxes, width, height):
     """
     :param boxes:
@@ -1955,7 +1974,28 @@ def read_image_base64(image_file: str, size=None):
     return image_base64
 
 
+def get_class_score(logits: np.ndarray, axis=1):
+    """
+    获取每个样本在预测类别上的置信度分数
+    :param logits: 模型输出的 logits（未归一化的原始分数），shape: (nums, num-classes)
+    :param axis: 类别维度（axis=1）
+    :return:
+    """
+    probs = softmax(logits, axis=axis)  # 将 logits 转换为概率（使用 softmax）
+    label = np.argmax(logits, axis=axis)  # 在类别维度（axis=1）上取最大值的索引
+    # 获取每个样本在预测类别上的置信度分数
+    score = probs[np.arange(len(probs)), label]  # shape: (4,)
+    # score = np.max(probs, axis=1)
+    return label, score
+
+
 def softmax(x, axis=1):
+    """
+    torch.nn.functional.softmax(output, dim=1)
+    :param x:
+    :param axis:
+    :return:
+    """
     # 计算每行的最大值
     row_max = x.max(axis=axis)
     # 每行元素都需要减去对应的最大值，否则求exp(x)会溢出，导致inf情况
@@ -2791,6 +2831,9 @@ def find_mask_contours(mask, max_nums=-1, mode=cv2.RETR_LIST, method=cv2.CHAIN_A
     return contours
 
 
+get_mask_contours = find_mask_contours
+
+
 def find_minAreaRect(contours, order=True):
     """
     获得旋转矩形框，即最小外接矩形的四个角点
@@ -2823,6 +2866,86 @@ def find_image_contours(mask: np.ndarray, target_label: List[int] = [1, 2]) -> L
         contour = find_mask_contours(m)
         contours.append(contour)
     return contours
+
+
+def get_pad_ratio(ssize, dsize):
+    """
+    计算缩放比例和填充像素数，用于letterbox函数
+    :param ssize: 原始图像尺寸 (src_w, src_h)
+    :param dsize: 目标图像尺寸 (dst_w, dst_h)
+    :return: ratio: 缩放比例 (ratio_x, ratio_y)
+               pad: 填充像素数 (pad_x, pad_y)
+    """
+    src_w, src_h = ssize
+    dst_w, dst_h = dsize
+    # 计算缩放比例（基于短边）
+    ratio = min(dst_w / src_w, dst_h / src_h)
+    ratio_x = ratio_y = ratio
+    # 计算缩放后的尺寸
+    new_w = int(src_w * ratio)
+    new_h = int(src_h * ratio)
+    # 计算需要填充的像素数（中心填充）
+    pad = (dst_w - new_w, dst_h - new_h)
+    ratio = (ratio_x, ratio_y)
+    return pad, ratio
+
+
+def letterbox(src_img, dsize, src_pts=None, color=(114, 114, 114)):
+    """
+    Letterbox函数：短边缩放+中心填充
+    :param src_img: 输入图像 (H, W, C) 或 (H, W)
+    :param dsize: 目标尺寸 (dst_w, dst_h)
+    :param src_pts: 可选，原始坐标点列表 [(x1, y1), (x2, y2), ...]
+    :param color: 填充颜色，BGR格式，默认为灰色(114, 114, 114)
+    :return dst_img: 处理后的图像
+            dst_pts: 如果提供了dst_pts，则返回变换后的坐标点
+    """
+    if not isinstance(src_pts, np.ndarray): src_pts = np.asarray(src_pts)
+    # 获取原始图像尺寸
+    src_h, src_w = src_img.shape[:2]
+    # TODO 短边缩放后，ratio_x, ratio_y相同
+    pad, ratio = get_pad_ratio(ssize=(src_w, src_h), dsize=dsize)
+    # 左右和上下的填充
+    padL = pad[0] // 2
+    padR = pad[0] - padL
+    padT = pad[1] // 2
+    padB = pad[1] - padT
+    # 计算缩放后的尺寸
+    new_w = int(src_w * ratio[0])
+    new_h = int(src_h * ratio[1])
+    # 先缩放图像
+    if new_w != src_w or new_h != src_h:
+        dst_img = cv2.resize(src_img, (new_w, new_h), interpolation=cv2.INTER_LINEAR)
+    else:
+        dst_img = src_img.copy()
+    # 再进行填充
+    dst_img = cv2.copyMakeBorder(dst_img, padT, padB, padL, padR, cv2.BORDER_CONSTANT, value=color)
+    if src_pts is None:
+        return dst_img
+    else:  # 处理坐标点变换
+        dst_pts = src_pts * ratio + (padL, padT)
+        return dst_img, dst_pts
+
+
+def letterbox_inverse(dst_pts, ssize=None, dsize=None, pad=None, ratio=None):
+    """
+    将letterbox后的坐标点转换回原始坐标
+    提供ssize，dsize，或者pad，ratio
+    letterbox_inverse(dpts, ssize=(src.shape[1], src.shape[0]), dsize=(dst.shape[1], dst.shape[0]))
+    :param dst_pts: letterbox后的坐标点 [(x1, y1), (x2, y2), ...]
+    :param size: 原始图像尺寸 (src_w, src_h)
+    :param dsize: 目标图像尺寸 (dst_w, dst_h)
+    :param pad: 填充像素数 (pad_x, pad_y)
+    :param ratio: 缩放比例 (ratio_x, ratio_y)
+    :return src_pts: 原始坐标点
+    """
+    if not isinstance(dst_pts, np.ndarray): dst_pts = np.asarray(dst_pts)
+    if ssize and dsize:
+        pad, ratio = get_pad_ratio(ssize=ssize, dsize=dsize)
+    padL = pad[0] // 2
+    padT = pad[1] // 2
+    src_pts = (dst_pts - (padL, padT)) / ratio
+    return src_pts
 
 
 def get_image_points_valid_range(image, points, valid_range, crop=True, color=(255, 255, 255)):

@@ -101,10 +101,9 @@ class LabelmeLineDataset():
         target = np.concatenate([alpha0[None, :], alpha1[None, :]])
         weight = self.get_weight(target, class_weight=self.class_weight)
         # mask = torch.from_numpy(np.array(mask)).long()
-        image = image.transpose(2, 0, 1)  # HWC->CHW
         target = torch.from_numpy(target)
         weight = torch.from_numpy(weight)
-        image = torch.from_numpy(image)
+        image = torch.from_numpy(image.transpose(2, 0, 1))  # HWC->CHW
         data = {"image": image, "target": target, "weight": weight}
         return data
 
@@ -124,7 +123,6 @@ class LabelmeLineDataset():
             weight.append(w * class_weight[i])
         weight = np.asarray(weight, dtype=np.float32)
         return weight
-
 
     def get_targets_heatmap(self, image, lines_info: dict, point_info: dict):
         size = image.shape[:2][::-1]
@@ -188,8 +186,10 @@ class LabelmeLineDataset():
                 y_grid, x_grid = np.ogrid[:height, :width]
                 # 计算每个像素到关键点的欧氏距离的平方
                 dist_sq = (x_grid - x) ** 2 + (y_grid - y) ** 2
+                dist_sq = dist_sq.astype(np.float32)
                 # 生成2D高斯热力图
-                heatmaps = np.exp(-dist_sq / (2 * sigma ** 2))
+                heatmap = np.exp(-dist_sq / (2 * sigma ** 2))
+                heatmaps = np.max([heatmap, heatmaps], axis=0)
         return heatmaps
 
 
@@ -224,7 +224,7 @@ if __name__ == "__main__":
     # class_name = ["布线"]
     class_name = ["布线通道", "胶枪头与布线通道有接触,胶枪头与布线通道无接触"]
     anno_dir = [
-        "/home/PKing/Pictures/dataset-v02/dataset-v02/images",
+        "/home/PKing/Pictures/dataset-test/images",
     ]
     bg_dir = None
     transform = build_transform.image_transform(input_size,
@@ -232,8 +232,8 @@ if __name__ == "__main__":
                                                 std=[1.0, 1.0, 1.0],
                                                 padding=False,
                                                 bg_dir=bg_dir,
-                                                # trans_type="test_matting",
-                                                trans_type="train_regress",
+                                                trans_type="test_regress",
+                                                # trans_type="train_regress",
                                                 )
     dataset = LabelmeLineDataset(filename=None,
                                  data_root=None,

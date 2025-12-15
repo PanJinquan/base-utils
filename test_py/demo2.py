@@ -15,25 +15,13 @@ import numpy as np
 from typing import Callable
 from PIL import Image
 from pybaseutils import image_utils, file_utils, text_utils, pandas_utils, json_utils, base64_utils
-from pybaseutils.cvutils import video_utils
+import numpy as np
 import cv2
-import re
-import torch
-import subprocess
 
-
-def mean_squared_error(x, y):
-    l1 = np.sum(np.square(x - y))
-    return l1 / x.size
-
-
-if __name__ == '__main__':
-    np.random.seed(42)
-    x = np.random.random((8, 1, 224, 224))
-    y = np.random.random((8, 224, 224))
-    out1 = mean_squared_error(x, y)
-    print(out1)
-    y = y[:, None, :]
-    out2 = mean_squared_error(x, y)
-    print(out2)
-    image_utils.get_contours_iou()
+if __name__ == "__main__":
+    n1 = 2
+    n2 = 7
+    for i in range(n1):
+        for k in range(n2):
+            c = i * n2 + k
+            print(c)
