@@ -104,6 +104,6 @@ if __name__ == '__main__':
         mask = image_utils.get_image_mask(image, inv=False)
         corners = get_minboundquad(mask, vis=True)
         # corners = shrink_polygon(corners, -0.5)
-        corners = coords_utils.shrink_polygon_pyclipper(corners, 1.2)
+        corners = coords_utils.shrink_polygon_pyclipper(corners, 0.5)
         image = image_utils.draw_image_contours(image, [corners], thickness=2)
         image_utils.cv_show_image("winname", image, use_rgb=False)

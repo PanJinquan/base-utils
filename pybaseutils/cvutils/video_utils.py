@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-    @Author : Pan
-    @E-mail : 390737991@qq.com
-    @Date   : 2022-05-24 16:46:51
-    @Brief  :
+# --------------------------------------------------------
+# @Author : Pan
+# @E-mail :
+# @Date   : 2025-12-12 14:23:50
+# @Brief  :
+# --------------------------------------------------------
 """
 import os
 import cv2
 import numpy as np
+import math
 from typing import Callable
 from tqdm import tqdm
 from pybaseutils import image_utils, file_utils
@@ -40,7 +43,7 @@ def video2gif(video_file, gif_file=None, func=None, interval=1, fps=-1, use_pil=
     name = os.path.basename(video_file).split(".")[0]
     if not gif_file:  gif_file = os.path.join(os.path.dirname(video_file), name + ".gif")
     if not os.path.exists(gif_file): file_utils.create_file_path(gif_file)
-    width, height, num_frames, _fps = get_video_info(video_file)
+    width, height, num_frames, _fps = get_video_info(video_file, **kwargs)
     video_cap = video_iterator(video_file, save_video=None, interval=interval, **kwargs)
     frames = []
     for data_info in video_cap:
@@ -56,8 +59,64 @@ def video2gif(video_file, gif_file=None, func=None, interval=1, fps=-1, use_pil=
         image_utils.frames2gif_by_imageio(frames, gif_file=gif_file, fps=fps, loop=0)
 
 
+def get_video_sampling(freq, time, fps, random=False):
+    """
+    获得抽帧时间点和索引
+    :param freq: 抽帧频率
+    :param time: time: 开始播放时间time[0]，结束播放时间time[1]，单位秒S
+    :param fps: 视频帧率FPS
+    :param random: 是否随机抽帧(在每一秒内随机抽freq帧)
+    :return:
+    """
+    if freq <= 0: freq = fps
+    if random:
+        times = []
+        tange = np.arange(time[0], math.ceil(time[1]) + 1e-6, 1)
+        for i in range(len(tange) - 1):
+            t = np.random.uniform(tange[i], tange[i + 1], size=freq)
+            t = np.sort(t)
+            times.append(t)
+        times = np.concatenate(times)
+        # times = np.sort(np.random.uniform(time[0], time[1], size=freq))
+    else:
+        times = np.arange(time[0], time[1], 1 / freq)
+    index = times * fps
+    index = index.astype(int)
+    return times, index
+
+
+def load_video(video_file, time=(0, -1), freq=0, size=(), use_rgb=False, random=False, **kwargs):
+    """
+    加载视频文件，返回视频抽帧图像数据列表
+    :param video_file:
+    :param time: 设置时间范围，默认值为(0, -1)，表示播放所有视频帧
+    :param freq: 抽帧频率，默认值为视频帧率FPS
+    :param size: 帧图像大小，默认值为视频原始大小
+    :param use_rgb:
+    :param kwargs:
+    :return:
+    """
+    time = list(time)
+    video_cap = get_video_capture(video_file)
+    width, height, numFrames, fps = get_video_info(video_cap, **kwargs)
+    if time[1] < 0: time[1] = numFrames / fps
+    video_time, video_index = get_video_sampling(freq, time, fps, random=random)
+    frames = []
+    for t, count in zip(video_time, video_index):
+        video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
+        ret, frame = video_cap.read()
+        if not ret: break
+        if size: frame = image_utils.resize_image(frame, size=size)
+        if use_rgb: frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        h, w = frame.shape[:2]
+        data_info = {"count": count, "time": t, "frame": frame, "w": w, "h": h, "fps": fps}
+        frames.append(data_info)
+    video_cap.release()
+    return frames
+
+
 def video2frames(video_file, out_dir=None, task: Callable = None, interval=1, size=(), freq=0,
-                 vis=True, delay=10, **kwargs):
+                 vis=False, delay=10, **kwargs):
     """
     video_iterator(video_file: int | str, save_video: str or int = None, interval=1, size=(), freq=0,
                    task: Callable = None, vis=False, **kwargs):
@@ -84,15 +143,14 @@ def video2frames(video_file, out_dir=None, task: Callable = None, interval=1, si
         if task: frame = task(frame)
         if vis: image_utils.cv_show_image("frame", frame, use_rgb=False, delay=delay)
         if filename:
-            frame_file = os.path.join(out_dir, "{}_{:0=4d}.jpg".format(filename, count))
+            frame_file = os.path.join(out_dir, "{}_{:0=5d}.jpg".format(filename, count))
             cv2.imwrite(frame_file, frame)
-            frames.append(frame_file)
-        else:
-            frames.append(frame)
+            data_info["file"] = frame_file
+        frames.append(data_info)
     return frames
 
 
-def video2frames_similarity(video_file, out_dir=None, func=None, interval=1, thresh=0.3, vis=True):
+def video2frames_similarity(video_file, out_dir=None, func=None, interval=1, thresh=0.3, vis=True, **kwargs):
     """
     视频抽帧图像
     :param video_file: 视频文件
@@ -106,7 +164,7 @@ def video2frames_similarity(video_file, out_dir=None, func=None, interval=1, thr
     name = os.path.basename(video_file).split(".")[0]
     if not out_dir:  out_dir = os.path.join(os.path.dirname(video_file), name)
     video_cap = get_video_capture(video_file)
-    width, height, num_frames, fps = get_video_info(video_cap)
+    width, height, num_frames, fps = get_video_info(video_cap, **kwargs)
     if not os.path.exists(out_dir): os.makedirs(out_dir)
     count = 0
     last_frame = None
@@ -193,7 +251,7 @@ def video2video(video_file: int or str, save_video: str or int, interval=1, size
 convert_video_format = video2video
 
 
-def resize_video(video_file, save_video, size=(), start=0, interval=1, vis=True, delay=20):
+def resize_video(video_file, save_video, size=(), start=0, interval=1, vis=True, delay=20, **kwargs):
     """
     转换视频格式
     :param video_file: *.avi,*.mp4,...
@@ -203,7 +261,7 @@ def resize_video(video_file, save_video, size=(), start=0, interval=1, vis=True,
     :return:
     """
     video_cap = get_video_capture(video_file)
-    width, height, num_frames, fps = get_video_info(video_cap)
+    width, height, num_frames, fps = get_video_info(video_cap, **kwargs)
     frame = np.zeros(shape=(height, width), dtype=np.uint8)
     frame = image_utils.resize_image(frame, size=size)
     height, width = frame.shape[:2]
@@ -244,7 +302,7 @@ def video_capture(video_file: int or str, save_video: str or int = None, interva
     if isinstance(video_file, str) and os.path.isfile(video_file):
         assert os.path.exists(video_file), f"video_file={video_file}"
     video_cap = image_utils.get_video_capture(video_file, fps=None)
-    w, h, num_frames, fps = image_utils.get_video_info(video_cap)
+    w, h, num_frames, fps = image_utils.get_video_info(video_cap, **kwargs)
     time = kwargs.get("time", tuple())  # TODO 开始播放时间time[0]，结束播放时间time[1]，单位秒S
     clip = kwargs.get("clip", tuple())  # TODO 开始播放位置index[0]，结束播放位置index[1]
     start, end = 0, -1
@@ -312,7 +370,7 @@ def video_iterator(video_file: int | str, save_video: str or int = None, interva
     if isinstance(video_file, str) and os.path.isfile(video_file):
         assert os.path.exists(video_file), f"video_file={video_file}"
     video_cap = image_utils.get_video_capture(video_file, fps=None)
-    w, h, num_frames, fps = image_utils.get_video_info(video_cap)
+    w, h, num_frames, fps = image_utils.get_video_info(video_cap, **kwargs)
     time = kwargs.get("time", tuple())  # TODO 开始播放时间time[0]，结束播放时间time[1]，单位秒S
     clip = kwargs.get("clip", tuple())  # TODO 开始播放位置index[0]，结束播放位置index[1]
     start, end = 0, -1
@@ -383,10 +441,12 @@ def rotation_task(frame, **kwargs):
 
 
 if __name__ == "__main__":
-    video_file = "/home/dm/nasdata/release/CSDN/双目测距Demo视频(Python).MP4"
+    # video_file = "/home/dm/nasdata/release/CSDN/双目测距Demo视频(Python).MP4"
     # video_file = "/home/dm/视频/双目测距Demo视频(Python).mp4"
     # dst_file = "/home/dm/视频/双目测距Demo视频(Python)1.mp4"
     # video2frames(video_file, interval=10, vis=True)
     # frames2video(image_dir, interval=1, vis=True)
-    video2gif(video_file, interval=15, func=resize_task, fps=3, use_pil=False, vis=True)
+    # video2gif(video_file, interval=15, func=resize_task, fps=3, use_pil=False, vis=True)
     # video2video(video_file, dst_file, vis=True)
+    video_file = "/home/PKing/Videos/aije-data/检查绝缘棒.mp4"
+    load_video(video_file, time=(0, -1), freq=2, size=(), use_rgb=False)

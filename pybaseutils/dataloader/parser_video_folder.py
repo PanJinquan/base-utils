@@ -1,0 +1,158 @@
+# -*- coding: utf-8 -*-
+"""
+# --------------------------------------------------------
+# @Author : panjq
+# @Date   : 2019-9-20 13:18:34
+# --------------------------------------------------------
+"""
+
+import os
+import PIL.Image as Image
+import numpy as np
+import random
+import cv2
+import torch
+from pybaseutils import image_utils, file_utils
+from pybaseutils.cvutils import video_utils
+from classifier.dataset import parser_image_folder, parser_image_text
+
+
+class VideoFolderDataset(parser_image_folder.FolderDataset):
+    """Pytorch Dataset"""
+
+    def __init__(self, image_dir, class_name=None, transform=None, resample=False, use_rgb=False,
+                 shuffle=True, phase="train", disp=False, **kwargs):
+        super(VideoFolderDataset, self).__init__(image_dir=image_dir,
+                                                 class_name=class_name,
+                                                 transform=transform,
+                                                 resample=resample,
+                                                 use_rgb=use_rgb,
+                                                 shuffle=shuffle,
+                                                 phase=phase,
+                                                 disp=disp,
+                                                 **kwargs)
+        self.tag = self.__class__.__name__
+        self.cfg: dict = kwargs.get("cfg", {})
+        self.duration = self.cfg.get("duration", 3)
+        self.freq = self.cfg.get("freq", 4)
+        self.seq_len = int(self.duration * self.freq)  # 32=4*8,64=4*16
+        self.input_size = self.cfg.get("input_size", kwargs.get("input_size", (112, 112)))
+        self.log("{:15s} duration        :{}".format(self.tag, self.duration))
+        self.log("{:15s} freq            :{}".format(self.tag, self.freq))
+        self.log("{:15s} seq_len         :{}".format(self.tag, self.seq_len))
+        self.log("{:15s} input_size      :{}".format(self.tag, self.input_size))
+        self.log("------------------------------------------------------------------")
+
+    def load_dataset(self, data_file, data_root="", use_sub=False):
+        """
+        保存格式：[path,label] 或者 [path,label,xmin,ymin,xmax,,ymax]
+        :param data_file:
+        :param data_root:
+        :return: item_list [{"file":file,"label":label}]
+        """
+        if isinstance(data_file, str): data_file = [data_file]
+        item_list = []
+        for i, dir in enumerate(data_file):
+            if not os.path.exists(dir): raise Exception("文件不存在，image_dir:{}".format(dir))
+            paths, labels = file_utils.get_files_labels(dir, postfix=file_utils.VIDEO_POSTFIX)
+            if len(paths) == 0: raise Exception("文件为空:{}".format(dir))
+            self.log("{:15s} loading data from:{},have {},label:{}".format(self.tag, dir, len(paths), len(set(labels))))
+            # TODO # 避免多个数据集的相同的label
+            if use_sub:  labels = [os.path.join(str(i), l) for l in labels]
+            data = [{"file": p, "label": l, 'name': l} for p, l in zip(paths, labels)]
+            item_list += data
+        return item_list
+
+    def __getitem__(self, index):
+        """
+        :param index:
+        :return: {"image": image, "label": label}
+        """
+        item = self.item_list[index]
+        file, label, bbox = item["file"], item[self.label_index], item.get("bbox", [])
+        image = self.read_video(file, size=self.input_size, use_rgb=self.use_rgb, duration=self.duration,
+                                freq=self.freq, shuffle=self.shuffle)
+        label = np.asarray(label, dtype=np.int64)
+        if len(image) > 0:
+            if self.transform: image = self.transform(images=image)
+            image = self.normalize(image)
+            image = self.to_tensor(image)  # (C,D,H,W)
+        if image is None or len(image) == 0:
+            index = int(random.uniform(0, len(self)))
+            return self.__getitem__(index)
+        return {"image": image, "label": label, "file": file}
+
+    def to_tensor(self, buffer):
+        # convert from [D, H, W, C] format to [C, D, H, W] (what PyTorch uses)
+        # D = Depth (in this case, time), H = Height, W = Width, C = Channels
+        return buffer.transpose((3, 0, 1, 2))
+
+    def normalize(self, buffer):
+        for i, frame in enumerate(buffer):
+            frame = (frame / 255.0 - 0.5) / 0.5
+            buffer[i] = frame
+        buffer = np.asarray(buffer, dtype=np.float32)
+        return buffer
+
+    def read_video(self, video_file, size=(224, 224), use_rgb=False, shuffle=False, **kwargs):
+        """
+        :param video_file:
+        :param size:
+        :param use_rgb:
+        :param duration: 最大时长
+        :param freq: 抽帧频率
+        :param use_cut:
+        :return:
+        """
+        video_cap = video_utils.get_video_capture(video_file)
+        width, height, numFrames, fps = video_utils.get_video_info(video_cap, disp=False)
+        time = (0, numFrames / fps)
+        video_time, video_idx = video_utils.get_video_sampling(self.freq, time, fps, random=shuffle)
+        # assert len(video_idx) == max_nums, "video_idx len error:{}".format(video_idx)
+        frames = []
+        for count in video_idx:
+            video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
+            ret, frame = video_cap.read()
+            if not ret: break
+            frame = image_utils.resize_image_padding(frame, size=size)
+            if use_rgb: frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            frames.append(frame)
+        if len(frames) < 3: return []  # 帧太少，无效视频
+        if len(frames) < self.seq_len:
+            pad = self.seq_len - len(frames)
+            images = [frames[-1].copy()] * pad
+            frames += images
+        frames = frames[:self.seq_len]
+        return frames
+
+
+if __name__ == '__main__':
+    from classifier.transforms import build_transform
+    from classifier.dataset import build_dataset
+    from pybaseutils import image_utils
+
+    video_dirs = ["/home/PKing/nasdata/tmp/tmp/fall/videos/Multiple-Cameras-Fall-Dataset/dataset-class"]
+    batch_size = 1
+    input_size = [224, 224]
+    trans_type = "train_video"
+    transform = build_transform.image_transform(input_size=input_size, trans_type=trans_type)
+    cfg = {"duration": 5, "freq": 2}
+    class_name = ["others", "fall", "down"]
+    dataset = VideoFolderDataset(image_dir=video_dirs,
+                                 transform=transform,
+                                 resample=False,
+                                 shuffle=False,
+                                 class_name=class_name,
+                                 input_size=input_size,
+                                 use_rgb=False,
+                                 cfg=cfg,
+                                 disp=True)
+    for i in range(len(dataset)):
+        data = dataset.__getitem__(10)
+        video_file, image, label = data["file"], data["image"], data["label"]
+        image = image.transpose((1, 2, 3, 0))
+        image = np.asarray((image * 0.5 + 0.5) * 255, dtype=np.uint8)
+        images = [image[i] for i in range(len(image))]
+        images = image_utils.image_vstack(images=images)
+        print(image.shape, label, video_file)
+        image_utils.cv_show_image("image", images)

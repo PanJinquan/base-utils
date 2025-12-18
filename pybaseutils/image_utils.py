@@ -2410,14 +2410,17 @@ def boxes2polygons(boxes: np.ndarray or List[np.ndarray]):
     return polygons
 
 
-def get_mask_iou(mask1, mask2, binarize=True):
+def get_mask_iou(mask1, mask2, binarize=True, iom=False):
     """
+    计算IOU=交集(A,B)/并集(A,B)
+    计算IOM=交集(A,B)/最小集(A,B)
     计算两个Mask的IOU
     h, w = mask1.shape[:2]
     mask2 = cv2.resize(mask2, dsize=(w, h), interpolation=cv2.INTER_NEAREST)
     :param mask1:
     :param mask2:
     :param binarize:
+    :param iom: 是否计算IOM,默认计算IOU
     :return:
     """
     if binarize:
@@ -2430,7 +2433,11 @@ def get_mask_iou(mask1, mask2, binarize=True):
     # union_area = np.sum(union > 0)  # union>0
     inter_area = np.sum(np.float32(np.greater(inter, 0)))
     union_area = np.sum(np.float32(np.greater(union, 0)))
-    iou = inter_area / max(union_area, 1e-8)
+    if union_area == 0:   return 0.0
+    if iom:
+        iou = inter_area / min(np.sum(mask1), np.sum(mask2))
+    else:
+        iou = inter_area / union_area
     return iou
 
 
@@ -2455,12 +2462,15 @@ def get_mask_iou1(mask1, mask2, binarize=True):
     return iou
 
 
-def get_contours_iou(contour1, contour2, size: Tuple = None):
+def get_contours_iou(contour1, contour2, size: Tuple = None, iom=False):
     """
+    计算IOU=交集(A,B)/并集(A,B)
+    计算IOM=交集(A,B)/最小集(A,B)
     计算两个轮廓(多边形)交并比(Intersection-over-Union,IoU)
     :param contour1: 多边形1 (num_points,2),由num_points个点构成的封闭多边形
     :param contour2: 多边形2 (num_points,2),由num_points个点构成的封闭多边形
     :param size: (W,H) image size,用于可视化,不会影响contours,iou的结果
+    :param iom: 是否计算IOM,默认计算IOU
     :return: iou: 多边形1和多边形2的交并比
     """
     contour1 = np.asarray(contour1, dtype=np.int32)
@@ -2487,7 +2497,10 @@ def get_contours_iou(contour1, contour2, size: Tuple = None):
     inter_area = np.sum(inter)
     union_area = np.sum(union)
     if union_area == 0:   return 0.0
-    iou = inter_area / union_area
+    if iom:
+        iou = inter_area / min(np.sum(mask1), np.sum(mask2))
+    else:
+        iou = inter_area / union_area
     return iou
 
 
@@ -3255,10 +3268,11 @@ def get_video_capture(video, width=None, height=None, fps=None):
     return video_cap
 
 
-def get_video_info(video_cap: int | str | cv2.VideoCapture, vis=True):
+def get_video_info(video_cap: int | str | cv2.VideoCapture, disp=True, **kwargs):
     """
     获得视频的基础信息
     :param video_cap:视频对象 或者视频文件路径
+    :param disp: 是否显示视频信息
     :return:
     """
     isfile = isinstance(video_cap, str) or isinstance(video_cap, int)
@@ -3268,7 +3282,7 @@ def get_video_info(video_cap: int | str | cv2.VideoCapture, vis=True):
     num_frames = int(video_cap.get(cv2.CAP_PROP_FRAME_COUNT))
     fps = video_cap.get(cv2.CAP_PROP_FPS)
     fps = math.ceil(fps)
-    if vis: print("read video:width:{},height:{},fps:{},num_frames:{}".format(width, height, fps, num_frames))
+    if disp: print("read video:width:{},height:{},fps:{},num_frames:{}".format(width, height, fps, num_frames))
     if isfile: video_cap.release()
     return width, height, num_frames, fps
 

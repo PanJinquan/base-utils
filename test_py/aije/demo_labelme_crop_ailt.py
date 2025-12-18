@@ -108,7 +108,7 @@ if __name__ == '__main__':
     # '*长条标签'
     datasets = [
         '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-20251208-PDA/images',
-        '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-20251208-PDA-val/images',
+        # '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-20251208-PDA-val/images',
     ]
     # dataroot = '/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det'
     # datasets = get_sub_dataset(dataroot)

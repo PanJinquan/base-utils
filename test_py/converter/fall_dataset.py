@@ -80,8 +80,9 @@ def clip_video_dataset(anno_file: str, data_dir: str, save_dir: str = None):
         save_video = os.path.join(save_dir, video_name)
 
 
-def clip_time_video(anno_file: str, save_dir: str = None):
+def clip_time_video(anno_file: str, save_dir: str = None, chute=""):
     video_info = json_utils.load_json(anno_file)
+    if chute: video_info = {k: v for k, v in video_info.items() if k.startswith(chute)}
     data_dir = os.path.dirname(anno_file)
     outs_data = []
     for name, clip_list in video_info.items():
@@ -103,7 +104,7 @@ def clip_time_video(anno_file: str, save_dir: str = None):
             elif i == clip_nums - 1 and label == 0:  # TODO 最后一个clip
                 if offs > 0: clip = (offs, clip[1])
                 clip = (clip[0], clip[0] + fps * 2)
-            if 0 < i < clip_nums and label == 1: # TODO 倒下label=1，躺着label=2
+            if 0 < i < clip_nums and label == 1:  # TODO 倒下label=1，躺着label=2
                 clip = (clip[0] - int(0.1 * fps), clip[1] + int(1.5 * fps))
                 offs = clip[1] + int(1.5 * fps)
             t = (clip[1] - clip[0]) / fps * 4  # 原始视频fps是120，4倍保存
@@ -114,8 +115,10 @@ def clip_time_video(anno_file: str, save_dir: str = None):
                 clips = [(cuts[j], cuts[j + 1]) for j in range(len(cuts) - 1)]
             labels = [label] * len(clips) if label == 0 else [label] + [label + 1] * (len(clips) - 1)
             for k, (clip, label) in enumerate(zip(clips, labels)):
+                # if label == 2: clip = (clip[0] - 0.5 * fps, clip[1] - 0.5 * fps)
                 video_name = name.replace("/", "_").split(".")[0] + "_{:0=3d}_{}.mp4".format(count, label)
-                video_name = os.path.join("video", video_name)
+                # video_name = os.path.join("video", video_name)
+                video_name = os.path.join("video", str(label), video_name)
                 save_video = os.path.join(save_dir, video_name)
                 temp_file = "./temp.mp4"
                 video_utils.video_capture(file, save_video=temp_file, vis=False, clip=clip, title="frame", delay=5)
@@ -134,9 +137,9 @@ if __name__ == '__main__':
     # video_info = clip_label_dataset(anno_file, data_dir, save_dir=save_dir)
     # get_ori_data_label(anno_file, data_dir)
     # TODO 处理正常视频
-    anno_file = "/home/PKing/nasdata/tmp/tmp/fall/videos/Multiple-Cameras-Fall-Dataset/dataset/video_dataset.json"
-    save_dir = "/home/PKing/nasdata/tmp/tmp/fall/videos/Multiple-Cameras-Fall-Dataset/dataset-video-time3"
-    clip_time_video(anno_file, save_dir)
+    anno_file = "/home/PKing/nasdata/tmp/tmp/fall/videos/Multiple-Cameras-Fall-Dataset/原始视频/others-fall-lie.json"
+    save_dir = "/home/PKing/nasdata/tmp/tmp/fall/videos/Multiple-Cameras-Fall-Dataset/dataset-video-tmps"
+    clip_time_video(anno_file, save_dir, chute="chute15")
     # file1 = "/home/PKing/Videos/cam1.avi"
     # file2 = "/home/PKing/Videos/cam2.avi"
     # video_utils.video2video(file1, file2, save_fps=30)

@@ -24,7 +24,8 @@ def save_file_list_labels(data_dir, class_file="", out_path=None, shuffle=False,
     """
     sub = os.path.basename(data_dir)
     # file_list = file_utils.get_files_lists(data_dir, postfix=file_utils.IMG_POSTFIX)
-    file_list = file_utils.get_files_lists(data_dir, postfix=file_utils.AUDIO_POSTFIX)
+    # file_list = file_utils.get_files_lists(data_dir, postfix=file_utils.AUDIO_POSTFIX)
+    file_list = file_utils.get_files_lists(data_dir, postfix=file_utils.VIDEO_POSTFIX)
     file_list = file_utils.get_sub_list(file_list, data_dir)
     # file_list = file_utils.get_sub_list(file_list, os.path.dirname(image_dir))
     class_name = None
@@ -40,17 +41,17 @@ def save_file_list_labels(data_dir, class_file="", out_path=None, shuffle=False,
             image_path = os.path.join(sub, image_path)
         item = [image_path, label]
         content_list.append(item)
-    if not out_path:
-        out_path = os.path.join(os.path.dirname(data_dir), "file_id.txt")
-    print("num files:{},out_path:{}".format(len(content_list), out_path))
-    if shuffle:
-        random.seed(100)
-        random.shuffle(content_list)
+
+    out_path = os.path.join(os.path.dirname(data_dir), "file_total.txt")
     file_utils.write_data(out_path, content_list, split=",")
+    train, test = file_utils.split_train_test(content_list, ratio=0.2, shuffle=True)
+    out_path = os.path.join(os.path.dirname(data_dir), "file_train.txt")
+    file_utils.write_data(out_path, train, split=" ")
+    out_path = os.path.join(os.path.dirname(data_dir), "file_test.txt")
+    file_utils.write_data(out_path, test, split=" ")
     return content_list
 
 
 if __name__ == '__main__':
-    data_dir = "/home/PKing/nasdata/tmp/tmp/challenge/旋转机械故障诊断挑战赛/旋转机械故障诊断挑战赛公开数据/test"
-    class_file = "/home/PKing/nasdata/tmp/tmp/challenge/旋转机械故障诊断挑战赛/旋转机械故障诊断挑战赛公开数据/class_name.txt"
-    save_file_list_labels(data_dir, class_file=class_file)
+    data_dir = "/home/PKing/nasdata/tmp/UCF101/UCF101/video"
+    save_file_list_labels(data_dir, class_file="")

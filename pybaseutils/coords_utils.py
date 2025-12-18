@@ -198,8 +198,8 @@ def shrink_polygon_pyclipper(polygon, ratio):
     使用Polygon库计算多边形区域的周长和面积，使用pyclipper库进行shrink
     https://blog.csdn.net/shyjhyp11/article/details/126396170
     https://www.cnblogs.com/01black-white/p/15292193.html
-    :param polygon: 
-    :param ratio: 
+    :param polygon:  (n,2)
+    :param ratio: 缩放的比例，如果大于1是放大,小于1是缩小
     :return: 
     """
     from shapely.geometry import Polygon
@@ -217,6 +217,9 @@ def shrink_polygon_pyclipper(polygon, ratio):
     else:
         shrinked = np.array(shrinked[0]).reshape(-1, 2)
     return shrinked
+
+
+extend_polygon = shrink_polygon_pyclipper
 
 
 def get_square_boxes(boxes, use_max=True, use_mean=False, baseline=-1):
@@ -499,7 +502,8 @@ def demo_for_augment():
     for i in range(1000):
         boxes = extend_xyxy(boxes, scale=[1.2, 1.2])
         dst_image, dst_label, dst_boxes = augment(image, boxes.copy(), labels.copy())
-        image = show_targets_image("detd", image, dst_label, dst_boxes, center2bboxes=True, untranspose=False, waitKey=0)
+        image = show_targets_image("detd", image, dst_label, dst_boxes, center2bboxes=True, untranspose=False,
+                                   waitKey=0)
 
 
 if __name__ == "__main__":

@@ -17,11 +17,13 @@ from PIL import Image
 from pybaseutils import image_utils, file_utils, text_utils, pandas_utils, json_utils, base64_utils
 import numpy as np
 import cv2
+import math
+
+
+
+
 
 if __name__ == "__main__":
-    n1 = 2
-    n2 = 7
-    for i in range(n1):
-        for k in range(n2):
-            c = i * n2 + k
-            print(c)
+    fil
+
+

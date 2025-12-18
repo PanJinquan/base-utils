@@ -891,19 +891,13 @@ def get_sub_list(file_list, dirname: str):
     return sub_list
 
 
-def get_train_test_files(file_dir, ratio=0.2, postfix=IMG_POSTFIX, subname="", shuffle=False, sub=False, save=True):
+def split_train_test(file_list, ratio=0.2, shuffle=False):
     """
     划分训练集和测试集
     :param file_dir:
     :param ratio: 若小于0，则表示test/train的比例；若大于0，则表示test的样本数，剩下的为train数目
-    :param postfix:
-    :param subname:
-    :param shuffle:
-    :param sub:
     :return:
     """
-    file_list = get_files_lists(file_dir, postfix=postfix, subname=subname,
-                                shuffle=shuffle, sub=sub)
     if shuffle:
         random.seed(100)
         random.shuffle(file_list)
@@ -912,16 +906,6 @@ def get_train_test_files(file_dir, ratio=0.2, postfix=IMG_POSTFIX, subname="", s
     test, train = file_list[0:test_nums], file_list[test_nums:]
     train.sort()
     test.sort()
-    if os.path.isdir(file_dir):
-        out = file_dir
-    elif os.path.isfile(file_dir):
-        out = os.path.dirname(file_dir)
-    else:
-        out = file_dir
-    if save:
-        write_list_data(os.path.join(out, f"total-{nums}.txt"), file_list)
-        write_list_data(os.path.join(out, f"train-{len(train)}.txt"), train)
-        write_list_data(os.path.join(out, f"test-{len(test)}.txt"), test)
     print("total files: {}".format(nums))
     print("train files: {}".format(len(train)))
     print("test  files: {}".format(len(test)))
