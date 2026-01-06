@@ -94,7 +94,6 @@ class VideoTextDataset(parser_image_text.TextDataset):
         :param video_file:
         :param size:
         :param use_rgb:
-        :param duration: 最大时长
         :param freq: 抽帧频率
         :param use_cut:
         :return:
@@ -103,7 +102,10 @@ class VideoTextDataset(parser_image_text.TextDataset):
         width, height, numFrames, fps = video_utils.get_video_info(video_cap, disp=False)
         time = (0, numFrames / fps)
         video_time, video_idx = video_utils.get_video_sampling(self.freq, time, fps, random=shuffle)
-        # assert len(video_idx) == max_nums, "video_idx len error:{}".format(video_idx)
+        # TODO 居中裁剪
+        clip = (int(len(video_idx) / 2 - self.seq_len / 2), int(len(video_idx) / 2 + self.seq_len / 2))
+        clip = (max(clip[0], 0), min(clip[1], len(video_idx)))
+        video_idx = video_idx[clip[0]:clip[1]]
         frames = []
         for count in video_idx:
             video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
@@ -115,9 +117,10 @@ class VideoTextDataset(parser_image_text.TextDataset):
         if len(frames) < 3: return []  # 帧太少，无效视频
         if len(frames) < self.seq_len:
             pad = self.seq_len - len(frames)
-            images = [frames[-1].copy()] * pad
+            images = [frames[-1]] * pad
             frames += images
-        frames = frames[:self.seq_len]
+        frames = frames[0:self.seq_len]
+        assert len(frames) == self.seq_len, "frames size error:{}".format(len(frames))
         return frames
 
 
@@ -126,10 +129,11 @@ if __name__ == '__main__':
     from classifier.dataset import build_dataset
     from pybaseutils import image_utils
 
-    data_file = ["/home/PKing/nasdata/tmp/UCF101/UCF101/file_test.txt"]
+    data_file = ["/home/PKing/nasdata/tmp/UCF101/UCF101/val.txt"]
     batch_size = 1
     input_size = [224, 224]
-    trans_type = "train_video"
+    # trans_type = "train_video"
+    trans_type = "test_video"
     transform = build_transform.image_transform(input_size=input_size, trans_type=trans_type)
     cfg = {"duration": 5, "freq": 2}
     class_name = ["ApplyEyeMakeup", "ApplyLipstick", "Archery"]
@@ -143,7 +147,7 @@ if __name__ == '__main__':
                                cfg=cfg,
                                disp=True)
     for i in range(len(dataset)):
-        data = dataset.__getitem__(10)
+        data = dataset.__getitem__(0)
         video_file, image, label = data["file"], data["image"], data["label"]
         image = image.transpose((1, 2, 3, 0))
         image = np.asarray((image * 0.5 + 0.5) * 255, dtype=np.uint8)

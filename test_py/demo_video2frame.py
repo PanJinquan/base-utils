@@ -21,8 +21,9 @@ def video2frames_demo(root, out, vis=False):
         # video_utils.video2frames_similarity(video_file, out_dir=out, func=None, interval=20, thresh=0.3, vis=True)
         video_utils.video2frames(video_file, out_dir=out, task=None, interval=20, vis=vis, prefix="")
 
+
 if __name__ == "__main__":
-    root = "/home/PKing/edudata/dataset/AIJE/【TOP】技能人才系统_数据集管理/06-联通岗评/02-训练数据/联通入户布线_143_20251216_191638-打胶枪专题数据/20251216_191638_主视.mp4"
+    root = "/home/PKing/edudata/dataset/AIJE/【TOP】技能人才系统_数据集管理/06-联通岗评/02-训练数据/联通入户布线_156_20251219_180523-胶枪打胶专题数据/20251219_180523_主视.mp4"
     out = os.path.join(os.path.dirname(root), "frames")
     # out = os.path.join(root, "frames")
     video2frames_demo(root, out)

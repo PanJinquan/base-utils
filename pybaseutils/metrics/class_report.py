@@ -64,12 +64,13 @@ def get_confusion_matrix(true_labels, pred_labels, target_names=None, filename=N
     return conf_matrix
 
 
-def get_classification_report(true_labels, pred_labels, labels=None, target_names=None, output_dict=False):
+def get_metrics_report(true_labels, pred_labels, target_names=None, labels=None,
+                       output_dict=False, matrix=False, plot=False):
     """
     true_labels = [0, 1, 2, 3, 4, 1]  # Y
     pred_labels = [0, 1, 1, 2, 2, 1]  # X
     target_names = ["A", "B", "C", "D", "E"]
-    out_result = get_classification_report(true_labels, pred_labels, target_names=target_names, output_dict=False)
+    out_result = get_metrics_report(true_labels, pred_labels, target_names=target_names, output_dict=False)
     宏平均(macro avg)和微平均(micro avg)
     如果每个class的样本数量差不多,那么宏平均和微平均没有太大差异
     如果每个class的样本数量差异很大,而且你想:
@@ -77,21 +78,24 @@ def get_classification_report(true_labels, pred_labels, labels=None, target_name
     更注重样本量少的class:使用宏平均,若宏平均比微平均小,应检查样本量少的class
     :param true_labels:
     :param pred_labels:
-    :param labels:
     :param target_names:
+    :param labels:
     :param output_dict:
+    :param matrix: 是否绘制混淆矩阵
     :return:
     """
-    true_labels = np.array(true_labels, dtype=np.int32)
-    pred_labels = np.array(pred_labels, dtype=np.int32)
-    if target_names:
-        labels = list(range(len(target_names)))
+    # if target_names is None:
+    #     target_names = list(set(pred_labels) | set(true_labels))
+    # else:
+    #     true_labels = [target_names[int(i)] for i in true_labels]
+    #     pred_labels = [target_names[int(i)] for i in pred_labels]
     result = metrics.classification_report(true_labels,
                                            pred_labels,
                                            labels=labels,
                                            digits=4,
                                            target_names=target_names,
-                                           output_dict=output_dict)
+                                           output_dict=output_dict,
+                                           zero_division=0)
     if output_dict:
         macro_avg = result["macro avg"]
         accuracy = result["accuracy"]
@@ -99,10 +103,16 @@ def get_classification_report(true_labels, pred_labels, labels=None, target_name
         out_result = {"macro_avg": macro_avg, "accuracy": accuracy, "weighted_avg": weighted_avg}
         # pdf=pd.DataFrame.from_dict(result)
         # save_csv("classification_report.csv", pdf)
-
     else:
         out_result = result
+    if matrix:
+        conf_matrix = get_confusion_matrix(true_labels, pred_labels, target_names=target_names,
+                                           normalization=True, plot=plot, title="Confusion Matrix")
+        # out_result["confusion_matrix"] = conf_matrix
     return out_result
+
+
+get_classification_report = get_metrics_report
 
 
 def create_dir(parent_dir, dir1=None, filename=None):
@@ -136,13 +146,13 @@ def create_file_path(filename):
 
 
 if __name__ == "__main__":
-    true_labels = [0, 1, 2, 3, 3, 1, 1]  # Y
-    pred_labels = [1, 1, 2, 2, 2, 1, 0]  # X
-    # true_labels = [0, 1, 1, 2, 2]
-    # pred_labels = [0, 1, 1, 2, 2]
-    target_names = ["A0", "B1", "C2", "D3"]
-    confuse_file = "confuse.csv"
-    out_result = get_classification_report(true_labels, pred_labels, target_names=target_names, output_dict=False)
+    # true_labels = [0, 1, 2, 3, 3, 1, 1]  # Y
+    # pred_labels = [1, 1, 2, 2, 2, 1, 0]  # X
+    true_labels = ["A", "B", "A", "B"]
+    pred_labels = ["A", "B", "A", "B"]
+    # target_names = ["A0", "B1", "C2", "D3"]
+    target_names = None
+    confuse_file = "./confuse.csv"
+    out_result = get_classification_report(true_labels, pred_labels, target_names=target_names, output_dict=False,
+                                           matrix=True, plot=True)
     print(out_result)
-    get_confusion_matrix(true_labels, pred_labels, target_names=target_names,
-                         normalization=False, filename=confuse_file, plot=True, title="Confusion Matrix")

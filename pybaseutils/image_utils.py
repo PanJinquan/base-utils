@@ -719,26 +719,40 @@ def resize_image_clip(image, clip_max=1920, interpolation=cv2.INTER_LINEAR):
     return image
 
 
+def autosize(size, dsize):
+    """
+    自动调整图像大小
+    :param size : 原始图像大小 (width, height) image.shape[:2][::-1] or image.size
+    :param dsize: 目标图像大小 (width, height)
+    :return: 调整后的图像大小 (width, height)
+    """
+    if not dsize: return size
+    dsize = (dsize, dsize) if isinstance(dsize, numbers.Number) else dsize
+    dw, dh = dsize
+    sw, sh = size
+    if (dh is None) and (dw is None):  # 错误写法：resize_height and resize_width is None
+        return None
+    if dh is None:
+        dh = int(sh * dw / sw)
+    elif dw is None:
+        dw = int(sw * dh / sh)
+    dsize = (int(dw), int(dh))
+    return dsize
+
+
 def resize_image(image, size: Tuple, interpolation=cv2.INTER_LINEAR):
     """
     tf.image.resize_images(images,size),images=[batch, height, width, channels],size=(new_height, new_width)
     cv2.resize(image, dsize=(width, height)),与image.shape相反
     images[50,10]与image.shape的原理相同，它表示的是image=(y=50,x=10)
     :param image:
-    :param size: (width,height)
+    :param size: (width,height) image.shape[:2][::-1] or image.size
     :return:
     """
     if not size: return image
-    size = (size, size) if len(size) == 1 else size
-    dw, dh = size
-    sh, sw = image.shape[:2]
-    if (dh is None) and (dw is None):  # 错误写法：resize_height and resize_width is None
-        return image
-    if dh is None:
-        dh = int(sh * dw / sw)
-    elif dw is None:
-        dw = int(sw * dh / sh)
-    image = cv2.resize(image, dsize=(int(dw), int(dh)), interpolation=interpolation)
+    ssize = image.shape[:2][::-1]
+    dsize = autosize(ssize, size)
+    if size and dsize: image = cv2.resize(image, dsize=dsize, interpolation=interpolation)
     return image
 
 
@@ -2410,6 +2424,23 @@ def boxes2polygons(boxes: np.ndarray or List[np.ndarray]):
     return polygons
 
 
+def get_point_circle_contour(points, r, nums=16):
+    """
+    以给定的中心坐标和半径生成圆的轮廓点
+    :param points: (n_points, 2),圆的中心坐标 (x, y)
+    :param r: 圆的半径
+    :param nums: 轮廓点的数量
+    :return: 圆的轮廓点坐标数组 (n_points,nums, 2)
+    """
+    if len(points) == 0: return points
+    if not isinstance(points, np.ndarray): points = np.asarray(points)
+    theta = np.linspace(0, 2 * np.pi, nums, endpoint=False)
+    x_contour = points[:, 0:1] + r * np.cos(theta)
+    y_contour = points[:, 1:2] + r * np.sin(theta)
+    output = np.concatenate((x_contour[:, :, None], y_contour[:, :, None]), axis=2)
+    return output
+
+
 def get_mask_iou(mask1, mask2, binarize=True, iom=False):
     """
     计算IOU=交集(A,B)/并集(A,B)
@@ -2659,7 +2690,7 @@ def draw_image_contours(image, contours: List[np.ndarray], texts=[], color=(), a
     :param contours: List[np.ndarray],每个列表是一个轮廓(num_points,1,2)
     :param texts:轮廓文本
     :param color:绘制轮廓的颜色
-    :param alpha:绘制颜色的透明度
+    :param alpha:绘制颜色的透明度 0: 轮廓填充完全透明，1: 轮廓填充完全不透明
     :param thickness:轮廓线宽
     :return:
     """
@@ -3131,7 +3162,7 @@ def image_composite(image: np.ndarray, alpha: np.ndarray, bg_img=(219, 142, 67))
     https://blog.csdn.net/guduruyu/article/details/71439733
     更有效的C++实现: https://www.aiuai.cn/aifarm1237.html
     :param image: RGB图像(uint8)
-    :param alpha: 单通道的alpha图像(uint8)
+    :param alpha: 单通道的alpha图像(uint8), 0: 轮廓填充完全透明，1: 轮廓填充完全不透明
     :param bg_img: 背景图像,可以是任意的分辨率图像，也可以指定指定纯色的背景
     :return: 返回与背景合成的图像
     """
@@ -3268,10 +3299,10 @@ def get_video_capture(video, width=None, height=None, fps=None):
     return video_cap
 
 
-def get_video_info(video_cap: int | str | cv2.VideoCapture, disp=True, **kwargs):
+def get_video_info(video_cap, disp=True, **kwargs):
     """
     获得视频的基础信息
-    :param video_cap:视频对象 或者视频文件路径
+    :param video_cap:视频对象 或者视频文件路径 int | str | cv2.VideoCapture
     :param disp: 是否显示视频信息
     :return:
     """

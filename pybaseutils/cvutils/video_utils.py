@@ -61,12 +61,12 @@ def video2gif(video_file, gif_file=None, func=None, interval=1, fps=-1, use_pil=
 
 def get_video_sampling(freq, time, fps, random=False):
     """
-    获得抽帧时间点和索引
+    根据抽帧频率和时间范围，获得抽帧时间点和索引
     :param freq: 抽帧频率
     :param time: time: 开始播放时间time[0]，结束播放时间time[1]，单位秒S
     :param fps: 视频帧率FPS
     :param random: 是否随机抽帧(在每一秒内随机抽freq帧)
-    :return:
+    :return: times,index
     """
     if freq <= 0: freq = fps
     if random:
@@ -79,7 +79,8 @@ def get_video_sampling(freq, time, fps, random=False):
         times = np.concatenate(times)
         # times = np.sort(np.random.uniform(time[0], time[1], size=freq))
     else:
-        times = np.arange(time[0], time[1], 1 / freq)
+        times = np.arange(time[0], time[1], 1 / freq)  # (
+        # 开始时间, 结束时间, 抽帧时间间隔)
     index = times * fps
     index = index.astype(int)
     return times, index
@@ -338,7 +339,7 @@ def video_capture(video_file: int or str, save_video: str or int = None, interva
         video_writer.release()
 
 
-def video_iterator(video_file: int | str, save_video: str or int = None, interval=1, size=(), freq=0,
+def video_iterator(video_file, save_video: str or int = None, interval=1, size=(), freq=0,
                    task: Callable = None, vis=False, **kwargs):
     """
     读取摄像头或者视频流迭代器
@@ -450,3 +451,7 @@ if __name__ == "__main__":
     # video2video(video_file, dst_file, vis=True)
     video_file = "/home/PKing/Videos/aije-data/检查绝缘棒.mp4"
     load_video(video_file, time=(0, -1), freq=2, size=(), use_rgb=False)
+
+    times, index = get_video_sampling(freq=4, time=(0, 4), fps=20, random=False)
+    print(times)
+    print(index)

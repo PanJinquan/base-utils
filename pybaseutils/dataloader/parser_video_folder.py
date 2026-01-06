@@ -99,7 +99,6 @@ class VideoFolderDataset(parser_image_folder.FolderDataset):
         :param video_file:
         :param size:
         :param use_rgb:
-        :param duration: 最大时长
         :param freq: 抽帧频率
         :param use_cut:
         :return:
@@ -108,7 +107,10 @@ class VideoFolderDataset(parser_image_folder.FolderDataset):
         width, height, numFrames, fps = video_utils.get_video_info(video_cap, disp=False)
         time = (0, numFrames / fps)
         video_time, video_idx = video_utils.get_video_sampling(self.freq, time, fps, random=shuffle)
-        # assert len(video_idx) == max_nums, "video_idx len error:{}".format(video_idx)
+        # TODO 居中裁剪
+        clip = (int(len(video_idx) / 2 - self.seq_len / 2), int(len(video_idx) / 2 + self.seq_len / 2))
+        clip = (max(clip[0], 0), min(clip[1], len(video_idx)))
+        video_idx = video_idx[clip[0]:clip[1]]
         frames = []
         for count in video_idx:
             video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
@@ -120,9 +122,10 @@ class VideoFolderDataset(parser_image_folder.FolderDataset):
         if len(frames) < 3: return []  # 帧太少，无效视频
         if len(frames) < self.seq_len:
             pad = self.seq_len - len(frames)
-            images = [frames[-1].copy()] * pad
+            images = [frames[-1]] * pad
             frames += images
-        frames = frames[:self.seq_len]
+        frames = frames[0:self.seq_len]
+        assert len(frames) == self.seq_len, "frames size error:{}".format(len(frames))
         return frames
 
 

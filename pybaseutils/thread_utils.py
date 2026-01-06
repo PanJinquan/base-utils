@@ -151,7 +151,10 @@ class ThreadPool(object):
         """
          递交线程任务
          pool=thread_utils.ThreadPool(max_workers=1)
-         pool.submit(func, args=(参数1,参数2,参数3,...))
+         future = pool.submit(func, args=(参数1,参数2,参数3,...))
+         print(future.done())       # 是否完成
+         result = future.result()   # 等待线程任务完成，获取结果
+         print(future.done())       # 是否完成
         :param func:
         :param args:
         :param kwargs:
@@ -250,12 +253,13 @@ def performanceThreadPool():
     pool = ThreadPool(max_workers=2)
     future = pool.submit(consumer, "1.jpg", "2.jpg")
     future = pool.submit(consumer, "1.jpg", "2.jpg")
-    future = pool.submit(consumer, "1.jpg", "2.jpg")
+    # future = pool.submit(consumer, "1.jpg", "2.jpg")
     print(future.done())
-    result = future.result()
+    result = future.result() # 等待线程任务完成，获取结果
     print(future.done())
     print("result:{}".format(result))
     time.sleep(1)
+
 
 def performanceThreadPool2():
     from pybaseutils import time_utils
