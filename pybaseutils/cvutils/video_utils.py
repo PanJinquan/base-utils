@@ -305,7 +305,7 @@ def video_capture(video_file: int or str, save_video: str or int = None, interva
     video_cap = image_utils.get_video_capture(video_file, fps=None)
     w, h, num_frames, fps = image_utils.get_video_info(video_cap, **kwargs)
     time = kwargs.get("time", tuple())  # TODO 开始播放时间time[0]，结束播放时间time[1]，单位秒S
-    clip = kwargs.get("clip", tuple())  # TODO 开始播放位置index[0]，结束播放位置index[1]
+    clip = kwargs.get("clip", tuple())  # TODO 开始播放位置clip[0]，结束播放位置clip[1]
     start, end = 0, -1
     if time and fps > 0:
         start, end = int(time[0] * fps), int(time[1] * fps)
@@ -360,7 +360,7 @@ def video_iterator(video_file, save_video: str or int = None, interval=1, size=(
                  delay: 控制显示延时,默认10S
                  title: 控制显示窗口名，默认video
                  time: 开始播放时间time[0]，结束播放时间time[1]，单位秒S
-                 clip: 开始播放位置index[0]，结束播放位置index[1]
+                 clip: 开始播放位置clip[0]，结束播放位置clip[1]
                  speed: 保存视频的播放速度，默认是播放帧率
                  save_fps: 保存视频的帧率，默认是播放帧率
     :return: frame, count, w, h, fps =data_info['frame'],data_info['count'],data_info['w'],data_info['h'],data_info['fps']
@@ -373,7 +373,7 @@ def video_iterator(video_file, save_video: str or int = None, interval=1, size=(
     video_cap = image_utils.get_video_capture(video_file, fps=None)
     w, h, num_frames, fps = image_utils.get_video_info(video_cap, **kwargs)
     time = kwargs.get("time", tuple())  # TODO 开始播放时间time[0]，结束播放时间time[1]，单位秒S
-    clip = kwargs.get("clip", tuple())  # TODO 开始播放位置index[0]，结束播放位置index[1]
+    clip = kwargs.get("clip", tuple())  # TODO 开始播放位置clip[0]，结束播放位置clip[1]
     start, end = 0, -1
     if time and fps > 0:
         start, end = int(time[0] * fps), int(time[1] * fps)
