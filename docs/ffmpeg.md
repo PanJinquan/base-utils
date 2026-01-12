@@ -54,11 +54,11 @@ ffmpeg -f v4l2 -i /dev/video0 -f pulse -i default \
 
 # TODO 批量将MKV文件转为MP4文件
 for file in *.mkv; do
-    ffmpeg -i "$file" -c:v libx264 -crf 24 -preset medium -c:a aac -b:a 128k  -movflags +faststart "${file%.mkv}.mp4"
+    ffmpeg -i "$file" -c:v libx264 -c:a aac "${file%.mkv}.mp4"
 done
 
 for file in *.avi; do
-    ffmpeg -i "$file" -c:v libx264 -crf 24 -preset medium -c:a aac -b:a 128k  -movflags +faststart "${file%.avi}.mp4"
+    ffmpeg -i "$file" -c:v libx264 -c:a aac "${file%.avi}.mp4"
 done
 # TODO mp4强行中断，会导致文件损坏无法播放,建议MKV和flv格式
 ffmpeg -f v4l2  -i /dev/video0 -f pulse -i default  \
@@ -74,5 +74,4 @@ ffmpeg -f v4l2 -i /dev/video0 -f pulse -i default \
 -preset medium -f segment -segment_time 1800 \
 -reset_timestamps 1 -segment_format flv -strftime 1 \
 "%Y%m%d_%H%M%S.flv"
-
 ```

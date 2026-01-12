@@ -25,8 +25,8 @@ def resize_android(frame):
 def resize_fun(frame):
     h, w = frame.shape[:2]
     # frame = image_utils.resize_image(frame, size=(196, None))
-    frame = image_utils.resize_image(frame, size=(500, None))
-    # frame = image_utils.resize_image(frame, size=(960, None))
+    # frame = image_utils.resize_image(frame, size=(500, None))
+    frame = image_utils.resize_image(frame, size=(960, None))
     # frame = image_utils.resize_image(frame, size=(None, 640))  # android-video
     return frame
 
@@ -38,8 +38,8 @@ def android_gif():
 
 
 def python_gif():
-    video_file = "/home/PKing/nasdata/Project/3D/Car-Distance-Speed-Estimation/data/output/video1_003.mp4"
-    video_utils.video2gif(video_file, interval=6, func=resize_fun, fps=4,start=3,end=10, use_pil=True, vis=True)
+    video_file = "/home/PKing/nasdata/Project/LLM/MLLM-Factory/docs/chat-demo.mp4"
+    video_utils.video2gif(video_file, interval=10, func=resize_fun, fps=4, time=(0.5, 24), use_pil=True, vis=True)
 
 
 def image_gif():

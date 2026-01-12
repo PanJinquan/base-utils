@@ -14,6 +14,7 @@ import glob
 import random
 import numbers
 import json
+import traceback
 from tqdm import tqdm
 from pybaseutils import image_utils, file_utils, json_utils, text_utils
 from pybaseutils.dataloader.base_dataset import Dataset, ConcatDataset
@@ -145,21 +146,26 @@ class LabelMeDataset(Dataset):
         class_name = []
         for image_id in tqdm(image_ids, desc="check data"):
             image_file, anno_file, image_id = self.get_image_anno_file(image_id)
-            if not os.path.exists(anno_file):
+            try:
+                if not os.path.exists(anno_file):
+                    continue
+                if not os.path.exists(image_file):
+                    continue
+                annotation, width, height = self.load_annotations(anno_file)
+                data_info = self.parser_annotation(annotation, self.total_names, size=(width, height),
+                                                   min_points=self.min_points,
+                                                   unique=self.unique)
+                if self.use_kpt:
+                    data_info = self.get_kpts_info(data_info, anno_file=anno_file, check_kpt=self.check_kpt, disp=True)
+                labels = data_info["labels"]
+                if len(labels) == 0:
+                    continue
+                dst_ids.append(image_id)
+                class_name += labels
+            except Exception as e:
+                traceback.print_exc()
+                print(anno_file)
                 continue
-            if not os.path.exists(image_file):
-                continue
-            annotation, width, height = self.load_annotations(anno_file)
-            data_info = self.parser_annotation(annotation, self.total_names, size=(width, height),
-                                               min_points=self.min_points,
-                                               unique=self.unique)
-            if self.use_kpt:
-                data_info = self.get_kpts_info(data_info, anno_file=anno_file, check_kpt=self.check_kpt, disp=True)
-            labels = data_info["labels"]
-            if len(labels) == 0:
-                continue
-            dst_ids.append(image_id)
-            class_name += labels
         if self.class_name is None:
             class_name = sorted(list(set(class_name)))
             self.class_name, self.class_dict = self.parser_classes(class_name)

@@ -31,11 +31,7 @@ if __name__ == "__main__":
     anno_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-action-cvlm-v2/train-v2/01-核相操作/dataset-test/images"
     anno_dir = [
         # TODO 训练集
-        '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-v01/images',
-        '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-v01-val/images',
-        '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-v02/images',
-        '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-v02-val/images',
-        '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-v03/images',
+        '/home/PKing/Pictures/数据标注/4-120/images',
     ]
     names = None
     dataset = parser_labelme.LabelMeDatasets(filename=None,

@@ -151,7 +151,7 @@ def video2frames(video_file, out_dir=None, task: Callable = None, interval=1, si
     return frames
 
 
-def video2frames_similarity(video_file, out_dir=None, func=None, interval=1, thresh=0.3, vis=True, **kwargs):
+def video2frames_similarity(video_file, out_dir=None, func=None, prefix="", interval=1, thresh=0.3, vis=True, **kwargs):
     """
     视频抽帧图像
     :param video_file: 视频文件
@@ -162,7 +162,8 @@ def video2frames_similarity(video_file, out_dir=None, func=None, interval=1, thr
     :return:
     """
     sm = monitor.StatusMonitor()
-    name = os.path.basename(video_file).split(".")[0]
+    name = os.path.basename(video_file).split(".")[0].replace("-", "_")
+    if prefix: name = f"{prefix}_{name}"
     if not out_dir:  out_dir = os.path.join(os.path.dirname(video_file), name)
     video_cap = get_video_capture(video_file)
     width, height, num_frames, fps = get_video_info(video_cap, **kwargs)
@@ -181,13 +182,13 @@ def video2frames_similarity(video_file, out_dir=None, func=None, interval=1, thr
                 last_frame = curr_frame.copy()
             diff = sm.get_frame_similarity(curr_frame, last_frame, size=(256, 256), vis=False)
             if diff > thresh:
-                frame_file = os.path.join(out_dir, "{}_{:0=4d}.jpg".format(name, count))
+                frame_file = os.path.join(out_dir, "{}_{:0=6d}.jpg".format(name, count))
                 last_frame = curr_frame.copy()
                 cv2.imwrite(frame_file, curr_frame)
                 frame_files.append(frame_file)
             if vis:
                 text = "TH={},diff={:3.3f}".format(thresh, diff)
-                image = image_utils.draw_text(curr_frame, point=(10, 70), color=(0, 255, 0),
+                image = image_utils.draw_text(curr_frame, point=(10, 100), color=(0, 255, 0),
                                               text=text, drawType="simple")
                 image = image_utils.cv_show_image("image", image, delay=5)
         count += 1
