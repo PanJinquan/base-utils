@@ -100,17 +100,20 @@ if __name__ == '__main__':
     对labelme的数据目标进行裁剪，用于制作分类数据集
     """
     # TODO 蓝色长条标签和鞋套是否相似
-    target_name = ['身穿工作服', '未穿工作服',
+    target_name = ['身穿工作服', '未穿工作服', '螺丝刀',
                    '绝缘鞋', '脚穿绝缘鞋', '长筒靴', '脚穿长筒靴', '其他鞋', '脚穿其他鞋', '脚穿鞋套',
                    '手', '绝缘手套', '手穿绝缘手套', '棉纱手套', '手穿棉纱手套', '其他手套', '手穿其他手套',
                    '胶枪灯', '胶枪灯红色', '胶枪灯绿色',
-                   'PDA', 'PDA*', '手与*接触', '电视柜台面'
+                   'PDA', 'PDA*', '清洁布', '手与*接触', '电视柜台面', '*标签'
                    ]
     # '*长条标签'
     datasets = [
-        '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-20251208-PDA/images',
-        # '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-20251208-PDA-val/images',
+        '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-20260120/images',
+        '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-20260130/images',
+        '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-20260206/images',
     ]
+    datasets = "/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/文件列表.txt"
+    datasets = file_utils.read_data(datasets, split=None)
     # dataroot = '/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det'
     # datasets = get_sub_dataset(dataroot)
     class_name = []

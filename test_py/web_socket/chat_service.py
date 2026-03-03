@@ -2,7 +2,7 @@
 """
 # --------------------------------------------------------
 # @Author : Pan
-# @E-mail : 
+# @E-mail :
 # @Date   : 2025-08-25 17:52:03
 # @Brief  :
 # --------------------------------------------------------
@@ -16,10 +16,32 @@ import tornado.web
 import tornado.websocket
 import asyncio
 
-expires = 60  # 60秒不活跃则删除
-clients = {}  # 改为字典存储，key为cid，value为连接对象
-clients_id = 0  # 用于生成唯一ID
-clients_data = []  # 用户数据
+
+class UserPools:
+    sleep = 10  # 检查间隔秒数
+    expires = 60  # 60秒不活跃则删除，当为-1,表示不检查
+    indexes = 0  # 用于生成唯一ID
+    clients = {}  # 改为字典存储，key为cid，value为连接对象
+    message = []  # 存储用户共享的消息
+
+    def get_client(self, cid):
+        return self.clients[cid]
+
+    def add_client(self, ins):
+        self.indexes += 1
+        cid = f"用户ID{self.indexes:04d}"
+        self.clients[cid] = ins
+        return cid
+
+    def del_client(self, cid):
+        if cid in self.clients:
+            del self.clients[cid]
+
+    def add_message(self, msg):
+        self.message.append(msg)
+
+
+user = UserPools()
 
 
 class IndexHandler(tornado.web.RequestHandler):
@@ -27,18 +49,21 @@ class IndexHandler(tornado.web.RequestHandler):
         await self.render("index.html")  # 渲染并返回聊天室页面
 
 
-async def check_inactive_clients():
+async def check_clients_clients():
+    """检查客户端是否活跃"""
     while True:
-        await asyncio.sleep(expires)  # 每分钟检查一次
+        print(f"当前连接数: {len(user.clients)}")
+        await asyncio.sleep(user.sleep)  # 每分钟检查一次
+        if user.expires <= 0: continue
         t = time.time()
-        for cid in list(clients.keys()):
-            if t - clients[cid].time > expires:  # 超过60秒未活动
+        for cid in list(user.clients.keys()):
+            if t - user.clients[cid].time > user.expires:  # 超过expires秒未活动
                 try:
-                    clients[cid].write_message("系统: 你的ID因长时间未活动已被删除")
-                    clients[cid].close()
+                    user.clients[cid].write_message("系统: 你的ID因长时间未活动已被删除")
+                    user.clients[cid].close()
                 except:
                     print(f"无法通知{cid}用户")
-                del clients[cid]
+                user.del_client(cid)
                 print(f"清理不活跃用户(ID:{cid})")
 
 
@@ -49,31 +74,30 @@ class MainSocketHandler(tornado.websocket.WebSocketHandler):
         self.cid = None
 
     def open(self):
-        global clients_id
-        clients_id += 1
-        self.cid = f"用户{clients_id}"
-        self.time = time.time()  # 记录最后活跃时间
-        clients[self.cid] = self
-        print(f"客户端建立连接(ID:{self.cid}),当前连接数: {len(clients)}")
+        """打开并添加客户端到用户池"""
+        self.cid = user.add_client(self)
+        self.time = time.time()  # 记录开始活跃时间
+        print(f"客户端建立连接(ID:{self.cid}),当前连接数: {len(user.clients)}")
         self.write_message(f"系统: 欢迎使用，你的ID是{self.cid}")
-        for msg in clients_data:  # 新用户连接时能看到之前的聊天记录
+        for msg in user.message:  # 新用户连接时能看到历史聊天记录
             self.write_message(msg)
 
     def on_message(self, message):
+        """接收客户端消息"""
         self.time = time.time()  # 更新最后活跃时间
         print(f"收到来自{self.cid}的消息: {message}")
-        formatted_msg = f"{self.cid}: {message}"  # 使用分配的ID
-        clients_data.append(formatted_msg)
-        for client_id, client in clients.items():
+        mesg = f"{self.cid}: {message}"  # 使用分配的ID
+        user.add_message(mesg)
+        for cid, client in user.clients.items():
             try:
-                client.write_message(formatted_msg)
+                client.write_message(mesg)
             except:
-                print(f"向{client_id}发送消息失败")
+                print(f"向{cid}发送消息失败")
 
     def on_close(self):
-        if self.cid in clients:
-            del clients[self.cid]
-        print(f"客户端断开连接(ID:{self.cid}),当前连接数: {len(clients)}")
+        """结束客户端连接"""
+        print(f"客户端断开连接(ID:{self.cid}),当前连接数: {len(user.clients)}")
+        user.del_client(self.cid)
 
     def check_origin(self, origin):
         return True  # 允许跨域
@@ -95,7 +119,7 @@ async def main():
     tornado.options.define("port", default=8888, help="运行端口", type=int)
     app.listen(tornado.options.options.port)
     print(f"服务器启动在 http://localhost:{tornado.options.options.port}")
-    asyncio.create_task(check_inactive_clients())  # 将任务启动移到这里
+    asyncio.create_task(check_clients_clients())  # 将任务启动移到这里
     await asyncio.Event().wait()
 
 

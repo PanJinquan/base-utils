@@ -25,8 +25,8 @@ preprocess = transforms.Compose([
 ])
 
 # 加载图片并推理
-img = Image.open("example.jpg")
-img_t = preprocess(img)
+pltimg = Image.open("example.jpg")
+img_t = preprocess(pltimg)
 batch_t = torch.unsqueeze(img_t, 0)
 
 with torch.no_grad():

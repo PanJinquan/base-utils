@@ -11,6 +11,7 @@ import os
 import toolz
 import json
 import numbers
+import PIL.Image as Image
 from collections import Counter
 from typing import List, Tuple, Dict
 from pybaseutils.file_utils import load_json, read_json_data, save_json, write_json_path
@@ -32,6 +33,23 @@ def formatting(data):
     """格式化json数据"""
     info = json.dumps(data, indent=1, separators=(', ', ': '), ensure_ascii=False)
     return info
+
+
+def format_array(data):
+    """格式化数组数据,将numpy数组转换为PIL.Image对象"""
+    if isinstance(data, np.ndarray):
+        try:
+            r = Image.fromarray(data)
+        except:
+            r = data.shape
+        return r
+    elif isinstance(data, list):
+        for i in range(len(data)):
+            data[i] = format_array(data[i])
+    elif isinstance(data, dict):
+        for k, v in data.items():
+            data[k] = format_array(v)
+    return data
 
 
 def get_keys_vaules(data, func=None):
@@ -139,6 +157,14 @@ def toolz_assoc_in(data, keys, value):
         return toolz.assoc_in(data, cur_keys, value)
 
 
+def get_index(data: list, v):
+    """获得列表中所有值为v的索引"""
+    indices = [i for i, x in enumerate(data) if x == v]
+    return indices
+
+
 if __name__ == "__main__":
-    data = {'C': 0, 'A': 5, 'B': 3, 'D': 2}
-    print(dict_sort(data))
+    # data = {'C': 0, 'A': 5, 'B': 3, 'D': 2}
+    # print(dict_sort(data))
+    i= get_index(data=[], v=7)
+    print(i)

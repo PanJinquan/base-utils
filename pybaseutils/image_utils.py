@@ -11,6 +11,8 @@
 import os
 import copy
 import re
+import time
+
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
@@ -48,6 +50,8 @@ coco_skeleton_v2 = [[15, 13], [13, 11], [16, 14], [14, 12], [11, 12], [5, 11], [
                     [6, 8], [7, 9], [8, 10], [1, 2], [0, 1], [0, 2], [1, 3], [2, 4], [3, 5], [4, 6]]
 mpii_skeleton = [[0, 1], [1, 2], [3, 4], [4, 5], [2, 6], [6, 3], [12, 11], [7, 12],
                  [11, 10], [13, 14], [14, 15], [8, 9], [8, 7], [6, 7], [7, 13]]
+
+pltimg = None
 
 
 def create_image(shape, color=(255, 255, 255), dtype=np.uint8, use_rgb=False):
@@ -155,7 +159,7 @@ def show_batch_image(title, batch_images, index=0):
         cv_show_image(title, image)
 
 
-def show_image_plt(title, image, use_rgb=True):
+def show_image_plt(title, image, use_rgb=True, delay=30):
     """
     use matplotlib to show image
     调用matplotlib显示RGB图片
@@ -164,18 +168,19 @@ def show_image_plt(title, image, use_rgb=True):
     :param use_rgb: True:输入image是RGB的图像, False:返输入image是BGR格式的图像
     :return:
     """
-    # plt.figure("show_image")
-    # print(image.dtype)
-    if image.shape[-1] == 3 and (not use_rgb):
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # 将BGR转为RGB
-    channel = len(image.shape)
-    if channel == 3:
-        plt.imshow(image)
+    global pltimg
+    if use_rgb: image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # 将BGR转为RGB
+    if pltimg is None:
+        plt.ion()  # 启用交互模式（关键！）
+        plt.axis('off')  # 坐标轴为 on/off
+        plt.tight_layout(pad=0)
+        pltimg = plt.imshow(image)  # 循环显示很慢
+        plt.show()  # 这里耗时，仅调用一次
     else:
-        plt.imshow(image, cmap='gray')
-    plt.axis('on')  # 关掉坐标轴为 off
-    plt.title(title)  # 图像题目
-    plt.show()
+        pltimg.set_data(image)
+    plt.title(title)
+    if delay == 0: pltimg = plt.imshow(image)
+    plt.pause(delay / 1000.0)
     return image
 
 
@@ -3288,33 +3293,34 @@ def get_video_capture(video, width=None, height=None, fps=None):
     :param fps:  设置视频播放帧率
     :return:
     """
-    video_cap = cv2.VideoCapture(video)
+    cap = cv2.VideoCapture(video)
     # 设置分辨率
     if width:
-        video_cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
     if height:
-        video_cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
     if fps:
-        video_cap.set(cv2.CAP_PROP_FPS, fps)
-    return video_cap
+        cap.set(cv2.CAP_PROP_FPS, fps)
+    # cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)  # 设置缓冲区大小为1，确保每次读取的都是最新，避免旧帧积压导致的延迟。
+    return cap
 
 
-def get_video_info(video_cap, disp=True, **kwargs):
+def get_video_info(cap, disp=True, **kwargs):
     """
     获得视频的基础信息
-    :param video_cap:视频对象 或者视频文件路径 int | str | cv2.VideoCapture
+    :param cap:视频对象 或者视频文件路径 int | str | cv2.VideoCapture
     :param disp: 是否显示视频信息
     :return:
     """
-    isfile = isinstance(video_cap, str) or isinstance(video_cap, int)
-    if isfile: video_cap = get_video_capture(video_cap)
-    width = int(video_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    height = int(video_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    num_frames = int(video_cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    fps = video_cap.get(cv2.CAP_PROP_FPS)
+    isfile = isinstance(cap, str) or isinstance(cap, int)
+    if isfile: cap = get_video_capture(cap)
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    num_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    fps = cap.get(cv2.CAP_PROP_FPS)
     fps = math.ceil(fps)
     if disp: print("read video:width:{},height:{},fps:{},num_frames:{}".format(width, height, fps, num_frames))
-    if isfile: video_cap.release()
+    if isfile: cap.release()
     return width, height, num_frames, fps
 
 

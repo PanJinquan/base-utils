@@ -159,8 +159,8 @@ if __name__ == "__main__":
         print(image_file)
         src = image_utils.read_image(image_file, use_rgb=True)
         image_base64 = image2base64(src, prefix="data:image/jpeg;base64,", )
-        img = Image.fromarray(src)
-        data = {"image": img, "file": image_file}
+        pltimg = Image.fromarray(src)
+        data = {"image": pltimg, "file": image_file}
         data = serialization(data)
         data = deserialization(data)
         dst = data["image"]

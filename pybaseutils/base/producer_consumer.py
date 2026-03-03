@@ -125,11 +125,13 @@ def example(text, video, realtime=False, freq=2, wintime=3, overlap=0.5, max_wor
     pc = ProducerConsumer(winsize=winsize, overlap=overlap, max_workers=max_workers, **kwargs)
     # TODO 打开视频文件或摄像头
     w, h, num_frames, fps = image_utils.get_video_info(video)
+    fpm = 1 / fps
     interval = int(fps / freq) if fps > 0 else 1
     video_cap = video_utils.video_iterator(video, save_video=None)
     pc.start_consumer(task=pc.task, text=text, freq=freq)  # 启动消费者线程
     # TODO 主线程处理视频帧
     for data_info in video_cap:
+        t1 = time.time()
         image = data_info["frame"][:, :, ::-1]  # BGR to RGB
         image = image_utils.resize_image(image, size=(None, 640))
         data_info["frame"] = image
@@ -138,8 +140,10 @@ def example(text, video, realtime=False, freq=2, wintime=3, overlap=0.5, max_wor
             # data_info['text'] = text
             # data_info['freq'] = freq
             pc.producer.put(data_info, block=not realtime)
-        if vis: image_utils.show_image("image", image, delay=delay, use_rgb=True)
+        if vis: image_utils.show_image("image", image, delay=1, use_rgb=True)
         if data_info["finish"]: pc.stop_producer()  # 标记生产者是否结束
+        td = time.time() - t1  # 秒
+        time.sleep(max(0.0, fpm - td))  # 保证视频有40ms延时
         while pc.consumer.qsize() > 0 or (pc.producer_end and not pc.consumer_end):
             result = pc.consumer.pop(block=False, timeout=0.005)
             if result: print("result={}".format(result))

@@ -1,6 +1,7 @@
 # GIT教程
 
 - Git 全局设置
+
 ```bash
 git config --global user.name "Jinquan"
 git config --global user.email "Jinquan"
@@ -8,7 +9,6 @@ git config --global user.email "Jinquan"
 git config --global core.autocrlf input
 
 ```
-
 
 - 解决git pull/push需要输入密码的问题
   https://zhuanlan.zhihu.com/p/537646478
@@ -20,6 +20,7 @@ git config --global credential.helper store
 - 将一个分支完全覆盖(不是合并)到另一个分支
 
   案例: 将dev分支的代码完全覆盖到master上
+
 ```bash
 git checkout master
 git reset --hard dev
@@ -36,7 +37,7 @@ git config --global --unset https.proxy
 ```
 
 - 两个不同仓库进行合并
-  
+
 ```bash
 # 本地仓库：Pytorch-YOLOv8
 # 添加另一个仓库作为远程仓库：git remote add other-repo url/to/other-repo
@@ -61,24 +62,25 @@ git push origin main
 ```
 
 - 查找大文件
+
 ```bash
 # 查找大于100MB的文件
 large_files=$(find . -type f -size +100M -not -path "./.git/*" | sed 's|^\./||')
 echo "$large_files"
 ```
+
 - 方法1：LFS上传大文件(>100M)，参考[lfs.sh](lfs.sh)
 - 方法2：git lfs migrate import --above=100MB --everything # 将历史提交中所有大于100MB的文件迁移到LFS管理
 - 恢复大文件
+
 ```bash
 git lfs install       # 初始化 LFS
 git lfs fetch origin  # 下载所有 LFS 文件
 git lfs checkout      # 将文件还原到工作区
 ```
 
-
-
 - 从GitHub迁移到GitHub
-  
+
 ```bash
 # 先拉所有分支
 git branch -r | grep -v 'HEAD' | while read branch; do 
@@ -98,9 +100,8 @@ git push -u origin --all   # 如果文件太大，建议逐个分支推送： gi
 git push -u origin --tags  # 如果有标签，也需要推送
 ```
 
-
 - 推送现有的文件
-    
+
 ```bash
 cd existing_folder
 git init
@@ -110,8 +111,6 @@ git commit -m "Initial commit"
 git branch -m main
 git push -u origin main
 ```
-
-
 
 ## 解决git pull/push需要输入密码的问题
 
@@ -163,4 +162,15 @@ model_dir = "facebook/dinov2-base" # TODO 默认保持在~/.cache/huggingface/hu
 processor = AutoImageProcessor.from_pretrained(model_dir)
 model = AutoModel.from_pretrained(model_dir)
 
+```
+
+## modelscope 资源下载
+
+- 命令行中下载：
+
+```bash
+modelscope download --model Qwen/Qwen3-VL-2B-Instruct # 模型保持在 ~/.cache/modelscope/hub/models/
+modelscope download --model OpenBMB/MiniCPM-V-2_6     # 模型保持在 ~/.cache/modelscope/hub/models/
+modelscope download --model OpenBMB/MiniCPM-V-2_6 --local_dir /your/desired/path # 指定下载路径
+# /nasdata/atp/data/panjinquan/Project/LLM/model/OpenBMB/MiniCPM-V-2_6
 ```

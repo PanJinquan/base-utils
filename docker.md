@@ -5,6 +5,16 @@
 - docker.1ms.run
 - dhub.kubesre.xyz
 
+## 安装
+
+- 安装 https://blog.csdn.net/guyuealian/article/details/100078444
+
+```bash
+sudo apt-get update
+sudo apt install docker.io
+sudo systemctl start docker
+sudo systemctl enable docker
+```
 
 - 这支持GPU版本
 

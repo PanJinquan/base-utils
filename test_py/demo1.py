@@ -1,21 +1,46 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
+
 import numpy as np
-from ultralytics import YOLO
-from ultralytics.trackers.utils.matching import iou_distance
+import pandas as pd
 
 
-class YOLOv8():
-    def __init__(self, model_file, task="segment"):
-        self.model = YOLO(model_file, task=task)
+class AppState:
+    def __init__(self, ):
+        self.code = 1
+        self.db_cl_names = []
+        self._cl_name = self.db_cl_names[0] if self.db_cl_names else None
 
-    def predict(self, image_file, imgsz=640, save=True):
-        results = self.model.predict(image_file, imgsz=imgsz, save=save)  # predict on an image
-        return results
+    @property
+    def cl_name(self):
+        if not self._cl_name:
+            self._cl_name = self.db_cl_names[0] if self.db_cl_names else None
+        return self._cl_name
 
-if __name__ == "__main__":
-    from pybaseutils import image_utils
+    @cl_name.setter
+    def cl_name(self, v):
+        assert v in self.db_cl_names, f'cl_name {v} not in db_cl_names {self.db_cl_names}'
 
-    image_utils.get_contours_iou() # 计算轮廓的IOU
-    image_utils.shrink_polygon_pyclipper() # 缩放多边形
+        self._cl_name = v
+
+
+def is_sorted_numpy(arr: np.ndarray) -> bool:
+    """
+    使用 numpy 判断数组是否为升序。
+    对于大型数值数组，这是最快的方法。
+    注意：此函数输入应为 numpy 数组。
+    """
+    # np.diff 计算相邻元素之差，如果升序，则所有差值都 >= 0
+    # np.all() 检查所有条件是否为真
+    return np.all(np.diff(arr) >= 0)
+
+
+if __name__ == '__main__':
+    import numpy as np
+
+    # --- 示例 ---
+    # 假设 data 是一个 numpy 数组
+    np_data = np.array([1, 2, 2, 3, 5, 8, 0])
+    result = is_sorted_numpy(np_data)
+    print(f"Numpy 数组 {np_data} 是否为升序？ {result}")  # 输出: True

@@ -11,10 +11,10 @@ import numpy as np
 
 if __name__ == "__main__":
     nii_file = "/home/PKing/nasdata/dataset/tmp/challenge/脑PET图像分析和疾病预测/脑PET图像分析和疾病预测挑战赛公开数据/Test/1.nii"
-    img = nib.load(nii_file)
-    print(img.shape)  # shape(240, 240, 155)
-    print(img.header['db_name'])
-    width, height, queue, _ = img.dataobj.shape  # 由文件本身维度确定，可能是3维，也可能是4维
+    pltimg = nib.load(nii_file)
+    print(pltimg.shape)  # shape(240, 240, 155)
+    print(pltimg.header['db_name'])
+    width, height, queue, _ = pltimg.dataobj.shape  # 由文件本身维度确定，可能是3维，也可能是4维
     # print("width",width)  # 240
     # print("height",height) # 240
     # print("queue",queue)   # 155
@@ -22,7 +22,7 @@ if __name__ == "__main__":
 
     num = 1
     for i in range(0, queue, 1):
-        img_arr = img.dataobj[:, :, i,0]
+        img_arr = pltimg.dataobj[:, :, i, 0]
         plt.subplot(queue//4+1, 4, num)
         plt.imshow(img_arr, cmap='gray')
         num += 1

@@ -423,8 +423,8 @@ class LabelMeDataset(Dataset):
             with open(anno_file, "r") as f:
                 annotation: dict = json.load(f)
             annos = annotation.get("shapes", [])
-            width = annotation.get('imageWidth', -1)
-            height = annotation.get('imageHeight', -1)
+            width = int(annotation.get('imageWidth', -1))
+            height = int(annotation.get('imageHeight', -1))
         except Exception as e:
             # print(e,"illegal annotation:{}".format(anno_file))
             annos = []

@@ -113,6 +113,11 @@ class Queue():
             return data1 + data2
         return []
 
+    def clear(self):
+        """清空队列"""
+        with self.queue.mutex:
+            self.queue.queue.clear()
+
 
 if __name__ == '__main__':
     q = Queue(maxsize=3)

@@ -11,6 +11,7 @@ import os
 import cv2
 import numpy as np
 import math
+import time as timelib
 from typing import Callable
 from tqdm import tqdm
 from pybaseutils import image_utils, file_utils
@@ -21,6 +22,27 @@ VIDEO_POSTFIX = ['*.mp4', '*.avi', '*.mov', "*.flv"]
 get_video_capture = image_utils.get_video_capture
 get_video_info = image_utils.get_video_info
 get_video_writer = image_utils.get_video_writer
+
+
+def get_usb_camera(video=-1, max_index=50):
+    """
+    获取当前系统中连接的USB摄像头索引。
+    :param video: 视频路径或摄像头索引,默认值为-1表示自动检测。当video>=0时,不进行检测，直接返回video。
+    :param max_index: 最大检测索引范围,默认值为50。
+    :return: 一摄像头索引,camera=-1表示未检测到摄像头。
+    """
+    if video >= 0: return video
+    print("正在检测USB摄像头ID...")
+    camera = -1
+    for i in range(max_index):
+        cap = cv2.VideoCapture(i)
+        ret, frame = cap.read()
+        if cap.isOpened() and ret:
+            camera = i
+            cap.release()
+            break
+    print("检测到USB摄像头ID={}".format(camera))
+    return camera
 
 
 def merge_video(video1, video2, output="./output.mp4"):
@@ -147,7 +169,7 @@ def video2frames(video_file, out_dir=None, task: Callable = None, interval=1, si
             frame_file = os.path.join(out_dir, "{}_{:0=5d}.jpg".format(filename, count))
             cv2.imwrite(frame_file, frame)
             data_info["file"] = frame_file
-        frames.append(data_info)
+        if not out_dir: frames.append(data_info)
     return frames
 
 
@@ -246,7 +268,7 @@ def video2video(video_file: int or str, save_video: str or int, interval=1, size
     :param interval: 间隔
     :return:
     """
-    video_capture(video_file=video_file, save_video=save_video, interval=interval, size=size, freq=freq, task=task,
+    video_capture(video=video_file, save_video=save_video, interval=interval, size=size, freq=freq, task=task,
                   vis=vis, **kwargs)
 
 
@@ -285,11 +307,11 @@ def resize_video(video_file, save_video, size=(), start=0, interval=1, vis=True,
     video_writer.release()
 
 
-def video_capture(video_file: int or str, save_video: str or int = None, interval=1, size=(), freq=0,
+def video_capture(video: int or str, save_video: str or int = None, interval=1, size=(), freq=0,
                   task: Callable = None, vis=True, **kwargs):
     """
     读取摄像头或者视频流
-    :param video_file: String 视频文件，如*.avi,*.mp4,...
+    :param video: String 视频文件，如*.avi,*.mp4,...
                        Int 摄像头ID，如0，1，2
     :param save_video: 保存task视频处理后的结果
     :param interval: 抽帧处理间隔
@@ -300,11 +322,11 @@ def video_capture(video_file: int or str, save_video: str or int = None, interva
                  title: 控制显示窗口名
     :return:
     """
-    video_file = file_utils.str2number(video_file)
-    if isinstance(video_file, str) and os.path.isfile(video_file):
-        assert os.path.exists(video_file), f"video_file={video_file}"
-    video_cap = image_utils.get_video_capture(video_file, fps=None)
-    w, h, num_frames, fps = image_utils.get_video_info(video_cap, **kwargs)
+    video = file_utils.str2number(video)
+    if isinstance(video, str) and os.path.isfile(video):
+        assert os.path.exists(video), f"video={video}"
+    cap = image_utils.get_video_capture(video, fps=None)
+    w, h, num_frames, fps = image_utils.get_video_info(cap, **kwargs)
     time = kwargs.get("time", tuple())  # TODO 开始播放时间time[0]，结束播放时间time[1]，单位秒S
     clip = kwargs.get("clip", tuple())  # TODO 开始播放位置clip[0]，结束播放位置clip[1]
     start, end = 0, -1
@@ -320,10 +342,10 @@ def video_capture(video_file: int or str, save_video: str or int = None, interva
     count = 0
     video_writer = None
     while True:
-        ret, frame = video_cap.read()
+        ret, frame = cap.read()
         if count % interval == 0 and count >= start:
             # TODO 设置抽帧的位置，但某些格式视频容易出现问题
-            # if isinstance(video_file, str): video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
+            # if isinstance(video, str): video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
             # ret, frame = video_cap.read()
             if not ret or 0 < end < count or frame is None: break
             if size: frame = image_utils.resize_image(frame, size=size)
@@ -334,23 +356,23 @@ def video_capture(video_file: int or str, save_video: str or int = None, interva
                 if not video_writer: video_writer = image_utils.get_video_writer(save_video, w, h, save_fps)
                 video_writer.write(frame)
         count += 1
-    video_cap.release()
+    cap.release()
     if video_writer:
         print("save video:{}".format(save_video))
         video_writer.release()
 
 
-def video_iterator(video_file, save_video: str or int = None, interval=1, size=(), freq=0,
+def video_iterator(video, save_video: str or int = None, interval=1, size=(), freq=0,
                    task: Callable = None, vis=False, **kwargs):
     """
     读取摄像头或者视频流迭代器
     Usage:
         from pybaseutils.cvutils import video_utils
-        video_cap = video_utils.video_iterator(video_file, save_video, time=(4, 10))
-        for data_info in video_cap:
+        cap = video_utils.video_iterator(video, save_video, time=(4, 10))
+        for data_info in cap:
             frame = data_info["frame"]
             ...
-    :param video_file: String 视频文件，如*.avi,*.mp4,...
+    :param video: String 视频文件，如*.avi,*.mp4,...
                        Int 摄像头ID，如0，1，2
     :param save_video: 保存task视频处理后的结果
     :param interval: 抽帧处理间隔，当interval=-1，表示当interval=fps,即一秒一帧
@@ -368,11 +390,11 @@ def video_iterator(video_file, save_video: str or int = None, interval=1, size=(
              当输入是视频文件时，返回视频偏移量time和duration都是播放时间，单位S，差异不大
              当输入是摄像头时， 返回视频偏移量time是视频播放时间，duration是根据count计算的播放的时间
     """
-    video_file = file_utils.str2number(video_file)
-    if isinstance(video_file, str) and os.path.isfile(video_file):
-        assert os.path.exists(video_file), f"video_file={video_file}"
-    video_cap = image_utils.get_video_capture(video_file, fps=None)
-    w, h, num_frames, fps = image_utils.get_video_info(video_cap, **kwargs)
+    video = file_utils.str2number(video)
+    if isinstance(video, str) and os.path.isfile(video):
+        assert os.path.exists(video), f"video={video}"
+    cap = image_utils.get_video_capture(video, fps=None)
+    w, h, num_frames, fps = image_utils.get_video_info(cap, **kwargs)
     time = kwargs.get("time", tuple())  # TODO 开始播放时间time[0]，结束播放时间time[1]，单位秒S
     clip = kwargs.get("clip", tuple())  # TODO 开始播放位置clip[0]，结束播放位置clip[1]
     start, end = 0, -1
@@ -391,16 +413,17 @@ def video_iterator(video_file, save_video: str or int = None, interval=1, size=(
     data_info = {}
     t0 = -1
     while True:
-        ret, frame = (False, None) if use_fast else video_cap.read()
-        t = video_cap.get(cv2.CAP_PROP_POS_MSEC) / 1000  # 获得视频偏移量毫秒为单位
+        systime = timelib.time()
+        ret, frame = (False, None) if use_fast else cap.read()  # 读取视频很快，但读取USB摄像头比较耗时
+        t = cap.get(cv2.CAP_PROP_POS_MSEC) / 1000  # 获得视频偏移量毫秒为单位
         if t0 < 0 < t: t0 = t
         if t0 > 0: t = t - t0  # 获得视频偏移量毫秒为单位
         finish = 0 < end <= (count + interval)
         if count % interval == 0 and count >= start:
             # TODO 设置抽帧的位置，但某些格式视频容易出现问题
-            if use_fast and isinstance(video_file, str):
-                video_cap.set(cv2.CAP_PROP_POS_FRAMES, count)
-                ret, frame = video_cap.read()
+            if use_fast and isinstance(video, str):
+                cap.set(cv2.CAP_PROP_POS_FRAMES, count)
+                ret, frame = cap.read()
             if not ret or 0 < end <= count or frame is None: break
             if size: frame = image_utils.resize_image(frame, size=size)
             if task: frame = task(frame, **kwargs)
@@ -408,7 +431,7 @@ def video_iterator(video_file, save_video: str or int = None, interval=1, size=(
             d = round(count / fps, 3)  # TODO 通过fps计算播放时间
             t = round(t, 3)  # 通过视频偏移量计算播放时间
             data_info = {"count": count, "time": t, "frame": frame, "w": w, "h": h, "fps": fps,
-                         "finish": finish, 'duration': d}
+                         "finish": finish, 'duration': d, 'systime': systime}
             # TODO 返回data_info
             yield data_info
             frame = data_info["frame"]
@@ -417,8 +440,9 @@ def video_iterator(video_file, save_video: str or int = None, interval=1, size=(
                 h, w = frame.shape[:2]
                 if not video_writer: video_writer = image_utils.get_video_writer(save_video, w, h, save_fps)
                 video_writer.write(frame)
+            if data_info['finish']: break  # 控制结束
         count += 1
-    video_cap.release()
+    cap.release()
     if video_writer:
         print("save video:{}".format(save_video))
         video_writer.release()

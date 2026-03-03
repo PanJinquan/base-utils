@@ -75,3 +75,15 @@ ffmpeg -f v4l2 -i /dev/video0 -f pulse -i default \
 -reset_timestamps 1 -segment_format flv -strftime 1 \
 "%Y%m%d_%H%M%S.flv"
 ```
+
+## 定位摄像头ID的方法
+
+```bash
+ls /dev/video* # 查看所有视频设备
+# 如果有多个视频设备，使用v4l-utils工具查看设备信息
+sudo apt update
+sudo apt install v4l-utils
+# 列出所有设备及其归属
+v4l2-ctl --list-devices
+# 选择USB2.0 PC CAMERA: USB2.0 PC CAM (usb-fc800000.usb-1.1): 相关的设备ID是/dev/video0
+```

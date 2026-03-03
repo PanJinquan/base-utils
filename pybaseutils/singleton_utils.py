@@ -41,6 +41,9 @@ def synchronized(func):
 
 
 class Singleton(type):
+    """
+    使用方法：class Pipeline(metaclass=Singleton)
+    """
     def __init__(cls, *args, **kwargs):
         cls.__instance = None
         super().__init__(*args, **kwargs)
