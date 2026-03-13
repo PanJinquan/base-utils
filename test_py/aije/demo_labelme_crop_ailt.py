@@ -108,11 +108,10 @@ if __name__ == '__main__':
                    ]
     # '*长条标签'
     datasets = [
-        '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-20260120/images',
-        '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-20260130/images',
-        '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-20260206/images',
+        '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-20260227/images',
+        '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-20260211/images',
     ]
-    datasets = "/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/文件列表.txt"
+    # datasets = "/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/文件列表.txt"
     datasets = file_utils.read_data(datasets, split=None)
     # dataroot = '/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det'
     # datasets = get_sub_dataset(dataroot)

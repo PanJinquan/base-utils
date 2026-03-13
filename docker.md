@@ -34,6 +34,18 @@ sudo nvidia-ctk runtime configure --runtime=docker
 sudo systemctl restart docker
 ```
 
+## 将用户添加到docker用户组
+```bash
+# 创建docker用户组
+sudo groupadd docker
+# 把当前用户加入docker用户组
+sudo usermod -aG docker $USER
+# 更新激活docker用户组
+newgrp docker
+# 验证不需要sudo执行docker命令
+docker run hello-world
+```
+
 ## 镜像操作
 
 ```bash

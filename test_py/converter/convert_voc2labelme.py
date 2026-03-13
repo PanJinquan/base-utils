@@ -19,8 +19,8 @@ if __name__ == "__main__":
     Sedan     # 轿车
     Truck     # 卡车
     """
-    data_root = "/home/PKing/nasdata/tmp/tmp/car-det/dataset-v3"
-    out_root = data_root + "/labelme"
+    data_root = "/home/PKing/nasdata/tmp/tmp/pen/dataset-pen-finger-tip-005/train"
+    out_root = data_root
     class_dict = {"car": "car",
                   "person": "pedestrian",
                   "bicycle": "bike",
@@ -30,7 +30,8 @@ if __name__ == "__main__":
                   }
     convert_voc2labelme.convert_voc2labelme(data_root=data_root,
                                             out_root=out_root,
-                                            prefix="image2025",
+                                            prefix="",
                                             class_name=None,
-                                            class_dict=class_dict,
+                                            class_dict={},
+                                            shape_type="rotation",
                                             vis=False)

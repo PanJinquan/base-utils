@@ -13,11 +13,11 @@ from loguru import logger
 
 LOG_FORMAT = {
     "simple":   "<level>{time:YYYY-MM-DD HH:mm:ss}|{level:7}| {message}</level>",
-    "name":     "<level>{time:YYYY-MM-DD HH:mm:ss}|{level:7}|{name} {line:4}| {message}</level>",  # 打印文件名
-    "module":   "<level>{time:YYYY-MM-DD HH:mm:ss}|{level:7}|{module} {line:4}| {message}</level>",  # 打印模块名
-    # "function": "<level>{time:YYYY-MM-DD HH:mm:ss}|{level:7}|{function} {line:4}| {message}</level>",  # 打印函数
-    "function": "<level>{time:YYYY-MM-DD HH:mm:ss}|{level:7}|{module}.{function} {line:4}| {message}</level>",  # 打印函数
-    "all":      "<level>{time:YYYY-MM-DD HH:mm:ss}|{level:7}|{name}.{module}.{function} {line:4}| {message}</level>",  # 打印函数
+    "name":     "<level>{time:YYYY-MM-DD HH:mm:ss}|{level:7}|{name} {line}| {message}</level>",  # 打印文件名
+    "module":   "<level>{time:YYYY-MM-DD HH:mm:ss}|{level:7}|{module} {line}| {message}</level>",  # 打印模块名
+    # "function": "<level>{time:YYYY-MM-DD HH:mm:ss}|{level:7}|{function} {line}| {message}</level>",  # 打印函数
+    "function": "<level>{time:YYYY-MM-DD HH:mm:ss}|{level:7}|{module}.{function} {line}| {message}</level>",  # 打印函数
+    "all":      "<level>{time:YYYY-MM-DD HH:mm:ss}|{level:7}|{name}.{module}.{function} {line}| {message}</level>",  # 打印函数
 }
 
 

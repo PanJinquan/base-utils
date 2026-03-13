@@ -1772,7 +1772,7 @@ def draw_image_arrowed_lines(image,
     return image
 
 
-def draw_image_polylines(image, points, color=(0, 0, 255)):
+def draw_image_polylines(image, points, color=(0, 0, 255), closed=True, thickness=2):
     """
     # points是三维坐标，分别表示(多边形个数，多边形坐标点x,多边形坐标点y)=(num_polylines,num_point,2)
     points = np.asarray([[[100, 100], [200, 100], [400, 200]],
@@ -1784,8 +1784,8 @@ def draw_image_polylines(image, points, color=(0, 0, 255)):
     参数4 color：必选参数。用于设置多边形的颜色
     参数5 lineType：可选参数。用于设置线段的类型，可选8（8邻接连接线-默认）、4（4邻接连接线）和cv2.LINE_AA 为抗锯齿
     """
-    points = np.asarray(points, dtype=np.int32)
-    image = cv2.polylines(image, points, isClosed=True, color=color, thickness=2)  # 画任意多边形
+    pts = [np.array(p, dtype=np.int32) for p in points]
+    image = cv2.polylines(image, pts, isClosed=closed, color=color, thickness=thickness)  # 画任意多边形
     return image
 
 

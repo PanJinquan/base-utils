@@ -19,11 +19,12 @@ def video2frames_demo(root, out, prefix="", vis=False):
     for video_file in files:
         print(video_file)
         # video_utils.video2frames_similarity(video_file, out_dir=out, func=None, interval=20, thresh=0.3, vis=True)
-        video_utils.video2frames(video_file, out_dir=out, task=None, interval=10, vis=vis, prefix=prefix)
+        video_utils.video2frames(video_file, out_dir=out, task=None, interval=5, vis=vis, prefix=prefix)
 
 
 if __name__ == "__main__":
     root = "/home/PKing/edudata/dataset/AIJE/【TOP】技能人才系统_数据集管理/06-联通岗评/02-训练数据/联通入户布线_20260130_180400（补充打胶专题）/20260130_180400.mp4"
+    root = "/media/PKing/dev1/project/ai-cv-service/data/video1.avi"
     out = os.path.join(os.path.dirname(root), "frames")
     prefix = "image"
     # out = os.path.join(root, "frames")

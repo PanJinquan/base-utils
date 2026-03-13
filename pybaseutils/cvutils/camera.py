@@ -8,7 +8,7 @@ class CameraCapture(object):
     def __init__(self, video: str or int = 0, size=(1920, 1080), fps=30):
         """
         :param video: 视频设备路径或索引（如 0 或 "/dev/video0"）
-        :param size: 视频分辨率 (宽, 高)
+        :param size: 视频分辨率 (宽, 高)，(1280,720),(1920,1080)
         :param fps: 视频帧率
         """
         self.size = size
@@ -47,9 +47,9 @@ class CameraCapture(object):
         if len(buf) != self.size[0] * self.size[1] * 3:
             self.stop()
             return False, None  # 读取失败或结束
-        # 将字节流转换为 numpy 数组
-        frame = np.frombuffer(buf, dtype=np.uint8).reshape((self.size[1], self.size[0], 3))
-        return True, frame
+        # TODO 将字节流转换为numpy数组图像(bgr)
+        bgr = np.frombuffer(buf, dtype=np.uint8).reshape((self.size[1], self.size[0], 3))
+        return True, bgr
 
     def release(self):
         self.stop()
@@ -66,7 +66,7 @@ class CameraCapture(object):
             self.pipe.communicate()  # 再次尝试清理
             print(err)
 
-    def display(self):
+    def display(self, title="camera", delay=30):
         while True:
             t1 = time.time()
             ret, frame = self.read()
@@ -75,9 +75,9 @@ class CameraCapture(object):
                 break
             t21 = (t2 - t1) * 1000
             print(f"image shape: {frame.shape},耗时: {t21:.3f}ms")
-            cv2.imshow('FFmpeg Low Latency', frame)
-            if cv2.waitKey(30) & 0xFF == ord('q'):
-                break
+            cv2.namedWindow(title, flags=cv2.WINDOW_NORMAL)
+            cv2.imshow(title, frame)
+            cv2.waitKey(delay)
 
 
 if __name__ == '__main__':

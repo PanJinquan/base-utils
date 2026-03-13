@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import time
 from pybaseutils.cvutils.camera import CameraCapture
+from pybaseutils.cvutils.video_utils import get_usb_camera
 
 
 def display(cap: CameraCapture):
@@ -24,5 +25,6 @@ if __name__ == '__main__':
     height = 1080
     # video = 0  # Windows 下可能是 0 或 "video=Integrated Webcam"
     video = "/home/PKing/Videos/demo-src.mp4"  # Windows 下可能是 0 或 "video=Integrated Webcam"
+    video = get_usb_camera()
     cap = CameraCapture(video=video, size=(width, height), fps=fps)
     display(cap)

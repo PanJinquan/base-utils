@@ -13,7 +13,7 @@ from pybaseutils import image_utils, file_utils, json_utils
 
 
 def save_labelme(out_root, image_file, points, names, class_dict={}, group=None, image=None, prefix="",
-                 index=0, vis=False, delay=0):
+                 index=0, shape_type="polygon", vis=False, delay=0):
     """
     :param out_root:   输出根目录
     :param image_file: 图片路径
@@ -24,6 +24,7 @@ def save_labelme(out_root, image_file, points, names, class_dict={}, group=None,
     :param image:  图像
     :param prefix: 前缀，如果提供，则重新命名
     :param index:  提供前缀需要重新名称
+    :param shape_type:  polygon,rotation
     :return:
     """
     if class_dict: names = [class_dict.get(n, n) for n in names]
@@ -43,7 +44,7 @@ def save_labelme(out_root, image_file, points, names, class_dict={}, group=None,
     image_id, postfix = file_utils.split_postfix(image_name)
     json_file = file_utils.create_dir(out_root, "images", f"{image_id}.json")
     file_path = file_utils.create_dir(out_root, "images", f"{image_name}")
-    maker_labelme(json_file, points, names, image_name, group=group, image_size=(w, h), image_bs64=None)
+    maker_labelme(json_file, points, names, image_name, group=group, image_size=(w, h), image_bs64=None,shape_type=shape_type)
     if isinstance(image, np.ndarray):
         cv2.imwrite(file_path, image)
     else:
@@ -52,7 +53,8 @@ def save_labelme(out_root, image_file, points, names, class_dict={}, group=None,
         print("points is empty,file={}".format(file_path))
 
 
-def maker_labelme(json_file, points, labels, image_name, image_size, group=None, image_bs64=None, keypoints=[]):
+def maker_labelme(json_file, points, labels, image_name, image_size, group=None, image_bs64=None, keypoints=[],
+                  shape_type="polygon"):
     """
     制作label数据格式
     :param json_file: 保存json文件路径
@@ -76,7 +78,7 @@ def maker_labelme(json_file, points, labels, image_name, image_size, group=None,
         if not isinstance(point[0], list): point = [point]
         kpts = keypoints[i] if keypoints else []
         item = {"label": label, "score": None, "keypoints": kpts, "line_color": None, "fill_color": None,
-                "group_id": group[i], "points": point, "shape_type": "polygon", "flags": {}, "description": ""}
+                "group_id": group[i], "points": point, "shape_type": shape_type, "flags": {}, "description": ""}
         shapes.append(item)
     data = {
         "version": "3.16.7", "flags": {},

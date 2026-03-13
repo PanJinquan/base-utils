@@ -61,9 +61,6 @@ def video_iterator(video):
 
 
 if __name__ == '__main__':
-    from pybaseutils.cvutils import video_utils
-
-    t= datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-    video = "/home/PKing/Videos/人体检测.mp4"
-    video = 0
-    video_capture(video)
+    x = 123
+    x = None
+    print(f"{str(x):7}")

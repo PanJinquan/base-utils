@@ -38,7 +38,7 @@ def build_pyarmor_project(root,
     :param exclude_dirs: 不需要处理的文件
     :return:
     """
-    app = os.path.dirname(entry)
+    dir = os.path.dirname(entry)
     file_utils.copy_dir(root, build, exclude=exclude_dirs)
     os.system(f'pyarmor --version')
     os.system(f'rm -rf .pyarmor_config')
@@ -47,9 +47,16 @@ def build_pyarmor_project(root,
     if manifest:
         os.system(f'pyarmor config --manifest="{manifest}"')
     os.system(f'pyarmor build --output={build} --force')
-    # os.system(f'cd {build} && cp -r pytransform {os.path.join(build, app)}')
-    file_utils.move_dir(os.path.join(build, "pytransform"), os.path.join(build, app, "pytransform"))
-    file_utils.remove_dir(os.path.join(build, "pytransform"))
+    src = os.path.join(build, "pytransform")
+    dst = os.path.join(build, dir)
+    if src != os.path.join(dst, "pytransform"):
+        cmd = f"cp -rf {src} {dst}"
+        print(cmd)
+        os.system(cmd)
+        os.system(f"rm -rf {src}")
+    # os.system(f'cd {build} && cp -r pytransform {os.path.join(build, dir)}')
+    # file_utils.move_dir(os.path.join(build, "pytransform"), os.path.join(build, dir, "pytransform"))
+    # file_utils.remove_dir(os.path.join(build, "pytransform"))
     # 将pyarmor编译结果保存到
     # file_utils.copy_dir(os.path.join(root, "dist"), build, exclude=[])
 

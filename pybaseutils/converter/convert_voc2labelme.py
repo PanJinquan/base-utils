@@ -23,6 +23,7 @@ def convert_voc2labelme(filename=None,
                         class_dict={},
                         prefix="",
                         max_num=-1,
+                        shape_type='polygon',
                         vis=True):
     """
     将voc格式转换为labelme格式
@@ -52,7 +53,8 @@ def convert_voc2labelme(filename=None,
         image_file = data_info["image_file"]
         points = image_utils.boxes2polygons(boxes)
         build_labelme.save_labelme(out_root, image_file=image_file, points=points, names=names,
-                                   class_dict=class_dict, image=image, prefix=prefix, index=i, vis=vis)
+                                   class_dict=class_dict, image=image, prefix=prefix, index=i, shape_type=shape_type,
+                                   vis=vis)
 
 
 if __name__ == "__main__":
