@@ -384,6 +384,7 @@ def get_targets_overlap(obj_info1: dict, obj_info2: dict, key="boxes", keys=[], 
     boxes2 = obj_info2[key]
     nums1 = len(boxes1)
     nums2 = len(boxes2)
+    if nums1==0 or nums2==0:return []
     ious = image_utils.get_boxes_iom(boxes1, boxes2) if use_iom else image_utils.get_boxes_iou(boxes1, boxes2)
     output = []
     for i in range(len(boxes1)):

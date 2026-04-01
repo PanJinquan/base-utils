@@ -78,6 +78,9 @@ def get_time(format="p"):
         # time = datetime.strftime(datetime.now(), '%Y%m%d_%H%M%S_%f')  # 20200508_143059_379116
         time = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
         time = time[:-2]
+    elif format.lower() == "d":  # 精确到微妙
+        # time = datetime.strftime(datetime.now(), '%Y%m%d_%H%M%S_%f')  # 20200508_143059_379116
+        time = datetime.now().strftime("%Y%m%d")
     elif format.lower() == "y":  # 2025-06-18 11:02:05
         # time = datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M:%S")  #
         time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")

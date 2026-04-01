@@ -3,8 +3,8 @@
 - Git 全局设置
 
 ```bash
-git config --global user.name "Jinquan"
-git config --global user.email "Jinquan"
+git config --global user.name "PKing"
+git config --global user.email "PKing"
 # 自动转换CRLF为LF, 避免在Windows和Linux之间切换时出现问题
 git config --global core.autocrlf input
 

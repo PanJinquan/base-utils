@@ -67,10 +67,17 @@ def get_confusion_matrix(true_labels, pred_labels, target_names=None, filename=N
 def get_metrics_report(true_labels, pred_labels, target_names=None, labels=None,
                        output_dict=False, matrix=False, plot=False):
     """
+    Usage
+    -------
+    true_labels = ["A", "B", "A", "B"]
+    pred_labels = ["A", "B", "C", "B"]
+    out_result = get_metrics_report(true_labels, pred_labels)
+    -------
     true_labels = [0, 1, 2, 3, 4, 1]  # Y
     pred_labels = [0, 1, 1, 2, 2, 1]  # X
     target_names = ["A", "B", "C", "D", "E"]
-    out_result = get_metrics_report(true_labels, pred_labels, target_names=target_names, output_dict=False)
+    out_result = get_metrics_report(true_labels, pred_labels, target_names=target_names)
+    -------
     宏平均(macro avg)和微平均(micro avg)
     如果每个class的样本数量差不多,那么宏平均和微平均没有太大差异
     如果每个class的样本数量差异很大,而且你想:
@@ -94,22 +101,26 @@ def get_metrics_report(true_labels, pred_labels, target_names=None, labels=None,
                                            labels=labels,
                                            digits=4,
                                            target_names=target_names,
-                                           output_dict=output_dict,
+                                           output_dict=True,
                                            zero_division=0)
     if output_dict:
         macro_avg = result["macro avg"]
         accuracy = result["accuracy"]
         weighted_avg = result["weighted avg"]
-        out_result = {"macro_avg": macro_avg, "accuracy": accuracy, "weighted_avg": weighted_avg}
+        output = {"macro_avg": macro_avg, "accuracy": accuracy, "weighted_avg": weighted_avg}
         # pdf=pd.DataFrame.from_dict(result)
         # save_csv("classification_report.csv", pdf)
     else:
-        out_result = result
+        support = result['macro avg']['support']
+        result["accuracy"] = {'precision': None, 'recall': None, 'f1-score': result["accuracy"], 'support': support}
+        output = pandas_utils.dict2df(result)
+        output = output.round(4)  # 保留4位小数
+        output = output.to_markdown()
     if matrix:
         conf_matrix = get_confusion_matrix(true_labels, pred_labels, target_names=target_names,
                                            normalization=True, plot=plot, title="Confusion Matrix")
         # out_result["confusion_matrix"] = conf_matrix
-    return out_result
+    return output
 
 
 get_classification_report = get_metrics_report
@@ -148,11 +159,10 @@ def create_file_path(filename):
 if __name__ == "__main__":
     # true_labels = [0, 1, 2, 3, 3, 1, 1]  # Y
     # pred_labels = [1, 1, 2, 2, 2, 1, 0]  # X
-    true_labels = ["A", "B", "A", "B"]
-    pred_labels = ["A", "B", "A", "B"]
-    # target_names = ["A0", "B1", "C2", "D3"]
+    true_labels = ["A", "B", "A", "Bhand#手拿兆欧表", "C"]
+    pred_labels = ["A", "B", "C", "Bhand#手拿兆欧表", "C"]
     target_names = None
     confuse_file = "./confuse.csv"
-    out_result = get_classification_report(true_labels, pred_labels, target_names=target_names, output_dict=False,
-                                           matrix=True, plot=True)
-    print(out_result)
+    result = get_metrics_report(true_labels, pred_labels, target_names=target_names, output_dict=False,
+                                matrix=True, plot=False)
+    print(result)

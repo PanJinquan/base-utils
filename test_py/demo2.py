@@ -60,7 +60,6 @@ def video_iterator(video):
         print('count={:0=5d} td={:3.4f}ms,ts={:3.4f}ms'.format(count, td * 1000, (time.time() - t1) * 1000))
 
 
-if __name__ == '__main__':
-    x = 123
-    x = None
-    print(f"{str(x):7}")
+if __name__ == '__main':
+    image_utils.image2tensor()
+

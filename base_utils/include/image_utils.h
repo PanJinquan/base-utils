@@ -661,4 +661,35 @@ void clip(cv::Mat &src, float vmin, float vmax);
 void clip_min(cv::Mat &src, float th, float vmin);
 
 
+/**
+ * @brief 将图片(HWC格式)转换为张量(N, C, H, W)
+ * @param src
+ * @return cv::Mat 转换后的张量Mat
+ */
+cv::Mat image2tensor(cv::Mat& src);
+
+
+/***
+ * 对图像进行归一化处理
+ * @param img 输入图像
+ * @param mean 归一化均值
+ * @param std 归一化标准差
+ * @return 标准差归一化后的图像Mat
+ */
+cv::Mat image_normalize(const cv::Mat& src, const cv::Scalar& mean, const cv::Scalar& std);
+
+
+/***
+ * 对图像进行归一化处理
+ * @param img 输入图像
+ * @param target_size 目标大小
+ * @param auto_size 是否自动调整大小
+ * @param scale 缩放比例
+ * @param wpad 左右填充宽度
+ * @param hpad 上下填充高度
+ * @param stride 步长
+ * @return 归一化后的图像Mat
+ */
+cv::Mat letterbox(cv::Mat& img, int target_size, bool auto_size, float& scale, int& wpad, int& hpad,int stride = 32);
+void letterbox(int img_w,int img_h ,int target_size, bool auto_size, float& scale, int& wpad, int& hpad, int stride);
 #endif //DETECTOR_IMAGE_UTILS_H

@@ -106,17 +106,16 @@ if __name__ == '__main__':
                    '胶枪灯', '胶枪灯红色', '胶枪灯绿色',
                    'PDA', 'PDA*', '清洁布', '手与*接触', '电视柜台面', '*标签'
                    ]
-    # '*长条标签'
     datasets = [
-        '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-20260227/images',
-        '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-20260211/images',
+        '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-20260318-part0/images',
+        '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-20260318-part1/images',
     ]
     # datasets = "/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/文件列表.txt"
-    datasets = file_utils.read_data(datasets, split=None)
+    # datasets = file_utils.read_data(datasets, split=None)
     # dataroot = '/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det'
     # datasets = get_sub_dataset(dataroot)
     class_name = []
-    datasets = sorted(datasets)
+    # datasets = sorted(datasets)
     for anno_dir in datasets:
         print(anno_dir)
         assert os.path.exists(anno_dir), anno_dir

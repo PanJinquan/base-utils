@@ -35,6 +35,7 @@ sudo systemctl restart docker
 ```
 
 ## 将用户添加到docker用户组
+
 ```bash
 # 创建docker用户组
 sudo groupadd docker
@@ -44,14 +45,37 @@ sudo usermod -aG docker $USER
 newgrp docker
 # 验证不需要sudo执行docker命令
 docker run hello-world
+
 ```
+
+## 加速 Docker 镜像的下载速度
+
+- docker pull hello-world --registry-mirror=https://docker.m.daocloud.io (临时方法)
+- 打开或创建 Docker 配置文件 /etc/docker/daemon.json (永久配置)
+- 添加以下内容：
+
+```json
+{
+  "registry-mirrors": [
+    "https://docker.m.daocloud.io",
+    "https://docker.imgdb.de",
+    "https://docker-0.unsee.tech",
+    "https://docker.hlmirror.com",
+    "https://docker.1ms.run"
+  ]
+}
+```
+
+- 保存文件并重启 Docker 服务： sudo systemctl daemon-reload && sudo systemctl restart docker
+- 验证配置是否生效: docker pull hello-world
 
 ## 镜像操作
 
+
 ```bash
 # 登录docker: 
-sudo docker login docker.dm-ai.cn
-sudo docker login --username=390737991@qq.com crpi-r7ny3w7dyvydm6vb.cn-guangzhou.personal.cr.aliyuncs.com # 登录阿里云docker镜像仓库
+docker login docker.dm-ai.cn
+docker login --username=390737991@qq.com crpi-r7ny3w7dyvydm6vb.cn-guangzhou.personal.cr.aliyuncs.com # 登录阿里云docker镜像仓库68
 # 查看所有镜像
 docker images
 # 查看所有容器
@@ -118,12 +142,16 @@ image="docker.dm-ai.cn/algorithm-research/panjinquan/py3.10-cuda11.7-cudnn8.5-to
 image="docker.dm-ai.cn/algorithm-research/panjinquan/py3.10-cuda11.7-cudnn8.5-torch2.0:llm-v2"
 image="docker.dm-ai.cn/algorithm-research/panjinquan/py3.10-cuda11.7-cudnn8.5-torch2.0:llm-v2.1"
 image="docker.dm-ai.cn/algorithm-research/panjinquan/py3.10-cuda11.7-cudnn8.5-torch2.0:llm-gradio"
-
+image="docker.dm-ai.cn/algorithm-research/panjinquan/py3.10-cuda11.7-cudnn8.5-torch2.0:dev" # 推荐这个
 image="crpi-r7ny3w7dyvydm6vb.cn-guangzhou.personal.cr.aliyuncs.com/python-image-rep/py3.10-cuda11.7-cudnn8.5-torch2.0:llm"
 
 #docker build -t=$image .
 #docker run -it --gpus all -p 7860:7860 -v `pwd`:/app $image /bin/bash
 docker run -it --gpus all -p 7860:7860 --ulimit memlock=-1 --ulimit stack=67108864 --memory-swap=-1 --memory=256G --runtime=nvidia --ipc host --privileged --network host  -v `pwd`:/app $image /bin/bash
+
+# TODO  tensorrt基础镜像
+image="glenaaa/tensorrt-ubuntu20.04-cuda12.1:v0.6" # 测试可用
+
 
 # TODO
 docker pull nvidia/cuda:11.2.2-cudnn8-devel-ubuntu18.04 # nvidia-docker基础镜像,无python
@@ -183,7 +211,7 @@ conda clean --all #删除conda无用的包和缓存
 ```bash
 apt-get update && apt-get install ffmpeg libsm6 libxext6 -y
 # 修改完成后，让配置生效
-sudo ldconfig
+ldconfig
 ```
 
 - Error： This might be caused by insufficient shared memory (shm).

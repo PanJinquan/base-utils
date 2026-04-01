@@ -60,7 +60,19 @@ pip install  --no-cache-dir torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaud
 
 ## 安装TensorRT
 
-#### 方法1
+#### 方法1 (推荐)：
+
+```bash
+# python 3.10.0,cuda 12.1 
+# 使用基础镜像 glenaaa/tensorrt-ubuntu20.04-cuda12.1:v0.6
+apt-get update && apt-get install ffmpeg libsm6 libxext6 -y
+# 修改完成后，让配置生效
+ldconfig
+pip install tensorrt==8.6.1
+```
+
+
+#### 方法2
 
 - 下载：TensorRT-8.4.1.5.Linux.x86_64-gnu.cuda-11.6.cudnn8.4，然后进入文件进行拷贝
 
@@ -93,19 +105,11 @@ sudo ldconfig # 修改完成后，让配置生效
 ```bash
 cd <tensorrt installation path>/python
 pip install cuda-python
-pip install tensorrt-8.6.0-cp310-none-win_amd64.whl
+#pip install tensorrt-8.6.0-cp310-none-win_amd64.whl
 pip install opencv-python
 ```
 
-#### 方法3(只安装Python版本,但很多接口不兼容)：
 
-```bash
-# python 3.10.0,cuda 12.1 
-pip --default-timeout=1000000000  install tensorrt -i https://pypi.tuna.tsinghua.edu.cn/simple # 耗时比较长，耐心等待
-pip install pycuda
-pip install nvidia-pyindex
-pip install nvidia-tensorrt==8.4.1.5 (版本與TensorRT-8.4.1.5.Linux.x86_64-gnu.cuda-11.6.cudnn8.4匹配即可)
-```
 
 ## 制定GPU
 

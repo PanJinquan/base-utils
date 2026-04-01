@@ -2,6 +2,7 @@
 
 - 下载驱动：https://vulkan.lunarg.com/sdk/home
 - 查询版本：https://vulkan.gpuinfo.org/listdevices.php 查询显卡支持的vulkan版本
+- 参考这个安装vulkan: 在Ubuntu 20.04上从零编译MNN（含Vulkan加速配置） https://blog.csdn.net/weixin_29053383/article/details/159311826 
 
 ## 安装
 
