@@ -12,6 +12,26 @@ from sklearn import metrics
 from pybaseutils import pandas_utils
 
 
+def get_metrics(true_labels, pred_labels, keys=['accuracy', 'precision', 'recall', 'f1_score']):
+    """
+    计算分类指标
+    :param true_labels: 真实样本的标签
+    :param pred_labels: 预测的标签
+    :param keys: 计算的指标，默认计算accuracy, precision, recall, f1_score
+    :return: 分类指标
+    """
+    aprf = {}
+    if 'accuracy' in keys:
+        aprf['accuracy'] = metrics.accuracy_score(true_labels, pred_labels)
+    if 'precision' in keys:
+        aprf['precision'] = metrics.precision_score(true_labels, pred_labels, average=None)  # 每个类别
+    if 'recall' in keys:
+        aprf['recall'] = metrics.recall_score(true_labels, pred_labels, average=None)
+    if 'f1_score' in keys:
+        aprf['f1_score'] = metrics.f1_score(true_labels, pred_labels, average=None)
+    return aprf
+
+
 def plot_confusion_matrix(conf_matrix, labels_name, title, normalization=True):
     if normalization:
         conf_matrix = conf_matrix.astype('float') / conf_matrix.sum(axis=1)[:, np.newaxis]  # 归一化
@@ -91,11 +111,6 @@ def get_metrics_report(true_labels, pred_labels, target_names=None, labels=None,
     :param matrix: 是否绘制混淆矩阵
     :return:
     """
-    # if target_names is None:
-    #     target_names = list(set(pred_labels) | set(true_labels))
-    # else:
-    #     true_labels = [target_names[int(i)] for i in true_labels]
-    #     pred_labels = [target_names[int(i)] for i in pred_labels]
     result = metrics.classification_report(true_labels,
                                            pred_labels,
                                            labels=labels,
@@ -105,14 +120,16 @@ def get_metrics_report(true_labels, pred_labels, target_names=None, labels=None,
                                            zero_division=0)
     if output_dict:
         macro_avg = result["macro avg"]
-        accuracy = result["accuracy"]
         weighted_avg = result["weighted avg"]
+        accuracy = result["accuracy"]
         output = {"macro_avg": macro_avg, "accuracy": accuracy, "weighted_avg": weighted_avg}
         # pdf=pd.DataFrame.from_dict(result)
         # save_csv("classification_report.csv", pdf)
     else:
+        p = (result['macro avg']['precision'] + result['weighted avg']['precision']) / 2
+        r = (result['macro avg']['recall'] + result['weighted avg']['recall']) / 2
         support = result['macro avg']['support']
-        result["accuracy"] = {'precision': None, 'recall': None, 'f1-score': result["accuracy"], 'support': support}
+        result["accuracy"] = {'precision': p, 'recall': r, 'f1-score': result["accuracy"], 'support': support}
         output = pandas_utils.dict2df(result)
         output = output.round(4)  # 保留4位小数
         output = output.to_markdown()
@@ -159,8 +176,8 @@ def create_file_path(filename):
 if __name__ == "__main__":
     # true_labels = [0, 1, 2, 3, 3, 1, 1]  # Y
     # pred_labels = [1, 1, 2, 2, 2, 1, 0]  # X
-    true_labels = ["A", "B", "A", "Bhand#手拿兆欧表", "C"]
-    pred_labels = ["A", "B", "C", "Bhand#手拿兆欧表", "C"]
+    true_labels = ["A", "B", "A", "B", "C", "D"]
+    pred_labels = ["A", "D", "C", "B", "C", "A"]
     target_names = None
     confuse_file = "./confuse.csv"
     result = get_metrics_report(true_labels, pred_labels, target_names=target_names, output_dict=False,

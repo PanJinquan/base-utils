@@ -107,8 +107,7 @@ if __name__ == '__main__':
                    'PDA', 'PDA*', '清洁布', '手与*接触', '电视柜台面', '*标签'
                    ]
     datasets = [
-        '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-20260318-part0/images',
-        '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-20260318-part1/images',
+        '/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/dataset-20260420/images',
     ]
     # datasets = "/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/文件列表.txt"
     # datasets = file_utils.read_data(datasets, split=None)

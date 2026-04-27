@@ -81,10 +81,10 @@ class CameraCapture(object):
 
 
 if __name__ == '__main__':
-    fps = 30
+    fps = 10
     width = 1920
     height = 1080
     video = 0  # Windows 下可能是 0 或 "video=Integrated Webcam"
-    # video = "/home/PKing/Videos/demo-src.mp4"  # Windows 下可能是 0 或 "video=Integrated Webcam"
+    video = "/home/PKing/Videos/video1.mp4"  # Windows 下可能是 0 或 "video=Integrated Webcam"
     cap = CameraCapture(video=video, size=(width, height), fps=fps)
     cap.display()

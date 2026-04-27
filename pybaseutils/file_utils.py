@@ -1149,15 +1149,17 @@ def print_dict(dict_data, save_path):
 def get_pair_data(image_dir, pair_num=-1):
     """
     获得图片对数据
+    Uages:
+    pairs = file_utils.get_pair_data(image_dir, pair_num=-1)
+    file_utils.write_data(pairs_file, pairs)
     :param image_dir:
     :param pair_num:-1 表示所有对
-    :return:
+    :return: [file1, file2, 1] 1表示相同类别，0表示不同类别
     """
     max_nums = int(pair_num / 2)
     image_list = get_files_lists(image_dir)
     image_list = get_sub_list(image_list, dirname=image_dir)
     nums = len(image_list)
-    print("have {} images and {} combinations".format(nums, nums * (nums - 1) / 2))
     pairs = []
     for paths in itertools.combinations(image_list, 2):
         file1, file2 = paths
@@ -1173,6 +1175,7 @@ def get_pair_data(image_dir, pair_num=-1):
     pair1 = pairs[pairs[:, -1] == "1", :]
     nums1 = len(pair1)
     nums0 = len(pair0)
+    print("have {} images, pair0:{}, pair1:{}".format(nums, nums0, nums1))
     if pair_num < 0: max_nums = nums1
     if max_nums > nums1:
         raise Exception("pair_nums({}) must be less than num_pair1({})".format(max_nums, nums1))
@@ -1194,7 +1197,7 @@ def get_pair_files(data_root, out_root=None, image_sub="", label_sub="",
     :param image_sub:
     :param label_sub:
     :param label_postfix: label文件后缀，如txt,png,json等
-    :return:
+    :return:  [file1,file2]
     """
     image_dir = os.path.join(data_root, image_sub)
     label_dir = os.path.join(data_root, label_sub)
@@ -1204,11 +1207,11 @@ def get_pair_files(data_root, out_root=None, image_sub="", label_sub="",
     for i, image_name in tqdm(enumerate(file_list)):
         postfix = image_name.split(".")[-1]
         lable_name = image_name.replace(f".{postfix}", f".{label_postfix}")
-        image_file = os.path.join(image_dir, image_name)
-        lable_file = os.path.join(label_dir, lable_name)
-        if os.path.exists(image_file) and os.path.exists(lable_file):
-            image_file, lable_file = get_sub_list([image_file, lable_file], dirname=data_root)
-            pair_list.append([image_file, lable_file])
+        file1 = os.path.join(image_dir, image_name)
+        file2 = os.path.join(label_dir, lable_name)
+        if os.path.exists(file1) and os.path.exists(file2):
+            file1, file2 = get_sub_list([file1, file2], dirname=data_root)
+            pair_list.append([file1, file2])
     if out_root:
         filename = os.path.join(out_root, "file_list.txt")
         write_data(filename, pair_list, split=",", mode='w')
@@ -1217,10 +1220,11 @@ def get_pair_files(data_root, out_root=None, image_sub="", label_sub="",
 
 def read_pair_data(filename, split=True):
     """
-    read pair data,data:[image1.jpg image2.jpg 0]
+    读取图片对数据，data:[image1.jpg image2.jpg 0]
+    可以使用get_pair_data(image_dir, pair_num=-1)获得图片对数据
     :param filename:
     :param split:
-    :return:
+    :return: [pair1, pair2, label] 1表示相同类别，0表示不同类别
     """
     pair_list = read_data(filename)
     if split:
@@ -1228,12 +1232,12 @@ def read_pair_data(filename, split=True):
         pair1 = pair_list[:, :1].reshape(-1)
         pair2 = pair_list[:, 1:2].reshape(-1)
         # convert to 0/1
-        issames_data = np.asarray(pair_list[:, 2:3].reshape(-1), dtype=np.int)
-        issames_data = np.where(issames_data > 0, 1, 0)
+        label = np.asarray(pair_list[:, 2:3].reshape(-1), dtype=np.int32)
+        label = np.where(label > 0, 1, 0)
         pair1 = pair1.tolist()
         pair2 = pair2.tolist()
-        issames_data = issames_data.tolist()
-        return pair1, pair2, issames_data
+        label = label.tolist()
+        return pair1, pair2, label
     return pair_list
 
 
@@ -1580,7 +1584,6 @@ def zip_file(src, dst=None, s=None):
     print(cmd)
     os.system(cmd)
     return dst
-
 
 
 if __name__ == '__main__':
