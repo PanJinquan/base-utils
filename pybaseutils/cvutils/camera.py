@@ -17,7 +17,7 @@ def get_video_size(video):
 
 
 class CameraCapture(object):
-    def __init__(self, video: str or int = 0, size=(1920, 1080), scale=0.5, fps=30):
+    def __init__(self, video: str or int = 0, size=(1920, 1080), scale=1.0, fps=30):
         """
         :param video: 视频设备路径或索引（如 0 或 "/dev/video0"）
         :param size: 视频分辨率 (宽, 高)，(1280,720),(1920,1080)
