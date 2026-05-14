@@ -111,7 +111,7 @@ class SlowFast(nn.Module):
         x = torch.cat([x, lateral[3]],dim=1)
         x = self.slow_res5(x)
         x = nn.AdaptiveAvgPool3d(1)(x)
-        x = x.view(-1, x.size(1))
+        x = x.view(-1, x.dsize(1))
         return x
 
     def FastPath(self, input):
@@ -137,7 +137,7 @@ class SlowFast(nn.Module):
 
         res5 = self.fast_res5(res4)
         x = nn.AdaptiveAvgPool3d(1)(res5)
-        x = x.view(-1, x.size(1))
+        x = x.view(-1, x.dsize(1))
 
         return x, lateral
 
@@ -214,4 +214,4 @@ if __name__ == "__main__":
     input_tensor = torch.autograd.Variable(torch.rand(1, 3, 64, 224, 224))
     model = resnet50(class_num=num_classes)
     output = model(input_tensor)
-    print(output.size())
+    print(output.dsize())

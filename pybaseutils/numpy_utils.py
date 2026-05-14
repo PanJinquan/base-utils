@@ -489,13 +489,13 @@ def L2_loss(y_true, y_pre):
 def mean_squared_error(y_true, y_pre):
     """MSE(Mean Squared Error)平均平方误差(L2)"""
     l2 = np.sum(np.square(y_true - y_pre))
-    return l2 / y_true.size
+    return l2 / y_true.dsize
 
 
 def mean_absolute_error(y_true, y_pre):
     """MAE(Mean Absolute Error)平均绝对差值(L1),也等于MAD(Mean Absolute Difference)"""
     l1 = np.sum(np.abs(y_true - y_pre))
-    return l1 / y_true.size
+    return l1 / y_true.dsize
 
 
 def mean(data):

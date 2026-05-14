@@ -69,6 +69,15 @@ ffmpeg -f v4l2  -i /dev/video0 -f pulse -i default  \
 "%Y%m%d_%H%M%S.mp4"
 
 
+ffmpeg -f v4l2  -i /dev/video0 -f pulse -i default  \
+-s  960x540 -c:v libx264 -c:a aac -r 25 \
+-preset medium -f segment -segment_time 60 \
+-reset_timestamps 1 \
+-segment_format mp4 -strftime 1 \
+"%Y%m%d_%H%M%S.mp4"
+
+#TODO -------------------------------------------
+
 ffmpeg -f v4l2 -i /dev/video0 -f pulse -i default \
 -s 1920x1080 -c:v libx264 -c:a aac -r 25 \
 -preset medium -f segment -segment_time 1800 \

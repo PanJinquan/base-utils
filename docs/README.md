@@ -3,6 +3,7 @@
 ## Linux常见命令
 
 ```bash
+lsof -i :3000  # 查找并处理占用3000端口的进程
 # xdg-open打开文件夹/文件
 xdg-open ./
 # 查找某个文件
@@ -10,13 +11,7 @@ find /usr -name libnvidia-ml*
 dir=$(dirname $0) # 当前文件的路径
 ```
 
-- tmux 快捷键
 
-```bash
-tmux ls # 查看有多少个窗口
-Crtl + B + { 或 Crtl + Shift + Alt + B + { # 浏览LOG记录[
-Crtl + B + S 或 Crtl + Shift + Alt + B + S # 浏览窗口
-```
 
 ## memory profiler性能分析工具
 

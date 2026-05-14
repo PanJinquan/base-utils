@@ -46,7 +46,7 @@ def save_object_crops(data_info, item_list, out_dir, class_name=None, scale=[], 
         else:
             crops = image_utils.get_bboxes_crop(image, bboxes)
         img = crops[0]
-        if img.size < min_size: continue
+        if img.dsize < min_size: continue
         name = "_".join(labels + list(set(attrib_name)))
         if out_dir:
             file_name = "{}_{:0=4d}_{}.jpg".format(image_id, i, flag) if flag else "{}_{:0=4d}.jpg".format(image_id,

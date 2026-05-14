@@ -894,6 +894,27 @@ def get_sub_list(file_list, dirname: str):
     return sub_list
 
 
+def get_sub_info(image_dir, postfix=IMG_POSTFIX, sub=0):
+    """
+    获得目image_dir下每个子文件夹的数据，以dict数据返回
+    :param image_dir:
+    :param postfix: 后缀
+    :param sub: 是否去除根路径
+    :return:  {"sub1":[file1,file2,...],"sub2":[file1,file2,...],"sub3":...}
+    """
+    sub_names = get_sub_paths(image_dir)
+    data_info = defaultdict(list)
+    for name in sub_names:
+        files = get_files_list(os.path.join(image_dir, name), postfix=postfix)
+        if sub == 1:
+            files = get_sub_list(files, dirname=image_dir)
+        elif sub == -1:
+            files = get_sub_list(files, dirname=os.path.dirname(image_dir))
+        data_info[name].extend(files)
+    data_info = dict(data_info)
+    return data_info
+
+
 def split_train_test(file_list, ratio=0.2, shuffle=False):
     """
     划分训练集和测试集

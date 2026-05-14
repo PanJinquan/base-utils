@@ -48,7 +48,7 @@ def save_object_crops(data_info, out_dir, class_name=None, scale=[], square=Fals
                                                  thickness=2, fontScale=0.8, drawType="chinese")
         image_utils.cv_show_image("image", m, use_rgb=False, delay=0)
     for i, img in enumerate(crops):
-        if img.size < min_size: continue
+        if img.dsize < min_size: continue
         name = class_name[int(labels[i])] if class_name else labels[i]
         if out_dir:
             file_name = "{}_{:0=4d}_{}.jpg".format(image_id, i, flag) if flag else "{}_{:0=4d}.jpg".format(image_id, i)

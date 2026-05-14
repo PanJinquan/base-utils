@@ -89,7 +89,7 @@ class LabelSmoothingCrossEntropy(nn.Module):
         self.reduction = reduction
 
     def forward(self, output, target):
-        c = output.size()[-1]
+        c = output.dsize()[-1]
         log_preds = F.log_softmax(output, dim=-1)
         if self.reduction == 'sum':
             loss = -log_preds.sum()

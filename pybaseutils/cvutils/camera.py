@@ -2,19 +2,38 @@ import cv2
 import time
 import numpy as np
 import subprocess
+import json
+
+
+def get_video_size(video):
+    """获取视频原始分辨率"""
+    cmd = ['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_streams', video]
+    result = subprocess.check_output(cmd).decode()
+    info = json.loads(result)
+    for stream in info['streams']:
+        if stream['codec_type'] == 'video':
+            return stream['width'], stream['height']
+    return None, None
 
 
 class CameraCapture(object):
-    def __init__(self, video: str or int = 0, size=(1920, 1080), fps=30):
+    def __init__(self, video: str or int = 0, size=(1920, 1080), scale=0.5, fps=30):
         """
         :param video: 视频设备路径或索引（如 0 或 "/dev/video0"）
         :param size: 视频分辨率 (宽, 高)，(1280,720),(1920,1080)
+        :param scale: 视频缩放比例
         :param fps: 视频帧率
         """
-        self.size = size
         self.fps = fps
         self.stopped = False
         if isinstance(video, int): video = f"/dev/video{video}"
+        self.dsize = size
+        self.ssize = get_video_size(video)
+        if size:
+            vf = f'scale={self.dsize[0]}:{self.dsize[1]}:force_original_aspect_ratio=decrease,pad={self.dsize[0]}:{self.dsize[1]}:(ow-iw)/2:(oh-ih)/2'
+        else:
+            vf = f'scale=trunc(iw*{scale}):trunc(ih*{scale})'
+            self.dsize = (int(self.ssize[0] * scale), int(self.ssize[1] * scale))
         # 构建 FFmpeg 命令
         # -re: 以原生帧率读取（模拟直播流）
         # -fflags nobuffer: 关键！禁用缓冲区
@@ -30,7 +49,7 @@ class CameraCapture(object):
             '-i', video,  # 输入设备
             '-f', 'rawvideo',  # 输出原始视频流
             '-pix_fmt', 'bgr24',  # 像素格式 BGR (OpenCV 格式)
-            '-s', f'{size[0]}x{size[1]}',  # 分辨率
+            '-vf', vf,  # 分辨率
             '-r', str(fps),  # 帧率
             '-'  # 输出到 stdout
         ]
@@ -43,12 +62,12 @@ class CameraCapture(object):
             self.stop()
             return False, None
         # 读取一帧的数据量 (宽 * 高 * 3通道)
-        buf = self.pipe.stdout.read(self.size[0] * self.size[1] * 3)
-        if len(buf) != self.size[0] * self.size[1] * 3:
+        buf = self.pipe.stdout.read(self.dsize[0] * self.dsize[1] * 3)
+        if len(buf) != self.dsize[0] * self.dsize[1] * 3:
             self.stop()
             return False, None  # 读取失败或结束
         # TODO 将字节流转换为numpy数组图像(bgr)
-        bgr = np.frombuffer(buf, dtype=np.uint8).reshape((self.size[1], self.size[0], 3))
+        bgr = np.frombuffer(buf, dtype=np.uint8).reshape((self.dsize[1], self.dsize[0], 3))
         return True, bgr
 
     def release(self):
@@ -82,9 +101,8 @@ class CameraCapture(object):
 
 if __name__ == '__main__':
     fps = 10
-    width = 1920
-    height = 1080
-    video = 0  # Windows 下可能是 0 或 "video=Integrated Webcam"
+    # video = 0  # Windows 下可能是 0 或 "video=Integrated Webcam"
     video = "/home/PKing/Videos/video1.mp4"  # Windows 下可能是 0 或 "video=Integrated Webcam"
-    cap = CameraCapture(video=video, size=(width, height), fps=fps)
+    cap = CameraCapture(video=video, size=(640, 640), fps=fps)
+    # cap = CameraCapture(video=video, size=(), fps=fps)
     cap.display()
