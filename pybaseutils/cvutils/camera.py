@@ -17,24 +17,27 @@ def get_video_size(video):
 
 
 class CameraCapture(object):
-    def __init__(self, video: str or int = 0, size=(1920, 1080), scale=1.0, fps=30):
+    def __init__(self, video: str or int = 0, fps=30, size=(1920, 1080), scale=1.0, pad=False):
         """
         :param video: 视频设备路径或索引（如 0 或 "/dev/video0"）
+        :param fps: 视频帧率
         :param size: 视频分辨率 (宽, 高)，(1280,720),(1920,1080)
         :param scale: 视频缩放比例
-        :param fps: 视频帧率
+        :param pad: 是否保持原始视频比例并填充到指定分辨率
         """
         self.fps = fps
         self.stopped = False
         if isinstance(video, int): video = f"/dev/video{video}"
         self.dsize = size
         self.ssize = get_video_size(video)
-        if size:
+        if size and pad:
             vf = f'scale={self.dsize[0]}:{self.dsize[1]}:force_original_aspect_ratio=decrease,pad={self.dsize[0]}:{self.dsize[1]}:(ow-iw)/2:(oh-ih)/2'
+        elif size:
+            vf = f'scale={self.dsize[0]}:{self.dsize[1]}'
         else:
             vf = f'scale=trunc(iw*{scale}):trunc(ih*{scale})'
             self.dsize = (int(self.ssize[0] * scale), int(self.ssize[1] * scale))
-        # 构建 FFmpeg 命令
+        # TODO FFmpeg 命令
         # -re: 以原生帧率读取（模拟直播流）
         # -fflags nobuffer: 关键！禁用缓冲区
         # -flags low_delay: 关键！低延迟模式
@@ -54,8 +57,8 @@ class CameraCapture(object):
             '-'  # 输出到 stdout
         ]
         # 启动进程
-        self.pipe = subprocess.Popen(command, stdout=subprocess.PIPE, bufsize=10 ** 8)
         print(f"command: {' '.join(command)}")
+        self.pipe = subprocess.Popen(command, stdout=subprocess.PIPE, bufsize=10 ** 8)
 
     def read(self):
         if self.stopped:
@@ -103,6 +106,7 @@ if __name__ == '__main__':
     fps = 10
     # video = 0  # Windows 下可能是 0 或 "video=Integrated Webcam"
     video = "/home/PKing/Videos/video1.mp4"  # Windows 下可能是 0 或 "video=Integrated Webcam"
-    cap = CameraCapture(video=video, size=(640, 640), fps=fps)
-    # cap = CameraCapture(video=video, size=(), fps=fps)
+    video = "/home/PKing/Videos/demo-src.mp4"  # Windows 下可能是 0 或 "video=Integrated Webcam"
+    cap = CameraCapture(video=video, size=(640, 640), scale=0.5, pad=True, fps=fps)
+    # cap = CameraCapture(video=video, size=(), scale=0.5, fps=fps)
     cap.display()
