@@ -139,8 +139,8 @@ if __name__ == '__main__':
     fps = 10
     video = 0  # Windows 下可能是 0 或 "video=Integrated Webcam"
     # video = "/home/PKing/Videos/video1.mp4"  # Windows 下可能是 0 或 "video=Integrated Webcam"
-    video = "/media/PKing/dev2/project/base-utils/data/video/kunkun_cut.mp4"  # Windows 下可能是 0 或 "video=Integrated Webcam"
+    # video = "../../data/video/kunkun_cut.mp4"  # Windows 下可能是 0 或 "video=Integrated Webcam"
     # cap = CameraCapture(video=video, size=(), scale=1.0, fps=fps)
-    cap = CameraCapture(video=video, size=(640, 480), scale=1.0, fps=fps)
+    cap = CameraCapture(video=video, size=(1920, 1080), scale=1.0, fps=fps)
     # cap = CameraCapture(video=video, size=(), scale=2,fps=fps)
     cap.display()
