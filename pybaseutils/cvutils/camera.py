@@ -19,6 +19,8 @@ def get_video_size(video):
 class CameraCapture(object):
     def __init__(self, video: str or int = 0, fps=30, size=(1920, 1080), scale=1.0, pad=False):
         """
+        查询视频设备分辨率： ffmpeg -f v4l2 -list_formats all -i /dev/video0
+        常见的视频分辨率  ： 1920x1080 1280x720 640x480 352x288 320x240 176x144 160x120
         :param video: 视频设备路径或索引（如 0 或 "/dev/video0"）
         :param fps: 视频帧率
         :param size: 视频分辨率 (宽, 高)，(1280,720),(1920,1080)
@@ -28,15 +30,11 @@ class CameraCapture(object):
         self.fps = fps
         self.stopped = False
         if isinstance(video, int): video = f"/dev/video{video}"
-        self.dsize = size
-        self.ssize = get_video_size(video)
-        if size and pad:
-            vf = f'scale={self.dsize[0]}:{self.dsize[1]}:force_original_aspect_ratio=decrease,pad={self.dsize[0]}:{self.dsize[1]}:(ow-iw)/2:(oh-ih)/2'
-        elif size:
-            vf = f'scale={self.dsize[0]}:{self.dsize[1]}'
-        else:
-            vf = f'scale=trunc(iw*{scale}):trunc(ih*{scale})'
-            self.dsize = (int(self.ssize[0] * scale), int(self.ssize[1] * scale))
+        # self.dsize = size
+        # self.ssize = get_video_size(video)
+        self.ssize = (320,240)
+        self.dsize = self.ssize
+        # self.dsize = (640,480)
         # TODO FFmpeg 命令
         # -re: 以原生帧率读取（模拟直播流）
         # -fflags nobuffer: 关键！禁用缓冲区
@@ -52,7 +50,7 @@ class CameraCapture(object):
             '-i', video,  # 输入设备
             '-f', 'rawvideo',  # 输出原始视频流
             '-pix_fmt', 'bgr24',  # 像素格式 BGR (OpenCV 格式)
-            '-vf', vf,  # 分辨率
+            '-video_size', f"{self.ssize[0]}x{self.ssize[1]}",  # 视频分辨率
             '-r', str(fps),  # 帧率
             '-'  # 输出到 stdout
         ]
@@ -104,9 +102,9 @@ class CameraCapture(object):
 
 if __name__ == '__main__':
     fps = 10
-    # video = 0  # Windows 下可能是 0 或 "video=Integrated Webcam"
-    video = "/home/PKing/Videos/video1.mp4"  # Windows 下可能是 0 或 "video=Integrated Webcam"
-    video = "/home/PKing/Videos/demo-src.mp4"  # Windows 下可能是 0 或 "video=Integrated Webcam"
-    cap = CameraCapture(video=video, size=(640, 640), scale=0.5, pad=True, fps=fps)
-    # cap = CameraCapture(video=video, size=(), scale=0.5, fps=fps)
+    video = 0  # Windows 下可能是 0 或 "video=Integrated Webcam"
+    # video = "/home/PKing/Videos/video1.mp4"  # Windows 下可能是 0 或 "video=Integrated Webcam"
+    # video = "/home/PKing/Videos/demo-src.mp4"  # Windows 下可能是 0 或 "video=Integrated Webcam"
+    # cap = CameraCapture(video=video, size=(640, 640), scale=0.5, pad=True, fps=fps)
+    cap = CameraCapture(video=video, size=(), scale=1.0, fps=fps)
     cap.display()
