@@ -3,21 +3,35 @@ import time
 import numpy as np
 import subprocess
 import json
+import numbers
 
 
-def get_video_size(video):
+def get_video_size(video, size=()):
     """获取视频原始分辨率"""
-    cmd = ['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_streams', video]
+    if isinstance(video, int):  # TODO 摄像头
+        video = f"/dev/video{video}"
+    if size:
+        cmd = ['ffprobe', '-v', 'quiet',
+               '-video_size', f"{size[0]}x{size[1]}",  # 视频分辨率
+               '-print_format', 'json',
+               '-show_streams', video]
+    else:
+        cmd = ['ffprobe', '-v', 'quiet',
+               '-print_format', 'json',
+               '-show_streams', video]
     result = subprocess.check_output(cmd).decode()
     info = json.loads(result)
+    width = None
+    height = None
     for stream in info['streams']:
         if stream['codec_type'] == 'video':
-            return stream['width'], stream['height']
-    return None, None
+            width, height = stream['width'], stream['height']
+    print("video={},width:{}, height:{}".format(video, width, height))
+    return width, height
 
 
 class CameraCapture(object):
-    def __init__(self, video: str or int = 0, fps=30, size=(1920, 1080), scale=1.0, pad=False):
+    def __init__(self, video: str or int = 0, fps=30, size=(1920, 1080), scale=1.0):
         """
         查询视频设备分辨率： ffmpeg -f v4l2 -list_formats all -i /dev/video0
         常见的视频分辨率  ： 1920x1080 1280x720 640x480 352x288 320x240 176x144 160x120
@@ -25,35 +39,56 @@ class CameraCapture(object):
         :param fps: 视频帧率
         :param size: 视频分辨率 (宽, 高)，(1280,720),(1920,1080)
         :param scale: 视频缩放比例
-        :param pad: 是否保持原始视频比例并填充到指定分辨率
         """
         self.fps = fps
         self.stopped = False
-        if isinstance(video, int): video = f"/dev/video{video}"
-        # self.dsize = size
-        # self.ssize = get_video_size(video)
-        self.ssize = (320,240)
+        self.ssize = get_video_size(video, size=size)
         self.dsize = self.ssize
-        # self.dsize = (640,480)
+        if isinstance(video, int):  # TODO 摄像头
+            video = f"/dev/video{video}"
+            self.video_size = f"{self.ssize[0]}x{self.ssize[1]}"  # 视频文件没有这个参数
+        else:  # TODO 视频文件
+            self.video_size = None
+        if size:
+            self.dsize = (int(size[0] * scale), int(size[1] * scale))
+        else:
+            self.dsize = (int(self.dsize[0] * scale), int(self.dsize[1] * scale))
+        vf = f'scale={self.dsize[0]}:{self.dsize[1]}'
         # TODO FFmpeg 命令
         # -re: 以原生帧率读取（模拟直播流）
         # -fflags nobuffer: 关键！禁用缓冲区
         # -flags low_delay: 关键！低延迟模式
         # -probesize 32: 减小探测包大小，加快启动
         # -pix_fmt bgr24: 直接输出 BGR 格式，方便 OpenCV/Numpy 使用，避免后续转换
-        command = [
-            'ffmpeg',
-            '-re',  # 按帧率读取
-            '-fflags', 'nobuffer',  # 无缓冲
-            '-flags', 'low_delay',  # 低延迟
-            '-probesize', '32',  # 快速探测
-            '-i', video,  # 输入设备
-            '-f', 'rawvideo',  # 输出原始视频流
-            '-pix_fmt', 'bgr24',  # 像素格式 BGR (OpenCV 格式)
-            '-video_size', f"{self.ssize[0]}x{self.ssize[1]}",  # 视频分辨率
-            '-r', str(fps),  # 帧率
-            '-'  # 输出到 stdout
-        ]
+        if self.video_size:  # TODO 如果是摄像头
+            command = [
+                'ffmpeg',
+                '-re',  # 按帧率读取
+                '-fflags', 'nobuffer',  # 无缓冲
+                '-flags', 'low_delay',  # 低延迟
+                '-probesize', '32',  # 快速探测
+                '-video_size', f"{self.ssize[0]}x{self.ssize[1]}",  # 视频分辨率
+                '-i', video,  # 输入设备
+                '-f', 'rawvideo',  # 输出原始视频流
+                '-pix_fmt', 'bgr24',  # 像素格式 BGR
+                '-vf', vf,  # 分辨率
+                '-r', str(fps),  # 帧率
+                '-'  # 输出到 stdout
+            ]
+        else:
+            command = [
+                'ffmpeg',
+                '-re',  # 按帧率读取
+                '-fflags', 'nobuffer',  # 无缓冲
+                '-flags', 'low_delay',  # 低延迟
+                '-probesize', '32',  # 快速探测
+                '-i', video,  # 输入设备
+                '-f', 'rawvideo',  # 输出原始视频流
+                '-pix_fmt', 'bgr24',  # 像素格式 BGR
+                '-vf', vf,  # 分辨率
+                '-r', str(fps),  # 帧率
+                '-'  # 输出到 stdout
+            ]
         # 启动进程
         print(f"command: {' '.join(command)}")
         self.pipe = subprocess.Popen(command, stdout=subprocess.PIPE, bufsize=10 ** 8)
@@ -104,7 +139,8 @@ if __name__ == '__main__':
     fps = 10
     video = 0  # Windows 下可能是 0 或 "video=Integrated Webcam"
     # video = "/home/PKing/Videos/video1.mp4"  # Windows 下可能是 0 或 "video=Integrated Webcam"
-    # video = "/home/PKing/Videos/demo-src.mp4"  # Windows 下可能是 0 或 "video=Integrated Webcam"
-    # cap = CameraCapture(video=video, size=(640, 640), scale=0.5, pad=True, fps=fps)
-    cap = CameraCapture(video=video, size=(), scale=1.0, fps=fps)
+    video = "/media/PKing/dev2/project/base-utils/data/video/kunkun_cut.mp4"  # Windows 下可能是 0 或 "video=Integrated Webcam"
+    # cap = CameraCapture(video=video, size=(), scale=1.0, fps=fps)
+    cap = CameraCapture(video=video, size=(640, 480), scale=1.0, fps=fps)
+    # cap = CameraCapture(video=video, size=(), scale=2,fps=fps)
     cap.display()
