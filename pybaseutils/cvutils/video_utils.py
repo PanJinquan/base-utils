@@ -41,7 +41,10 @@ def get_usb_camera(video=-1, max_index=50):
             camera = i
             cap.release()
             break
-    print("检测到USB摄像头ID={}".format(camera))
+    if camera < 0:
+        print("未检测到USB摄像头ID={}".format(camera))
+    else:
+        print("检测到USB摄像头ID={}".format(camera))
     return camera
 
 

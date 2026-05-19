@@ -5,6 +5,15 @@ import subprocess
 import json
 import numbers
 
+import cv2
+import subprocess
+import json
+
+import cv2
+import subprocess
+import json
+
+
 def get_video_size(video, size=()):
     """
     获取视频设备或文件的分辨率
