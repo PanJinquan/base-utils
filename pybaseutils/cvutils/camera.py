@@ -8,12 +8,9 @@ import numbers
 def get_video_size(video, size=()):
     """
     获取视频设备或文件的分辨率
-    Args:
-        video: 视频设备路径/索引 或 视频文件路径
-        size: 要设置的摄像头分辨率 (宽, 高)，仅对摄像头设备有效
-
-    Returns:
-        tuple: (width, height) 或 (None, None)
+    :param video: 视频设备路径/索引 或 视频文件路径
+    :param size: 要设置的摄像头分辨率 (宽, 高)，仅对摄像头设备有效
+    :return: tuple: (width, height) 或 (None, None)
     """
     if isinstance(video, int):
         video = f"/dev/video{video}"
