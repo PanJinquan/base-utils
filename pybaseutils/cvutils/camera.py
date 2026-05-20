@@ -3,7 +3,6 @@ import time
 import numpy as np
 import subprocess
 import json
-import numbers
 
 def get_video_size(video, size=()):
     """
@@ -173,10 +172,10 @@ if __name__ == '__main__':
     from pybaseutils.cvutils import video_utils
 
     fps = 10
-    # video = video_utils.get_usb_camera()
-    video = "/home/PKing/Videos/video1.mp4"  # Windows 下可能是 0 或 "video=Integrated Webcam"
+    video = video_utils.get_usb_camera()
+    # video = "/home/PKing/Videos/video1.mp4"  # Windows 下可能是 0 或 "video=Integrated Webcam"
     # video = "../../data/video/kunkun_cut.mp4"  # Windows 下可能是 0 或 "video=Integrated Webcam"
     # cap = CameraCapture(video=video, size=(), scale=1.0, fps=fps)
-    cap = CameraCapture(video=video, size=(1920, 1080), scale=1.0, fps=fps)
+    cap = CameraCapture(video=video, size=(1280, 720), scale=1.0, fps=fps)
     # cap = CameraCapture(video=video, size=(), scale=2,fps=fps)
     cap.display()
