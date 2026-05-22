@@ -2,69 +2,9 @@ import cv2
 import time
 import numpy as np
 import subprocess
-import json
-
-def get_video_size(video, size=()):
-    """
-    获取视频设备或文件的分辨率
-    :param video: 视频设备路径/索引 或 视频文件路径
-    :param size: 要设置的摄像头分辨率 (宽, 高)，仅对摄像头设备有效
-    :return: tuple: (width, height) 或 (None, None)
-    """
-    if isinstance(video, int):
-        video = f"/dev/video{video}"
-    # 摄像头设备且需要设置分辨率
-    if video.startswith('/dev/video') and size:
-        cap = cv2.VideoCapture(video)
-        try:
-            if not cap.isOpened():
-                print(f"无法打开摄像头: {video}")
-                return None, None
-            cap.set(cv2.CAP_PROP_FRAME_WIDTH, size[0])
-            cap.set(cv2.CAP_PROP_FRAME_HEIGHT, size[1])
-            width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-            height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-            if (width, height) != size:
-                print(f"请求分辨率: {size}，实际分辨率: {width}x{height}")
-            else:
-                print(f"摄像头分辨率设置为: {width}x{height}")
-
-            return width, height
-        except Exception as e:
-            print(f"获取摄像头分辨率失败: {e}")
-            return None, None
-        finally:
-            cap.release()
-
-    # 使用 ffprobe 获取分辨率
-    cmd = ['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_streams', video]
-    try:
-        result = subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode()
-        info = json.loads(result)
-
-        for stream in info.get('streams', []):
-            if stream.get('codec_type') == 'video':
-                width, height = stream.get('width'), stream.get('height')
-                if width and height:
-                    print(f"video={video}, width:{width}, height:{height}")
-                    return width, height
-
-        print(f"未找到视频流: {video}")
-        return None, None
-
-    except (subprocess.CalledProcessError, json.JSONDecodeError) as e:
-        print(f"ffprobe 获取分辨率失败: {e}")
-        return None, None
-    except FileNotFoundError:
-        print("错误：未找到 ffprobe，请安装 ffmpeg")
-        return None, None
-    except Exception as e:
-        print(f"获取视频分辨率失败: {e}")
-        return None, None
-
 
 class CameraCapture(object):
-    def __init__(self, video: str or int = 0, fps=30, size=(1920, 1080), scale=1.0):
+    def __init__(self, video: str or int = 0, fps=30, size=(1920, 1080), scale=1.0, input_format="mjpeg"):
         """
         查询视频设备分辨率： ffmpeg -f v4l2 -list_formats all -i /dev/video0
         常见的视频分辨率  ： 1920x1080 1280x720 640x480 352x288 320x240 176x144 160x120
@@ -72,6 +12,8 @@ class CameraCapture(object):
         :param fps: 视频帧率
         :param size: 视频分辨率 (宽, 高)，(1280,720),(1920,1080)
         :param scale: 视频缩放比例
+        :param input_format: 设备输入视频格式，如 "mjpeg"、"yuyv422"，
+                             通过ffmpeg -f v4l2 -list_formats all -i /dev/video0查询
         """
         self.fps = fps
         self.stopped = False
@@ -100,6 +42,7 @@ class CameraCapture(object):
                 '-fflags', 'nobuffer',  # 无缓冲
                 '-flags', 'low_delay',  # 低延迟
                 '-probesize', '32',  # 快速探测
+                '-input_format', input_format,
                 '-video_size', f"{self.ssize[0]}x{self.ssize[1]}",  # 视频分辨率
                 '-i', video,  # 输入设备
                 '-f', 'rawvideo',  # 输出原始视频流
@@ -168,14 +111,48 @@ class CameraCapture(object):
             cv2.waitKey(delay)
 
 
+def get_video_size(video, size=()):
+    """
+    获取视频设备或文件的分辨率
+    :param video: 视频设备路径/索引 或 视频文件路径
+    :param size: 要设置的摄像头分辨率 (宽, 高)，仅对摄像头设备有效
+    :return: tuple: (w, h) 或 (None, None)
+    """
+    w, h = None, None
+    cap = cv2.VideoCapture(video)
+    try:
+        if not cap.isOpened():
+            print(f"无法打开视频设备或文件: {video}")
+            return None, None
+        if size:
+            cap.set(cv2.CAP_PROP_FRAME_WIDTH, size[0])
+            cap.set(cv2.CAP_PROP_FRAME_HEIGHT, size[1])
+        w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        if size and (w, h) != size:
+            print(f"video={video}, 尝试设置视频/摄像头分辨率: {size}-->失败！实际分辨率: {w}x{h}")
+        else:
+            print(f"video={video}, 视频/摄像头分辨率为: {w}x{h}")
+    except Exception as e:
+        print(f"video={video}, 获取视频/摄像头分辨率失败: {e}")
+        return None, None
+    finally:
+        cap.release()
+    return w, h
+
+
 if __name__ == '__main__':
     from pybaseutils.cvutils import video_utils
 
     fps = 10
     video = video_utils.get_usb_camera()
+    # get_video_size(video, size=())
     # video = "/home/PKing/Videos/video1.mp4"  # Windows 下可能是 0 或 "video=Integrated Webcam"
     # video = "../../data/video/kunkun_cut.mp4"  # Windows 下可能是 0 或 "video=Integrated Webcam"
+    get_video_size(video, size=(1280, 720))
+    get_video_size(video, size=(640, 480))
     # cap = CameraCapture(video=video, size=(), scale=1.0, fps=fps)
-    cap = CameraCapture(video=video, size=(1280, 720), scale=1.0, fps=fps)
+    # cap = CameraCapture(video=video, size=(1280, 720), scale=1.0, fps=fps)
+    # cap = CameraCapture(video=video, size=(1920, 1080), scale=1.0, fps=fps)
     # cap = CameraCapture(video=video, size=(), scale=2,fps=fps)
-    cap.display()
+    # cap.display()
