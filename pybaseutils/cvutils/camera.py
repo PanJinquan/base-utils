@@ -3,6 +3,7 @@ import time
 import numpy as np
 import subprocess
 
+
 class CameraCapture(object):
     def __init__(self, video: str or int = 0, fps=30, size=(1920, 1080), scale=1.0, input_format="mjpeg"):
         """
@@ -149,10 +150,8 @@ if __name__ == '__main__':
     # get_video_size(video, size=())
     # video = "/home/PKing/Videos/video1.mp4"  # Windows 下可能是 0 或 "video=Integrated Webcam"
     # video = "../../data/video/kunkun_cut.mp4"  # Windows 下可能是 0 或 "video=Integrated Webcam"
-    get_video_size(video, size=(1280, 720))
-    get_video_size(video, size=(640, 480))
     # cap = CameraCapture(video=video, size=(), scale=1.0, fps=fps)
-    # cap = CameraCapture(video=video, size=(1280, 720), scale=1.0, fps=fps)
+    cap = CameraCapture(video=video, size=(1280, 720), scale=1.0, fps=fps)
     # cap = CameraCapture(video=video, size=(1920, 1080), scale=1.0, fps=fps)
     # cap = CameraCapture(video=video, size=(), scale=2,fps=fps)
-    # cap.display()
+    cap.display()
