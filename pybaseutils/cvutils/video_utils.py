@@ -37,10 +37,11 @@ def get_usb_camera(video=-1, max_index=50):
     for i in range(max_index):
         cap = cv2.VideoCapture(i)
         ret, frame = cap.read()
-        if cap.isOpened() and ret:
+        if cap.isOpened() and ret:  # TODO 如果能正常打开摄像头,且能读取到视频帧,则认为是摄像头索引
             camera = i
             cap.release()
             break
+        cap.release()
     if camera < 0:
         print("未检测到USB摄像头ID={}".format(camera))
     else:
