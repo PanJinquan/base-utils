@@ -121,6 +121,7 @@ def get_video_size(video, size=()):
     """
     w, h = None, None
     cap = cv2.VideoCapture(video)
+    size = tuple(size)
     try:
         if not cap.isOpened():
             print(f"无法打开视频设备或文件: {video}")
@@ -131,7 +132,7 @@ def get_video_size(video, size=()):
         w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         if size and (w, h) != size:
-            print(f"video={video}, 尝试设置视频/摄像头分辨率: {size}-->失败！实际分辨率: {w}x{h}")
+            print(f"video={video}, 尝试设置视频/摄像头分辨率: {size[0]}x{size[1]}-->失败！实际分辨率: {w}x{h}")
         else:
             print(f"video={video}, 视频/摄像头分辨率为: {w}x{h}")
     except Exception as e:
