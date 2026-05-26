@@ -22,7 +22,7 @@ LOG_FORMAT = {
 
 
 def set_logger(name=None, level="debug", logfile=None, format="simple", is_main_process=True,
-               rotation="1 day", retention="3 days"):
+               rotation="1 days", retention="3 days"):
     """
     logger = set_logger(level="debug", logfile="log.txt")
     url: https://www.cnblogs.com/shiyitongxue/p/17870527.html
@@ -30,22 +30,26 @@ def set_logger(name=None, level="debug", logfile=None, format="simple", is_main_
     :param logfile: log保存路径，如果为None，则在控制台打印log
     :param is_main_process: 是否是主进程
     :param rotation: 日志文件轮转策略,时间或者大小，默认1天
-                    rotation="1 day"     # 每天轮转
-                    rotation="1 week"    # 每周轮转
-                    rotation="10 MB"     # 文件达到10MB时轮转
-                    rotation="500 MB"    # 文件达到500MB时轮转
-                    rotation="1 hour"    # 每小时轮转
+                    rotation="1 minutes"  # 每分钟轮转
+                    rotation="1 hours"    # 每小时轮转
+                    rotation="1 days"     # 每天轮转
+                    rotation="1 weeks"    # 每周轮转
+                    rotation="10 MB"      # 文件达到10MB时轮转
+                    rotation="500 MB"     # 文件达到500MB时轮转
     :param retention: 日志文件保留时长，默认3天
-                    retention="7 days"   # 保留7天
-                    retention="1 month"  # 保留1个月
-                    retention="20 GB"    # 保留最近20GB的日志（基于大小）
+                    retention="7 days"    # 保留7天
+                    retention="1 months"   # 保留1个月
+                    retention="20 GB"     # 保留最近20GB的日志（基于大小）
     :return:
     """
     format = LOG_FORMAT.get(format, LOG_FORMAT.get("line"))
     logger.remove(0)  # 去除默认的LOG
     if is_main_process:
         # 每天创建一个新的文件，一个星期定期清理一次
-        if logfile: logger.add(logfile, level=level.upper(), rotation=rotation, retention=retention, format=format)
+        if logfile: logger.add(logfile, level=level.upper(), rotation=rotation, retention=retention, format=format,
+                               enqueue=True,  # 异步写入，会重新打开文件,避免误删日志文件
+                               catch=True
+                               )
         logger.add(sys.stderr, level=level.upper(), format=format)
     else:
         logger.add(sys.stderr, level="ERROR", format=format)
@@ -97,8 +101,8 @@ def example():
 
 if __name__ == '__main__':
     logfile = "./log.log"
-    # logger = set_logger(logfile=logfile, is_main_process=True, format="function",level="debug")
     logger = set_logger(name="demo", is_main_process=True, format="function", level="debug", logfile=logfile)
+    # logger = set_logger(logfile=logfile, is_main_process=True, format="function",level="debug")
     # logger = set_logger(name="demo", is_main_process=True, format="module", level="debug")
     # logger = get_logger()
     example()
