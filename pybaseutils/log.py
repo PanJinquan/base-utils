@@ -47,8 +47,9 @@ def set_logger(name=None, level="debug", logfile=None, format="simple", is_main_
     if is_main_process:
         # 每天创建一个新的文件，一个星期定期清理一次
         if logfile: logger.add(logfile, level=level.upper(), rotation=rotation, retention=retention, format=format,
-                               enqueue=True,  # 异步写入，会重新打开文件,避免误删日志文件
-                               catch=True
+                               enqueue=True,  # 异步写入，会重新打开文件
+                               catch=True,  # 避免误删日志文件
+                               watch=True,
                                )
         logger.add(sys.stderr, level=level.upper(), format=format)
     else:
@@ -100,9 +101,18 @@ def example():
 
 
 if __name__ == '__main__':
+    import time
+
     logfile = "./log.log"
     logger = set_logger(name="demo", is_main_process=True, format="function", level="debug", logfile=logfile)
+    for i in range(1000):
+        logger.debug(f"debug {i}")
+        logger.info(f"info {i}")
+        logger.warning(f"warning {i}")
+        logger.error(f"error {i}")
+        time.sleep(1)
+
     # logger = set_logger(logfile=logfile, is_main_process=True, format="function",level="debug")
     # logger = set_logger(name="demo", is_main_process=True, format="module", level="debug")
     # logger = get_logger()
-    example()
+    # example()
