@@ -48,8 +48,8 @@ def set_logger(name=None, level="debug", logfile=None, format="simple", is_main_
         # 每天创建一个新的文件，一个星期定期清理一次
         if logfile: logger.add(logfile, level=level.upper(), rotation=rotation, retention=retention, format=format,
                                enqueue=True,  # 异步写入，会重新打开文件
-                               catch=True,  # 避免误删日志文件
-                               watch=True,
+                               watch=True,  # 避免误删日志文件
+                               catch=True,
                                )
         logger.add(sys.stderr, level=level.upper(), format=format)
     else:
