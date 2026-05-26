@@ -29,8 +29,16 @@ def set_logger(name=None, level="debug", logfile=None, format="simple", is_main_
     :param level: 设置log输出级别:debug,info,warning,error
     :param logfile: log保存路径，如果为None，则在控制台打印log
     :param is_main_process: 是否是主进程
-    :param rotation: 每rotation，创建新的日志文件
+    :param rotation: 日志文件轮转策略,时间或者大小，默认1天
+                    rotation="1 day"     # 每天轮转
+                    rotation="1 week"    # 每周轮转
+                    rotation="10 MB"     # 文件达到10MB时轮转
+                    rotation="500 MB"    # 文件达到500MB时轮转
+                    rotation="1 hour"    # 每小时轮转
     :param retention: 日志文件保留时长，默认3天
+                    retention="7 days"   # 保留7天
+                    retention="1 month"  # 保留1个月
+                    retention="20 GB"    # 保留最近20GB的日志（基于大小）
     :return:
     """
     format = LOG_FORMAT.get(format, LOG_FORMAT.get("line"))
