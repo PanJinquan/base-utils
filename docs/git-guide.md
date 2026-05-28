@@ -98,6 +98,9 @@ git remote add origin https://gitcode.com/ai-sdk/Pytorch-Segment-Trainer.git
 # git remote set-url --add origin https://gitcode.com/ai-sdk/Pytorch-Segment-Trainer.git
 git push -u origin --all   # 如果文件太大，建议逐个分支推送： git push -u origin master
 git push -u origin --tags  # 如果有标签，也需要推送
+
+# git config core.filemode false # 解决文件权限问题
+# git reset --hard origin/dev
 ```
 
 - 推送现有的文件

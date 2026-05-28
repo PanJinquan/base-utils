@@ -26,6 +26,8 @@ get_video_writer = image_utils.get_video_writer
 
 def get_usb_camera(video=-1, max_index=50):
     """
+     即可；‘’fuser /dev/video31  # 查看视频设备是否被占用
+     、
     获取当前系统中连接的USB摄像头索引。
     :param video: 视频路径或摄像头索引,默认值为-1表示自动检测。当video>=0时,不进行检测，直接返回video。
     :param max_index: 最大检测索引范围,默认值为50。
