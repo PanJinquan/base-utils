@@ -163,8 +163,9 @@ def get_index(data: list, v):
     return indices
 
 
+
 if __name__ == "__main__":
     # data = {'C': 0, 'A': 5, 'B': 3, 'D': 2}
     # print(dict_sort(data))
-    i= get_index(data=[], v=7)
+    i = get_index(data=[], v=7)
     print(i)

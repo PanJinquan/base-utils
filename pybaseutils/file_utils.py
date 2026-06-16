@@ -1607,6 +1607,49 @@ def zip_file(src, dst=None, s=None):
     return dst
 
 
+def json2jsonl(json_file: str, jsonl_out="./data.jsonl"):
+    """
+    将json转换为jsonl
+    :param json_file: json文件目录或json文件路径
+    :param jsonl_out:
+    :return:
+    """
+    data_list = []
+    if json_file.endswith(".json"):
+        with open(json_file, 'r', encoding='utf-8') as f:
+            data_list = json.load(f)  # 假设 data 是一个列表
+    elif os.path.isdir(json_file):
+        files = glob.glob(os.path.join(json_file, "*.json"))
+        for file in files:
+            with open(file, 'r', encoding='utf-8') as f:
+                data = json.load(f)  # 假设 data 是一个字典
+            data_list.append(data)
+    with open(jsonl_out, 'w', encoding='utf-8') as f:
+        for item in data_list:
+            f.write(json.dumps(item, ensure_ascii=False) + '\n')
+    print(f"转换成功，保存文件：{jsonl_out} ,共{len(data_list)}条记录")
+    return data_list
+
+
+def jsonl2json(jsonl_file: str, json_out="./data.json"):
+    """
+    将 JSONL 文件转换为 JSON 文件
+    :param jsonl_file: JSONL 文件路径
+    :param json_out: 输出的 JSON 文件路径
+    :return: 包含所有数据的列表
+    """
+    data_list = []
+    with open(jsonl_file, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            if line:  # 跳过空行
+                data_list.append(json.loads(line))
+    with open(json_out, 'w', encoding='utf-8') as f:
+        json.dump(data_list, f, ensure_ascii=False, indent=2)
+    print(f"转换成功，保存文件：{json_out}，共 {len(data_list)} 条记录")
+    return data_list
+
+
 if __name__ == '__main__':
     from pybaseutils import time_utils
 

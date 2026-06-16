@@ -43,7 +43,7 @@ def set_logger(name=None, level="debug", logfile=None, format="simple", is_main_
     :return:
     """
     format = LOG_FORMAT.get(format, LOG_FORMAT.get("line"))
-    logger.remove(0)  # 去除默认的LOG
+    logger.remove()  # 去除默认的LOG，避免重复打印
     if is_main_process:
         # 每天创建一个新的文件，一个星期定期清理一次
         if logfile: logger.add(logfile, level=level.upper(), rotation=rotation, retention=retention, format=format,

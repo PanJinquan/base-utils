@@ -61,20 +61,12 @@ def video_iterator(video):
 
 
 if __name__ == '__main__':
-    from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
-
-    true_labels = ["A", "B", "A", "B", "C"]
-    pred_labels = ["A", "B", "C", "B", "C"]
-
-    accuracy = accuracy_score(true_labels, pred_labels)
-    precision = precision_score(true_labels, pred_labels, average=None)  # 每个类别
-    recall = recall_score(true_labels, pred_labels, average=None)
-    f1_score = f1_score(true_labels, pred_labels, average=None)
-
-    print(f"准确率: {accuracy}")
-    print(f"精确率: {dict(zip(set(true_labels), precision))}")
-    print(f"召回率: {dict(zip(set(true_labels), recall))}")
-    print(f"F1值: {dict(zip(set(true_labels), f1_score))}")
+    image_file = "/home/PKing/Downloads/34.jpg"
+    image_outs = "/home/PKing/Downloads/result.jpg"
+    image = cv2.imread(image_file)
+    image = image_utils.resize_image(image, (64, 64))
+    image = cv2.blur(image, (7, 7))
+    cv2.imwrite(image_outs, image)
 
 
 
