@@ -7,6 +7,7 @@ import subprocess
 class CameraCapture(object):
     def __init__(self, video: str or int = 0, fps=30, size=(1920, 1080), scale=1.0, input_format="mjpeg"):
         """
+        v4l2-ctl --device /dev/video0 --list-formats-ext # 查看摄像头在所有格式和分辨率下支持的帧率
         fuser /dev/video31  # 查看视频设备是否被占用
         查询视频设备分辨率： ffmpeg -f v4l2 -list_formats all -i /dev/video0
         常见的视频分辨率  ： 1920x1080 1280x720 640x480 352x288 320x240 176x144 160x120

@@ -19,6 +19,7 @@ dir=$(dirname $0) # 当前文件的路径
 - 使用mprof run代替python demo.py，执行完成后，会生成一个 .dat 文件
 
 ```bash
+# pip install memory_profiler
 mprof run demo.py 
 ```
 
