@@ -9,7 +9,8 @@
 """
 import os
 import cv2
-from pybaseutils import json_utils, pandas_utils, image_utils, file_utils
+from collections import defaultdict
+from pybaseutils import json_utils, pandas_utils, image_utils, file_utils, dict_utils
 from pybaseutils.cvutils import video_utils
 
 class_maps = {
@@ -19,14 +20,18 @@ class_maps = {
 }
 
 
-def parser_video(video_file, csv_file):
+def parser_video(video_file, csv_file, vis=True):
     print("video_file", video_file)
     print(" csv_file", csv_file)
     pd_data = pandas_utils.read_csv(csv_file, sep=",")
     pd_dict = pandas_utils.df2dict(pd_data, orient="index")
+    label_info = dict_default(list)
     for info in pd_dict.values():
         index = info['frame_num']
         label = info['type'].strip()
+
+        label_info
+        if not vis: continue
         video_cap = video_utils.get_video_capture(video_file)
         # 设置抽帧的位置
         video_cap.set(cv2.CAP_PROP_POS_FRAMES, index)
@@ -50,6 +55,6 @@ def parser_video_dir(video_dir, csv_dir):
 
 
 if __name__ == '__main__':
-    video_dir = '/home/PKing/nasdata/tmp/tmp/car-accident/Crash dataset/video/'
-    csv_dir = "/home/PKing/nasdata/tmp/tmp/car-accident/Crash dataset/label/csv"
+    video_dir = '/home/PKing/Downloads/Crash dataset/video/'
+    csv_dir = "/home/PKing/Downloads/Crash dataset/label/csv"
     parser_video_dir(video_dir, csv_dir)

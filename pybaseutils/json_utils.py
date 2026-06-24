@@ -15,7 +15,7 @@ import PIL.Image as Image
 from collections import Counter
 from typing import List, Tuple, Dict
 from pybaseutils.file_utils import load_json, read_json_data, save_json, write_json_path
-from pybaseutils.dict_uils import *
+from pybaseutils.dict_utils import *
 
 
 def get_most_common(data: list, topK=None):
