@@ -101,16 +101,22 @@ def example():
 
 
 if __name__ == '__main__':
+    import traceback
     import time
 
     logfile = "./log.log"
     logger = set_logger(name="demo", is_main_process=True, format="function", level="debug", logfile=logfile)
     for i in range(1000):
-        logger.debug(f"debug {i}")
-        logger.info(f"info {i}")
-        logger.warning(f"warning {i}")
-        logger.error(f"error {i}")
-        time.sleep(1)
+        try:
+            a = 100 / 0
+            logger.debug(f"debug {i}")
+            logger.info(f"info {i}")
+            logger.warning(f"warning {i}")
+            logger.error(f"error {i}")
+            time.sleep(1)
+        except Exception as e:
+            e = traceback.format_exc()
+            # logger.error(e)
 
     # logger = set_logger(logfile=logfile, is_main_process=True, format="function",level="debug")
     # logger = set_logger(name="demo", is_main_process=True, format="module", level="debug")

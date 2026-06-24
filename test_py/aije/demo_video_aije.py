@@ -10,7 +10,7 @@ import cv2
 import numpy as np
 from tqdm import tqdm
 from pybaseutils import file_utils, image_utils
-from pybaseutils.cvutils import video_utils, monitor
+from pybaseutils.cvutils import video_utils, frame_record
 
 # thresh_dict = {"1号视角": 0.5, "2号视角": 0.15, "3号视角": 0.3, "4号视角": 0.3}
 # thresh_dict = {"一号位": 0.58, "平视": 0.35, "俯视": 0.35, "右视": 0.25, "左视": 0.3}

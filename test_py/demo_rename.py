@@ -23,6 +23,6 @@ def rename_files(src, dst, prefix="", postfix=None, remove=False):
 
 
 if __name__ == '__main__':
-    image_dir = "/home/PKing/edudata/dataset/AIJE/【TOP】技能人才系统_数据集管理/05-东莞基地/东莞基地-2025-08-19/images"
+    image_dir = "/home/PKing/nasdata/tmp/tmp/car-accident/dataset-v1"
     output = image_dir
-    rename_files(image_dir, output, prefix="dg_image", remove=True)
+    rename_files(image_dir, output, prefix="video", remove=True)

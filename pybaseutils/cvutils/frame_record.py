@@ -37,7 +37,7 @@ class Queue():
         return self.data[index]
 
 
-class StatusMonitor():
+class StatusRecord():
     """
     检测视频流状态,计算连续相邻两帧的相似性,
     判断当前状态{"运动":1,"静止":0},

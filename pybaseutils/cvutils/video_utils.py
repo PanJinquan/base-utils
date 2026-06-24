@@ -15,7 +15,7 @@ import time as timelib
 from typing import Callable
 from tqdm import tqdm
 from pybaseutils import image_utils, file_utils
-from pybaseutils.cvutils import monitor
+from pybaseutils.cvutils import frame_record
 
 VIDEO_POSTFIX = ['*.mp4', '*.avi', '*.mov', "*.flv"]
 
@@ -189,7 +189,7 @@ def video2frames_similarity(video_file, out_dir=None, func=None, prefix="", inte
     :param vis: 是否可视化显示
     :return:
     """
-    sm = monitor.StatusMonitor()
+    rec = frame_record.StatusRecord()
     name = os.path.basename(video_file).split(".")[0].replace("-", "_")
     if prefix: name = f"{prefix}_{name}"
     if not out_dir:  out_dir = os.path.join(os.path.dirname(video_file), name)
@@ -208,7 +208,7 @@ def video2frames_similarity(video_file, out_dir=None, func=None, prefix="", inte
             if func: curr_frame = func(curr_frame)
             if last_frame is None:
                 last_frame = curr_frame.copy()
-            diff = sm.get_frame_similarity(curr_frame, last_frame, size=(256, 256), vis=False)
+            diff = rec.get_frame_similarity(curr_frame, last_frame, size=(256, 256), vis=False)
             if diff > thresh:
                 frame_file = os.path.join(out_dir, "{}_{:0=6d}.jpg".format(name, count))
                 last_frame = curr_frame.copy()
