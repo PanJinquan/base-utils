@@ -12,6 +12,7 @@ import cv2
 import numpy as np
 import math
 import time as timelib
+import subprocess
 from typing import Callable
 from tqdm import tqdm
 from pybaseutils import image_utils, file_utils
@@ -52,6 +53,13 @@ def get_usb_camera(video=-1, max_index=50):
 
 
 def merge_video(video1, video2, output="./output.mp4"):
+    """
+    视频拼接
+    :param video1:
+    :param video2:
+    :param output:
+    :return:
+    """
     cmd = f'ffmpeg -i {video1} -i {video2} -filter_complex "[0:v:0][1:v:0]concat=n=2:v=1:a=0[outv]" -map "[outv]" {output}'
 
 
@@ -333,13 +341,13 @@ def video_capture(video: int or str, save_video: str or int = None, interval=1, 
         assert os.path.exists(video), f"video={video}"
     cap = image_utils.get_video_capture(video, fps=None)
     w, h, num_frames, fps = image_utils.get_video_info(cap, **kwargs)
-    time = kwargs.get("time", tuple())  # TODO 开始播放时间time[0]，结束播放时间time[1]，单位秒S
-    clip = kwargs.get("clip", tuple())  # TODO 开始播放位置clip[0]，结束播放位置clip[1]
+    clip_time = kwargs.get("clip_time", tuple())  # TODO 开始播放时间time[0]，结束播放时间time[1]，单位秒S
+    clip_index = kwargs.get("clip_index", tuple())  # TODO 开始播放位置clip[0]，结束播放位置clip[1]
     start, end = 0, -1
-    if time and fps > 0:
-        start, end = int(time[0] * fps), int(time[1] * fps)
-    elif clip:
-        start, end = int(clip[0]), int(clip[1])
+    if clip_time and fps > 0:
+        start, end = int(clip_time[0] * fps), int(clip_time[1] * fps)
+    elif clip_index:
+        start, end = int(clip_index[0]), int(clip_index[1])
     end = min(end, num_frames) if end > 0 else num_frames  # TODO 当num_frames<0时，使用0<end<count继续播放
     interval = fps if interval == -1 else interval  # 当interval=-1，表示interval=fps,即一秒一帧
     interval = int(fps / freq) if freq > 0 else interval
@@ -388,8 +396,8 @@ def video_iterator(video, save_video: str or int = None, interval=1, size=(), fr
     :param kwargs:回调函数输入参数,
                  delay: 控制显示延时,默认10S
                  title: 控制显示窗口名，默认video
-                 time: 开始播放时间time[0]，结束播放时间time[1]，单位秒S
-                 clip: 开始播放位置clip[0]，结束播放位置clip[1]
+                 clip_time: 开始播放时间time[0]，结束播放时间time[1]，单位秒S
+                 clip_index: 开始播放位置clip[0]，结束播放位置clip[1]
                  speed: 保存视频的播放速度，默认是播放帧率
                  save_fps: 保存视频的帧率，默认是播放帧率
     :return: frame, count, w, h, fps =data_info['frame'],data_info['count'],data_info['w'],data_info['h'],data_info['fps']
@@ -401,13 +409,13 @@ def video_iterator(video, save_video: str or int = None, interval=1, size=(), fr
         assert os.path.exists(video), f"video={video}"
     cap = image_utils.get_video_capture(video, fps=None)
     w, h, num_frames, fps = image_utils.get_video_info(cap, **kwargs)
-    time = kwargs.get("time", tuple())  # TODO 开始播放时间time[0]，结束播放时间time[1]，单位秒S
-    clip = kwargs.get("clip", tuple())  # TODO 开始播放位置clip[0]，结束播放位置clip[1]
+    clip_time = kwargs.get("clip_time", tuple())  # TODO 开始播放时间time[0]，结束播放时间time[1]，单位秒S
+    clip_index = kwargs.get("clip_index", tuple())  # TODO 开始播放位置clip[0]，结束播放位置clip[1]
     start, end = 0, -1
-    if time and fps > 0:
-        start, end = int(time[0] * fps), int(time[1] * fps)
-    elif clip:
-        start, end = int(clip[0]), int(clip[1])
+    if clip_time and fps > 0:
+        start, end = int(clip_time[0] * fps), int(clip_time[1] * fps)
+    elif clip_index:
+        start, end = int(clip_index[0]), int(clip_index[1])
     end = min(end, num_frames) if end > 0 else num_frames  # TODO 当num_frames<0时，使用0<end<count继续播放
     interval = fps if interval == -1 else interval  # 当interval=-1，表示interval=fps,即一秒一帧
     interval = int(fps / freq) if freq > 0 else interval
@@ -470,6 +478,46 @@ def rotation_task(frame, **kwargs):
     frame = image_utils.image_rotation(frame, angle=alpha * angle[count % len(angle)])
     frame = image_utils.get_box_crop(frame, box=[0, 70, w, h - 70])
     return frame
+
+
+def segment_video(video_file, save_file="", clip_time=(), clip_index=()):
+    """
+    分割视频
+    :param video_file:  视频文件
+    :param save_file:  输出分割视频文件
+    :param clip_time:  分割视频时间, clip_time[0]开始时间，结束时间clip_time[1]，单位秒S
+    :param clip_index: 分割视频索引, clip_index[0]开始位置，结束位置clip_index[1]
+    :return:
+    """
+    if not save_file:
+        name_id, postfix = file_utils.split_postfix(video_file)
+        save_file = os.path.join(os.path.dirname(video_file), f"{name_id}_crop.mp4")
+    assert os.path.exists(video_file), f"输入视频文件不存在: {video_file}"
+    cmd = ["ffmpeg", "-i", video_file]
+    if clip_time and len(clip_time) == 2:
+        start, end = clip_time
+        # -ss 和 -to 放在 -i 之后实现精确解码切割（无 seek 误差）
+        cmd.extend(["-ss", str(start), "-to", str(end)])
+        # 若不需重新编码且可接受关键帧对齐，可启用下行加速：
+        # cmd.extend(["-c", "copy"])
+    elif clip_index and len(clip_index) == 2:
+        c0, c1 = int(clip_index[0]), int(clip_index[1])
+        # select 滤镜选择帧号范围内的帧，并重置时间戳
+        vf_filter = f"select='between(n,{c0},{c1})',setpts=N/FRAME_RATE/TB"
+        af_filter = f"aselect='between(n,{c0},{c1})',asetpts=N/SR/TB"
+        cmd.extend(["-vf", vf_filter, "-af", af_filter, "-vsync", "vfr"])
+    else:
+        raise ValueError("必须提供 clip_time 或 clip_index 且参数为二元组")
+    # 覆盖输出文件
+    cmd.extend(["-y", save_file])
+    # 执行命令
+    try:
+        print(cmd)
+        subprocess.run(cmd, check=True, capture_output=True, text=True)
+        print(f"视频分割完成: {save_file}")
+    except subprocess.CalledProcessError as e:
+        print(f"ffmpeg 执行失败:\n{e.stderr}")
+        raise
 
 
 if __name__ == "__main__":
