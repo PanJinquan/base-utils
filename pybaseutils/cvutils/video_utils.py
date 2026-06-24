@@ -512,7 +512,7 @@ def segment_video(video_file, save_file="", clip_time=(), clip_index=()):
     cmd.extend(["-y", save_file])
     # 执行命令
     try:
-        print(cmd)
+        print(" ".join(cmd))
         subprocess.run(cmd, check=True, capture_output=True, text=True)
         print(f"视频分割完成: {save_file}")
     except subprocess.CalledProcessError as e:
