@@ -492,6 +492,7 @@ def segment_video(video_file, save_file="", clip_time=(), clip_index=()):
     if not save_file:
         name_id, postfix = file_utils.split_postfix(video_file)
         save_file = os.path.join(os.path.dirname(video_file), f"{name_id}_crop.mp4")
+    os.makedirs(os.path.dirname(save_file), exist_ok=True)
     assert os.path.exists(video_file), f"输入视频文件不存在: {video_file}"
     cmd = ["ffmpeg", "-i", video_file]
     if clip_time and len(clip_time) == 2:
