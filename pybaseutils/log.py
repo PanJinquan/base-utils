@@ -13,18 +13,18 @@ import datetime
 from loguru import logger
 
 LOG_FORMAT = {
-    "simple": "<level>{extra[time]}|{level:7}| {message}</level>",
-    "name": "<level>{extra[time]}|{level:7}|{name} {line}| {message}</level>",  # 打印文件名
-    "module": "<level>{extra[time]}|{level:7}|{module} {line}| {message}</level>",  # 打印模块名
-    # "function": "<level>{extra[time]}|{level:7}|{function} {line}| {message}</level>",  # 打印函数
-    "function": "<level>{extra[time]}|{level:7}|{module}.{function} {line}| {message}</level>",  # 打印函数
-    "all": "<level>{extra[time]}|{level:7}|{name}.{module}.{function} {line}| {message}</level>",  # 打印函数
+    "simple":   "<level>{extra[time]:%Y-%m-%d %H:%M:%S}|{level:7}| {message}</level>",
+    "name":     "<level>{extra[time]:%Y-%m-%d %H:%M:%S}|{level:7}|{name} {line}| {message}</level>",  # 打印文件名
+    "module":   "<level>{extra[time]:%Y-%m-%d %H:%M:%S}|{level:7}|{module} {line}| {message}</level>",  # 打印模块名
+    "function": "<level>{extra[time]:%Y-%m-%d %H:%M:%S}|{level:7}|{module}.{function} {line}| {message}</level>",  # 打印函数
+    "precise":  "<level>{extra[time]:%Y-%m-%d %H:%M:%S.%f}|{level:7}|{module}.{function} {line}| {message}</level>",
+    "all":      "<level>{extra[time]:%Y-%m-%d %H:%M:%S}|{level:7}|{name}.{module}.{function} {line}| {message}</level>",  # 打印函数
 }
 
 
 def call_time(record):
     # 显式固化 logger 调用时刻，避免异步 sink 输出时产生“当前打印时间”的误解
-    record["extra"]["time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    record["extra"]["time"] = datetime.datetime.now()
 
 
 def set_logger(name=None, level="debug", logfile=None, format="simple", is_main_process=True,
@@ -74,15 +74,18 @@ if __name__ == '__main__':
     import time
 
     logfile = "./log.log"
-    logger = set_logger(name="demo", is_main_process=True, format="function", level="debug", logfile=logfile)
+    logger = set_logger(name="demo", is_main_process=True, format="precise", level="debug", logfile=logfile)
+
     for i in range(1000):
         try:
-            logger.debug(f"debug {i}")
+            t = time.time()
+            date = datetime.datetime.fromtimestamp(t).strftime("%H:%M:%S.%f")
+            logger.debug(f"{date} debug {i}")
             # logger.info(f"info {i}")
             # logger.warning(f"warning {i}")
             # logger.error(f"error {i}")
             time.sleep(0.01)
         except Exception as e:
             e = traceback.format_exc()
-            # logger.error(e)
+            logger.error(e)
 
