@@ -13,18 +13,13 @@ import datetime
 from loguru import logger
 
 LOG_FORMAT = {
-    "simple":   "<level>{extra[time]:%Y-%m-%d %H:%M:%S}|{level:7}| {message}</level>",
-    "name":     "<level>{extra[time]:%Y-%m-%d %H:%M:%S}|{level:7}|{name} {line}| {message}</level>",  # 打印文件名
-    "module":   "<level>{extra[time]:%Y-%m-%d %H:%M:%S}|{level:7}|{module} {line}| {message}</level>",  # 打印模块名
-    "function": "<level>{extra[time]:%Y-%m-%d %H:%M:%S}|{level:7}|{module}.{function} {line}| {message}</level>",  # 打印函数
-    "precise":  "<level>{extra[time]:%Y-%m-%d %H:%M:%S.%f}|{level:7}|{module}.{function} {line}| {message}</level>",
-    "all":      "<level>{extra[time]:%Y-%m-%d %H:%M:%S}|{level:7}|{name}.{module}.{function} {line}| {message}</level>",  # 打印函数
+    "simple":   "<level>{extra[time]}|{level:7}| {message}</level>",
+    "name":     "<level>{extra[time]}|{level:7}|{name} {line}| {message}</level>",  # 打印文件名
+    "module":   "<level>{extra[time]}|{level:7}|{module} {line}| {message}</level>",  # 打印模块名
+    "function": "<level>{extra[time]}|{level:7}|{module}.{function} {line}| {message}</level>",
+    "precise":  "<level>{extra[time]}|{level:7}|{module}.{function} {line}| {message}</level>",
+    "all":      "<level>{extra[time]}|{level:7}|{name}.{module}.{function} {line}| {message}</level>",# 打印函数
 }
-
-
-def call_time(record):
-    # 显式固化 logger 调用时刻，避免异步 sink 输出时产生“当前打印时间”的误解
-    record["extra"]["time"] = datetime.datetime.now()
 
 
 def set_logger(name=None, level="debug", logfile=None, format="simple", is_main_process=True,
@@ -48,25 +43,30 @@ def set_logger(name=None, level="debug", logfile=None, format="simple", is_main_
                     retention="20 GB"     # 保留最近20GB的日志（基于大小）
     :return:
     """
-    format = LOG_FORMAT.get(format, LOG_FORMAT.get("simple"))
+
+    def call_time(record):
+        # 显式固化 logger 调用时刻，避免异步 sink 输出时产生“当前打印时间”的误解
+        if format == "precise":
+            record["extra"]["time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+        else:
+            record["extra"]["time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    f = LOG_FORMAT.get(format, LOG_FORMAT.get("simple"))
     logger.remove()  # 去除默认的LOG，避免重复打印
     logger_ = logger.patch(call_time)
     if is_main_process:
-        if logfile: logger_.add(logfile, level=level.upper(), rotation=rotation, retention=retention, format=format,
+        if logfile: logger_.add(logfile, level=level.upper(), rotation=rotation, retention=retention, format=f,
                                 enqueue=True,  # 异步写入，会重新打开文件
                                 watch=True,  # 避免误删日志文件
                                 catch=True,
                                 )
-        logger_.add(sys.stderr, level=level.upper(), format=format)
+        logger_.add(sys.stderr, level=level.upper(), format=f)
     else:
-        logger_.add(sys.stderr, level="ERROR", format=format)
+        logger_.add(sys.stderr, level="ERROR", format=f)
     return logger_
 
 
 def get_logger():
     return logger
-
-
 
 
 if __name__ == '__main__':
@@ -75,11 +75,12 @@ if __name__ == '__main__':
 
     logfile = "./log.log"
     logger = set_logger(name="demo", is_main_process=True, format="precise", level="debug", logfile=logfile)
+    # logger = set_logger(name="demo", is_main_process=True, format="module", level="debug", logfile=logfile)
 
     for i in range(1000):
         try:
             t = time.time()
-            date = datetime.datetime.fromtimestamp(t).strftime("%H:%M:%S.%f")
+            date = datetime.datetime.fromtimestamp(t).strftime("%H:%M:%S.%f")[:-3]
             logger.debug(f"{date} debug {i}")
             # logger.info(f"info {i}")
             # logger.warning(f"warning {i}")
@@ -88,4 +89,3 @@ if __name__ == '__main__':
         except Exception as e:
             e = traceback.format_exc()
             logger.error(e)
-
