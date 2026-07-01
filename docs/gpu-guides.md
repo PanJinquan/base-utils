@@ -63,7 +63,7 @@ pip install  --no-cache-dir torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaud
 #### 方法1 (推荐)：
 
 ```bash
-# python 3.10.0,cuda 12.1 
+# python 3.11.5,cuda 12.1 
 # 使用基础镜像 glenaaa/tensorrt-ubuntu20.04-cuda12.1:v0.6
 apt-get update && apt-get install ffmpeg libsm6 libxext6 -y
 # 修改完成后，让配置生效

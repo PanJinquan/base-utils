@@ -74,18 +74,14 @@ if __name__ == '__main__':
     import time
 
     logfile = "./log.log"
-    logger = set_logger(name="demo", is_main_process=True, format="precise", level="debug", logfile=logfile)
-    # logger = set_logger(name="demo", is_main_process=True, format="module", level="debug", logfile=logfile)
+    # 初始化logger，设置日志级别为debug，日志格式为precise，日志文件路径为log.log
+    set_logger(name="demo", is_main_process=True, format="precise", level="debug", logfile=logfile)
+    for i in range(10):
+        t = time.time()
+        date = datetime.datetime.fromtimestamp(t).strftime("%H:%M:%S.%f")[:-3]
+        logger.debug(f"{date} debug {i}")
+        # logger.info(f"info {i}")
+        # logger.warning(f"warning {i}")
+        # logger.error(f"error {i}")
+        time.sleep(0.01)
 
-    for i in range(1000):
-        try:
-            t = time.time()
-            date = datetime.datetime.fromtimestamp(t).strftime("%H:%M:%S.%f")[:-3]
-            logger.debug(f"{date} debug {i}")
-            # logger.info(f"info {i}")
-            # logger.warning(f"warning {i}")
-            # logger.error(f"error {i}")
-            time.sleep(0.01)
-        except Exception as e:
-            e = traceback.format_exc()
-            logger.error(e)

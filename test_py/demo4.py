@@ -65,13 +65,6 @@ def openai2gradio_style(msgs):
 
 
 if __name__ == "__main__":
-    image_file = "/media/PKing/dev2/SDK/base-utils/data/mask.png"
-    msgs = [{"role": "user", "content": "你好"},
-            {"role": "assistant", "content": "你好，有什么我可以帮助你的吗？"},
-            {"role": "user", "content": [image_file]},
-            {"role": "user", "content": "请根据图片描述"},
-            {"role": "assistant", "content": "这张图是描述....."},
-            ]
-    out1 = gradio2openai_style(msgs)
-    out2 = openai2gradio_style(out1)
-    print(json_utils.formatting(out2))
+
+    a = 123456.123456
+    print("{:.0f}".format(a))

@@ -131,7 +131,7 @@ apt install -y libtbb-dev libatlas-base-dev gfortran
 #### nvidia基础镜像
 
 - nvidia-docker镜像：https://hub.docker.com/r/nvidia/cuda
-- 国内镜像： https://dockers.xuanyuan.me/image/nvidia/cuda ，如果要拉去镜像，则docker-0.unsee.tech/{原始镜像名称}
+- 国内镜像： https://dockers.xuanyuan.me/image/nvidia/cuda ，如果要拉镜像，则使用docker-0.unsee.tech/{原始镜像名称}
 - https://dockers.xuanyuan.me/ docker.1ms.run/{原始镜像名称}
 
 ```bash
@@ -150,8 +150,8 @@ image="crpi-r7ny3w7dyvydm6vb.cn-guangzhou.personal.cr.aliyuncs.com/python-image-
 docker run -it --gpus all -p 7860:7860 --ulimit memlock=-1 --ulimit stack=67108864 --memory-swap=-1 --memory=256G --runtime=nvidia --ipc host --privileged --network host  -v `pwd`:/app $image /bin/bash
 
 # TODO  tensorrt基础镜像
-image="glenaaa/tensorrt-ubuntu20.04-cuda12.1:v0.6" # 测试可用
-
+image="glenaaa/tensorrt-ubuntu20.04-cuda12.1:v0.6" # python 3.11.5,cuda 12.1  测试可用
+# 见Pytorch-Base-Trainer/docs/docker.md
 
 # TODO
 docker pull nvidia/cuda:11.2.2-cudnn8-devel-ubuntu18.04 # nvidia-docker基础镜像,无python
