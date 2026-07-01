@@ -52,17 +52,17 @@ def set_logger(name=None, level="debug", logfile=None, format="simple", is_main_
             record["extra"]["time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     f = LOG_FORMAT.get(format, LOG_FORMAT.get("simple"))
     logger.remove()  # 去除默认的LOG，避免重复打印
-    logger_ = logger.patch(call_time)
+    logger.configure(patcher=call_time)  # 原地修改全局logger，使所有 from loguru import logger 的文件都生效
     if is_main_process:
-        if logfile: logger_.add(logfile, level=level.upper(), rotation=rotation, retention=retention, format=f,
-                                enqueue=True,  # 异步写入，会重新打开文件
-                                watch=True,  # 避免误删日志文件
-                                catch=True,
-                                )
-        logger_.add(sys.stderr, level=level.upper(), format=f)
+        if logfile: logger.add(logfile, level=level.upper(), rotation=rotation, retention=retention, format=f,
+                               enqueue=True,  # 异步写入，会重新打开文件
+                               watch=True,  # 避免误删日志文件
+                               catch=True,
+                               )
+        logger.add(sys.stderr, level=level.upper(), format=f)
     else:
-        logger_.add(sys.stderr, level="ERROR", format=f)
-    return logger_
+        logger.add(sys.stderr, level="ERROR", format=f)
+    return logger
 
 
 def get_logger():
@@ -84,4 +84,3 @@ if __name__ == '__main__':
         # logger.warning(f"warning {i}")
         # logger.error(f"error {i}")
         time.sleep(0.01)
-
