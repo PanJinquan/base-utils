@@ -69,11 +69,28 @@ docker run hello-world
 - 保存文件并重启 Docker 服务： sudo systemctl daemon-reload && sudo systemctl restart docker
 - 验证配置是否生效: docker pull hello-world
 
+
+## 阿里云docker镜像仓库
+- 地址： https://cr.console.aliyun.com/cn-guangzhou/instance/namespaces
+```bash
+# 1. 登录阿里云 Container Registry
+aliyun=crpi-r7ny3w7dyvydm6vb.cn-guangzhou.personal.cr.aliyuncs.com
+docker login --username=390737991@qq.com $aliyun
+#2. 从Registry中拉取镜像
+docker pull $aliyun/python-image-rep/py3.10-cuda11.7-cudnn8.5-torch2.0:[镜像版本号]
+# 3. 将镜像推送到Registry
+docker tag [ImageId] $aliyun/python-image-rep/py3.10-cuda11.7-cudnn8.5-torch2.0:[镜像版本号]
+docker push $aliyun/python-image-rep/py3.10-cuda11.7-cudnn8.5-torch2.0:[镜像版本号]
+
+```
+
+
 ## 镜像操作
 
 
 ```bash
 # 登录docker: 
+docker login hub.docker.com
 docker login docker.dm-ai.cn
 docker login --username=390737991@qq.com crpi-r7ny3w7dyvydm6vb.cn-guangzhou.personal.cr.aliyuncs.com # 登录阿里云docker镜像仓库68
 # 查看所有镜像
@@ -106,7 +123,7 @@ apt update
 apt install -y software-properties-common && add-apt-repository ppa:deadsnakes/ppa  && apt update
 apt install -y wget python3.10 python3.10-dev python3.10-venv python3.10-distutils
 ln -s /usr/bin/python3.10 /usr/bin/python 
-# apt install python3-pip  # 可能安装的不是python3.10banb 
+# apt install python3-pip  # 可能安装的不是python3.10
 wget http://mirrors.aliyun.com/pypi/get-pip.py && python3.10 get-pip.py
 #apt install python3.10-distutils && wget https://bootstrap.pypa.io/get-pip.py && python3.10 get-pip.py
 # 设置默认python,通过whereis python3.10
@@ -151,7 +168,12 @@ docker run -it --gpus all -p 7860:7860 --ulimit memlock=-1 --ulimit stack=671088
 
 # TODO  tensorrt基础镜像
 image="glenaaa/tensorrt-ubuntu20.04-cuda12.1:v0.6" # python 3.11.5,cuda 12.1  测试可用
-# 见Pytorch-Base-Trainer/docs/docker.md
+image="docker.dm-ai.cn/algorithm-research/panjinquan/ubuntu20.04-py3.11-cuda12.1-cudnn8.9-torch2.5-trt8.6:base"
+
+
+# cuda12.1 https://hub.docker.com/r/nvidia/cuda/tags?name=12.1
+docker pull nvidia/cuda:12.1.0-cudnn8-devel-ubuntu20.04 # nvidia-docker基础镜像,无python
+
 
 # TODO
 docker pull nvidia/cuda:11.2.2-cudnn8-devel-ubuntu18.04 # nvidia-docker基础镜像,无python
@@ -232,6 +254,12 @@ docker run --ipc=host ...
 ## 删除none的镜像
 
 ```bash
+
+# 1. 先删除所有已停止的容器
+docker container prune -f
+# 2. 然后再删除无标签的镜像
+docker images | grep none | awk '{print $3}' | xargs docker rmi
+
 docker image prune -f # 删除所有悬空镜像（即没有被容器引用且 tag 为 <none> 的镜像）
 docker ps -a | grep "Exited" | awk '{print $1}' | xargs docker stop
 docker ps -a | grep "Exited" | awk '{print $1}' | xargs docker rm

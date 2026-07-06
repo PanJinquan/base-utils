@@ -11,8 +11,6 @@ find /usr -name libnvidia-ml*
 dir=$(dirname $0) # 当前文件的路径
 ```
 
-
-
 ## memory profiler性能分析工具
 
 - https://zhuanlan.zhihu.com/p/121003986
@@ -183,6 +181,33 @@ sudo apt-get install build-essential libgtk2.0-dev libgtk-3-dev libavcodec-dev l
 sudo apt install libgstreamer-plugins-base1.0-dev libgstreamer1.0-dev
 sudo apt install libpng-dev libopenexr-dev libtiff-dev libwebp-dev
        
+```
+
+- ImportError: libxcb.so.1: cannot open shared object file: No such file or directory 解决方法
+
+```bash
+apt-get update && apt-get install -y \
+    libxcb1 \
+    libxcb-shm0 \
+    libxcb-xfixes0 \
+    libxcb-shape0 \
+    libxcb-randr0 \
+    libxcb-icccm4 \
+    libxcb-image0 \
+    libxcb-keysyms1 \
+    libxcb-render-util0 \
+    libxcb-xinerama0 \
+    libxcb-xv0 \
+    libx11-xcb1 \
+    libxrender1 \
+    libxext6 \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    libsm6 \
+    libice6 \
+    libfontconfig1 \
+    libfreetype6
+
 ```
 
 - OpenCV+PyQT5兼容问题：https://www.sohu.com/a/602131072_121124366
