@@ -102,3 +102,17 @@ image=docker.dm-ai.cn/algorithm-research/ubuntu22.04-cuda12.1-cudnn8-py310:torch
 docker tag docker.dm-ai.cn/algorithm-research/ubuntu22.04-cuda12.1-cudnn8-py310:opencv panjinquan/ubuntu22.04-cuda12.1-cudnn8-py310:opencv
 
 ```
+
+## 阿里云docker镜像仓库
+- 地址： https://cr.console.aliyun.com/cn-guangzhou/instance/namespaces
+```bash
+# 1. 登录阿里云 Container Registry
+aliyun=crpi-r7ny3w7dyvydm6vb.cn-guangzhou.personal.cr.aliyuncs.com
+docker login --username=390737991@qq.com $aliyun
+#2. 从Registry中拉取镜像
+docker pull $aliyun/python-image-rep/py3.10-cuda11.7-cudnn8.5-torch2.0:[镜像版本号]
+# 3. 将镜像推送到Registry
+docker tag docker.dm-ai.cn/algorithm-research/ubuntu22.04-cuda12.1-cudnn8-py310:torch2.8-tensorrt8.6   $aliyun/python-image-rep/ubuntu22.04-cuda12.1-cudnn8-py310:torch2.8-tensorrt8.6
+docker push $aliyun/python-image-rep/ubuntu22.04-cuda12.1-cudnn8-py310:torch2.8-tensorrt8.6
+
+```

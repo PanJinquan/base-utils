@@ -39,7 +39,9 @@ def android_gif():
 
 def python_gif():
     video_file = "/home/PKing/nasdata/Project/LLM/MLLM-Factory/docs/chat-demo.mp4"
-    video_utils.video2gif(video_file, interval=10, func=resize_fun, fps=4, time=(0.5, 24), use_pil=True, vis=True)
+    video_file = "/media/PKing/dev1/project/AI-Labelme/docs/video-track-label.mp4"
+    # video_utils.video2gif(video_file, interval=10, func=resize_fun, fps=4, time=(0.5, 24), use_pil=True, vis=True)
+    video_utils.video2gif(video_file, interval=8, func=resize_fun, fps=4,  use_pil=True, vis=True)
 
 
 def image_gif():
