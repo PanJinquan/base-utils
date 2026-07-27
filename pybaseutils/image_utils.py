@@ -43,6 +43,8 @@ color_map = [(0, 0, 0), (56, 56, 255), (151, 157, 255), (31, 112, 255), (29, 178
              (168, 153, 44), (255, 194, 0), (147, 69, 52), (255, 115, 100),
              (236, 24, 0), (255, 56, 132), (133, 0, 82), (255, 56, 203), (200, 149, 255), (199, 55, 255)] * 100
 
+color_hash = color_utils.ColorHash()
+
 root = os.path.dirname(__file__)
 coco_skeleton = [[1, 3], [1, 0], [2, 4], [2, 0], [0, 5], [0, 6], [5, 7], [7, 9], [6, 8],
                  [8, 10], [5, 11], [6, 12], [11, 12], [11, 13], [13, 15], [12, 14], [14, 16]]
@@ -1167,7 +1169,7 @@ def draw_image_boxes_labels_texts(image, boxes, labels, texts, color=None, thick
     for i, (label, bbox, name) in enumerate(zip(labels, boxes, texts)):
         bbox = [int(b) for b in bbox]
         if color_type == "class":
-            c = color if color else colors[(int(label) + 1) % 20]  # 相同类别相同颜色
+            c = color if color else color_hash.get_color(label)  # 相同类别相同颜色
         else:
             c = color if color else colors[(i + 1) % 20]  # 每个实例不同颜色
         image = draw_image_bbox_text(image, bbox, str(name), color=c, thickness=thickness, fontScale=fontScale,
@@ -2702,6 +2704,34 @@ def draw_image_contours(image, contours: List[np.ndarray], texts=[], color=(), a
     colors = [(0, 0, 0)] + colors if colors else color_table
     for i in range(0, len(contours)):
         c = color if color else colors[(i + 1) % 20]
+        t = str(texts[i]) if texts else ""
+        p = np.asarray(contours[i], dtype=np.int32)
+        b = (min(p[:, 0]), min(p[:, 1]), max(p[:, 0]), max(p[:, 1]))
+        if len(p.shape) == 2: p = [p]
+        image[:] = cv2.drawContours(image, p, contourIdx=-1, color=c, thickness=thickness)
+        bgimg = image.copy()
+        bgimg = cv2.fillPoly(bgimg, p, color=c)
+        image[:] = cv2.addWeighted(src1=image, alpha=1 - alpha, src2=bgimg, beta=alpha, gamma=0)
+        if t: image[:] = draw_text(image, point=(b[0], b[1]), color=c, text=t, thickness=thickness,
+                                   fontScale=fontScale, drawType=drawType)
+    return image
+
+
+def draw_image_contours_labels_texts(image, contours: List[np.ndarray], labels=[], texts=[], color=(), alpha=0.5,
+                                     thickness=1, fontScale=0.8, drawType="ch", colors=None):
+    """
+    参考：draw_image_mask_color
+    :param image:
+    :param contours: List[np.ndarray],每个列表是一个轮廓(num_points,1,2)
+    :param texts:轮廓文本
+    :param color:绘制轮廓的颜色
+    :param alpha:绘制颜色的透明度 0: 轮廓填充完全透明，1: 轮廓填充完全不透明
+    :param thickness:轮廓线宽
+    :return:
+    """
+    colors = [(0, 0, 0)] + colors if colors else color_table
+    for i in range(0, len(contours)):
+        c = color if color else color_hash.get_color(labels[i]) # 相同类别相同颜色
         t = str(texts[i]) if texts else ""
         p = np.asarray(contours[i], dtype=np.int32)
         b = (min(p[:, 0]), min(p[:, 1]), max(p[:, 0]), max(p[:, 1]))

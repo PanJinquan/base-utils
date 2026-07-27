@@ -148,6 +148,25 @@ def get_data_hash(data: np.ndarray):
     return hash
 
 
+def get_hash(image: np.ndarray = None, texts = []) -> str:
+    """根据image和texts数据生成唯一ID(hash)"""
+    if texts is None: texts = []
+    # 使用更快的哈希算法（如果安全性要求不高）
+    hasher = hashlib.sha256()  # 或 hashlib.md5() for speed
+    # 文本处理
+    if texts:
+        texts = sorted([t.strip() for t in texts if t and t.strip()])
+        if texts: hasher.update('|'.join(texts).encode('utf-8'))
+    # 图像处理
+    if image is not None and isinstance(image, np.ndarray):
+        if not image.flags.c_contiguous:  image = np.ascontiguousarray(image)  # 确保连续性（视图操作）
+        # 使用memoryview避免拷贝
+        hasher.update(memoryview(image))
+    # 如果完全没有数据，返回空哈希
+    v = hasher.hexdigest() if hasher.digest_size > 0 else hashlib.sha256(b'empty').hexdigest()
+    return v
+
+
 def replace_elements(items, src, dst, ignore=True):
     """
     将列表中，值为src改为dst

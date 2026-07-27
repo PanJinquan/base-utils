@@ -10,6 +10,8 @@
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
+from collections import defaultdict, Counter
+from pybaseutils import file_utils
 
 VOC_NAMES = ["aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat",
              "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person",
@@ -27,6 +29,30 @@ COCO_NAMES = ['background', 'person', 'bicycle', 'car', 'motorcycle', 'airplane'
               'tv', 'laptop', 'mouse', 'remote', 'keyboard', 'cell phone', 'microwave',
               'oven', 'toaster', 'sink', 'refrigerator', 'book', 'clock', 'vase', 'scissors',
               'teddy bear', 'hair drier', 'toothbrush']
+
+color_table = [(0, 0, 0), (0, 255, 0), (255, 0, 0), (0, 0, 255), (0, 255, 255), (255, 0, 255), (255, 255, 0),
+               (128, 0, 0), (0, 128, 0), (128, 128, 0),
+               (0, 0, 128), (128, 0, 128), (0, 128, 128), (128, 128, 128),
+               (64, 0, 0), (192, 0, 0), (64, 128, 0), (192, 128, 0),
+               (64, 0, 128), (192, 0, 128), (64, 128, 128), (192, 128, 128),
+               (0, 64, 0), (128, 64, 0), (0, 192, 0), (128, 192, 0), (0, 64, 128)] * 100
+
+
+class ColorHash():
+    def __init__(self):
+        self.color = dict()
+        self.cnums = len(color_table)
+
+    def get_color(self, label: str):
+        """
+        :param label: str or list
+        :return:
+        """
+        h = file_utils.get_hash(texts=[str(label)])
+        if h not in self.color:
+            i = len(self.color) + 1
+            self.color[h] = color_table[i % self.cnums]
+        return self.color[h]
 
 
 def get_colormap(data_type="custom"):
