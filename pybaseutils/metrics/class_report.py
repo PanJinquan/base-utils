@@ -132,6 +132,7 @@ def get_metrics_report(true_labels, pred_labels, target_names=None, labels=None,
         result["accuracy"] = {'precision': p, 'recall': r, 'f1-score': result["accuracy"], 'support': support}
         output = pandas_utils.dict2df(result)
         output = output.round(4)  # 保留4位小数
+        # TODO: 若发现表格中英文字体显示没有对齐，则需要安装wcwidth库: pip install --upgrade tabulate wcwidth
         output = output.to_markdown()
     if matrix:
         conf_matrix = get_confusion_matrix(true_labels, pred_labels, target_names=target_names,
@@ -176,8 +177,8 @@ def create_file_path(filename):
 if __name__ == "__main__":
     # true_labels = [0, 1, 2, 3, 3, 1, 1]  # Y
     # pred_labels = [1, 1, 2, 2, 2, 1, 0]  # X
-    true_labels = ["A", "B", "A", "B", "C", "D"]
-    pred_labels = ["A", "D", "C", "B", "C", "A"]
+    true_labels = ["A手", "B机器", "A机器人", "B", "C", "D"]
+    pred_labels = ["A", "D", "C", "B", "C", "A你好"]
     target_names = None
     confuse_file = "./confuse.csv"
     result = get_metrics_report(true_labels, pred_labels, target_names=target_names, output_dict=False,

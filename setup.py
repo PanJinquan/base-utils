@@ -9,15 +9,34 @@
 """
 import os
 import pybaseutils
-import pypandoc
 from setuptools import setup, find_packages
 
 root = os.path.dirname(__file__)
-long_description = pypandoc.convert_file('README.md', 'rst')
+
+
+def get_description():
+    """
+    安全读取 README 作为 long_description。
+    优先尝试用 pypandoc 转换为 rst；若不可用则回退到原始 markdown。
+    """
+    mdfile = os.path.join(root, 'README.md')
+    try:  # 优先尝试 pypandoc 转换
+        import pypandoc
+        return pypandoc.convert_file(mdfile, 'rst')
+    except (ImportError, OSError):
+        pass
+    try:
+        # 回退：直接读取原始 markdown
+        with open(mdfile, 'r', encoding='utf-8') as f:
+            return f.read()
+    except FileNotFoundError:
+        return ''
+
+
 setup(name='pybaseutils',
       version=pybaseutils.__version__,
       description='pybaseutils',
-      long_description=long_description,
+      long_description=get_description(),
       url='https://github.com/PanJinquan/base-utils',
       author='PanJinquan',
       author_email='390737991@qq.com',

@@ -12,59 +12,19 @@ import numpy as np
 import cv2
 from pybaseutils.converter import convert_labelme2voc
 from pybaseutils import time_utils, image_utils, file_utils, json_utils
-
-
-def gradio2openai_style(msgs):
-    """
-    gradio风格转换为openai风格
-    :param msgs:
-    :return:
-    """
-    out = []
-    for msg in msgs:
-        content, role = msg["content"], msg["role"]
-        if isinstance(content, str):
-            content = [{"type": "text", "text": content}]
-        elif isinstance(content, list):
-            tmps = []
-            for file in content:
-                if file_utils.is_image(file):
-                    tmps.append({"type": "image", "image": file})
-                elif file_utils.is_video(file):
-                    tmps.append({"type": "video", "video": file})
-            content = tmps
-        if out and out[-1]["role"] == role:  # 合并相邻相同角色的消息
-            out[-1]["content"].extend(content)
-        else:
-            msg["content"] = content
-            out.append(msg)
-    return out
-
-
-def openai2gradio_style(msgs):
-    """
-    openai风格转换为gradio风格
-    :param msgs:
-    :return:
-    """
-    out = []
-    for msg in msgs:
-        content, role = msg["content"], msg["role"]
-        if isinstance(content, list):  # 合并相邻相同角色的消息
-            for c in content:
-                if c["type"] == "text":
-                    out.append({"role": role, "content": c["text"]})
-                elif c["type"] == "image":
-                    out.append({"role": role, "content": [c["image"]]})
-                elif c["type"] == "video":
-                    out.append({"role": role, "content": [c["video"]]})
-        else:
-            msg["content"] = content
-            out.append(msg)
-    return out
-
-
+fontScale=2.0
+alpha = 0.
 if __name__ == "__main__":
+    image_file = "../data/test_image/grid1.png"
 
-    a = 123456.123456
-    print("{:.0f}".format(a))
+    for i in range(100):
+        image = cv2.imread(image_file)
+        boxes = [[0, i, 500, 300]]
+        # texts = ["ABC"] * len(boxes)
+        texts = ["ABC你是一名学生"] * len(boxes)
+        print(boxes)
+        image = image_utils.draw_image_boxes_texts(image, boxes, texts, thickness=1, fontScale=fontScale, alpha=alpha,drawType="simple")
+        image_utils.show_image("ch", image)
+        image = cv2.imread(image_file)
+        image = image_utils.draw_image_boxes_texts(image, boxes, texts, thickness=1, fontScale=fontScale, alpha=alpha,drawType="en")
+        image_utils.show_image("en", image)

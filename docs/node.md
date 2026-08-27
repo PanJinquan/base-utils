@@ -38,13 +38,13 @@ nvm --version
 nvm install --lts
 
 # 或者安装特定版本
-nvm install 18.16.0
+nvm install 22.0.0
 
 # 使用安装的版本
-nvm use 18.16.0
+nvm use 22.0.0
 
 # 设置为默认版本
-nvm alias default 18.16.0
+nvm alias default 22.0.0
 ```
 
 ### 5. 验证安装

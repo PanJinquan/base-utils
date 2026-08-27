@@ -148,7 +148,7 @@ def get_data_hash(data: np.ndarray):
     return hash
 
 
-def get_hash(image: np.ndarray = None, texts = []) -> str:
+def get_hash(image: np.ndarray = None, texts=[]) -> str:
     """根据image和texts数据生成唯一ID(hash)"""
     if texts is None: texts = []
     # 使用更快的哈希算法（如果安全性要求不高）
@@ -281,6 +281,18 @@ def save_json(json_file, json_data):
 
 
 write_json_path = save_json
+
+
+def save_jsonl(jsonl_file, data_list: list):
+    """
+    data_list转为jsonl保持
+    :param jsonl_file:
+    :param data_list:
+    :return:
+    """
+    with open(jsonl_file, 'w', encoding='utf-8') as f:
+        for item in data_list:
+            f.write(json.dumps(item, ensure_ascii=False) + '\n')
 
 
 def load_json_files(files: list, max_workers=8):

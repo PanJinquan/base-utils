@@ -11,9 +11,12 @@
 
 ```bash
 sudo apt-get update
+sudo apt install docker-cli   
+sudo apt install podman-docker
 sudo apt install docker.io
 sudo systemctl start docker
 sudo systemctl enable docker
+
 ```
 
 - 这支持GPU版本
@@ -46,6 +49,19 @@ newgrp docker
 # 验证不需要sudo执行docker命令
 docker run hello-world
 
+```
+
+## docker启动方法
+```bash
+docker run -it --rm --gpus all -p 5002:5002 -v `pwd`:/app $image /bin/bash
+# --rm 容器退出时自动删除容器
+# --gpus all 将所有GPU设备挂载到容器，使容器内可以访问NVIDIA GPU（需要nvidia-docker）
+# -p 5002:5002	主机端口5002 → 容器端口5002，允许外部访问容器服务
+# -v pwd`:/app`	当前主机目录 → 容器/app目录，双向同步（pwd是当前路径）
+# /bin/bash	容器启动后执行bash，结合-it进入交互式Shell
+docker run -it --rm --user 1000:1000 --entrypoint /bin/bash -v `pwd`:/app $image
+#--user 1000:1000容器内使用 UID 1000 和 GID 1000 运行进程（非root）
+#--entrypoint /bin/bash	将镜像默认的ENTRYPOINT替换为 /bin/bash
 ```
 
 ## 加速 Docker 镜像的下载速度
@@ -91,7 +107,7 @@ docker push $aliyun/python-image-rep/py3.10-cuda11.7-cudnn8.5-torch2.0:[镜像�
 ```bash
 # 登录docker: 
 docker login hub.docker.com
-docker login docker.dm-ai.cn
+docker login docker.dm-ai.cn  # panjinquan WL
 docker login --username=390737991@qq.com crpi-r7ny3w7dyvydm6vb.cn-guangzhou.personal.cr.aliyuncs.com # 登录阿里云docker镜像仓库68
 # 查看所有镜像
 docker images

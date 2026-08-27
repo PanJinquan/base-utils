@@ -81,7 +81,8 @@ class CameraDemo():
 
     def capture(self, title="camera", save_video="./camera.avi"):
         format = '%Y-%m-%dT%H:%M:%S'  # 海康摄像头默认格式
-        video_url = f"rtsp://{self.username}:{self.password}@{self.ip}/Streaming/Channels/1"
+        # video_url = f"rtsp://{self.username}:{self.password}@{self.ip}/Streaming/Channels/1"
+        video_url = f"rtsp://{self.username}:{self.password}@{self.ip}:554"
         print(f"正在连接摄像头: {video_url}")
         # 创建视频流连接
         cap = cv2.VideoCapture(video_url)
@@ -140,8 +141,9 @@ class CameraDemo():
 
 if __name__ == "__main__":
     # 摄像头信息，按'q'键退出程序
-    ip = "192.168.2.35"
+    #  rtsp://admin:zhgp@2024@192.168.28.61
+    ip = "192.168.28.61"
     username = "admin"
-    password = "C2332416"
+    password = "zhgp@2024"
     c = CameraDemo(ip, username, password)
     c.capture()
