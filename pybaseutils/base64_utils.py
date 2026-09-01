@@ -11,13 +11,16 @@ import sys
 import os
 
 import PIL.Image as Image
+from PIL import ImageFile
 import cv2
 import base64
 import numpy as np
 from typing import Any
+from io import BytesIO
 
 IMG_PREFIX = "image/jpg"  # 图片base64字符串前缀
 precision = 6  # 小数点精度
+ImageFile.LOAD_TRUNCATED_IMAGES = True  # 允许加载截断的图像
 
 
 def isbase64(data: str, prefix=IMG_PREFIX):
@@ -36,10 +39,14 @@ def base642image(bs64, prefix=IMG_PREFIX, use_rgb=False) -> np.ndarray:
     if prefix == bs64[0:len(prefix)]:
         bs64 = bs64[len(prefix):]
     bs64 = bytes(bs64, 'utf-8')
-    image = base64.b64decode(bs64)
-    image = np.frombuffer(image, np.uint8)
-    image = cv2.imdecode(image, flags=cv2.IMREAD_UNCHANGED)
+    imgbf = base64.b64decode(bs64)
+    # image = np.frombuffer(imgbf, np.uint8)
+    # image = cv2.imdecode(image, flags=cv2.IMREAD_UNCHANGED)
     # image = cv2.imdecode(image, cv2.IMREAD_COLOR)
+    # if image is None:
+    image = Image.open(BytesIO(imgbf)) # 修复截断的图像
+    image = np.array(image)
+    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     if use_rgb:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     return image

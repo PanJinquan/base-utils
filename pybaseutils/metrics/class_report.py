@@ -85,7 +85,7 @@ def get_confusion_matrix(true_labels, pred_labels, target_names=None, filename=N
 
 
 def get_metrics_report(true_labels, pred_labels, target_names=None, labels=None,
-                       output_dict=False, matrix=False, plot=False):
+                       output_dict=False, output_csv="", matrix=False, plot=False):
     """
     Usage
     -------
@@ -108,6 +108,7 @@ def get_metrics_report(true_labels, pred_labels, target_names=None, labels=None,
     :param target_names:
     :param labels:
     :param output_dict:
+    :param output_csv: 'output/data.csv'
     :param matrix: 是否绘制混淆矩阵
     :return:
     """
@@ -132,6 +133,9 @@ def get_metrics_report(true_labels, pred_labels, target_names=None, labels=None,
         result["accuracy"] = {'precision': p, 'recall': r, 'f1-score': result["accuracy"], 'support': support}
         output = pandas_utils.dict2df(result)
         output = output.round(4)  # 保留4位小数
+        if output_csv:
+            output_csv = output_csv.replace(".csv", "-f1s{:3.4f}.csv".format(result["accuracy"]["f1-score"]))
+            output.to_csv(output_csv, index=True)
         # TODO: 若发现表格中英文字体显示没有对齐，则需要安装wcwidth库: pip install --upgrade tabulate wcwidth
         output = output.to_markdown()
     if matrix:
@@ -180,7 +184,7 @@ if __name__ == "__main__":
     true_labels = ["A手", "B机器", "A机器人", "B", "C", "D"]
     pred_labels = ["A", "D", "C", "B", "C", "A你好"]
     target_names = None
-    confuse_file = "./confuse.csv"
+    output_excel = "./result.csv"
     result = get_metrics_report(true_labels, pred_labels, target_names=target_names, output_dict=False,
-                                matrix=True, plot=False)
+                                output_csv=output_excel, plot=False)
     print(result)
