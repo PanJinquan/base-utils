@@ -119,7 +119,7 @@ class VOCDataset(Dataset):
             class_set = labels.reshape(-1).tolist() + class_set
             class_set = list(set(class_set))
             if ignore_empty and (len(boxes) == 0 or len(labels) == 0):
-                print("empty annotation:{}".format(annotation_file))
+                # print("empty annotation:{}".format(annotation_file))
                 continue
             dst_ids.append(image_id)
         class_set = sorted(class_set)
