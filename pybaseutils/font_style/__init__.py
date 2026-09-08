@@ -19,6 +19,7 @@ FONT_ROOT = [
     os.path.expanduser("~/.fonts"),  # 用户字体目录
     BASE_FONT,  # 用户字体目录
     "/usr/share/fonts",
+    "./data/fonts",
     "/usr/share/fonts/truetype",
     "/usr/share/fonts/opentype",
 ]
