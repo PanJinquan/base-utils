@@ -13,23 +13,25 @@ using namespace std;
 
 namespace cv {
     struct Box {
-        float x1, y1, x2, y2, score;   // 左上角x1,左上角y1,右下角x2,右下角y2,置信度分数score
+        float x1, y1, x2, y2, score; // 左上角x1,左上角y1,右下角x2,右下角y2,置信度分数score
     };
+
     static vector<Box> boxes = {};
     static vector<cv::Point2f> points = {};
 }
 
-static vector<string> COCO_NAMES = {"person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck",
-                                    "boat", "traffic light", "fire hydrant", "stop sign", "parking meter", "bench",
-                                    "bird", "cat", "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra",
-                                    "giraffe", "backpack", "umbrella", "handbag", "tie", "suitcase", "frisbee",
-                                    "skis", "snowboard", "sports ball", "kite", "baseball bat", "baseball glove",
-                                    "skateboard", "surfboard", "tennis racket", "bottle", "wine glass", "cup", "fork",
-                                    "knife", "spoon", "bowl", "banana", "apple", "sandwich", "orange", "broccoli",
-                                    "carrot", "hot dog", "pizza", "donut", "cake", "chair", "couch", "potted plant",
-                                    "bed", "dining table", "toilet", "tv", "laptop", "mouse", "remote", "keyboard",
-                                    "cell phone", "microwave", "oven", "toaster", "sink", "refrigerator", "book",
-                                    "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush"
+static vector<string> COCO_NAMES = {
+    "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck",
+    "boat", "traffic light", "fire hydrant", "stop sign", "parking meter", "bench",
+    "bird", "cat", "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra",
+    "giraffe", "backpack", "umbrella", "handbag", "tie", "suitcase", "frisbee",
+    "skis", "snowboard", "sports ball", "kite", "baseball bat", "baseball glove",
+    "skateboard", "surfboard", "tennis racket", "bottle", "wine glass", "cup", "fork",
+    "knife", "spoon", "bowl", "banana", "apple", "sandwich", "orange", "broccoli",
+    "carrot", "hot dog", "pizza", "donut", "cake", "chair", "couch", "potted plant",
+    "bed", "dining table", "toilet", "tv", "laptop", "mouse", "remote", "keyboard",
+    "cell phone", "microwave", "oven", "toaster", "sink", "refrigerator", "book",
+    "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush"
 };
 
 static cv::Scalar COLOR_BLACK = cv::Scalar(0, 0, 0);
@@ -39,113 +41,113 @@ static cv::Scalar COLOR_GREEN = cv::Scalar(0, 255, 0);
 static cv::Scalar COLOR_BLUE = cv::Scalar(255, 0, 0);
 
 static vector<cv::Scalar> COLOR_MAP = {
-        {56,  0,   255},
-        {226, 255, 0},
-        {0,   94,  255},
-        {0,   37,  255},
-        {0,   255, 94},
-        {255, 226, 0},
-        {0,   18,  255},
-        {255, 151, 0},
-        {170, 0,   255},
-        {0,   255, 56},
-        {255, 0,   75},
-        {0,   75,  255},
-        {0,   255, 169},
-        {255, 0,   207},
-        {75,  255, 0},
-        {207, 0,   255},
-        {37,  0,   255},
-        {0,   207, 255},
-        {94,  0,   255},
-        {0,   255, 113},
-        {255, 18,  0},
-        {255, 0,   56},
-        {18,  0,   255},
-        {0,   255, 226},
-        {170, 255, 0},
-        {255, 0,   245},
-        {151, 255, 0},
-        {132, 255, 0},
-        {75,  0,   255},
-        {151, 0,   255},
-        {0,   151, 255},
-        {132, 0,   255},
-        {0,   255, 245},
-        {255, 132, 0},
-        {226, 0,   255},
-        {255, 37,  0},
-        {207, 255, 0},
-        {0,   255, 207},
-        {94,  255, 0},
-        {0,   226, 255},
-        {56,  255, 0},
-        {255, 94,  0},
-        {255, 113, 0},
-        {0,   132, 255},
-        {255, 0,   132},
-        {255, 170, 0},
-        {255, 0,   188},
-        {113, 255, 0},
-        {245, 0,   255},
-        {113, 0,   255},
-        {255, 188, 0},
-        {0,   113, 255},
-        {255, 0,   0},
-        {0,   56,  255},
-        {255, 0,   113},
-        {0,   255, 188},
-        {255, 0,   94},
-        {255, 0,   18},
-        {18,  255, 0},
-        {0,   255, 132},
-        {0,   188, 255},
-        {0,   245, 255},
-        {0,   169, 255},
-        {37,  255, 0},
-        {255, 0,   151},
-        {188, 0,   255},
-        {0,   255, 37},
-        {0,   255, 0},
-        {255, 0,   170},
-        {255, 0,   37},
-        {255, 75,  0},
-        {0,   0,   255},
-        {255, 207, 0},
-        {255, 0,   226},
-        {255, 245, 0},
-        {188, 255, 0},
-        {0,   255, 18},
-        {0,   255, 75},
-        {0,   255, 151},
-        {255, 56,  0},
-        {245, 255, 0}
+    {56, 0, 255},
+    {226, 255, 0},
+    {0, 94, 255},
+    {0, 37, 255},
+    {0, 255, 94},
+    {255, 226, 0},
+    {0, 18, 255},
+    {255, 151, 0},
+    {170, 0, 255},
+    {0, 255, 56},
+    {255, 0, 75},
+    {0, 75, 255},
+    {0, 255, 169},
+    {255, 0, 207},
+    {75, 255, 0},
+    {207, 0, 255},
+    {37, 0, 255},
+    {0, 207, 255},
+    {94, 0, 255},
+    {0, 255, 113},
+    {255, 18, 0},
+    {255, 0, 56},
+    {18, 0, 255},
+    {0, 255, 226},
+    {170, 255, 0},
+    {255, 0, 245},
+    {151, 255, 0},
+    {132, 255, 0},
+    {75, 0, 255},
+    {151, 0, 255},
+    {0, 151, 255},
+    {132, 0, 255},
+    {0, 255, 245},
+    {255, 132, 0},
+    {226, 0, 255},
+    {255, 37, 0},
+    {207, 255, 0},
+    {0, 255, 207},
+    {94, 255, 0},
+    {0, 226, 255},
+    {56, 255, 0},
+    {255, 94, 0},
+    {255, 113, 0},
+    {0, 132, 255},
+    {255, 0, 132},
+    {255, 170, 0},
+    {255, 0, 188},
+    {113, 255, 0},
+    {245, 0, 255},
+    {113, 0, 255},
+    {255, 188, 0},
+    {0, 113, 255},
+    {255, 0, 0},
+    {0, 56, 255},
+    {255, 0, 113},
+    {0, 255, 188},
+    {255, 0, 94},
+    {255, 0, 18},
+    {18, 255, 0},
+    {0, 255, 132},
+    {0, 188, 255},
+    {0, 245, 255},
+    {0, 169, 255},
+    {37, 255, 0},
+    {255, 0, 151},
+    {188, 0, 255},
+    {0, 255, 37},
+    {0, 255, 0},
+    {255, 0, 170},
+    {255, 0, 37},
+    {255, 75, 0},
+    {0, 0, 255},
+    {255, 207, 0},
+    {255, 0, 226},
+    {255, 245, 0},
+    {188, 255, 0},
+    {0, 255, 18},
+    {0, 255, 75},
+    {0, 255, 151},
+    {255, 56, 0},
+    {245, 255, 0}
 };
 // cv::Scalar c = COLOR_TABLE[obj.label%COLOR_TABLE.size()];
 static vector<cv::Scalar> COLOR_TABLE = {
-        {0,   0,   255},
-        {0,   255, 0},
-        {255, 0,   0},
-        {128, 0,   0},
-        {0,   128, 0},
-        {128, 128, 0},
-        {0,   0,   128},
-        {128, 0,   128},
-        {0,   128, 128},
-        {128, 128, 128},
-        {64,  0,   0},
-        {192, 0,   0},
-        {64,  128, 0},
-        {192, 128, 0},
-        {64,  0,   128},
-        {192, 0,   128},
-        {64,  128, 128},
-        {192, 128, 128},
-        {0,   64,  0},
-        {128, 64,  0},
-        {0,   192, 0},
-        {128, 192, 0},
-        {0,   64,  128}
+    {0, 0, 255},
+    {0, 255, 0},
+    {255, 0, 0},
+    {128, 0, 0},
+    {0, 128, 0},
+    {128, 128, 0},
+    {0, 0, 128},
+    {128, 0, 128},
+    {0, 128, 128},
+    {128, 128, 128},
+    {64, 0, 0},
+    {192, 0, 0},
+    {64, 128, 0},
+    {192, 128, 0},
+    {64, 0, 128},
+    {192, 0, 128},
+    {64, 128, 128},
+    {192, 128, 128},
+    {0, 64, 0},
+    {128, 64, 0},
+    {0, 192, 0},
+    {128, 192, 0},
+    {0, 64, 128}
 };
 
 
@@ -215,10 +217,10 @@ cv::Rect points2rect(vector<cv::Point> points);
  * @param thickness 线宽(-1)cv::FILLED表示实心的轮廓
  * @param contourIdx 所要绘制的轮廓的编号，-1 表示绘制所有轮廓
  */
-void draw_image_contours(cv::Mat &image, vector<vector<cv::Point>> &contours, vector<string> texts,
+void draw_image_contours(cv::Mat &image, vector<vector<cv::Point> > &contours, vector<string> texts,
                          cv::Scalar color = COLOR_GREEN, float alpha = 0.5, int thickness = 2, int contourIdx = -1);
 
-void draw_image_contours(cv::Mat &image, vector<vector<cv::Point>> &contours,
+void draw_image_contours(cv::Mat &image, vector<vector<cv::Point> > &contours,
                          cv::Scalar color = COLOR_GREEN, float alpha = 0.5, int thickness = 2, int contourIdx = -1);
 
 /***
@@ -455,7 +457,7 @@ void draw_rects_texts(cv::Mat &image, vector<cv::Rect> rects, vector<string> tex
  * @param skeleton 需要连接的ID序号
  * @param color 连接线的颜色
  */
-void draw_lines(cv::Mat &image, cv::Point2f points[], vector<vector<int>> skeleton,
+void draw_lines(cv::Mat &image, cv::Point2f points[], vector<vector<int> > skeleton,
                 cv::Scalar color = cv::Scalar(255, 0, 0), int thickness = 2, bool clip = true);
 
 /***
@@ -465,7 +467,7 @@ void draw_lines(cv::Mat &image, cv::Point2f points[], vector<vector<int>> skelet
  * @param skeleton 需要连接的ID序号
  * @param color 连接线的颜色
  */
-void draw_lines(cv::Mat &image, vector<cv::Point2f> points, vector<vector<int>> skeleton,
+void draw_lines(cv::Mat &image, vector<cv::Point2f> points, vector<vector<int> > skeleton,
                 cv::Scalar color = cv::Scalar(255, 0, 0), int thickness = 2, bool clip = true);
 
 /***
@@ -475,7 +477,7 @@ void draw_lines(cv::Mat &image, vector<cv::Point2f> points, vector<vector<int>> 
  * @param skeleton 需要连接的ID序号
  * @param color 连接线的颜色表
  */
-void draw_lines(cv::Mat &image, vector<cv::Point2f> points, vector<vector<int>> skeleton, vector<cv::Scalar> colors,
+void draw_lines(cv::Mat &image, vector<cv::Point2f> points, vector<vector<int> > skeleton, vector<cv::Scalar> colors,
                 int thickness = 2, bool clip = true);
 
 
@@ -485,7 +487,7 @@ void draw_lines(cv::Mat &image, vector<cv::Point2f> points, vector<vector<int>> 
  * @param points
  * @param skeleton 需要连接的ID序号
  */
-void draw_arrowed_lines(cv::Mat &image, vector<cv::Point2f> points, vector<vector<int>> skeleton,
+void draw_arrowed_lines(cv::Mat &image, vector<cv::Point2f> points, vector<vector<int> > skeleton,
                         cv::Scalar color = cv::Scalar(255, 0, 0));
 
 
@@ -521,7 +523,7 @@ void draw_obb_image(cv::Mat &image, vector<cv::Point> contour, string text = "",
  * @param colors
  * @param vis_id 是否绘制角点ID
  */
-void draw_obb_image(cv::Mat &image, vector<vector<cv::Point>> contours, vector<string> texts = {},
+void draw_obb_image(cv::Mat &image, vector<vector<cv::Point> > contours, vector<string> texts = {},
                     vector<cv::Scalar> colors = COLOR_TABLE, bool vis_id = false);
 
 /***
@@ -663,10 +665,13 @@ void clip_min(cv::Mat &src, float th, float vmin);
 
 /**
  * @brief 将图片(HWC格式)转换为张量(N, C, H, W)
- * @param src
+ * @param src 输入图像Mat
  * @return cv::Mat 转换后的张量Mat
  */
-cv::Mat image2tensor(cv::Mat& src);
+cv::Mat hwc2nchw(cv::Mat &src, int n = 1);
+
+cv::Mat hwc2chw(cv::Mat &src); // 经过测试hwc2chw比hwc2chw_v2快一些
+cv::Mat hwc2chw_v2(cv::Mat &src);
 
 
 /***
@@ -676,7 +681,7 @@ cv::Mat image2tensor(cv::Mat& src);
  * @param std 归一化标准差
  * @return 标准差归一化后的图像Mat
  */
-cv::Mat image_normalize(const cv::Mat& src, const cv::Scalar& mean, const cv::Scalar& std);
+cv::Mat image_normalize(const cv::Mat &src, const cv::Scalar &mean, const cv::Scalar &std);
 
 
 /***
@@ -690,6 +695,7 @@ cv::Mat image_normalize(const cv::Mat& src, const cv::Scalar& mean, const cv::Sc
  * @param stride 步长
  * @return 归一化后的图像Mat
  */
-cv::Mat letterbox(cv::Mat& img, int target_size, bool auto_size, float& scale, int& wpad, int& hpad,int stride = 32);
-void letterbox(int img_w,int img_h ,int target_size, bool auto_size, float& scale, int& wpad, int& hpad, int stride);
+cv::Mat letterbox(cv::Mat &img, int target_size, bool auto_size, float &scale, int &wpad, int &hpad, int stride = 32);
+
+void letterbox(int img_w, int img_h, int target_size, bool auto_size, float &scale, int &wpad, int &hpad, int stride);
 #endif //DETECTOR_IMAGE_UTILS_H

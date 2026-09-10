@@ -11,7 +11,6 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 from collections import defaultdict, Counter
-from pybaseutils import file_utils
 
 VOC_NAMES = ["aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat",
              "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person",
@@ -38,7 +37,7 @@ color_table = [(0, 0, 0), (0, 255, 0), (255, 0, 0), (0, 0, 255), (0, 255, 255), 
                (0, 64, 0), (128, 64, 0), (0, 192, 0), (128, 192, 0), (0, 64, 128)] * 100
 
 
-class ColorHash():
+class ColorLabel():
     def __init__(self):
         self.color = dict()
         self.cnums = len(color_table)
@@ -48,7 +47,7 @@ class ColorHash():
         :param label: str or list
         :return:
         """
-        h = file_utils.get_hash(texts=[str(label)])
+        h = str(label)
         if h not in self.color:
             i = len(self.color) + 1
             self.color[h] = color_table[i % self.cnums]

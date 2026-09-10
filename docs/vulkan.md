@@ -7,17 +7,18 @@
 ## 安装
 
 ```bash
-# 下载安装包
+# TODO 下载vulkansdk安装包
 https://sdk.lunarg.com/sdk/download/1.3.236.0/linux/vulkansdk-linux-x86_64-1.3.236.0.tar.gz
 https://sdk.lunarg.com/sdk/download/1.2.182.0/linux/vulkansdk-linux-x86_64-1.2.182.0.tar.gz
 https://sdk.lunarg.com/sdk/download/1.3.280.0/linux/vulkansdk-linux-x86_64-1.3.280.0.tar.xz
-# 安装工具
+# 解压
+tar -zxvf vulkansdk-linux-x86_64-1.3.280.0.tar.xz
+
+# TODO 安装工具
 sudo apt install vulkan-tools
 
-cp /app/docs/vulkansdk-linux-x86_64-1.3.236.0.tar.gz /tmp/ && cd /tmp/
-tar -zxvf vulkansdk-linux-x86_64-1.3.236.0.tar.gz
 # TODO 配置环境变量 gedit ~/.bashrc 然后 source ~/.bashrc
-VULKAN_SDK=/home/PKing/app/vulkansdk-1.3.280.0/x86_64
+VULKAN_SDK=/path/to/vulkansdk-1.3.280.0/x86_64
 PATH=${VULKAN_SDK}/bin:${PATH}
 LD_LIBRARY_PATH=${VULKAN_SDK}/lib:${LD_LIBRARY_PATH}
 VK_LAYER_PATH=${VULKAN_SDK}/etc/vulkan/explicit_layer.d
@@ -27,7 +28,7 @@ vulkaninfo --summary
 vkcube
 
 # TODO 如果运行出现：libvulkan.so找不到，请在sudo nano /etc/ld.so.conf.d/vulkan-custom.conf添加
-/home/PKing/app/vulkansdk-1.3.280.0/x86_64/lib
+/path/to/vulkansdk-1.3.280.0/x86_64/lib
 ```
 
 docker pull randomgraphics/vulkan:1.2.162
