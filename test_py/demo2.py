@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-    @Author : PKing
-    @E-mail : 390737991@qq.com
-    @Date   : 2022-12-31 11:37:30
-    @Brief  : https://blog.csdn.net/qdPython/article/details/121381363
+# --------------------------------------------------------
+# @Author : Pan
+# @E-mail :
+# @Date   : 2025-07-08 14:10:15
+# @Brief  :
+# --------------------------------------------------------
 """
 import os
 import cv2

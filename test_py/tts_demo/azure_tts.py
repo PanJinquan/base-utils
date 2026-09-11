@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-    @Author : PKing
-    @E-mail : 390737991@qq.com
-    @Date   : 2022-12-31 11:37:30
-    @Brief  : https://zhuanlan.zhihu.com/p/437580699
+# --------------------------------------------------------
+# @Author : Pan
+# @E-mail :
+# @Date   : 2025-07-08 14:10:15
+# @Brief  : https://zhuanlan.zhihu.com/p/437580699
+# --------------------------------------------------------
 """
+
 import os
 from tqdm import tqdm
 import azure.cognitiveservices.speech as speechsdk

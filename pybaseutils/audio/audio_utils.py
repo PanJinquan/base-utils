@@ -19,7 +19,6 @@ from ffmpy import FFmpeg
 import matplotlib.pyplot as plt
 from scipy.fft import fft
 from IPython.display import Audio, display
-from playsound import playsound
 from scipy.io import wavfile
 
 import numpy as np
@@ -274,6 +273,7 @@ def sound_audio_file(audio_file, jupyter=False):
     if jupyter:
         display(Audio(audio_file))
     else:
+        from playsound import playsound
         playsound(audio_file)
 
 
