@@ -427,7 +427,7 @@ void draw_points_texts(cv::Mat &image, cv::Point2f points[], int num, vector<str
  * @param colors 颜色表
  */
 void draw_points_texts_colors(cv::Mat &image, vector<cv::Point2f> points, vector<string> texts = {},
-                              vector<cv::Scalar> colors = {COLOR_GREEN});
+                              vector<cv::Scalar> colors = {COLOR_GREEN},int radius = 2);
 
 
 /***

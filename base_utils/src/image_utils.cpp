@@ -372,7 +372,7 @@ void draw_points_texts(cv::Mat &image, cv::Point2f points[], int num, vector<str
 
 
 void draw_points_texts_colors(cv::Mat &image, vector<cv::Point2f> points, vector<string> texts,
-                              vector<cv::Scalar> colors) {
+                              vector<cv::Scalar> colors,int radius) {
     int num = points.size();
     if (texts.size() != num && texts.size() == 0) {
         for (int i = 0; i < num; ++i) {
@@ -381,7 +381,7 @@ void draw_points_texts_colors(cv::Mat &image, vector<cv::Point2f> points, vector
     }
     for (int i = 0; i < num; ++i) {
         cv::Scalar color = colors[i % colors.size()];
-        draw_point_text(image, points[i], texts[i], color);
+        draw_point_text(image, points[i], texts[i], color, radius);
     }
 }
 
