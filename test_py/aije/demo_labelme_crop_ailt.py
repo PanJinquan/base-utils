@@ -14,24 +14,21 @@ from pybaseutils.dataloader import parser_labelme
 from pybaseutils import image_utils, file_utils, text_utils
 
 
-def save_object_crops(data_info, out_dir, class_name=None, target_name=None, scale=[], square=False,
+def save_object_crops(data_info, out_dir, target_name=None, scale=[], square=False,
                       padding=False, min_size=20 * 20 * 3, flag='', vis=False):
-    '''
-    对VOC的数据目标进行裁剪
-    :param image:
+    """
+    :param data_info:
     :param out_dir:
-    :param bboxes:
-    :param labels:
-    :param image_id:
-    :param class_name:
+    :param target_name:
     :param scale:
     :param square:
     :param padding:
+    :param min_size:
     :param flag:
     :param vis:
     :return:
-    '''
-    image, points, bboxes, labels = data_info['image'], data_info['points'], data_info['boxes'], data_info['labels']
+    """
+    image, points, bboxes, names = data_info['image'], data_info['points'], data_info['boxes'], data_info['names']
     if len(bboxes) == 0: return
     image_file = data_info['image_file']
     h, w = image.shape[:2]
@@ -45,12 +42,12 @@ def save_object_crops(data_info, out_dir, class_name=None, target_name=None, sca
     else:
         crops = image_utils.get_bboxes_crop(image, bboxes)
     if vis:
-        m = image_utils.draw_image_bboxes_labels(image.copy(), bboxes, labels, class_name=class_name,
-                                                 thickness=2, fontScale=0.8, drawType='chinese')
+        m = image_utils.draw_image_boxes_texts(image.copy(), bboxes, names, thickness=2, fontScale=0.8,
+                                               drawType='chinese')
         image_utils.cv_show_image('image', m, use_rgb=False, delay=0)
     for i, img in enumerate(crops):
-        if img.dsize < min_size: continue
-        name = class_name[int(labels[i])] if class_name else labels[i]
+        if img.size < min_size: continue
+        name = names[i]
         if out_dir:
             file_name = '{}_{:0=4d}_{}.jpg'.format(image_id, i, flag) if flag else '{}_{:0=4d}.jpg'.format(image_id, i)
             if target_name:
@@ -65,6 +62,14 @@ def save_object_crops(data_info, out_dir, class_name=None, target_name=None, sca
 
 
 def crop_dataset(anno_dir, out_dir=None, class_name=None, target_name=None):
+    """
+    对labelme的数据目标进行裁剪，用于制作分类数据集
+    :param anno_dir: labelme的标注文件目录
+    :param out_dir: 输出目录
+    :param class_name: 类别名称,class_name=[]表示所有类别
+    :param target_name: 需要裁剪的目标类别名称，支持模糊匹配，注意：set(class_name)-set(target_name)剩下的类别名称作为其他类别
+    :return:
+    """
     dataset = parser_labelme.LabelMeDatasets(filename=None,
                                              data_root=None,
                                              anno_dir=anno_dir,
@@ -74,15 +79,13 @@ def crop_dataset(anno_dir, out_dir=None, class_name=None, target_name=None):
                                              phase='val',
                                              shuffle=False)
     print('have num:{}'.format(len(dataset)))
-    class_name = dataset.class_name
     scale = [1.0, 1.0]
     # flag = str(scale[0]).replace('.', 'p')
     flag = None
     # scale = None
     for i in tqdm(range(len(dataset))):
         data_info = dataset.__getitem__(i)
-        save_object_crops(data_info, out_dir, class_name=class_name, target_name=target_name, scale=scale, flag=flag,
-                          vis=False)
+        save_object_crops(data_info, out_dir, target_name=target_name, scale=scale, flag=flag, vis=False)
 
 
 def get_sub_dataset(data_root):
@@ -99,6 +102,7 @@ if __name__ == '__main__':
     """
     对labelme的数据目标进行裁剪，用于制作分类数据集
     """
+    # TODO 需要裁剪的目标类别名称，支持模糊匹配，注意：set(class_name)-set(target_name)剩下的类别名称作为其他类别
     # TODO 蓝色长条标签和鞋套是否相似
     target_name = ['身穿工作服', '未穿工作服', '螺丝刀',
                    '绝缘鞋', '脚穿绝缘鞋', '长筒靴', '脚穿长筒靴', '其他鞋', '脚穿其他鞋', '脚穿鞋套',

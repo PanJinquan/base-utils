@@ -243,6 +243,30 @@ def re_example():
     print(out)
 
 
+def align_display(s, align='C', width=20, pchar=" "):
+    """
+    对齐显示字符串
+    print("[{}] 下载进度".format(align_display(item, 'C')))
+    :param s: 要显示的字符串
+    :param align: 对齐方式，'L' 左对齐，'C' 居中对齐，'R' 右对齐
+    :param width: 目标显示宽度
+    :param pchar: 对齐字符，默认空格
+    :return: 对齐后的字符串
+    """
+    w = sum(2 if ord(c) > 127 else 1 for c in s)  # 计算字符串的显示宽度（中文等宽字符算2，英文算1）
+    total_pad = max(width - w, 0)
+    if align == 'L':
+        L = 0
+        R = total_pad
+    elif align == 'R':
+        L = total_pad
+        R = 0
+    else:  # 默认居中对齐
+        L = total_pad // 2
+        R = total_pad - L
+    return pchar * L + s + pchar * R
+
+
 if __name__ == "__main__":
     draw_font_example()
     # get_system_fonts()

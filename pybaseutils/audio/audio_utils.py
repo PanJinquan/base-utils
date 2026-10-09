@@ -266,6 +266,8 @@ def sound_audio(audio, sr=16000):
 
 def sound_audio_file(audio_file, jupyter=False):
     """
+    sudo apt-get install libasound2-dev
+    pip install simpleaudio==1.0.4
     :param audio_file:
     :param jupyter:
     :return:
@@ -273,8 +275,10 @@ def sound_audio_file(audio_file, jupyter=False):
     if jupyter:
         display(Audio(audio_file))
     else:
-        from playsound import playsound
-        playsound(audio_file)
+        import simpleaudio as sa
+        wave_obj = sa.WaveObject.from_wave_file(audio_file)
+        play_obj = wave_obj.play() # 播放
+        play_obj.wait_done()  # 等待播放结束（可选，但推荐）
 
 
 def sound_audio_buffer(audio_buffer, tmp_audio="./tmp.wav"):
@@ -470,8 +474,8 @@ if __name__ == '__main__':
     video_out = "../../data/video/test-video-result.mp4"
     audio_file = "../../data/audio/bus_chinese.wav"
 
-    test_time(audio_file)
-    # playsound(audio_file)
+    # test_time(audio_file)
+    sound_audio_file(audio_file,jupyter=False)
     # playsound(audio_file)
     # display_time_domain(audio_file)
     # display_freq_domain(audio_file)

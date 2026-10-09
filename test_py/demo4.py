@@ -12,7 +12,7 @@ import numpy as np
 import cv2
 from pybaseutils.converter import convert_labelme2voc
 from pybaseutils import time_utils, image_utils, file_utils, json_utils
-fontScale=2.0
+fontScale=0.8
 alpha = 0.
 if __name__ == "__main__":
     image_file = "../data/test_image/grid1.png"
