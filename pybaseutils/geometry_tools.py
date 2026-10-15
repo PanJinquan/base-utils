@@ -7,6 +7,7 @@
 # @Brief  :
 # --------------------------------------------------------
 """
+import math
 import numpy as np
 from scipy.spatial.distance import cdist
 
@@ -219,6 +220,48 @@ def compute_vector_angle(a, b, minangle=True):
         # angle = np.where(angle > 90, 180 - angle, angle)
         angle = angle if angle < 90 else 180 - angle
     return angle
+
+
+def image2math_coord(pts, height=None):
+    """
+    将图像坐标系（x 向右，y 向下）转换为数学坐标系（x 向右，y 向上）笛卡尔坐标系。
+    :param pts: 形如 (N, 2) 的数组/列表，图像坐标点
+    :param height: 可选，图像高度。给出时按 (x, height - y) 翻转，
+                   结果仍落在图像矩形范围内；不给出时按 (x, -y) 翻转。
+    :return: (N, 2) 的 numpy 数组，数学坐标点
+    """
+    pts = np.asarray(pts, dtype=float)
+    if pts.ndim != 2 or pts.shape[1] != 2:  raise ValueError("pts 必须是形如 (N, 2) 的数组")
+    out = pts.copy()
+    if height is None:
+        out[:, 1] = -out[:, 1]  # y 取反，原点不变
+    else:
+        out[:, 1] = height - out[:, 1]  # 以图像底边为 y=0
+    return out
+
+
+def get_vector_angle(v1, v2, clockwise=True):
+    """
+    坐标系约定: 标准的数学坐标系（x 轴向右，y 轴向上）
+    计算从向量 v1 旋转到向量 v2 的角度。
+    :param v1: 形如 (x, y) 的元组/列表，表示平面向量
+    :param v2: 形如 (x, y) 的元组/列表，表示平面向量
+    :param clockwise: True 顺时针角度，False 逆时针角度
+    :return: 角度（度），范围 [0, 360)
+             注意: 0 和 360 是同一个方向，函数统一返回 0
+    """
+    x1, y1 = v1
+    x2, y2 = v2
+    # 零向量无法定义方向
+    if (x1 == 0 and y1 == 0) or (x2 == 0 and y2 == 0): raise ValueError("零向量没有方向，无法计算角度")
+    dot = x1 * x2 + y1 * y2  # 点积
+    cross = x1 * y2 - y1 * x2  # 叉积（z 分量）
+    # 叉积 > 0 表示 v2 在 v1 的逆时针方向
+    # 顺时针：用 -cross；逆时针：用 +cross
+    signed_cross = -cross if clockwise else cross
+    angle = math.degrees(math.atan2(signed_cross, dot))
+    # 把 (-180, 180] 映射到 [0, 360)
+    return angle % 360
 
 
 def line_test():
