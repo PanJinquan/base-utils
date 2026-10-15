@@ -1539,7 +1539,7 @@ def draw_bbox_text_ch(image, bbox, text, color, thickness=2, fontScale=0.8):
     cv2.rectangle(image, bg1, bg2, color, thickness)  # 先绘制框，避免断裂
     cv2.rectangle(image, bg1, bg2, color, -1)  # 绘制底纹
     if len(bbox) == 4: cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness)  # 绘制bbox
-    text_loc = (text_loc[0], int(text_loc[1] * 1.0)) # 调整字体位置
+    text_loc = (text_loc[0], int(text_loc[1] * 1.0))  # 调整字体位置
     cv2_putText(image, str(text), text_loc, color=(255, 255, 255), fontScale=fontScale, thickness=abs(thickness))
     return image
 
@@ -1558,7 +1558,7 @@ def draw_bbox_text_en(image, bbox, text, color, thickness=2, fontScale=0.8):
     cv2.rectangle(image, bg1, bg2, color, thickness)  # 先绘制框，避免断裂
     cv2.rectangle(image, bg1, bg2, color, -1)  # 绘制底纹
     if len(bbox) == 4: cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness)  # 绘制bbox
-    text_loc = (text_loc[0], int(text_loc[1] * 0.95)) # 调整字体位置
+    text_loc = (text_loc[0], int(text_loc[1] * 0.95))  # 调整字体位置
     cv2.putText(image, str(text), (text_loc[0], text_loc[1]), fontFace=cv2.FONT_HERSHEY_SIMPLEX,
                 fontScale=fontScale, color=(255, 255, 255), thickness=abs(thickness))
     return image
@@ -1663,16 +1663,26 @@ def draw_key_point_in_image(image, key_points, pointline=[], boxes=[], colors=No
     return image
 
 
-def draw_key_point_arrowed_in_image(image, key_points, pointline=[], color=None):
+def draw_key_point_arrowed_in_image(image, key_points, pointline=[], boxes=[], colors=None, vis_id=False, thickness=2):
     """
     :param key_points: list(ndarray(19,2)) or ndarray(n_person,19,2)
     :param image:
     :param pointline:[[start-->end]]
     :return:
     """
-    for person_id, points in enumerate(key_points):
-        if points is None or len(points) == 0: continue
-        image = draw_image_points_arrowed_lines(image, points, pointline)
+    nums = max(len(key_points), len(boxes))
+    for i in range(nums):
+        color = color_table[(i + 1) % 20] if not colors else colors
+        if len(key_points) > 0:
+            points = key_points[i]
+            if points is None or len(points) == 0: continue
+            texts = list(range(len(points))) if vis_id else [""] * len(points)
+            # 可视化(x,y,v)的v
+            # if vis_id and len(points[0]) == 3: texts = [f"{t}[{int(points[i][2])}]" for i, t in enumerate(texts)]
+            image = draw_image_points_arrowed_lines(image, points, pointline, circle_color=color, line_color=color,
+                                                    texts=texts, thickness=thickness)
+        if len(boxes) > 0:
+            image = draw_image_boxes(image, boxes=[boxes[i]], color=color, thickness=thickness)
     return image
 
 
@@ -1709,10 +1719,14 @@ def draw_image_points_lines(image,
     return image
 
 
-def draw_image_points_arrowed_lines(image, points,
+def draw_image_points_arrowed_lines(image,
+                                    points,
                                     pointline=[],
                                     texts=None,
-                                    drawType="simple",
+                                    fontScale=0.8,
+                                    circle_color=(255, 0, 0),
+                                    line_color=(0, 0, 255),
+                                    thickness=2,
                                     reverse=False):
     """
     在图像中画点箭头线
@@ -1726,11 +1740,16 @@ def draw_image_points_arrowed_lines(image, points,
     :return:
     """
     points = np.asarray(points, dtype=np.int32)
-    thickness = 2
     if texts is None:
         texts = list(range(len(points)))
-    image = draw_points_text(image, points, texts=texts, thickness=thickness, drawType=drawType)
-    draw_image_arrowed_lines(image, points, pointline, thickness=thickness, reverse=reverse)
+    draw_image_arrowed_lines(image, points, pointline, color=line_color, thickness=thickness, reverse=reverse)
+    thickness_ = max(int(thickness * 1), 1)
+    image = draw_points_text(image, points,
+                             texts=texts,
+                             color=circle_color,
+                             fontScale=fontScale,
+                             thickness=thickness_,
+                             drawType="simple")
     return image
 
 
@@ -1755,7 +1774,7 @@ def arrowed_line(image, pt1, pt2, color, arrow_length=20, **kwargs):
     """
     cv2.arrowedLine 的 tipLength 参数是相对于线段总长的比例，这导致箭头大小会随着线段长度变化
     使用fixed_arrowedLine可以修复这个问题
-    绘制一条带有固定长度箭头的线段。
+    绘制一条带有固定长度箭头的线段（pt1-->pt2）。
     :param image: 目标图像
     :param pt1: 箭尾/起点坐标 (x1, y1)
     :param pt2: 箭头/终点坐标 (x2, y2)
@@ -1780,24 +1799,22 @@ def arrowed_line(image, pt1, pt2, color, arrow_length=20, **kwargs):
     return image
 
 
-def draw_image_arrowed_lines(image,
-                             points,
-                             pointline=[],
-                             color=(0, 0, 255),
-                             thickness=2,
-                             reverse=False):
-    points = np.asarray(points, dtype=np.int32)
-    if pointline == "auto":
+def draw_image_arrowed_lines(image, points, pointline=[], color=(0, 0, 255), thickness=2, reverse=False):
+    if pointline == "auto" or pointline == []:
         pointline = circle_line(len(points), iscircle=True)
-    for point_index in pointline:
-        point1 = tuple(points[point_index[0]])
-        point2 = tuple(points[point_index[1]])
+    if isinstance(color[0], numbers.Number): color = [color] * len(points)
+    for index in pointline:
+        if not index: continue
+        point1 = tuple(points[index[0]])
+        point2 = tuple(points[index[1]])
         if (not check_point(point1)) or (not check_point(point2)):
             continue
+        point1 = (int(point1[0]), int(point1[1]))
+        point2 = (int(point2[0]), int(point2[1]))
         if reverse:
-            cv2.arrowedLine(image, point1, point2, color, thickness=thickness, tipLength=thickness)
+            arrowed_line(image, point2, point1, color=color[index[1]], thickness=thickness)
         else:
-            cv2.arrowedLine(image, point2, point1, color, thickness=thickness, tipLength=thickness)
+            arrowed_line(image, point1, point2, color=color[index[1]], thickness=thickness)
     return image
 
 
