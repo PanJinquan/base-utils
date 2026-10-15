@@ -14,8 +14,8 @@ from collections import defaultdict
 
 
 class Objects(object):
-    def __init__(self, boxes, label, score, names=[], size=[], segms=None, masks=None, keypt=None,
-                 traid=None, trace=None, color=[], image=None, file=""):
+    def __init__(self, boxes, label, score, names=[], size=[], segms=[], masks=None, keypt=[],
+                 traid=[], trace: defaultdict = None, color=[], image=None, file=""):
         self.boxes = boxes  # 目标框(xmin,ymin,xmax,ymax)
         self.score = score  # 目标框置信度
         self.label = label  # 目标框类别
@@ -25,12 +25,13 @@ class Objects(object):
         self.masks = masks  # 目标轮廓掩码
         self.segms = segms  # 目标轮廓[np.shape(n,2)]
         self.traid = traid  # 轨迹ID
-        self.trace = trace  # 轨迹的历史boxes
+        self.trace = trace  # 轨迹的历史数据
+        self.depth = None   # 深度图
+        self.dists = []     # 深度值(segms/boxes区域)
         self.color = [(255, 0, 0)] * len(boxes)  # 目标框颜色
-        self.size = size  # 原始图像大小
-        self.file = file  # 文件路径
-        self.depth = None  # 深度图
         self.metas = defaultdict()  # 其他信息
+        self.size = size            # 原始图像大小
+        self.file = file            # 文件路径
 
     def update(self, **kwargs):
         """更新属性值"""

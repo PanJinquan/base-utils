@@ -57,6 +57,14 @@ BONES = {
                    [0, 127, 255], [102, 0, 102], [153, 0, 153], [178, 0, 204], [255, 0, 255]],
         "describe": "手部关键点信息"
     },
+    "pressure_meter": {
+        "skeleton": [[0, 1], [0, 2], [0, 3]],
+        "keypoint": [],
+        "num_joints": None,
+        "names": {},
+        "colors": [[255, 0, 0], [255, 0, 0], [0, 255, 0], [0, 255, 0]],
+        "describe": "压力计"
+    },
     "points": {
         "skeleton": [[]],
         "keypoint": [],
