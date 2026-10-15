@@ -1440,12 +1440,14 @@ def show_landmark(title, image, landmarks, vis_id=False, delay=0):
     return image
 
 
-def draw_points_texts(image, points, texts=None, color=(255, 0, 0), thickness=0, fontScale=0, drawType="simple"):
+def draw_points_texts(image, points, texts=None, color=(255, 0, 0), thickness=0, fontScale=0, vis_pt=True,
+                      drawType="simple"):
     """
     :param image:
     :param points:
     :param texts:
     :param color:
+    :param vis_pt: 是否绘制点
     :param drawType: custom or simple
     :return:
     """
@@ -1457,7 +1459,7 @@ def draw_points_texts(image, points, texts=None, color=(255, 0, 0), thickness=0,
         point = (int(point[0]), int(point[1]))
         c = color[index]
         text = str(text)
-        cv2.circle(image, point, thickness * 3, tuple(c), -1, lineType=cv2.LINE_AA)
+        if vis_pt: cv2.circle(image, point, thickness * 3, tuple(c), -1, lineType=cv2.LINE_AA)
         if text: draw_text(image, point, text, color=c, fontScale=fontScale, thickness=thickness, drawType=drawType)
     return image
 
@@ -1638,13 +1640,16 @@ def cv2_putText(img, text, point, fontFace=None, fontScale=0.8, color=(255, 0, 0
     img[:] = np.asarray(pilimg)
 
 
-def draw_key_point_in_image(image, key_points, pointline=[], boxes=[], colors=None, vis_id=False, thickness=2):
+def draw_key_point_in_image(image, key_points, pointline=[], boxes=[], colors=None,
+                            vis_id=False, vis_pt=True, thickness=2):
     """
     :param image:
     :param key_points: list(ndarray(19,2)) or ndarray(n_person,19,2)
     :param pointline: `auto`->pointline = circle_line(len(points), iscircle=True)
     :param boxes: 目标框
     :param colors: 每个点的颜色
+    :param vis_id: 是否绘制ID
+    :param vis_pt: 是否绘制点
     :return:
     """
     nums = max(len(key_points), len(boxes))
@@ -1657,17 +1662,20 @@ def draw_key_point_in_image(image, key_points, pointline=[], boxes=[], colors=No
             # 可视化(x,y,v)的v
             # if vis_id and len(points[0]) == 3: texts = [f"{t}[{int(points[i][2])}]" for i, t in enumerate(texts)]
             image = draw_image_points_lines(image, points, pointline, circle_color=color, line_color=color,
-                                            texts=texts, thickness=thickness)
+                                            texts=texts, thickness=thickness, vis_pt=vis_pt)
         if len(boxes) > 0:
             image = draw_image_boxes(image, boxes=[boxes[i]], color=color, thickness=thickness)
     return image
 
 
-def draw_key_point_arrowed_in_image(image, key_points, pointline=[], boxes=[], colors=None, vis_id=False, thickness=2):
+def draw_key_point_arrowed_in_image(image, key_points, pointline=[], boxes=[], colors=None,
+                                    vis_id=False, vis_pt=True, thickness=2):
     """
     :param key_points: list(ndarray(19,2)) or ndarray(n_person,19,2)
     :param image:
     :param pointline:[[start-->end]]
+    :param vis_id: 是否绘制ID
+    :param vis_pt: 是否绘制点
     :return:
     """
     nums = max(len(key_points), len(boxes))
@@ -1680,7 +1688,7 @@ def draw_key_point_arrowed_in_image(image, key_points, pointline=[], boxes=[], c
             # 可视化(x,y,v)的v
             # if vis_id and len(points[0]) == 3: texts = [f"{t}[{int(points[i][2])}]" for i, t in enumerate(texts)]
             image = draw_image_points_arrowed_lines(image, points, pointline, circle_color=color, line_color=color,
-                                                    texts=texts, thickness=thickness)
+                                                    texts=texts, thickness=thickness, vis_pt=vis_pt)
         if len(boxes) > 0:
             image = draw_image_boxes(image, boxes=[boxes[i]], color=color, thickness=thickness)
     return image
@@ -1693,7 +1701,8 @@ def draw_image_points_lines(image,
                             fontScale=0.8,
                             circle_color=(255, 0, 0),
                             line_color=(0, 0, 255),
-                            thickness=2):
+                            thickness=2,
+                            vis_pt=True):
     """
     在图像中画点和连接线
     :param image:
@@ -1701,6 +1710,7 @@ def draw_image_points_lines(image,
     :param pointline: `auto`->pointline = circle_line(len(points), iscircle=True)
     :param color:
     :param texts:
+    :param vis_pt: 是否绘制点
     :param drawType: simple or custom
     :param check:
     :return:
@@ -1710,12 +1720,13 @@ def draw_image_points_lines(image,
         texts = list(range(len(points)))
     draw_image_lines(image, points, pointline, color=line_color, thickness=thickness)
     thickness_ = max(int(thickness * 1), 1)
-    image = draw_points_text(image, points,
-                             texts=texts,
-                             color=circle_color,
-                             fontScale=fontScale,
-                             thickness=thickness_,
-                             drawType="simple")
+    image = draw_points_texts(image, points,
+                              texts=texts,
+                              color=circle_color,
+                              fontScale=fontScale,
+                              thickness=thickness_,
+                              vis_pt=vis_pt,
+                              drawType="simple")
     return image
 
 
@@ -1727,6 +1738,7 @@ def draw_image_points_arrowed_lines(image,
                                     circle_color=(255, 0, 0),
                                     line_color=(0, 0, 255),
                                     thickness=2,
+                                    vis_pt=True,
                                     reverse=False):
     """
     在图像中画点箭头线
@@ -1735,6 +1747,7 @@ def draw_image_points_arrowed_lines(image,
     :param pointline: `auto`->pointline = circle_line(len(points), iscircle=True)
     :param color:
     :param texts:
+    :param vis_pt: 是否绘制点
     :param drawType: simple or custom
     :param check:
     :return:
@@ -1744,12 +1757,13 @@ def draw_image_points_arrowed_lines(image,
         texts = list(range(len(points)))
     draw_image_arrowed_lines(image, points, pointline, color=line_color, thickness=thickness, reverse=reverse)
     thickness_ = max(int(thickness * 1), 1)
-    image = draw_points_text(image, points,
-                             texts=texts,
-                             color=circle_color,
-                             fontScale=fontScale,
-                             thickness=thickness_,
-                             drawType="simple")
+    image = draw_points_texts(image, points,
+                              texts=texts,
+                              color=circle_color,
+                              fontScale=fontScale,
+                              thickness=thickness_,
+                              vis_pt=vis_pt,
+                              drawType="simple")
     return image
 
 
