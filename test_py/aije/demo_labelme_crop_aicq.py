@@ -78,6 +78,8 @@ def crop_dataset(anno_dir, out_dir=None, class_name=None, target_name=None):
                                              check=False,
                                              phase='val',
                                              shuffle=False)
+    class_counts = parser_labelme.get_class_counts(dataset)
+    print(class_counts)
     print('have num:{}'.format(len(dataset)))
     scale = [1.0, 1.0]
     # flag = str(scale[0]).replace('.', 'p')
@@ -109,16 +111,21 @@ if __name__ == '__main__':
                    "身穿粉色开襟衣服",
                    "身穿蓝色开襟衣服",
                    "身穿其他衣服",
+                   "头",
                    "床",
                    "蓝色被子",
                    ]
     datasets = [
-        '/home/PKing/edudata/dataset/AICQ/dataset/data-2026-09-30/images',
+        # '/home/PKing/edudata/dataset/AICQ/dataset/data-2026-10-06/images',
+        # '/home/PKing/edudata/dataset/AICQ/dataset/data-2026-09-30/images',
+        '/home/PKing/edudata/dataset/AICQ/dataset/data-2026-10-12/images',
     ]
     # datasets = "/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/文件列表.txt"
     # datasets = file_utils.read_data(datasets, split=None)
     # dataroot = '/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det'
     # datasets = get_sub_dataset(dataroot)
+    # TODO 统计每个类别的样本数量
+    # class_count = parser_labelme.get_class_counts(datasets)
     class_name = None
     # datasets = sorted(datasets)
     for anno_dir in datasets:

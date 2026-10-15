@@ -117,6 +117,8 @@ if __name__ == '__main__':
     # datasets = file_utils.read_data(datasets, split=None)
     # dataroot = '/home/PKing/nasdata/dataset-dmai/AIJE/dataset/aije-v2-det'
     # datasets = get_sub_dataset(dataroot)
+    # TODO 统计每个类别的样本数量
+    # class_count = parser_labelme.get_class_counts(datasets)
     class_name = []
     # datasets = sorted(datasets)
     for anno_dir in datasets:

@@ -537,6 +537,34 @@ def LabelMeDatasets(filename=None,
     return datasets
 
 
+def get_class_counts(datasets, save=""):
+    """
+    统计每个类别的样本数量
+    :param datasets: List[str] or ConcatDataset
+    :param save: 保存路径
+    :return: 每个类别的样本数量
+    """
+    from pybaseutils import dict_utils
+    if isinstance(datasets, list):
+        datasets = LabelMeDatasets(filename=None,
+                                  data_root=None,
+                                  anno_dir=datasets,
+                                  image_dir=None,
+                                  class_name=[],
+                                  check=False,
+                                  phase='val',
+                                  shuffle=False)
+    counts = {}
+    for i in tqdm(range(len(datasets))):
+        info = datasets.__getitem__(i)
+        for n in info["names"]:
+            counts[n] = counts.get(n, 0) + 1
+    counts = dict_utils.dict_sort(counts,use_key=False)
+    if save:
+        json_utils.save_json(os.path.join(save, "counts.json"), counts)
+    return counts
+
+
 def parser_labelme(anno_file, class_dict={}, size=()):
     """
     :param annotation:  labelme标注的数据
@@ -633,4 +661,10 @@ def example_for_segment():
 
 if __name__ == "__main__":
     # example_for_segment()
-    example_for_keypoints()
+    # example_for_keypoints()
+    datasets = [
+        '/home/PKing/edudata/dataset/AICQ/dataset/data-2026-10-06/images',
+        '/home/PKing/edudata/dataset/AICQ/dataset/data-2026-09-30/images',
+    ]
+    counts = get_class_counts(datasets)
+    print(counts)
