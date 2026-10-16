@@ -62,6 +62,19 @@ float vector_angle(cv::Point2f v1, cv::Point2f v2, bool minangle) {
     return angle;
 }
 
+float get_vector_angle(const cv::Point2f &v1, const cv::Point2f &v2, bool clockwise) {
+    float x1 = v1.x, y1 = v1.y, x2 = v2.x, y2 = v2.y;
+    // 零向量无法定义方向
+    if ((x1 == 0 && y1 == 0) || (x2 == 0 && y2 == 0)) return 0.f;
+    float dot = x1 * x2 + y1 * y2;   // 点积
+    float cross = x1 * y2 - y1 * x2; // 叉积(z分量)
+    // 叉积>0表示v2在v1的逆时针方向: 顺时针取-cross,逆时针取+cross
+    float signed_cross = clockwise ? -cross : cross;
+    float angle = radian2angle(std::atan2(signed_cross, dot));
+    // 将(-180,180]映射到[0,360)
+    return std::fmod(angle + 360.0f, 360.0f);
+}
+
 float vector_multiply(vector<float> v1, vector<float> v2) {
     int size = v1.size();
     float angle = 0.f;
@@ -81,3 +94,4 @@ float cal_distance(cv::Point2f p1, cv::Point2f p2) {
     float distance = cv::norm(p1 - p2);
     return distance;
 }
+

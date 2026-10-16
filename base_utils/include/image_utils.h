@@ -431,7 +431,7 @@ void draw_points_texts_colors(cv::Mat &image, vector<cv::Point2f> points, vector
 
 
 /***
- * 绘制矩形框
+ * 绘制矩形框和文本
  * @param image
  * @param rect
  * @param text
@@ -439,6 +439,14 @@ void draw_points_texts_colors(cv::Mat &image, vector<cv::Point2f> points, vector
 void draw_rect_text(cv::Mat &image, cv::Rect rect, string text = "",
                     cv::Scalar color = cv::Scalar(255, 0, 0), int thickness = 2, double fontScale = 0.8);
 
+/***
+ * 绘制带底纹的矩形框和文本
+ * @param image
+ * @param rect
+ * @param text
+ */
+void draw_rect_text_bg(cv::Mat &image, cv::Rect rect, string text = "",
+                    cv::Scalar color = cv::Scalar(255, 0, 0), int thickness = 2, double fontScale = 0.8);
 
 /***
  * 绘制多个矩形框和文本
@@ -448,7 +456,6 @@ void draw_rect_text(cv::Mat &image, cv::Rect rect, string text = "",
  */
 void draw_rects_texts(cv::Mat &image, vector<cv::Rect> rects, vector<string> texts = {},
                       cv::Scalar color = cv::Scalar(255, 0, 0), int thickness = 2, double fontScale = 0.8);
-
 
 /***
  * 绘制连接线

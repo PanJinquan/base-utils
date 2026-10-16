@@ -398,6 +398,30 @@ void draw_rect_text(cv::Mat &image, cv::Rect rect, string text, cv::Scalar color
     }
 }
 
+
+void draw_rect_text_bg(cv::Mat &image, cv::Rect rect, string text, cv::Scalar color, int thickness, double fontScale) {
+    int baseline = 0;
+    cv::Size text_wh = cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX, fontScale, thickness, &baseline);
+    baseline = baseline + 1;
+    cv::Point text_loc(rect.x, rect.y - baseline / 2); // 默认在左上角上方绘制文字
+    int text_bgy = text_loc.y - text_wh.height - baseline / 2;
+    if (text_bgy < 0) {
+        // 如果文字超出图片范围，切换到下方绘制
+        text_loc = cv::Point(rect.x, rect.y + text_wh.height + baseline / 2);
+    }
+    cv::Point bg1(text_loc.x, text_loc.y - text_wh.height - baseline / 2);
+    cv::Point bg2(text_loc.x + text_wh.width, text_loc.y + baseline / 2); // 底纹等于字体的宽度
+    cv::rectangle(image, bg1, bg2, color, thickness);              // 先绘制框，避免断裂
+    cv::rectangle(image, bg1, bg2, color, -1);          // 绘制底纹
+    // 绘制bbox
+    cv::rectangle(image, cv::Point(rect.x, rect.y), cv::Point(rect.x + rect.width, rect.y + rect.height),
+                  color, thickness);
+    // text_loc.y = (int) (text_loc.y * 0.95); // 调整字体位置
+    cv::putText(image, text, text_loc, cv::FONT_HERSHEY_SIMPLEX,
+                fontScale, cv::Scalar(255, 255, 255), abs(thickness));
+}
+
+
 void draw_rects_texts(cv::Mat &image,
                       vector<cv::Rect> rects,
                       vector<string> texts,

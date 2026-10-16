@@ -92,10 +92,20 @@ cv::Point2f create_vector(cv::Point2f point1, cv::Point2f point2);
  * 计算两个vector的夹角(0,180)
  * @param v1 vector1
  * @param v2 vector2
- * @param minangle：false,true：转为最小角度(0,90)
+ * @param minangle false,true：转为最小角度(0,90)
  * @return
  */
 float vector_angle(cv::Point2f v1, cv::Point2f v2, bool minangle = false);
+
+
+/***
+ * 计算从向量v1旋转到向量v2的角度(数学坐标系:x轴向右,y轴向上)
+ * @param v1 起始向量
+ * @param v2 目标向量
+ * @param clockwise true:顺时针角度,false:逆时针角度
+ * @return 角度(度),范围[0,360)
+ */
+float get_vector_angle(const cv::Point2f &v1, const cv::Point2f &v2, bool clockwise = true) ;
 
 
 /***
@@ -120,6 +130,8 @@ float radian2angle(float radian);
  * @return
  */
 float cal_distance(cv::Point2f p1, cv::Point2f p2);
+
+
 
 
 #endif //BASE_UTILS_MATH_UTILS_H

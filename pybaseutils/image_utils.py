@@ -1560,7 +1560,7 @@ def draw_bbox_text_en(image, bbox, text, color, thickness=2, fontScale=0.8):
     cv2.rectangle(image, bg1, bg2, color, thickness)  # 先绘制框，避免断裂
     cv2.rectangle(image, bg1, bg2, color, -1)  # 绘制底纹
     if len(bbox) == 4: cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, thickness)  # 绘制bbox
-    text_loc = (text_loc[0], int(text_loc[1] * 0.95))  # 调整字体位置
+    # text_loc = (text_loc[0], int(text_loc[1] * 0.95))  # 调整字体位置
     cv2.putText(image, str(text), (text_loc[0], text_loc[1]), fontFace=cv2.FONT_HERSHEY_SIMPLEX,
                 fontScale=fontScale, color=(255, 255, 255), thickness=abs(thickness))
     return image
