@@ -253,7 +253,7 @@ def get_vector_angle(v1, v2, clockwise=True):
     x1, y1 = v1
     x2, y2 = v2
     # 零向量无法定义方向
-    if (x1 == 0 and y1 == 0) or (x2 == 0 and y2 == 0): raise ValueError("零向量没有方向，无法计算角度")
+    if (x1 == 0 and y1 == 0) or (x2 == 0 and y2 == 0): return 0
     dot = x1 * x2 + y1 * y2  # 点积
     cross = x1 * y2 - y1 * x2  # 叉积（z 分量）
     # 叉积 > 0 表示 v2 在 v1 的逆时针方向

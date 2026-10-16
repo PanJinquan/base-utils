@@ -372,7 +372,7 @@ void draw_points_texts(cv::Mat &image, cv::Point2f points[], int num, vector<str
 
 
 void draw_points_texts_colors(cv::Mat &image, vector<cv::Point2f> points, vector<string> texts,
-                              vector<cv::Scalar> colors,int radius) {
+                              vector<cv::Scalar> colors, int radius) {
     int num = points.size();
     if (texts.size() != num && texts.size() == 0) {
         for (int i = 0; i < num; ++i) {
@@ -471,18 +471,38 @@ void draw_lines(cv::Mat &image,
 void draw_arrowed_lines(cv::Mat &image,
                         vector<cv::Point2f> points,
                         vector<vector<int> > skeleton,
-                        cv::Scalar color) {
-    int thickness = 1;
-    for (auto &pair: skeleton) {
-        if (points[pair[0]].x > 0. && points[pair[0]].y > 0. &&
-            points[pair[1]].x > 0. && points[pair[1]].y > 0.) {
+                        cv::Scalar color,
+                        int thickness,
+                        bool clip) {
+    for (int i = 0; i < skeleton.size(); ++i) {
+        auto pair = skeleton[i];
+        if (~clip || (points[pair[0]].x > 0. && points[pair[0]].y > 0. &&
+                      points[pair[1]].x > 0. && points[pair[1]].y > 0.)) {
             cv::Point2d p0 = points[pair[0]];
             cv::Point2d p1 = points[pair[1]];
-            cv::arrowedLine(image, p1, p0, color, thickness);
+            cv::arrowedLine(image, p0, p1, color, thickness);
         }
     }
 }
 
+
+void draw_arrowed_lines(cv::Mat &image,
+                        vector<cv::Point2f> points,
+                        vector<vector<int> > skeleton,
+                        vector<cv::Scalar> colors,
+                        int thickness,
+                        bool clip) {
+    for (int i = 0; i < skeleton.size(); ++i) {
+        auto pair = skeleton[i];
+        if (~clip || (points[pair[0]].x > 0. && points[pair[0]].y > 0. &&
+                      points[pair[1]].x > 0. && points[pair[1]].y > 0.)) {
+            cv::Point2d p0 = points[pair[0]];
+            cv::Point2d p1 = points[pair[1]];
+            cv::Scalar color = colors[pair[1] % colors.size()];
+            cv::arrowedLine(image, p0, p1, color, thickness);
+        }
+    }
+}
 
 void draw_yaw_pitch_roll_in_left_axis(cv::Mat &imgBRG, float pitch, float yaw, float roll,
                                       cv::Point center, int size, int thickness, bool vis) {

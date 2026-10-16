@@ -427,7 +427,7 @@ void draw_points_texts(cv::Mat &image, cv::Point2f points[], int num, vector<str
  * @param colors 颜色表
  */
 void draw_points_texts_colors(cv::Mat &image, vector<cv::Point2f> points, vector<string> texts = {},
-                              vector<cv::Scalar> colors = {COLOR_GREEN},int radius = 2);
+                              vector<cv::Scalar> colors = {COLOR_GREEN}, int radius = 2);
 
 
 /***
@@ -475,7 +475,7 @@ void draw_lines(cv::Mat &image, vector<cv::Point2f> points, vector<vector<int> >
  * @param image
  * @param points
  * @param skeleton 需要连接的ID序号
- * @param color 连接线的颜色表
+ * @param colors 连接线的颜色表
  */
 void draw_lines(cv::Mat &image, vector<cv::Point2f> points, vector<vector<int> > skeleton, vector<cv::Scalar> colors,
                 int thickness = 2, bool clip = true);
@@ -488,13 +488,23 @@ void draw_lines(cv::Mat &image, vector<cv::Point2f> points, vector<vector<int> >
  * @param skeleton 需要连接的ID序号
  */
 void draw_arrowed_lines(cv::Mat &image, vector<cv::Point2f> points, vector<vector<int> > skeleton,
-                        cv::Scalar color = cv::Scalar(255, 0, 0));
+                        cv::Scalar color = cv::Scalar(255, 0, 0), int thickness = 2, bool clip = true);
+
+/***
+ * 绘制带箭头的连接线
+ * @param image
+ * @param points
+ * @param skeleton 需要连接的ID序号
+ * @param colors 连接线的颜色表
+ */
+void draw_arrowed_lines(cv::Mat &image, vector<cv::Point2f> points, vector<vector<int> > skeleton,
+                        vector<cv::Scalar> colors, int thickness = 2, bool clip = true);
 
 
 /***
  * 绘制yaw,pitch,roll坐标轴(左手坐标系)
  * @param imgBRG 输入必须是BGR格式的图像
- * @param pitch红色X
+ * @param pitch 红色X
  * @param yaw 绿色Y
  * @param roll 蓝色Z
  * @param center 坐标原始点

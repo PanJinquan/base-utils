@@ -1629,6 +1629,7 @@ def get_font_type(size, font=""):
 
 
 def cv2_putText(img, text, point, fontFace=None, fontScale=0.8, color=(255, 0, 0), thickness=None):
+    if not text: return img
     # cv2.putText(img, str(text), point, fontFace, fontScale, color=color, thickness=thickness)
     text_wh, baseline = cv2.getTextSize(str(text), cv2.FONT_HERSHEY_COMPLEX, fontScale, abs(thickness))
     pilimg = Image.fromarray(img)  # Image.fromarray()将数组类型转成图片格式，与np.array()相反
@@ -1638,6 +1639,7 @@ def cv2_putText(img, text, point, fontFace=None, fontScale=0.8, color=(255, 0, 0
     font = get_font_type(size=size)
     draw.text(point, text, color, font)
     img[:] = np.asarray(pilimg)
+    return img
 
 
 def draw_key_point_in_image(image, key_points, pointline=[], boxes=[], colors=None,
