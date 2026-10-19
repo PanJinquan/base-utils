@@ -619,9 +619,9 @@ def example_for_keypoints():
                               image_dir=None,
                               class_name=class_name,
                               use_kpt=True,
+                              check_kpt=True,
                               kpt_names=kpt_names,
                               kpt_shape=kpt_shape,
-                              check_kpt=False,
                               check=False,
                               phase="val",
                               shuffle=False)
