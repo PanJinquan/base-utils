@@ -60,7 +60,7 @@ BONES = {
     "pressure_meter": {
         "skeleton": [[2, 0], [2, 1], [2, 3]],
         "keypoint": [],
-        "num_joints": None,
+        "num_joints": 4,
         "names": {},
         "colors": [[255, 0, 0], [255, 0, 0], [0, 255, 0], [0, 255, 0]],
         "describe": "压力计"
