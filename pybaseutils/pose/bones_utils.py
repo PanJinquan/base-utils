@@ -63,7 +63,7 @@ BONES = {
         "num_joints": 4,
         "names": {},
         "colors": [[255, 0, 0], [255, 0, 0], [0, 255, 0], [0, 255, 0]],
-        "describe": "压力计"
+        "describe": "压力表"
     },
     "points": {
         "skeleton": [[]],
