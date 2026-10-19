@@ -178,16 +178,17 @@ class Labelme2COCO(build_coco.COCOBuilder):
 def demo():
     kps_name = ["p0", "p1", "p2", "p3", "p4"]
     skeleton = [[0, 2], [2, 1], [2, 3], [3, 4]]
-    image_dir = "/media/PKing/新加卷1/SDK/base-utils/data/coco/JPEGImages"
-    anno_dir = "/media/PKing/新加卷1/SDK/base-utils/data/coco/json"
-    coco_ins_file = os.path.join(os.path.dirname(image_dir), "coco_ins.json")
-    coco_kps_file = os.path.join(os.path.dirname(image_dir), "coco_kps.json")
-    build = Labelme2COCO(image_dir=image_dir, anno_dir=anno_dir, init_id=None)
+    anno_dir = "/media/PKing/dev2/SDK/base-utils/data/labelme/images"
+    coco_ins_file = os.path.join(os.path.dirname(anno_dir), "coco_ins.json")
+    coco_kps_file = os.path.join(os.path.dirname(anno_dir), "coco_kps.json")
+    build = Labelme2COCO(image_dir=anno_dir, anno_dir=anno_dir, init_id=None)
+    # TODO 构建关键点检测数据集
     # build.build_keypoints_dataset(coco_kps_file,
     #                               class_name=["person"],
     #                               kps_name=kps_name,
     #                               skeleton=skeleton,
     #                               num_joints=5)
+    # TODO 构建实例分割数据集
     build.build_instances_dataset(coco_ins_file)
 
 
