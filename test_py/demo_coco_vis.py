@@ -58,7 +58,7 @@ def demo_vis_CocoKeypoints():
     anno_file = "/media/PKing/dev2/SDK/base-utils/data/labelme/coco_kps.json"
     class_name = ["person"]
 
-    anno_file = "/home/PKing/nasdata/tmp/tmp/pressure_meter/dataset-v1/val/coco_kps.json"
+    anno_file = "/home/PKing/nasdata/tmp/tmp/pressure_meter/dataset-v1/train/coco_kps.json"
     class_name = ["pressure_meter"]
     dataset = parser_coco_kps.CocoKeypoints(anno_file, image_dir="", class_name=class_name, shuffle=True)
     bones = dataset.bones

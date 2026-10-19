@@ -28,7 +28,7 @@ def demo():
     kpt_names = [ [ "range_start", "range_end",'pointer_start', 'pointer_end', ] ]
     skeleton =  [[2, 0], [2, 1], [2, 3]]
     kpt_shape = [4, 3]
-    anno_dir = "/home/PKing/nasdata/tmp/tmp/pressure_meter/dataset-v1/val/images"
+    anno_dir = "/home/PKing/nasdata/tmp/tmp/pressure_meter/dataset-v1/train/images"
     coco_ins_file = os.path.join(os.path.dirname(anno_dir), "coco_ins.json")
     coco_kps_file = os.path.join(os.path.dirname(anno_dir), "coco_kps.json")
     build = convert_labelme2coco.Labelme2COCO(image_dir=anno_dir,
