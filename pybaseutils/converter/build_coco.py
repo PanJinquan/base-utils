@@ -211,6 +211,7 @@ class COCOBuilder():
                 keypoints[1::3] = np.clip(keypoints[1::3], 1, height - 1)
         :return:
         """
+        if isinstance(keypoints, np.ndarray): keypoints = keypoints.tolist()
         self.annotation_id += 1
         annotation_item = dict()
         annotation_item['segmentation'] = seg
@@ -274,24 +275,21 @@ class COCOBuilder():
         if area < min_area: segs, area = [], []
         return segs, area
 
-    def addObjects(self, filename, objects: dict, width, height, num_joints, ignore_tiny=False):
+    def addObjects(self, filename, objects: dict, width, height, ignore_tiny=False):
         """
         :param filename: os.path.basename(filename)
         :param objects:
-                        boxes  is [[xmin,ymin,xmax,ymax],[xmin,ymin,xmax,ymax],...]
-                        labels is [目标1,目标2,...]
-                        contours is [目标1的轮廓,目标2的轮廓,...]
-                        keypoints is [目标1的关键点,目标2的关键点,...],格式：
-                        keypoints=num_joints*3,x,y,visibility
-                        keypoints关节点的格式 : [x_1, y_1, v_1,...,x_k, y_k, v_k]
-                        其中x,y为Keypoint的坐标，v为可见标志
-                            v = 0 : 未标注点
-                            v = 1 : 标注了但是图像中不可见（例如遮挡）
-                            v = 2 : 标注了并图像可见
+                        boxes     [[xmin,ymin,xmax,ymax],[xmin,ymin,xmax,ymax],...]
+                        labels    [目标1,目标2,...]
+                        contours  [目标1[seg1,seg2,...],目标2[seg1,seg2,...],...]
+                        keypoints [目标1[x1, y1, v1,x2, y2, v2,...],目标1[x1, y1, v1,x2, y2, v2,...],...]
+                                  其中x,y为Keypoint的坐标，v为可见标志
+                                        v = 0 : 未标注点
+                                        v = 1 : 标注了但是图像中不可见（例如遮挡）
+                                        v = 2 : 标注了并图像可见
         实际预测时，不要求预测每个关节点的可见性
         :param width:
         :param height:
-        :param num_joints:
         :param ignore_tiny: 是否去除segment很细小的目标
         :return:
         """

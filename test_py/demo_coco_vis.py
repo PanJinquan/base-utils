@@ -36,6 +36,7 @@ def demo_vis_CocoInstances():
 
     # anno_file = "../data/coco/coco_ins.json"
     anno_file = "/home/PKing/Downloads/labeled_trainval/SSLAD-2D/labeled/val/instance_val.json"
+    anno_file = "/media/PKing/dev2/SDK/base-utils/data/labelme/coco_ins.json"
     class_name = None
     dataset = parser_coco_ins.CocoInstances(anno_file=[anno_file], image_dir="", decode=True,
                                             class_name=class_name, use_rgb=False, shuffle=True)
@@ -54,11 +55,8 @@ def demo_vis_CocoKeypoints():
     # anno_file = "/home/PKing/nasdata/dataset/tmp/hand-pose/HandPose-v2/train/train_anno.json"
     # class_name = ['hand']
     # anno_file = "/home/PKing/nasdata/dataset/tmp/pen/dataset-pen2/train/coco_kps.json"
-    anno_file = "/home/PKing/nasdata/tmp/tmp/pen/dataset-pen1/train/coco_kps.json"
-    # class_name = ['pen_tip']
-    class_name = []
-    class_name = ["hand_pen"]
-    # class_name = {"pen": "hand"}
+    anno_file = "/media/PKing/dev2/SDK/base-utils/data/labelme/coco_kps.json"
+    class_name = ["person"]
     dataset = parser_coco_kps.CocoKeypoints(anno_file, image_dir="", class_name=class_name, shuffle=True)
     bones = dataset.bones
     for i in range(len(dataset)):
@@ -66,7 +64,7 @@ def demo_vis_CocoKeypoints():
         data = dataset.__getitem__(i)
         image, boxes, labels, keypoints = data['image'], data["boxes"], data["labels"], data["keypoints"]
         h, w = image.shape[:2]
-        kpts = [s / (w, h) for s in keypoints] if len(keypoints) > 0 else []
+        kpts = [s / (w, h, 1) for s in keypoints] if len(keypoints) > 0 else []
         kpts = np.asarray(kpts)
         keypoints = np.asarray(keypoints)
         print("i={},image_file={}".format(i, data['image_file']))
@@ -90,6 +88,6 @@ def demo_vis_CocoDetections():
 
 
 if __name__ == "__main__":
-    demo_vis_CocoDetections()
+    # demo_vis_CocoDetections()
     # demo_vis_CocoInstances()
-    # demo_vis_CocoKeypoints()
+    demo_vis_CocoKeypoints()

@@ -53,6 +53,10 @@ class LabelMeDataset(Dataset):
         :param check: 当class_name=None且check=True,将自动获取所有class
         :param check_kpt: True会检查关键点的完整性,图像中仅当所有目标都标注和对应的关键点(无漏标注),才返回数据
                            False不会检查关键点的完整性,,图像中只要标注的目标和对应的关键点(漏标注),会返回数据
+        :param kpt_names: 关键点名称列表，
+                          当kpt_names.ndim=1时，要求所有类别且所有目标的关键点名称必须一致
+                          当kpt_names.ndim=2时，仅要求相同类别目标的关键点名称必须一致，且len(kpt_names)==len(self.class_name)
+        :param kpt_shape: 关键点的维度，默认是(17, 3)，对于coco-person,有17个关键点，3表示(x,y,v)
         :param min_points: 当标注的轮廓点的个数小于min_points，会被剔除；负数不剔除
         :param kwargs: read_image: 是否读取图片，否则image=None
         """
