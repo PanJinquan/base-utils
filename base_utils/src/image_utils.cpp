@@ -386,15 +386,20 @@ void draw_points_texts_colors(cv::Mat &image, vector<cv::Point2f> points, vector
 }
 
 
-void draw_rect_text(cv::Mat &image, cv::Rect rect, string text, cv::Scalar color, int thickness, double fontScale) {
-    cv::rectangle(image, rect, color, thickness);
-    if (text != "") {
-        cv::putText(image,
-                    text,
-                    cv::Point(rect.x + 5, rect.y - 5),
-                    cv::FONT_HERSHEY_COMPLEX,
-                    fontScale,
-                    color, thickness);
+void draw_rect_text(cv::Mat &image, cv::Rect rect, string text, cv::Scalar color, int thickness, double fontScale,
+                    bool bg) {
+    if (bg) {
+        draw_rect_text_bg(image, rect, text, color, thickness, fontScale);
+    } else {
+        cv::rectangle(image, rect, color, thickness);
+        if (text != "") {
+            cv::putText(image,
+                        text,
+                        cv::Point(rect.x + 5, rect.y - 5),
+                        cv::FONT_HERSHEY_COMPLEX,
+                        fontScale,
+                        color, thickness);
+        }
     }
 }
 
@@ -411,8 +416,8 @@ void draw_rect_text_bg(cv::Mat &image, cv::Rect rect, string text, cv::Scalar co
     }
     cv::Point bg1(text_loc.x, text_loc.y - text_wh.height - baseline / 2);
     cv::Point bg2(text_loc.x + text_wh.width, text_loc.y + baseline / 2); // 底纹等于字体的宽度
-    cv::rectangle(image, bg1, bg2, color, thickness);              // 先绘制框，避免断裂
-    cv::rectangle(image, bg1, bg2, color, -1);          // 绘制底纹
+    cv::rectangle(image, bg1, bg2, color, thickness); // 先绘制框，避免断裂
+    cv::rectangle(image, bg1, bg2, color, -1); // 绘制底纹
     // 绘制bbox
     cv::rectangle(image, cv::Point(rect.x, rect.y), cv::Point(rect.x + rect.width, rect.y + rect.height),
                   color, thickness);
@@ -442,51 +447,51 @@ void draw_rects_texts(cv::Mat &image,
 
 void draw_lines(cv::Mat &image,
                 cv::Point2f points[],
-                vector<vector<int> > skeleton,
+                vector<vector<int> > &skeleton,
                 cv::Scalar color,
                 int thickness,
                 bool clip) {
+    if (skeleton.size() == 0) return;
     for (int i = 0; i < skeleton.size(); ++i) {
         auto pair = skeleton[i];
-        if (~clip || (points[pair[0]].x > 0. && points[pair[0]].y > 0. &&
-                      points[pair[1]].x > 0. && points[pair[1]].y > 0.)) {
-            cv::Point2d p0 = points[pair[0]];
-            cv::Point2d p1 = points[pair[1]];
+        cv::Point2d p0 = points[pair[0]];
+        cv::Point2d p1 = points[pair[1]];
+        if (!clip || (p0.x > 0. && p0.y > 0. && p1.x > 0. && p1.y > 0.)) {
             cv::line(image, p0, p1, color, thickness);
         }
     }
 }
 
 void draw_lines(cv::Mat &image,
-                vector<cv::Point2f> points,
-                vector<vector<int> > skeleton,
+                vector<cv::Point2f> &points,
+                vector<vector<int> > &skeleton,
                 cv::Scalar color,
                 int thickness,
                 bool clip) {
+    if (points.size() == 0 || skeleton.size() == 0) return;
     for (int i = 0; i < skeleton.size(); ++i) {
-        auto pair = skeleton[i];
-        if (~clip || (points[pair[0]].x > 0. && points[pair[0]].y > 0. &&
-                      points[pair[1]].x > 0. && points[pair[1]].y > 0.)) {
-            cv::Point2d p0 = points[pair[0]];
-            cv::Point2d p1 = points[pair[1]];
+        auto &pair = skeleton[i];
+        cv::Point2d p0 = points[pair[0]];
+        cv::Point2d p1 = points[pair[1]];
+        if (!clip || (p0.x > 0. && p0.y > 0. && p1.x > 0. && p1.y > 0.)) {
             cv::line(image, p0, p1, color, thickness);
         }
     }
 }
 
 void draw_lines(cv::Mat &image,
-                vector<cv::Point2f> points,
-                vector<vector<int> > skeleton,
-                vector<cv::Scalar> colors,
+                vector<cv::Point2f> &points,
+                vector<vector<int> > &skeleton,
+                vector<cv::Scalar> &colors,
                 int thickness,
                 bool clip) {
+    if (points.size() == 0 || skeleton.size() == 0) return;
     for (int i = 0; i < skeleton.size(); ++i) {
-        auto pair = skeleton[i];
-        if (~clip || (points[pair[0]].x > 0. && points[pair[0]].y > 0. &&
-                      points[pair[1]].x > 0. && points[pair[1]].y > 0.)) {
-            cv::Point2d p0 = points[pair[0]];
-            cv::Point2d p1 = points[pair[1]];
-            cv::Scalar color = colors[pair[1] % colors.size()];
+        auto &pair = skeleton[i];
+        cv::Point2d p0 = points[pair[0]];
+        cv::Point2d p1 = points[pair[1]];
+        if (!clip || (p0.x > 0. && p0.y > 0. && p1.x > 0. && p1.y > 0.)) {
+            cv::Scalar &color = colors[pair[1] % colors.size()];
             cv::line(image, p0, p1, color, thickness);
         }
     }
@@ -498,12 +503,12 @@ void draw_arrowed_lines(cv::Mat &image,
                         cv::Scalar color,
                         int thickness,
                         bool clip) {
+    if (points.size() == 0 || skeleton.size() == 0) return;
     for (int i = 0; i < skeleton.size(); ++i) {
         auto pair = skeleton[i];
-        if (~clip || (points[pair[0]].x > 0. && points[pair[0]].y > 0. &&
-                      points[pair[1]].x > 0. && points[pair[1]].y > 0.)) {
-            cv::Point2d p0 = points[pair[0]];
-            cv::Point2d p1 = points[pair[1]];
+        cv::Point2d p0 = points[pair[0]];
+        cv::Point2d p1 = points[pair[1]];
+        if (!clip || (p0.x > 0. && p0.y > 0. && p1.x > 0. && p1.y > 0.)) {
             cv::arrowedLine(image, p0, p1, color, thickness);
         }
     }
@@ -516,12 +521,12 @@ void draw_arrowed_lines(cv::Mat &image,
                         vector<cv::Scalar> colors,
                         int thickness,
                         bool clip) {
+    if (points.size() == 0 || skeleton.size() == 0) return;
     for (int i = 0; i < skeleton.size(); ++i) {
         auto pair = skeleton[i];
-        if (~clip || (points[pair[0]].x > 0. && points[pair[0]].y > 0. &&
-                      points[pair[1]].x > 0. && points[pair[1]].y > 0.)) {
-            cv::Point2d p0 = points[pair[0]];
-            cv::Point2d p1 = points[pair[1]];
+        cv::Point2d p0 = points[pair[0]];
+        cv::Point2d p1 = points[pair[1]];
+        if (!clip || (p0.x > 0. && p0.y > 0. && p1.x > 0. && p1.y > 0.)) {
             cv::Scalar color = colors[pair[1] % colors.size()];
             cv::arrowedLine(image, p0, p1, color, thickness);
         }
@@ -580,7 +585,7 @@ void draw_obb_image(cv::Mat &image, vector<cv::Point> contour, string text, cv::
         {3, 0}
     };
     draw_lines(image, src_pts, skeleton, color, 2, false);
-    if (~text.empty()) {
+    if (!text.empty()) {
         cv::Rect r = points2rect(contour);
         cv::putText(image, text, cv::Point(r.x + 5, r.y),
                     cv::FONT_HERSHEY_COMPLEX, 1.0, color, 2);

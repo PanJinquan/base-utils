@@ -85,7 +85,7 @@ class Labelme2COCO(build_coco.COCOBuilder):
             info = {"boxes": data_info["boxes"], "labels": data_info["names"],
                     "contours": contours, "keypoints": keypoints}
             width, height = data_info["size"]
-            filename = data_info["image_file"]
+            filename = os.path.basename(data_info["image_file"])
             self.addObjects(filename, info, width, height)
         # 设置关键点的名称和skeleton
         self.set_keypoints_category(kps_name=self.kpt_names[0], skeleton=skeleton, cat_id=0)

@@ -83,6 +83,7 @@ BONES = {
 def get_target_bones(target, kpts=[]):
     if target in BONES:
         return BONES[target]
+    if not kpts: return {}
     nums = max([len(kpt) for kpt in kpts])
     info = {
         "skeleton": circle_line(nums, iscircle=True),

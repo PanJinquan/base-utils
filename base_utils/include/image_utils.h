@@ -437,7 +437,7 @@ void draw_points_texts_colors(cv::Mat &image, vector<cv::Point2f> points, vector
  * @param text
  */
 void draw_rect_text(cv::Mat &image, cv::Rect rect, string text = "",
-                    cv::Scalar color = cv::Scalar(255, 0, 0), int thickness = 2, double fontScale = 0.8);
+                    cv::Scalar color = cv::Scalar(255, 0, 0), int thickness = 2, double fontScale = 0.8, bool bg = true);
 
 /***
  * 绘制带底纹的矩形框和文本
@@ -464,7 +464,7 @@ void draw_rects_texts(cv::Mat &image, vector<cv::Rect> rects, vector<string> tex
  * @param skeleton 需要连接的ID序号
  * @param color 连接线的颜色
  */
-void draw_lines(cv::Mat &image, cv::Point2f points[], vector<vector<int> > skeleton,
+void draw_lines(cv::Mat &image, cv::Point2f points[], vector<vector<int>> &skeleton,
                 cv::Scalar color = cv::Scalar(255, 0, 0), int thickness = 2, bool clip = true);
 
 /***
@@ -474,7 +474,7 @@ void draw_lines(cv::Mat &image, cv::Point2f points[], vector<vector<int> > skele
  * @param skeleton 需要连接的ID序号
  * @param color 连接线的颜色
  */
-void draw_lines(cv::Mat &image, vector<cv::Point2f> points, vector<vector<int> > skeleton,
+void draw_lines(cv::Mat &image, vector<cv::Point2f> &points, vector<vector<int>> &skeleton,
                 cv::Scalar color = cv::Scalar(255, 0, 0), int thickness = 2, bool clip = true);
 
 /***
@@ -484,7 +484,7 @@ void draw_lines(cv::Mat &image, vector<cv::Point2f> points, vector<vector<int> >
  * @param skeleton 需要连接的ID序号
  * @param colors 连接线的颜色表
  */
-void draw_lines(cv::Mat &image, vector<cv::Point2f> points, vector<vector<int> > skeleton, vector<cv::Scalar> colors,
+void draw_lines(cv::Mat &image, vector<cv::Point2f> &points, vector<vector<int> > &skeleton, vector<cv::Scalar> &colors,
                 int thickness = 2, bool clip = true);
 
 

@@ -5,9 +5,9 @@
 #include <filter/mean_filter.h>
 
 
-MeanFilter::MeanFilter(int win_size, float decay) {
-    this->mWinSize = win_size;
-    vector<float> WeightDecay = get_weight_decay(win_size, decay);
+MeanFilter::MeanFilter(int wsize, float decay) {
+    this->mWinSize = wsize;
+    vector<float> WeightDecay = get_weight_decay(wsize, decay);
     // fix a bug: 必须clone()，否则会被释放掉
     this->mWeightDecay = cv::Mat(WeightDecay).reshape(1, 1).clone();
 }

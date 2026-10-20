@@ -5,8 +5,8 @@
 #include <filter/motion_filter.h>
 
 
-MotionFilter::MotionFilter(int win_size, float decay) {
-    this->mWinSize = win_size;
+MotionFilter::MotionFilter(int wsize, float decay) {
+    this->mWinSize = wsize;
     this->mDecay = decay;
     this->curr = {-1, -1};
     this->last = {-1, -1};
