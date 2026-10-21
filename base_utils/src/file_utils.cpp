@@ -160,38 +160,80 @@ bool remove_file(string file) {
         return false;
     }
 }
+/***
+ * 判断文件名是否匹配扩展名
+ * @param filename 文件名
+ * @param ext 扩展名，支持多个后缀用|分割；为空时匹配所有文件
+ * @return
+ */
+static bool match_ext(const string &filename, const string &ext) {
+    if (ext.empty()) {
+        return true;
+    }
+    string postfix = get_postfix(filename, true);
+    size_t start = 0;
+    while (start <= ext.size()) {
+        size_t pos = ext.find('|', start);
+        string item = ext.substr(start, pos == string::npos ? string::npos : pos - start);
+        // 去掉首尾空格
+        size_t first = item.find_first_not_of(" \t");
+        size_t last = item.find_last_not_of(" \t");
+        item = (first == string::npos) ? "" : item.substr(first, last - first + 1);
+        // 允许后缀带"."，如".jpg"
+        if (!item.empty() && item[0] == '.') {
+            item = item.substr(1);
+        }
+        transform(item.begin(), item.end(), item.begin(), ::tolower);
+        if (!item.empty() && postfix == item) {
+            return true;
+        }
+        if (pos == string::npos) {
+            break;
+        }
+        start = pos + 1;
+    }
+    return false;
+}
+
+
+vector<string> get_image_list(string dir, string ext) {
+    return get_files_list(dir, ext);
+}
 //#ifdef _LINUX
 #ifdef PLATFORM_LINUX
 
 #include <memory.h>
 #include <dirent.h>
 
-vector<string> get_files_list(string dirpath) {
+vector<string> get_files_list(string dir, string ext) {
     vector<string> allPath;
-    DIR *dir = opendir(dirpath.c_str());
-    if (dir == NULL) {
+    DIR *dirp = opendir(dir.c_str());
+    if (dirp == NULL) {
         LOGD("opendir error");
         return allPath;
     }
     struct dirent *entry;
-    while ((entry = readdir(dir)) != NULL) {
+    while ((entry = readdir(dirp)) != NULL) {
         if (entry->d_type == DT_DIR) {//It's dir
             if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
                 continue;
-            string dirNew = dirpath + separator + entry->d_name;
-            vector<string> tempPath = get_files_list(dirNew);
+            string dirNew = dir + separator + entry->d_name;
+            vector<string> tempPath = get_files_list(dirNew,ext);
             allPath.insert(allPath.end(), tempPath.begin(), tempPath.end());
 
         } else {
             //cout << "name = " << entry->d_name << ", len = " << entry->d_reclen << ", entry->d_type = " << (int)entry->d_type << endl;
             string name = entry->d_name;
-            string imgdir = dirpath + separator + name;
+            if (!match_ext(name, ext)) {
+                continue;
+            }
+            string imgdir = dir + separator + name;
             //LOGD("%s",imgdir.c_str());
             allPath.push_back(imgdir);
         }
 
     }
-    closedir(dir);
+    closedir(dirp);
     //system("pause");
     return allPath;
 }
@@ -200,7 +242,7 @@ vector<string> get_files_list(string dirpath) {
 //#ifdef _WIN32//__WINDOWS_
 #elif PLATFORM_WINDOWS//__WINDOWS_
 #include <io.h>
-vector<string> get_files_list(string dir)
+vector<string> get_files_list(string dir, string ext)
 {
     vector<string> allPath;
     // 在目录后面加上"\\*.*"进行第一次搜索
@@ -216,19 +258,23 @@ vector<string> get_files_list(string dir)
     }
     while (_findnext(handle, &findData) == 0)
     {
-        if (findData.attrib & _A_SUBDIR) 是否含有子目录
+        if (findData.attrib & _A_SUBDIR) // 是否含有子目录
         {
             //若该子目录为"."或".."，则进行下一次循环，否则输出子目录名，并进入下一次搜索
             if (strcmp(findData.name, ".") == 0 || strcmp(findData.name, "..") == 0)
                 continue;
             // 在目录后面加上"\\"和搜索到的目录名进行下一次搜索
             string dirNew = dir + separator + findData.name;
-            vector<string> tempPath = get_files_list(dirNew);
+            vector<string> tempPath = get_files_list(dirNew, ext);
             allPath.insert(allPath.end(), tempPath.begin(), tempPath.end());
         }
         else //不是子目录，即是文件，则输出文件名和文件的大小
         {
-            string filePath = dir + separator + findData.name;
+            string name = findData.name;
+            if (!match_ext(name, ext)) {
+                continue;
+            }
+            string filePath = dir + separator + name;
             allPath.push_back(filePath);
         }
     }
@@ -240,8 +286,30 @@ vector<string> get_files_list(string dir)
 #elif PLATFORM_ANDROID
 #include <memory.h>
 #include <dirent.h>
-vector<string> get_files_list(string dirpath) {
+vector<string> get_files_list(string dirpath, string ext) {
     vector<string> allPath;
+    DIR *dirp = opendir(dirpath.c_str());
+    if (dirp == NULL) {
+        LOGD("opendir error");
+        return allPath;
+    }
+    struct dirent *entry;
+    while ((entry = readdir(dirp)) != NULL) {
+        if (entry->d_type == DT_DIR) {//It's dir
+            if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+                continue;
+            string dirNew = dirpath + separator + entry->d_name;
+            vector<string> tempPath = get_files_list(dirNew, ext);
+            allPath.insert(allPath.end(), tempPath.begin(), tempPath.end());
+        } else {
+            string name = entry->d_name;
+            if (!match_ext(name, ext)) {
+                continue;
+            }
+            allPath.push_back(dirpath + separator + name);
+        }
+    }
+    closedir(dirp);
     return allPath;
 }
 

@@ -169,9 +169,12 @@ bool remove_file(string file);
 /***
  * 获得directory目录下的所有文件
  * @param dir
+ * @param ext 筛选扩展名文件，支持多个后缀，用|分割，当ext=""空时，返回所有文件
  * @return
  */
-vector<string> get_files_list(string dir);
+vector<string> get_files_list(string dir, string ext="");
+
+vector<string> get_image_list(string dir, string ext="jpg|png|jpeg");
 
 
 #endif //DETECTOR_FILE_UTILS_H

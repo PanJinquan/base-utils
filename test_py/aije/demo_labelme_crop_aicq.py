@@ -116,9 +116,10 @@ if __name__ == '__main__':
                    "蓝色被子",
                    ]
     datasets = [
-        # '/home/PKing/edudata/dataset/AICQ/dataset/data-2026-10-06/images',
-        # '/home/PKing/edudata/dataset/AICQ/dataset/data-2026-09-30/images',
+        '/home/PKing/edudata/dataset/AICQ/dataset/data-2026-09-30/images',
+        '/home/PKing/edudata/dataset/AICQ/dataset/data-2026-10-06/images',
         '/home/PKing/edudata/dataset/AICQ/dataset/data-2026-10-12/images',
+        '/home/PKing/edudata/dataset/AICQ/dataset/data-2026-10-20/images',
     ]
     # datasets = "/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/文件列表.txt"
     # datasets = file_utils.read_data(datasets, split=None)
