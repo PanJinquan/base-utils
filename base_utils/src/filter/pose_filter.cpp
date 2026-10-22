@@ -9,14 +9,14 @@
 
 PoseFilter::PoseFilter(const std::vector<int> &kid, int wsize, float decay, float vTh,
                        float max_step, int median_size, int recover_frames, int lost_frames)
-        : mKid(kid),
-          mWsize(std::max(wsize, 1)),
-          mDecay(std::min(std::max(decay, 0.0f), 0.999f)),
-          mVTh(vTh),
-          mMaxStep(max_step),
-          mMedianSize(std::max(median_size, 1)),
-          mRecoverFrames(std::max(recover_frames, 1)),
-          mLostFrames(std::max(lost_frames, 1)) {
+    : mKid(kid),
+      mWsize(std::max(wsize, 1)),
+      mDecay(std::min(std::max(decay, 0.0f), 0.999f)),
+      mVTh(vTh),
+      mMaxStep(max_step),
+      mMedianSize(std::max(median_size, 1)),
+      mRecoverFrames(std::max(recover_frames, 1)),
+      mLostFrames(std::max(lost_frames, 1)) {
 }
 
 
@@ -31,7 +31,7 @@ void PoseFilter::reset() {
 
 
 std::vector<cv::Point2f> &PoseFilter::update(std::vector<cv::Point2f> &points, float dt) {
-    if (points.empty()) {
+    if (mKid.empty() || points.empty()) {
         return points;
     }
     // 帧间隔非法（<=0 或 NaN）时按 1 帧处理
