@@ -10,8 +10,32 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <opencv2/opencv.hpp>
 
 using namespace std;
+
+/***
+ * 单个跟踪目标的信息
+ */
+struct Track {
+    int idx = -1;                       // 跟踪目标ID（唯一且连续递增）
+    int lost = 0;                       // 连续丢失检测的帧数
+    int index = -1;                     // 当前帧匹配的检测结果索引(未匹配为-1)
+    float distance = 0.0f;              // 最近一次的测距结果(米)
+    float speed = 0.0f;                 // 最近一次的速度结果(km/h)
+    vector<cv::Point2f> trajectory;     // 目标中心点的运动轨迹
+};
+
+
+/***
+ * 目标信息
+ */
+struct ImageInfo {
+    float x1, x2, y1, y2, score;   // 目标：左上角x1,左上角y1,右下角x2,右下角y2,置信度分数score
+    int label;                     // 目标类别ID
+    Track track;                   // 跟踪目标的信息
+};
+
 
 /***
  * 释放vector空间
