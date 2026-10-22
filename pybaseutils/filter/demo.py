@@ -48,7 +48,7 @@ class FilterDemo():
             # 绘制预测值轨迹（蓝色）
             self.task()
             cv2.imshow('Kalman', self.frame)
-            key = cv2.waitKey(100)
+            key = cv2.waitKey(50)
             if key == 27:  # ESC对应的ASCII码是27
                 break
             elif key == ord("c") or key == ord("C"):
