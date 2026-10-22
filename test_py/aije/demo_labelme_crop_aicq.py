@@ -120,6 +120,7 @@ if __name__ == '__main__':
         '/home/PKing/edudata/dataset/AICQ/dataset/data-2026-10-06/images',
         '/home/PKing/edudata/dataset/AICQ/dataset/data-2026-10-12/images',
         '/home/PKing/edudata/dataset/AICQ/dataset/data-2026-10-20/images',
+        '/home/PKing/edudata/dataset/AICQ/dataset/data-2026-10-21/images',
     ]
     # datasets = "/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/文件列表.txt"
     # datasets = file_utils.read_data(datasets, split=None)

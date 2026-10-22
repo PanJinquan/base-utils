@@ -13,9 +13,9 @@ import motion_filter
 
 class FilterDemo():
     def __init__(self):
-        # self.filter = kalman_filter.KalmanFilter()
-        # self.filter = mean_filter.MeanFilter(win_size=8, decay=0.3)
-        self.filter = motion_filter.MotionFilter(win_size=1, decay=0.5)
+        self.filter = kalman_filter.KalmanFilter()
+        self.filter = mean_filter.MeanFilter(wsize=8, decay=0.3)
+        self.filter = motion_filter.MotionFilter(wsize=1, decay=0.5)
         self.curr_mes = np.array([-1, -1])
         self.curr_pre = np.array([-1, -1])
 

@@ -58,7 +58,7 @@ def demo_vis_CocoKeypoints():
     anno_file = "/media/PKing/dev2/SDK/base-utils/data/labelme/coco_kps.json"
     class_name = ["person"]
 
-    anno_file = "/home/PKing/nasdata/tmp/tmp/pressure_meter/dataset-v1/train/coco_kps.json"
+    anno_file = "/home/PKing/nasdata/tmp/tmp/pressure_meter/dataset-v2/train/coco_kps.json"
     class_name = ["pressure_meter"]
     dataset = parser_coco_kps.CocoKeypoints(anno_file, image_dir="", class_name=class_name, shuffle=True)
     bones = dataset.bones
@@ -72,13 +72,12 @@ def demo_vis_CocoKeypoints():
         keypoints = np.asarray(keypoints)
         print("i={},image_file={}".format(i, data['image_file']))
         parser_coco_kps.show_target_image(image, keypoints, boxes, colors=bones["colors"],
-                                          skeleton=bones["skeleton"], thickness=4)
+                                          skeleton=bones["skeleton"], vis_id=True, thickness=2)
 
 
 def demo_vis_CocoDetections():
     # hand
-    # anno_file = "/home/PKing/nasdata/tmp/tmp/cat-det/dataset/train/instance_train.json"
-    anno_file = "/home/PKing/nasdata/tmp/tmp/cat-det/dataset/val/instance_val.json"
+    anno_file = "/home/PKing/nasdata/tmp/tmp/pressure_meter/dataset-v22/coco_kps.json"
     class_name = []
     dataset = parser_coco_det.CocoDetections(anno_file, image_dir="", class_name=class_name)
     class_name = dataset.class_name

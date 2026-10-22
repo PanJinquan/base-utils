@@ -9,14 +9,14 @@ from pybaseutils.filter import QueueTable
 
 
 class MeanFilter():
-    def __init__(self, win_size, decay=0.9):
+    def __init__(self, wsize, decay=0.9):
         """
-        :param win_size:记录历史信息的窗口大小
+        :param wsize:记录历史信息的窗口大小
         :param decay: 衰减系数，值越大，历史影响衰减的越快，平滑力度越小
         """
-        self.queue = QueueTable.QueueTable(win_size)
+        self.queue = QueueTable.QueueTable(wsize)
         if decay:
-            self.weight_decay = self.get_weight(win_size, decay=decay)
+            self.weight_decay = self.get_weight(wsize, decay=decay)
         else:
             self.weight_decay = None
         print("prob:{}".format(self.weight_decay))
