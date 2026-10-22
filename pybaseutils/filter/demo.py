@@ -1,21 +1,20 @@
 # -*- coding: utf-8 -*-
 """
-    @Author : Pan
-    @E-mail : 390737991@qq.com
-    @Date   : 2021-01-20 09:46:40
+# --------------------------------------------------------
+# @Author : Pan
+# @E-mail :
+# @Date   : 2025-02-18 16:10:49
+# @Brief  :
+# --------------------------------------------------------
 """
 import numpy as np
 import cv2
-import kalman_filter
-import mean_filter
-import motion_filter
+import pose_filter
 
 
 class FilterDemo():
     def __init__(self):
-        self.filter = kalman_filter.KalmanFilter()
-        self.filter = mean_filter.MeanFilter(wsize=8, decay=0.3)
-        self.filter = motion_filter.MotionFilter(wsize=1, decay=0.5)
+        self.filter = pose_filter.PoseFilter()
         self.curr_mes = np.array([-1, -1])
         self.curr_pre = np.array([-1, -1])
 
@@ -27,9 +26,9 @@ class FilterDemo():
         self.curr_mes = np.array([x, y], dtype=np.float32)
 
     def task(self):
-        self.filter.update(self.curr_mes)
-        self.curr_pre = self.filter.predict()
-
+        self.curr_pre = np.array(self.curr_mes)
+        self.curr_pre = self.filter.update(self.curr_pre.reshape(1,2))
+        self.curr_pre = self.curr_pre[0,:]
         curr_mes = (int(self.curr_mes[0]), int(self.curr_mes[1]))
         last_mes = (int(self.last_mes[0]), int(self.last_mes[1]))
         curr_pre = (int(self.curr_pre[0]), int(self.curr_pre[1]))
