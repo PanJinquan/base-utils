@@ -53,24 +53,39 @@ class Objects(object):
             msgs += "{}:{}\n".format(k, v)
         return msgs
 
-    def get_obj(self, names: List, keys: List = []):
-        """选择目标,返回新的Objects对象"""
+    def _empty(self, v):
+        """判断v是否为空数据,支持多种类型"""
+        if v is None: return True
+        if isinstance(v, np.ndarray): return v.size == 0
+        if isinstance(v, (list, tuple, str, dict, set)): return len(v) == 0
+        return False
+
+    def get_obj(self, names: List, keys: List = ["names", "boxes", "score", "label", "segms"]):
+        """
+        选择目标,返回新的Objects对象
+        :param names: 需要筛选的类别名称
+        :param keys: 需要返回哪些字段
+        """
         obj = Objects(boxes=[], label=[], score=[])
         names = dict.fromkeys(names, 0)
         index = [i for i, n in enumerate(self.names) if n in names]
         for k, v in self.__dict__.items():
-            if k in keys:
+            if not self._empty(v) and k in keys:
                 v = v[index] if isinstance(v, np.ndarray) else [v[i] for i in index]
             setattr(obj, k, v)
         return obj
 
-    def del_obj(self, names: List, keys: List = []):
-        """删除目标,返回新的Objects对象"""
+    def del_obj(self, names: List, keys: List = ["names", "boxes", "score", "label", "segms"]):
+        """
+        删除目标,返回新的Objects对象
+        :param names: 需要筛选的类别名称
+        :param keys: 需要返回哪些字段
+        """
         obj = Objects(boxes=[], label=[], score=[])
         names = dict.fromkeys(names, 0)
         index = [i for i, n in enumerate(self.names) if n not in names]
         for k, v in self.__dict__.items():
-            if k in keys:
+            if not self._empty(v) and k in keys:
                 v = v[index] if isinstance(v, np.ndarray) else [v[i] for i in index]
             setattr(obj, k, v)
         return obj
