@@ -1,9 +1,11 @@
-# -*- coding: utf-8 -*-
 """
-    @Author : PKing
-    @E-mail : 
-    @Date   : 2024-02-05 19:38:52
-    @Brief  :
+# --------------------------------------------------------
+# @Author : Pan
+# @E-mail :
+# @Date   : 2026-10-23 15:20:57
+# @Brief  : 推荐使用from pybaseutils.transforms import aligner
+#           transform_utils不在维护
+# --------------------------------------------------------
 """
 import cv2
 import numpy as np
