@@ -4,7 +4,7 @@
 # @E-mail :
 # @Date   : 2026-10-23 15:20:57
 # @Brief  : 推荐使用from pybaseutils.transforms import aligner
-#           transform_utils不在维护
+#           transform_utils不维护了
 # --------------------------------------------------------
 """
 import cv2
