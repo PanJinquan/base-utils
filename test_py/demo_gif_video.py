@@ -24,9 +24,9 @@ def resize_android(frame):
 
 def resize_fun(frame):
     h, w = frame.shape[:2]
-    # frame = image_utils.resize_image(frame, size=(196, None))
+    frame = image_utils.resize_image(frame, size=(248, None))
     # frame = image_utils.resize_image(frame, size=(500, None))
-    frame = image_utils.resize_image(frame, size=(960, None))
+    # frame = image_utils.resize_image(frame, size=(960, None))
     # frame = image_utils.resize_image(frame, size=(None, 640))  # android-video
     return frame
 
@@ -34,18 +34,18 @@ def resize_fun(frame):
 def android_gif():
     # video_file = "/media/dm/新加卷/SDK/CSDN/双目测距/demo/image-nouse-wls.mp4"
     video_file = "/media/PKing/dev2/SDK/project/cv-sdk-mnn/Demo/android-yolo-demo2.mp4"
-    video_utils.video2gif(video_file, interval=3, func=resize_android, fps=15, use_pil=False, vis=True)
+    video_utils.video2gif(video_file, interval=4, func=resize_android, fps=6, use_pil=False, vis=True)
 
 
 def python_gif():
-    video_file = "/home/PKing/nasdata/Project/LLM/MLLM-Factory/docs/chat-demo.mp4"
-    video_file = "/media/PKing/dev1/project/AI-Labelme/docs/video-track-label.mp4"
+    video_file = "/home/PKing/nasdata/Release/infrastructure/Pytorch-Keypoint-Trainer/output/video02-demo.avi"
+    video_file = "/home/PKing/nasdata/Release/infrastructure/Pytorch-Keypoint-Trainer/output/video01-demo.avi"
     # video_utils.video2gif(video_file, interval=10, func=resize_fun, fps=4, time=(0.5, 24), use_pil=True, vis=True)
-    video_utils.video2gif(video_file, interval=8, func=resize_fun, fps=4,  use_pil=True, vis=True)
+    video_utils.video2gif(video_file, interval=4, func=resize_fun, fps=4,  use_pil=True, vis=True)
 
 
 def image_gif():
-    image_dir = "/home/PKing/nasdata/dataset-dmai/AIJE/方案图/开关检测/images"
+    image_dir = "/home/PKing/nasdata/tmp/tmp/pressure_meter/code"
     gif_file = image_dir + ".gif"
     frames = file_utils.get_images_list(image_dir)
     image_utils.image_file2gif(frames, size=(416, 416), padding=True, interval=1, gif_file=gif_file, fps=1,
@@ -53,7 +53,7 @@ def image_gif():
 
 
 if __name__ == "__main__":
-    """博文GIF图不能超过50M"""
+    """博文GIF图不能超过5M"""
     # image_gif()
-    android_gif()
-    # python_gif()
+    # android_gif()
+    python_gif()

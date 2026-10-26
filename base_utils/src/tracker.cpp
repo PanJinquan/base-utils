@@ -8,13 +8,19 @@
 Tracker::Tracker(int maxLost, int maxSzie, float iouThresh, AlgType algo)
     : maxLost(maxLost), maxSzie(maxSzie), iouThresh(iouThresh), algo(algo),
       byteTracker(30, maxLost, 0.5f, 0.6f, 0.8f, 0.1f, maxSzie) {
+#ifndef OPENCV_TRACK_ON
+    // 未启用 OpenCV tracking 模块时 CSRT、MOSSE、KCF 不可用，自动回退到 SORT
+    if (this->algo != AlgType::BYTE) this->algo = AlgType::SORT;
+#endif
 }
 
 Tracker::~Tracker() = default;
 
 void Tracker::reset() {
     // 重置跟踪器：清空所有目标、跟踪器与卡尔曼滤波器，重新分配ID
+#ifdef OPENCV_TRACK_ON
     trackers.clear();
+#endif
     kalmanFilters.clear();
     obj_tracks.clear();
     nextID = 0;
@@ -63,6 +69,7 @@ void Tracker::appendTrajectory(Track &track, const cv::Rect2f &box) {
     }
 }
 
+#ifdef OPENCV_TRACK_ON
 cv::Ptr<cv::legacy::Tracker> Tracker::makeTracker() const {
     // 按 algo 创建对应的单目标跟踪器
     switch (algo) {
@@ -75,6 +82,7 @@ cv::Ptr<cv::legacy::Tracker> Tracker::makeTracker() const {
             return cv::legacy::TrackerKCF::create();
     }
 }
+#endif
 
 cv::KalmanFilter Tracker::makeKalmanFilter(const cv::Rect2f &box) const {
     // 卡尔曼滤波器：8 维状态 [x, y, w, h, vx, vy, vw, vh]，4 维测量 [x, y, w, h]
@@ -158,7 +166,9 @@ void Tracker::update(const cv::Mat &image, vector<ImageInfo> &dets) {
                 obj_tracks[t].y2 = y + h;
             }
         }
-    } else {
+    }
+#ifdef OPENCV_TRACK_ON
+    else {
         // legacy 模式：仅对丢失中的目标(已有跟踪器)预测位置，可见目标不运行跟踪器
         for (size_t t = 0; t < obj_tracks.size(); t++) {
             if (trackers[t].empty()) continue;
@@ -172,6 +182,7 @@ void Tracker::update(const cv::Mat &image, vector<ImageInfo> &dets) {
             // 跟踪器更新失败时保持原框，后续由丢失计数自然删除
         }
     }
+#endif
 
     // 第二步：构建当前帧检测框，并与已有目标做 IoU 匹配
     vector<cv::Rect2f> detBoxes;
@@ -201,9 +212,12 @@ void Tracker::update(const cv::Mat &image, vector<ImageInfo> &dets) {
             cv::Mat meas = (cv::Mat_<float>(4, 1) << detBoxes[d].x, detBoxes[d].y,
                             detBoxes[d].width, detBoxes[d].height);
             kalmanFilters[t].correct(meas);
-        } else {
+        }
+#ifdef OPENCV_TRACK_ON
+        else {
             trackers[t].reset();               // 目标重新可见，不再需要跟踪器
         }
+#endif
     }
 
     // 第四步：未被匹配的检测框作为新目标加入跟踪
@@ -222,9 +236,12 @@ void Tracker::update(const cv::Mat &image, vector<ImageInfo> &dets) {
         obj_tracks.push_back(nt);
         if (useSort) {
             kalmanFilters.push_back(makeKalmanFilter(detBoxes[d]));  // 初始化卡尔曼滤波器
-        } else {
+        }
+#ifdef OPENCV_TRACK_ON
+        else {
             trackers.push_back(cv::Ptr<cv::legacy::Tracker>());      // 可见目标，暂无跟踪器
         }
+#endif
     }
 
     // 第五步：未被检测匹配的已有目标视为丢失
@@ -232,6 +249,7 @@ void Tracker::update(const cv::Mat &image, vector<ImageInfo> &dets) {
         if (matched[t]) continue;
         obj_tracks[t].track.lost++;
         obj_tracks[t].track.index = -1;        // 丢失时清空检测索引
+#ifdef OPENCV_TRACK_ON
         if (!useSort && trackers[t].empty()) {
             // legacy 模式：首次丢失时用其当前框初始化一个跟踪器
             cv::Ptr<cv::legacy::Tracker> tracker = makeTracker();
@@ -241,6 +259,7 @@ void Tracker::update(const cv::Mat &image, vector<ImageInfo> &dets) {
             tracker->init(image, box);
             trackers[t] = tracker;
         }
+#endif
         // SORT 模式：无需额外处理，下一帧由卡尔曼继续外推预测
     }
 
@@ -250,9 +269,12 @@ void Tracker::update(const cv::Mat &image, vector<ImageInfo> &dets) {
             obj_tracks.erase(obj_tracks.begin() + t);
             if (useSort) {
                 kalmanFilters.erase(kalmanFilters.begin() + t);
-            } else {
+            }
+#ifdef OPENCV_TRACK_ON
+            else {
                 trackers.erase(trackers.begin() + t);
             }
+#endif
         } else {
             t++;
         }
