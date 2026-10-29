@@ -100,13 +100,16 @@ class CameraCapture(object):
             self.pipe.communicate()  # 再次尝试清理
             print(err)
 
-    def display(self, title="camera", delay=30):
+    def display(self, title="camera", delay=300):
+        c = 0
         while True:
             t1 = time.time()
             ret, frame = self.read()
             t2 = time.time()
             if not ret:
                 break
+            # cv2.imwrite(f"frame_{c:04d}.jpg", frame)
+            c += 1
             t21 = (t2 - t1) * 1000
             print(f"image shape: {frame.shape},耗时: {t21:.3f}ms")
             cv2.namedWindow(title, flags=cv2.WINDOW_NORMAL)

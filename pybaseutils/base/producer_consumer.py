@@ -56,8 +56,8 @@ class ProducerConsumer:
 
     def task(self, data: List, *args, **kwargs):
         """
-        任务函数，处理输入数据
-        :param data: 输入数据
+        消费者任务函数，处理输入数据
+        :param data: 生成者发送的数据，List,数量由winsize确定
         :return: 处理结果
         """
         self.log(f"args  ={args},kwargs={kwargs}")
@@ -66,7 +66,13 @@ class ProducerConsumer:
         return result
 
     def task_consumer(self, task, *args, **kwargs):
-        """消费者任务"""
+        """
+        消费者任务
+        :param task: 消费者任务函数
+        :param args:
+        :param kwargs:
+        :return:
+        """
         self.log(f"start consumer thread")
         self.consumer_end = False
         pool = thread_utils.ThreadPool(max_workers=self.max_workers)
@@ -151,5 +157,5 @@ def example(text, video, realtime=False, freq=2, wintime=3, overlap=0.5, max_wor
 
 if __name__ == '__main__':
     text = "请分析这个视频"
-    video_file = "/home/PKing/Videos/video4.mp4"
+    video_file = "/home/PKing/Downloads/一号.mp4"
     example(text=text, video=video_file, freq=2)
