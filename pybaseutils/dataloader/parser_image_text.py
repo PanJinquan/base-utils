@@ -29,7 +29,8 @@ class TextDataset(Dataset):
         数据文件保存格式：[path,label] 或者 [path,label,xmin,ymin,xmax,ymax]
         :param data_file: 数据文件路径，List[str] or str
         :param data_root: 数据文件根目录
-        :param class_name: 类别文件/列表/字典
+        :param class_name: 类别文件/列表/字典,如果你需要合并类别训练，请使用【,】分割，如将“行人”和“person”合并为一个类别，
+                           则设置class_name=['行人,person']
         :param transform:
         :param shuffle:
         :param use_rgb:

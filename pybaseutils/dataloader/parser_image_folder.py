@@ -23,7 +23,9 @@ class FolderDataset(parser_image_text.TextDataset):
         """
         文件夹数据集，要求相同类别的数据放在同一个文件夹，文件名为类别名称
         :param image_dir: [image_dir]->list or `path/to/image_dir`->str
-        :param class_name: 类别文件/列表/字典
+        :param class_name: 类别文件/列表/字典,如果你需要合并类别训练，请使用【,】分割，如将“行人”和“person”合并为一个类别，
+                           则设置class_name=['行人,person']
+        :param transform:
         :param transform: torch transform
         :param shuffle:
         :param disp:
@@ -72,8 +74,8 @@ if __name__ == '__main__':
     from pybaseutils import image_utils
     from torchvision import transforms
 
-    image_dir = ['/home/PKing/nasdata/release/infrastructure/DMClassification/data/dataset/train']
-    class_name = []
+    image_dir = ['/home/PKing/edudata/dataset/AICQ/dataset/aicq-action/data-2026-10-21/crops']
+    class_name = ['手与笔有接触','手与粉色开襟衣服有接触,手与蓝色开襟衣服有接触']
     input_size = [224, 224]
     rgb_mean = [0., 0., 0.]
     rgb_std = [1.0, 1.0, 1.0]

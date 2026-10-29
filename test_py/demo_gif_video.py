@@ -33,8 +33,8 @@ def resize_fun(frame):
 
 def android_gif():
     # video_file = "/media/dm/新加卷/SDK/CSDN/双目测距/demo/image-nouse-wls.mp4"
-    video_file = "/media/PKing/dev2/SDK/project/cv-sdk-mnn/Demo/android-yolo-demo2.mp4"
-    video_utils.video2gif(video_file, interval=4, func=resize_android, fps=6, use_pil=False, vis=True)
+    video_file = "/home/PKing/nasdata/tmp/tmp/pressure_meter/code/video02-android.mp4"
+    video_utils.video2gif(video_file, interval=3, func=resize_android, fps=10, use_pil=False, vis=True)
 
 
 def python_gif():
@@ -55,5 +55,5 @@ def image_gif():
 if __name__ == "__main__":
     """博文GIF图不能超过5M"""
     # image_gif()
-    # android_gif()
-    python_gif()
+    android_gif()
+    # python_gif()

@@ -14,7 +14,7 @@ import cv2
 import torch
 from pybaseutils import image_utils, file_utils
 from pybaseutils.cvutils import video_utils
-from classifier.dataset import parser_image_folder, parser_image_text
+from pybaseutils.dataloader import parser_image_folder, parser_image_text
 
 
 class VideoFolderDataset(parser_image_folder.FolderDataset):

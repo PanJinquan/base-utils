@@ -21,7 +21,9 @@ from io import BytesIO
 IMG_PREFIX = "image/jpg"  # 图片base64字符串前缀
 precision = 6  # 小数点精度
 ImageFile.LOAD_TRUNCATED_IMAGES = True  # 允许加载截断的图像
-
+# TODO 推进使用mimetypes获得扩展名的MIME类型，如image/jpeg image/png text/html
+# mime, _ = mimetypes.guess_type(image_file)
+# mime = mime or "image/jpeg"
 
 def isbase64(data: str, prefix=IMG_PREFIX):
     """判断是否是二进制字符串图像"""
@@ -36,6 +38,9 @@ def base642image(bs64, prefix=IMG_PREFIX, use_rgb=False) -> np.ndarray:
     :param use_rgb: True:返回RGB的图像, False:返回BGR格式的图像
     :return: 返回图像
     """
+    # mime, _ = mimetypes.guess_type(image_file)
+    # mime = mime or "image/jpeg"
+    # data = f"data:{mime};base64,{img_b64}"
     if prefix == bs64[0:len(prefix)]:
         bs64 = bs64[len(prefix):]
     bs64 = bytes(bs64, 'utf-8')
@@ -86,6 +91,9 @@ def file2base64(file, prefix=IMG_PREFIX) -> str:
     :param prefix: base64字符串前缀,用于表识字符串的类型
     :return:base64字符串
     """
+    # mime, _ = mimetypes.guess_type(image_file)
+    # mime = mime or "image/jpeg"
+    # data = f"data:{mime};base64,{img_b64}"
     bs64 = prefix + base64.b64encode(open(file, 'rb').read()).decode("utf-8")
     return bs64
 

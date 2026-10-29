@@ -114,13 +114,22 @@ if __name__ == '__main__':
                    "头",
                    "床",
                    "蓝色被子",
+                   '手与手有接触',
+                   '手与笔有接触',
+                   '手与记录表有接触',
+                   '手与免洗消毒凝胶有接触',
+                   '手与粉色开襟衣服有接触',
+                   '手与蓝色开襟衣服有接触',
                    ]
     datasets = [
-        '/home/PKing/edudata/dataset/AICQ/dataset/data-2026-09-30/images',
-        '/home/PKing/edudata/dataset/AICQ/dataset/data-2026-10-06/images',
-        '/home/PKing/edudata/dataset/AICQ/dataset/data-2026-10-12/images',
-        '/home/PKing/edudata/dataset/AICQ/dataset/data-2026-10-20/images',
-        '/home/PKing/edudata/dataset/AICQ/dataset/data-2026-10-21/images',
+        # '/home/PKing/edudata/dataset/AICQ/dataset/data-2026-09-30/images',
+        # '/home/PKing/edudata/dataset/AICQ/dataset/data-2026-10-06/images',
+        # '/home/PKing/edudata/dataset/AICQ/dataset/data-2026-10-12/images',
+        # '/home/PKing/edudata/dataset/AICQ/dataset/data-2026-10-20/images',
+        # '/home/PKing/edudata/dataset/AICQ/dataset/data-2026-10-21/images',
+
+        '/home/PKing/edudata/dataset/AICQ/dataset/aicq-action/data-2026-10-21/images',
+        '/home/PKing/edudata/dataset/AICQ/dataset/aicq-action/data-2026-10-26/images',
     ]
     # datasets = "/home/PKing/nasdata/dataset-dmai/AILT/ailt-det/文件列表.txt"
     # datasets = file_utils.read_data(datasets, split=None)
