@@ -152,7 +152,7 @@ class Performance(object):
         pass
 
 
-def cpu_work(seconds: float):
+def cpu_elapse(seconds: float):
     """
     模拟 CPU 密集计算，持续seconds秒，全程持有 GIL。适合用于多线程 GIL 争用测试。
     """
