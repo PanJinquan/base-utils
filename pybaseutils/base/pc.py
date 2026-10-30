@@ -35,42 +35,42 @@ class CameraPC(object):
         self.tag = self.__class__.__name__
         self.log = kwargs.get('log', print) if kwargs.get('log', print) else print
         self.cfg = kwargs
+        self.que: list_queue.Queue = None
+        self.con: threading.Thread = None
+        self.pro: threading.Thread = None
         self.state: int = 1  # TODO
-        self.queue: list_queue.Queue = None
-        self.consumer: threading.Thread = None
-        self.producer: threading.Thread = None
         self.state_info = {-1: '正在终止producer&consumer', 0: 'producer&consumer已终止', 1: 'running'}
 
     def start(self, **kwargs):
         self.cfg = {**self.cfg, **kwargs}
-        self.queue = list_queue.Queue(maxsize=self.cfg['wsize'] * 2)  # 生产者
-        self.producer = threading.Thread(target=self.target_producer, kwargs=self.cfg)
-        self.producer.daemon = True  # 跟随主进程一起退出
-        self.producer.start()
-        self.consumer = threading.Thread(target=self.target_consumer, kwargs=self.cfg)
-        self.consumer.daemon = True  # 跟随主进程一起退出
-        self.consumer.start()
+        self.que = list_queue.Queue(maxsize=self.cfg['wsize'] * 2)  # 生产者
+        self.pro = threading.Thread(target=self.producer, kwargs=self.cfg)
+        self.pro.daemon = True  # 跟随主进程一起退出
+        self.pro.start()
+        self.con = threading.Thread(target=self.consumer, kwargs=self.cfg)
+        self.con.daemon = True  # 跟随主进程一起退出
+        self.con.start()
 
     def stop(self, **kwargs):
         """终止生产者和消费者"""
         self.log("{:10s} stop   operation".format(self.tag))
         try:
             self.state = -1
-            if self.producer: self.producer.join(timeout=5)
+            if self.pro: self.pro.join(timeout=5)
         except Exception as e:
             traceback.print_exc()
-        self.producer = None
-        self.log("{:10s} stop   producer   ={}".format(self.tag, self.producer))
+        self.pro = None
+        self.log("{:10s} stop   producer   ={}".format(self.tag, self.pro))
 
         try:
             self.state = -1
-            if self.consumer: self.consumer.join(timeout=5)
+            if self.con: self.con.join(timeout=5)
         except Exception as e:
             traceback.print_exc()
-        self.consumer = None
-        self.log("{:10s} stop   consumer   ={}".format(self.tag, self.consumer))
+        self.con = None
+        self.log("{:10s} stop   consumer   ={}".format(self.tag, self.con))
         self.state = 0
-        self.queue.clear()
+        self.que.clear()
 
     def task(self, data: List, *args, **kwargs):
         """
@@ -83,31 +83,31 @@ class CameraPC(object):
         self.log(f"result={result},data nums={len(data)}")
         return result
 
-    def target_consumer(self, **kwargs):
+    def consumer(self, **kwargs):
         """
         消费者
         :param kwargs:
         :return:
         """
-        self.log("{:10s} run consumer   ={}".format(self.tag, self.consumer))
+        self.log("{:10s} run consumer   ={}".format(self.tag, self.con))
         while True:
             try:
                 if self.state <= 0: break
                 # info = self.queue.pop() # 返回一个元素
-                data = self.queue.get_window(wsize=self.cfg['wsize'], overlap=self.cfg['overlap'])  # 返回一个元素
+                data = self.que.get_window(wsize=self.cfg['wsize'], overlap=self.cfg['overlap'])  # 返回一个元素
                 if not data: continue
                 t2 = time.time()  # 消费者接收到数据的时间
                 rt = self.task(data, **self.cfg)
                 t3 = time.time()  # 模型推理完的时间戳
                 count = [f"{info['count']:06d}" for info in data]
-                self.log(f'consumer id={count} t23={self.elap(t3, t2)} q={self.queue.qsize()}')
+                self.log(f'consumer id={count} t23={self.elap(t3, t2)} q={self.que.qsize()}')
             except Exception as e:
                 traceback.print_exc()
-        self.queue.clear()
+        self.que.clear()
         self.state = 0
-        self.log("{:10s} finish consumer   ={}".format(self.tag, self.consumer))
+        self.log("{:10s} finish consumer   ={}".format(self.tag, self.con))
 
-    def target_producer(self, video: str | int, block=True, **kwargs):
+    def producer(self, video: str | int, block=True, **kwargs):
         """
         生产者
         :param video:
@@ -116,7 +116,7 @@ class CameraPC(object):
         :return:
         """
         self.log("{:10s} config         ={}".format(self.tag, self.cfg))
-        self.log("{:10s} run producer   ={}".format(self.tag, self.producer))
+        self.log("{:10s} run producer   ={}".format(self.tag, self.pro))
         if isinstance(video, int): video = video_utils.get_usb_camera(video)  # 获取当前系统中连接的USB摄像头索引
         cap = camera.CameraCapture(video=video, size=self.cfg['size'], scale=self.cfg['scale'], fps=self.cfg['fps'],
                                    input_format=self.cfg['input_format'])
@@ -130,25 +130,26 @@ class CameraPC(object):
                 t1 = time.time()
                 if self.state <= 0 or not ret:
                     self.state = -1
-                    self.queue.put({}, block=block)  # TODO 发送空数据，以确保consumer结束
+                    self.que.put({}, block=block)  # TODO 发送空数据，以确保consumer结束
                     cap.stop()
                     break
                 size = [frame.shape[1], frame.shape[0]]  # 视频帧的宽度和高度
                 info = {'frame': frame, 'size': size, "count": count}
                 # TODO 发送给消费者
-                self.queue.put(info, block=block)  # TODO 当realtime=False时，若消费者卡顿，会导致这里阻塞，且无法终止
+                self.que.put(info, block=block)  # TODO 当realtime=False时，若消费者卡顿，会导致这里阻塞，且无法终止
                 t2 = time.time()
                 if count % self.cfg['log_freq'] == 0:
                     self.log(f'producer id={[f"{count:06d}"]} t10={self.elap(t1, t0)} t20={self.elap(t2, t0)}')
                 count += 1
             except Exception as e:
                 traceback.print_exc()
-        self.queue.clear()
+        self.que.clear()
         self.state = 0
-        self.log("{:10s} finish producer   ={}".format(self.tag, self.producer))
+        self.log("{:10s} finish producer   ={}".format(self.tag, self.pro))
         return 0
 
-    def elap(self, t1, t0):
+    @staticmethod
+    def elap(t1, t0):
         """计算耗时"""
         return f"{(t1 - t0) * 1000:.0f}ms"
 
