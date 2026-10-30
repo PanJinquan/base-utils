@@ -20,6 +20,8 @@ class CameraCapture(object):
         """
         self.fps = fps
         self.stopped = False
+        self.count = 0  # 当前已读取的帧索引
+        self.duration = 0  # 当前帧的播放时长
         self.ssize = get_video_size(video, size=size)
         self.dsize = self.ssize
         if isinstance(video, int):  # TODO 摄像头
@@ -84,9 +86,9 @@ class CameraCapture(object):
             return False, None  # 读取失败或结束
         # TODO 将字节流转换为numpy数组图像(bgr)
         bgr = np.frombuffer(buff, dtype=np.uint8).reshape((self.dsize[1], self.dsize[0], 3))
-        # TODO 获取当前帧的时间戳和播放时长
-        self.pos_msec = 0 # 当前帧的时间戳(毫秒),类似cap.get(cv2.CAP_PROP_POS_MSEC)
-        self.duration = 0 # 当前帧的播放时长(毫秒),即当前帧的时间戳与第一帧的时间戳的差值
+        # TODO 获取当前帧的播放时长
+        self.duration = self.count * 1000.0 / self.fps
+        self.count += 1
         return True, bgr
 
     def release(self):
@@ -115,7 +117,7 @@ class CameraCapture(object):
             # cv2.imwrite(f"frame_{c:04d}.jpg", frame)
             c += 1
             t21 = (t2 - t1) * 1000
-            print(f"image shape: {frame.shape},耗时: {t21:.3f}ms")
+            print(f"pos_msec={self.duration / 1000} shape={frame.shape},elapsed={t21:.3f}ms")
             cv2.namedWindow(title, flags=cv2.WINDOW_NORMAL)
             cv2.imshow(title, frame)
             cv2.waitKey(delay)
@@ -155,12 +157,12 @@ def get_video_size(video, size=()):
 if __name__ == '__main__':
     from pybaseutils.cvutils import video_utils
 
-    fps = 10
+    fps = 2
     video = video_utils.get_usb_camera()
     # get_video_size(video, size=())
     # video = "/home/PKing/Videos/video1.mp4"  # Windows 下可能是 0 或 "video=Integrated Webcam"
-    # video = "/home/PKing/Downloads/一号.mp4"  # Windows 下可能是 0 或 "video=Integrated Webcam"
-    video= "/media/PKing/dev2/SDK/base-utils/data/video/kunkun_cut.mp4"
+    video = "/home/PKing/Videos/video.mp4"  # Windows 下可能是 0 或 "video=Integrated Webcam"
+    # video = "/media/PKing/dev2/SDK/base-utils/data/video/kunkun_cut.mp4"
     # cap = CameraCapture(video=video, size=(), scale=1.0, fps=fps)
     cap = CameraCapture(video=video, size=(1280, 720), scale=1.0, fps=fps)
     # cap = CameraCapture(video=video, size=(1920, 1080), scale=1.0, fps=fps)
