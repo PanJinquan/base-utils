@@ -107,7 +107,7 @@ class CameraPC(object):
         self.state = 0
         self.log("{:10s}       stop consumer   ={}".format(self.tag, self.consumer))
 
-    def target_producer(self, video: str | int, block=False, **kwargs):
+    def target_producer(self, video: str | int, block=True, **kwargs):
         """
         生产者
         :param video:
