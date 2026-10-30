@@ -84,7 +84,7 @@ class ProducerConsumer:
             else:
                 winsize, overlap = self.winsize, self.overlap
             while self.producer.qsize() >= winsize > 0 and len(future) < self.max_workers:
-                data = self.producer.get_window(winsize=winsize, overlap=overlap, block=False)  # 提取窗口数据
+                data = self.producer.get_window(wsize=winsize, overlap=overlap, block=False)  # 提取窗口数据
                 f = pool.submit(task, data, args, **kwargs)
                 future.append(f)
                 self.log(f"tid={id(f)} producer={self.producer.qsize()} consumer={self.consumer.qsize()} "

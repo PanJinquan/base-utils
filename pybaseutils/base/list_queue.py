@@ -95,28 +95,28 @@ class Queue():
         while self.qsize() >= self.maxsize and not block: self.pop()
         return self.queue.put(item, block=block, timeout=timeout)
 
-    def get_window(self, winsize=1, overlap=0.0, block=True, timeout=None):
+    def get_window(self, wsize=1, overlap=0.0, block=True, timeout=None):
         """
         获取队列的窗口数据
-        :param winsize: 窗口大小
+        :param wsize: 窗口大小
         :param overlap: 窗口重叠率
         :param block: 是否阻塞等待
         :param timeout: 超时时间
         :return: 队列窗口数据
         """
-        while self.qsize() < winsize and block:  # 等待队列数据足够
+        while self.qsize() < wsize and block:  # 等待队列数据足够
             time.sleep(0.05)
-        if self.qsize() >= winsize:
-            size = int(winsize * overlap)
-            data1 = self.pop_items(nums=winsize - size, block=block, timeout=timeout)
+        if self.qsize() >= wsize:
+            size = int(wsize * overlap)
+            data1 = self.pop_items(nums=wsize - size, block=block, timeout=timeout)
             data2 = self.get_items(nums=size)
             return data1 + data2
         return []
 
     def clear(self):
         """清空队列"""
-        with self.queue.mutex:
-            self.queue.queue.clear()
+        while not self.queue.empty():
+            self.queue.get_nowait()
 
 
 if __name__ == '__main__':

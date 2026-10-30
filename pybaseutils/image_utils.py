@@ -1107,7 +1107,8 @@ def show_image_boxes(title, image, boxes, color=(0, 0, 255), delay=0, use_rgb=Fa
     return image
 
 
-def draw_image_bboxes_text(image, boxes, boxes_name, color=(), thickness=0, fontScale=0, drawType="custom", top=True):
+def draw_image_bboxes_text(image, boxes, boxes_name, color=(), thickness=0, fontScale=0, alpha=0, drawType="custom",
+                           top=True):
     """
     已经废弃，使用draw_image_boxes_texts代替
     :param boxes_name:
@@ -1122,7 +1123,7 @@ def draw_image_bboxes_text(image, boxes, boxes_name, color=(), thickness=0, font
         bbox = [int(b) for b in bbox]
         c = color if color else color_table[(i + 1) % 20]
         draw_image_bbox_text(image, bbox, name, color=c, thickness=thickness, fontScale=fontScale,
-                             drawType=drawType, top=top)
+                             drawType=drawType, alpha=alpha, top=top)
     return image
 
 
@@ -1151,7 +1152,7 @@ def draw_image_boxes_texts(image, boxes, texts, color=(), thickness=0, fontScale
 
 
 def draw_image_bboxes_labels_text(image, boxes, labels, boxes_name=None, color=None, thickness=2, fontScale=0.8,
-                                  drawType="custom", top=True):
+                                  alpha=0, drawType="custom", top=True):
     """已废弃，使用draw_image_boxes_labels_texts代替"""
     if isinstance(labels, np.ndarray):
         labels = labels.reshape(-1).tolist()
@@ -1160,11 +1161,11 @@ def draw_image_bboxes_labels_text(image, boxes, labels, boxes_name=None, color=N
         box = [int(b) for b in box]
         c = color if color else color_map[int(label) + 1]
         image = draw_image_bbox_text(image, box, str(name), color=c, thickness=thickness, fontScale=fontScale,
-                                     drawType=drawType, top=top)
+                                     alpha=alpha, drawType=drawType, top=top)
     return image
 
 
-def draw_image_boxes_labels_texts(image, boxes, labels, texts, color=None, thickness=2, fontScale=0.8,
+def draw_image_boxes_labels_texts(image, boxes, labels, texts, color=None, thickness=2, fontScale=0.8, alpha=0,
                                   drawType="custom", top=True, colors=None, color_type="class"):
     if isinstance(labels, np.ndarray): labels = labels.reshape(-1).tolist()
     colors = [(0, 0, 0)] + colors if colors else color_table
@@ -1174,7 +1175,7 @@ def draw_image_boxes_labels_texts(image, boxes, labels, texts, color=None, thick
         else:
             c = color if color else colors[(i + 1) % len(colors)]  # 每个实例不同颜色
         image = draw_image_bbox_text(image, bbox, str(text), color=c, thickness=thickness, fontScale=fontScale,
-                                     drawType=drawType, top=top)
+                                     alpha=alpha, drawType=drawType, top=top)
     return image
 
 
@@ -1318,7 +1319,7 @@ def draw_image_detection_rects(image, rects, probs, labels, class_name=None, thi
     return image
 
 
-def draw_image_detection_boxes(image, boxes, probs, labels, class_name=None, thickness=0, fontScale=0,
+def draw_image_detection_boxes(image, boxes, probs, labels, class_name=None, thickness=0, fontScale=0, alpha=0,
                                drawType="custom", top=True):
     """
     :param image:
@@ -1340,7 +1341,7 @@ def draw_image_detection_boxes(image, boxes, probs, labels, class_name=None, thi
         if class_name:
             label = class_name[int(label)]
         text = "{}:{:3.2f}".format(label, prob)
-        draw_image_bbox_text(image, bbox, text, color=c, thickness=thickness, fontScale=fontScale,
+        draw_image_bbox_text(image, bbox, text, color=c, thickness=thickness, fontScale=fontScale, alpha=alpha,
                              drawType=drawType, top=top)
     return image
 

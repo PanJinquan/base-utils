@@ -8,3 +8,12 @@
 # --------------------------------------------------------
 """
 
+import queue
+
+q = queue.Queue(maxsize=10)
+q.put(1)
+q.put(2)
+print(q.qsize())
+q.queue.clear()
+print(q.qsize())
+
