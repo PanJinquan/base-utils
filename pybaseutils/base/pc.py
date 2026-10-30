@@ -17,7 +17,7 @@ from pybaseutils.cvutils import video_utils, camera
 from pybaseutils.base import list_queue
 
 
-class CameraPC(object):
+class ProducerConsumer(object):
     def __init__(self, **kwargs):
         """
         :param kwargs:  配置参数
@@ -169,9 +169,9 @@ if __name__ == '__main__':
         # "input_format": "mjpeg",  # 摄像头输入格式 "mjpeg"、"yuyv422"
         "input_format": "yuyv422",  # 摄像头输入格式 "mjpeg"、"yuyv422"
     }
-    cpc = CameraPC(log=print, **cfg)
-    cpc.start(**cfg)
+    pc = ProducerConsumer(log=print, **cfg)
+    pc.start(**cfg)
     time.sleep(50)
-    cpc.stop()
+    pc.stop()
     time.sleep(2)
     print("done")
