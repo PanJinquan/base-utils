@@ -78,7 +78,7 @@ class CameraPC(object):
         :param data: 生成者发送的数据，List,数量由winsize确定
         :return: 处理结果
         """
-        time.sleep(0.1)
+        time.sleep(0.1) # 模拟计算耗时
         result = "收到消息：" + file_utils.get_time(format="s")
         self.log(f"result={result},data nums={len(data)}")
         return result
