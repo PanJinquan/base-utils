@@ -76,6 +76,7 @@ class ProducerConsumer(object):
         """
         消费者任务函数，处理输入数据
         :param data: 生成者发送的数据，List,数量由wsize确定
+                        [{'frame': frame, 'size': size, "count": count},]
         :return: 处理结果
         """
         time_utils.cpu_elapse(1.0)  # 模拟CPU计算耗时
