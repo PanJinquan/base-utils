@@ -24,10 +24,10 @@ class CameraPC(object):
         {
             "size": (1920, 1080),        # 图像分辨率(w,h)， size=()表示原始分辨率
             "video": "video.mp4",        # 视频ID或者视频文件
+            "fps": 10,                   # 抽帧频率
             "wsize": 10,                 # 获得数据的窗口大小(相当于batch_size)
             "scale": 1.0,                # 图像缩放倍率
             "overlap": 0.5,              # 获得数据重叠率
-            "frame_rate": 10,            # 抽帧频率
             "log_freq": 1,               # 日志打印频率,
             "input_format": "yuyv422",   # 摄像头输入格式 "mjpeg"、"yuyv422"
         }
@@ -117,8 +117,8 @@ class CameraPC(object):
         self.log("{:10s}      config         ={}".format(self.tag, self.cfg))
         self.log("{:10s}      run producer   ={}".format(self.tag, self.producer))
         if isinstance(video, int): video = video_utils.get_usb_camera(video)  # 获取当前系统中连接的USB摄像头索引
-        cap = camera.CameraCapture(video=video, size=self.cfg['size'], scale=self.cfg['scale'],
-                                   fps=self.cfg['frame_rate'], input_format=self.cfg['input_format'])
+        cap = camera.CameraCapture(video=video, size=self.cfg['size'], scale=self.cfg['scale'], fps=self.cfg['fps'],
+                                   input_format=self.cfg['input_format'])
         # TODO 主线程处理视频帧
         count = 0
         while True:
@@ -153,10 +153,10 @@ class CameraPC(object):
 
 if __name__ == '__main__':
     cfg = {
-        "video": "/home/PKing/Downloads/一号.mp4",
-        "frame_rate": 10,
-        "wsize": 1,  #
-        "overlap": 0.,
+        "video": "/media/PKing/dev2/SDK/base-utils/data/video/kunkun_cut.mp4",
+        "fps": 10,
+        "wsize": 5,  #
+        "overlap": 0.5,
         # "size": (1920, 1080),
         # "size": (1280, 720),
         "size": (),
@@ -167,7 +167,7 @@ if __name__ == '__main__':
     }
     cpc = CameraPC(log=print, **cfg)
     cpc.start(**cfg)
-    time.sleep(500)
+    time.sleep(15)
     cpc.stop()
-    time.sleep(10)
+    time.sleep(2)
     print("done")
