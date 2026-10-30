@@ -77,12 +77,14 @@ class CameraCapture(object):
             self.stop()
             return False, None
         # 读取一帧的数据量 (宽 * 高 * 3通道)
-        buf = self.pipe.stdout.read(self.dsize[0] * self.dsize[1] * 3)
-        if len(buf) != self.dsize[0] * self.dsize[1] * 3:
+        size = self.dsize[0] * self.dsize[1] * 3
+        buff = self.pipe.stdout.read(size)
+        if len(buff) != size:
             self.stop()
             return False, None  # 读取失败或结束
         # TODO 将字节流转换为numpy数组图像(bgr)
-        bgr = np.frombuffer(buf, dtype=np.uint8).reshape((self.dsize[1], self.dsize[0], 3))
+        bgr = np.frombuffer(buff, dtype=np.uint8).reshape((self.dsize[1], self.dsize[0], 3))
+        # TODO 获取当前帧的时间戳（毫秒），类似cap.get(cv2.CAP_PROP_POS_MSEC)
         return True, bgr
 
     def release(self):
