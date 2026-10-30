@@ -156,9 +156,10 @@ class CameraPC(object):
 
 if __name__ == '__main__':
     cfg = {
-        "video": "/media/PKing/dev2/SDK/base-utils/data/video/kunkun_cut.mp4",
-        "fps": 10,
-        "wsize": 5,  #
+        # "video": "/media/PKing/dev2/SDK/base-utils/data/video/kunkun_cut.mp4",
+        "video": "/home/PKing/Downloads/一号.mp4",
+        "fps": 2,
+        "wsize": 10,  #
         "overlap": 0.5,
         # "size": (1920, 1080),
         # "size": (1280, 720),
