@@ -107,7 +107,7 @@ class CameraDemo():
                 cam_timestamp = time.mktime(time.strptime(cam_time, format))
                 # TODO 通过视频解码估计视频流生成时间
                 time.sleep(0.1)  # TODO 模拟网络延时
-                vdo_offset = cap.get(cv2.CAP_PROP_POS_MSEC) / 1000  # 获得视频偏移量
+                vdo_offset = cap.get(cv2.CAP_PROP_POS_MSEC) / 1000  # 获取当前帧的时间戳（毫秒）
                 vdo_timestamp = cam_start_timestamp + vdo_offset  # 设备启动时间+视频偏移量得到当前帧的到达时间
                 vdo_time = datetime.fromtimestamp(vdo_timestamp).strftime(format)
                 # 在图像上显示时间戳
