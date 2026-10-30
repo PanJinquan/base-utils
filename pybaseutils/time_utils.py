@@ -32,6 +32,7 @@ def get_time(format="p"):
         time = (str(datetime.now())[:-10]).replace(' ', '-').replace(':', '-')
     return time
 
+
 def date2stamp(date, format='%Y-%m-%d %H:%M:%S') -> float:
     """
     将日期格式转换为时间戳
@@ -149,6 +150,21 @@ class Performance(object):
 
     def task(self):
         pass
+
+
+def cpu_work(seconds: float):
+    """
+    模拟 CPU 密集计算，持续seconds秒，全程持有 GIL。适合用于多线程 GIL 争用测试。
+    """
+    end = time.perf_counter() + seconds
+    acc = 0
+    while True:
+        # 内层做真实计算，避免频繁调用 perf_counter
+        for i in range(1000):
+            acc += i
+        if time.perf_counter() >= end:
+            break
+    return acc
 
 
 @performance("test1", n=5)
