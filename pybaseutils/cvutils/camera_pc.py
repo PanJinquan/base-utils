@@ -75,7 +75,7 @@ class CameraPC(object):
     def task(self, data: List, *args, **kwargs):
         """
         消费者任务函数，处理输入数据
-        :param data: 生成者发送的数据，List,数量由winsize确定
+        :param data: 生成者发送的数据，List,数量由wsize确定
         :return: 处理结果
         """
         time.sleep(0.1) # 模拟计算耗时
