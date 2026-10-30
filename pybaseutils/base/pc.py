@@ -135,7 +135,7 @@ class ProducerConsumer(object):
                     cap.stop()
                     break
                 size = [frame.shape[1], frame.shape[0]]  # 视频帧的宽度和高度
-                info = {'frame': frame, 'size': size, "count": count}
+                info = {'frame': frame, 'size': size, "count": count, 'duration': cap.duration, 'time': t1}
                 # TODO 发送给消费者
                 self.que.put(info, block=block)  # TODO 当realtime=False时，若消费者卡顿，会导致这里阻塞，且无法终止
                 t2 = time.time()
