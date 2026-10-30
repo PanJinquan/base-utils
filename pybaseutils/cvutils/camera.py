@@ -85,6 +85,7 @@ class CameraCapture(object):
         # TODO 将字节流转换为numpy数组图像(bgr)
         bgr = np.frombuffer(buff, dtype=np.uint8).reshape((self.dsize[1], self.dsize[0], 3))
         # TODO 获取当前帧的时间戳（毫秒），类似cap.get(cv2.CAP_PROP_POS_MSEC)
+        self.pos_msec = 0 # 当前帧的时间戳(毫秒)
         return True, bgr
 
     def release(self):
