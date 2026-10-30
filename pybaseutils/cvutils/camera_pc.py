@@ -12,7 +12,7 @@ import time
 import threading
 import traceback
 from typing import List, Dict, Callable
-from pybaseutils import file_utils
+from pybaseutils import file_utils, time_utils
 from pybaseutils.cvutils import video_utils, camera
 from pybaseutils.base import list_queue
 
@@ -78,7 +78,7 @@ class CameraPC(object):
         :param data: 生成者发送的数据，List,数量由wsize确定
         :return: 处理结果
         """
-        time.sleep(0.1) # 模拟计算耗时
+        time_utils.cpu_work(1)  # 模拟计算耗时
         result = "收到消息：" + file_utils.get_time(format="s")
         self.log(f"result={result},data nums={len(data)}")
         return result
@@ -106,7 +106,6 @@ class CameraPC(object):
         self.queue.clear()
         self.state = 0
         self.log("{:10s} finish consumer   ={}".format(self.tag, self.consumer))
-
 
     def target_producer(self, video: str | int, block=True, **kwargs):
         """
