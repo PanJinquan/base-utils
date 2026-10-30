@@ -159,7 +159,8 @@ if __name__ == '__main__':
     video = video_utils.get_usb_camera()
     # get_video_size(video, size=())
     # video = "/home/PKing/Videos/video1.mp4"  # Windows 下可能是 0 或 "video=Integrated Webcam"
-    video = "/home/PKing/Downloads/一号.mp4"  # Windows 下可能是 0 或 "video=Integrated Webcam"
+    # video = "/home/PKing/Downloads/一号.mp4"  # Windows 下可能是 0 或 "video=Integrated Webcam"
+    video= "/media/PKing/dev2/SDK/base-utils/data/video/kunkun_cut.mp4"
     # cap = CameraCapture(video=video, size=(), scale=1.0, fps=fps)
     cap = CameraCapture(video=video, size=(1280, 720), scale=1.0, fps=fps)
     # cap = CameraCapture(video=video, size=(1920, 1080), scale=1.0, fps=fps)
