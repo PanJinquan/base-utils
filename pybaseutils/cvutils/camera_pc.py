@@ -53,14 +53,14 @@ class CameraPC(object):
 
     def stop(self, **kwargs):
         """终止生产者和消费者"""
-        self.log("{:10s}     finish operation".format(self.tag))
+        self.log("{:10s}       stop   operation".format(self.tag))
         try:
             self.state = -1
             if self.producer: self.producer.join(timeout=5)
         except Exception as e:
             traceback.print_exc()
         self.producer = None
-        self.log("{:10s}     finish producer   ={}".format(self.tag, self.producer))
+        self.log("{:10s}       stop   producer   ={}".format(self.tag, self.producer))
 
         try:
             self.state = -1
@@ -68,7 +68,7 @@ class CameraPC(object):
         except Exception as e:
             traceback.print_exc()
         self.consumer = None
-        self.log("{:10s}     finish consumer   ={}".format(self.tag, self.consumer))
+        self.log("{:10s}       stop   consumer   ={}".format(self.tag, self.consumer))
         self.state = 0
         self.queue.clear()
 
@@ -105,7 +105,8 @@ class CameraPC(object):
                 traceback.print_exc()
         self.queue.clear()
         self.state = 0
-        self.log("{:10s}       stop consumer   ={}".format(self.tag, self.consumer))
+        self.log("{:10s}       finish consumer   ={}".format(self.tag, self.consumer))
+
 
     def target_producer(self, video: str | int, block=True, **kwargs):
         """
@@ -145,7 +146,7 @@ class CameraPC(object):
                 traceback.print_exc()
         self.queue.clear()
         self.state = 0
-        self.log("{:10s}       stop producer   ={}".format(self.tag, self.producer))
+        self.log("{:10s}       finish producer   ={}".format(self.tag, self.producer))
         return 0
 
     def elap(self, t1, t0):
