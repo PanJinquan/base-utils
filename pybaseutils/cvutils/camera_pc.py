@@ -44,17 +44,16 @@ class CameraPC(object):
     def start(self, **kwargs):
         self.cfg = {**self.cfg, **kwargs}
         self.queue = list_queue.Queue(maxsize=self.cfg['wsize'] * 2)  # 生产者
-        self.producer = threading.Thread(target=self.task_producer, kwargs=self.cfg)
+        self.producer = threading.Thread(target=self.target_producer, kwargs=self.cfg)
         self.producer.daemon = True  # 跟随主进程一起退出
         self.producer.start()
-        self.consumer = threading.Thread(target=self.task_consumer, kwargs=self.cfg)
+        self.consumer = threading.Thread(target=self.target_consumer, kwargs=self.cfg)
         self.consumer.daemon = True  # 跟随主进程一起退出
         self.consumer.start()
 
-    def finish(self, **kwargs):
-        """结束"""
+    def stop(self, **kwargs):
+        """终止生产者和消费者"""
         self.log("{:10s}     finish operation".format(self.tag))
-        # 必须先结束生产者，避免生产者阻塞
         try:
             self.state = -1
             if self.producer: self.producer.join(timeout=5)
@@ -84,7 +83,12 @@ class CameraPC(object):
         self.log(f"result={result},data nums={len(data)}")
         return result
 
-    def task_consumer(self, **kwargs):
+    def target_consumer(self, **kwargs):
+        """
+        消费者
+        :param kwargs:
+        :return:
+        """
         self.log("{:10s}      run consumer   ={}".format(self.tag, self.consumer))
         while True:
             try:
@@ -95,16 +99,21 @@ class CameraPC(object):
                 t2 = time.time()  # 消费者接收到数据的时间
                 rt = self.task(data, **self.cfg)
                 t3 = time.time()  # 模型推理完的时间戳
-                count = [info['count'] for info in data]
-                for c in count:
-                    if c % self.cfg['log_freq'] == 0:
-                        self.log(f'consumer id={c:06d} q={self.queue.qsize()},t23={(t3 - t2) * 1000:.0f}ms,')
+                count = [f"{info['count']:06d}" for info in data]
+                self.log(f'consumer id={count} t23={self.elap(t3, t2)} q={self.queue.qsize()}')
             except Exception as e:
                 traceback.print_exc()
         self.queue.clear()
         self.log("{:10s}       stop consumer   ={}".format(self.tag, self.consumer))
 
-    def task_producer(self, video: str | int, realtime=False, **kwargs):
+    def target_producer(self, video: str | int, block=True, **kwargs):
+        """
+        生产者
+        :param video:
+        :param block:  是否阻塞，阻塞不会丢弃队列数据，非阻塞即实时处理，会丢弃队列数据
+        :param kwargs:
+        :return:
+        """
         self.log("{:10s}      config         ={}".format(self.tag, self.cfg))
         self.log("{:10s}      run producer   ={}".format(self.tag, self.producer))
         if isinstance(video, int): video = video_utils.get_usb_camera(video)  # 获取当前系统中连接的USB摄像头索引
@@ -120,16 +129,16 @@ class CameraPC(object):
                 t1 = time.time()
                 if self.state <= 0 or not ret:
                     self.state = -1
-                    self.queue.put({}, block=not realtime)  # TODO 发送空数据，以确保consumer结束
+                    self.queue.put({}, block=block)  # TODO 发送空数据，以确保consumer结束
                     cap.stop()
                     break
                 size = [frame.shape[1], frame.shape[0]]  # 视频帧的宽度和高度
                 info = {'frame': frame, 'size': size, "count": count}
                 # TODO 发送给消费者
-                self.queue.put(info, block=not realtime)  # TODO 当realtime=False时，若消费者卡顿，会导致这里阻塞，且无法终止
+                self.queue.put(info, block=block)  # TODO 当realtime=False时，若消费者卡顿，会导致这里阻塞，且无法终止
                 t2 = time.time()
                 if count % self.cfg['log_freq'] == 0:
-                    self.log(f'producer id={count:06d} t10={(t1 - t0) * 1000:.0f}ms,t20={(t2 - t0) * 1000:.0f}ms')
+                    self.log(f'producer id={[f"{count:06d}"]} t10={self.elap(t1, t0)} t20={self.elap(t2, t0)}')
                 count += 1
             except Exception as e:
                 traceback.print_exc()
@@ -137,13 +146,17 @@ class CameraPC(object):
         self.log("{:10s}       stop producer   ={}".format(self.tag, self.producer))
         return 0
 
+    def elap(self, t1, t0):
+        """计算耗时"""
+        return f"{(t1 - t0) * 1000:.0f}ms"
+
 
 if __name__ == '__main__':
     cfg = {
         "video": "/home/PKing/Downloads/一号.mp4",
         "frame_rate": 10,
-        "wsize": 5,  #
-        "overlap": 0.5,
+        "wsize": 1,  #
+        "overlap": 0.,
         # "size": (1920, 1080),
         # "size": (1280, 720),
         "size": (),
@@ -155,6 +168,6 @@ if __name__ == '__main__':
     cpc = CameraPC(log=print, **cfg)
     cpc.start(**cfg)
     time.sleep(500)
-    cpc.finish()
+    cpc.stop()
     time.sleep(10)
     print("done")
