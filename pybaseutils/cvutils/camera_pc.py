@@ -104,9 +104,10 @@ class CameraPC(object):
             except Exception as e:
                 traceback.print_exc()
         self.queue.clear()
+        self.state = 0
         self.log("{:10s}       stop consumer   ={}".format(self.tag, self.consumer))
 
-    def target_producer(self, video: str | int, block=True, **kwargs):
+    def target_producer(self, video: str | int, block=False, **kwargs):
         """
         生产者
         :param video:
@@ -143,6 +144,7 @@ class CameraPC(object):
             except Exception as e:
                 traceback.print_exc()
         self.queue.clear()
+        self.state = 0
         self.log("{:10s}       stop producer   ={}".format(self.tag, self.producer))
         return 0
 
@@ -167,7 +169,7 @@ if __name__ == '__main__':
     }
     cpc = CameraPC(log=print, **cfg)
     cpc.start(**cfg)
-    time.sleep(15)
+    time.sleep(50)
     cpc.stop()
     time.sleep(2)
     print("done")
