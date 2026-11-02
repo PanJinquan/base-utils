@@ -38,10 +38,12 @@ class ProducerConsumer(object):
         self.que: list_queue.Queue = None
         self.con: threading.Thread = None
         self.pro: threading.Thread = None
-        self.state: int = 1  # TODO
+        self.state: int = 0  # TODO
         self.state_info = {-1: '正在终止producer&consumer', 0: 'producer&consumer已终止', 1: 'running'}
 
     def start(self, **kwargs):
+        if self.running(): return  # TODO 系统正在运行中，不能重复启动
+        self.state = 1
         self.cfg = {**self.cfg, **kwargs}
         self.que = list_queue.Queue(maxsize=self.cfg['wsize'] * 2)  # 生产者
         self.pro = threading.Thread(target=self.producer, kwargs=self.cfg)
@@ -50,6 +52,11 @@ class ProducerConsumer(object):
         self.con = threading.Thread(target=self.consumer, kwargs=self.cfg)
         self.con.daemon = True  # 跟随主进程一起退出
         self.con.start()
+        self.log("{:10s} start success  ={}".format(self.tag, self.cfg))
+
+    def running(self):
+        """获得系统运行状态"""
+        return self.state == 1
 
     def stop(self, **kwargs):
         """终止生产者和消费者"""
@@ -72,16 +79,26 @@ class ProducerConsumer(object):
         self.state = 0
         self.que.clear()
 
-    def task(self, data: List, *args, **kwargs):
+    def consumer_tasks(self, data: List, **kwargs):
         """
-        消费者任务函数，处理输入数据
-        :param data: 生成者发送的数据，List,数量由wsize确定
-                        [{'frame': frame, 'size': size, "count": count},]
+        消费者任务函数
+        :param data: 生成者发送的数据，List,数量由wsize确定,data=[info,info,...]
+        :return: 处理结果
+        """
+        result = [self.consumer_task(info, **kwargs) for info in data]
+        return result
+
+    def consumer_task(self, info: Dict, **kwargs):
+        """
+        消费者任务函数
+        p0生产者读取视频前的时间戳，ps生产者读取视频后的时间戳,pn生产者发送给消费者后的时间
+        cs消费者接收到数据的时间戳，cn消费者处理完数据的时间戳
+        :param info: 生成者发送的数据，
         :return: 处理结果
         """
         time_utils.cpu_elapse(1.0)  # 模拟CPU计算耗时
         result = "收到消息：" + file_utils.get_time(format="s")
-        self.log(f"result={result},data nums={len(data)}")
+        self.log(f"result={result},data nums={info.keys()},time={info['time']}")
         return result
 
     def consumer(self, **kwargs):
@@ -97,16 +114,24 @@ class ProducerConsumer(object):
                 # info = self.queue.pop() # 返回一个元素
                 data = self.que.get_window(wsize=self.cfg['wsize'], overlap=self.cfg['overlap'])  # 返回一个元素
                 if not data: continue
-                t2 = time.time()  # 消费者接收到数据的时间
-                rt = self.task(data, **self.cfg)
-                t3 = time.time()  # 模型推理完的时间戳
+                cs = time.time()  # 消费者接收到数据的时间戳
+                ct = self.consumer_tasks(data)
+                cn = time.time()  # 消费者处理完数据的时间戳
                 count = [f"{info['count']:06d}" for info in data]
-                self.log(f'consumer id={count} t23={self.elap(t3, t2)} q={self.que.qsize()}')
+                self.log(f'consumer id={count} csn={self.elap(cn, cs)} q={self.que.qsize()}')
             except Exception as e:
                 traceback.print_exc()
         self.que.clear()
         self.state = 0
         self.log("{:10s} finish consumer   ={}".format(self.tag, self.con))
+
+    def producer_task(self, info: Dict, **kwargs):
+        """
+        生产者任务函数
+        :param info: 生成者发送的数据，List,数量由wsize确定,{'frame': frame, 'size': size, "count": count, 'duration': cap.duration, 'time': t1}
+        :return: 处理结果
+        """
+        return info
 
     def producer(self, video: str | int, block=True, **kwargs):
         """
@@ -118,29 +143,31 @@ class ProducerConsumer(object):
         """
         self.log("{:10s} config         ={}".format(self.tag, self.cfg))
         self.log("{:10s} run producer   ={}".format(self.tag, self.pro))
-        if isinstance(video, int): video = video_utils.get_usb_camera(video)  # 获取当前系统中连接的USB摄像头索引
+        if file_utils.is_number(str(video)): video = video_utils.get_usb_camera(int(video))  # 获取当前系统中连接的USB摄像头索引
         cap = camera.CameraCapture(video=video, size=self.cfg['size'], scale=self.cfg['scale'], fps=self.cfg['fps'],
                                    input_format=self.cfg['input_format'])
         # TODO 主线程处理视频帧
         count = 0
         while True:
             try:
-                # TODO t0 是读取视频前的时间戳，t1 是读取视频后的时间戳
-                t0 = time.time()
+                # TODO p0生产者读取视频前的时间戳，ps生产者读取视频后的时间戳,pn生产者发送给消费者后的时间
+                p0 = time.time()
                 ret, frame = cap.read()
-                t1 = time.time()
+                ps = time.time()
                 if self.state <= 0 or not ret:
                     self.state = -1
                     self.que.put({}, block=block)  # TODO 发送空数据，以确保consumer结束
                     cap.stop()
                     break
                 size = [frame.shape[1], frame.shape[0]]  # 视频帧的宽度和高度
-                info = {'frame': frame, 'size': size, "count": count, 'duration': cap.duration, 'time': t1}
+                info = {'frame': frame, 'size': size, "count": count, 'duration': cap.duration,
+                        'time': dict(p0=p0, ps=ps)}
+                info = self.producer_task(info)
                 # TODO 发送给消费者
-                self.que.put(info, block=block)  # TODO 当realtime=False时，若消费者卡顿，会导致这里阻塞，且无法终止
-                t2 = time.time()
+                self.que.put(info, block=block)  # TODO 当block=True时，若消费者卡顿，会导致这里阻塞，且无法终止
+                pn = time.time()
                 if count % self.cfg['log_freq'] == 0:
-                    self.log(f'producer id={[f"{count:06d}"]} t10={self.elap(t1, t0)} t20={self.elap(t2, t0)}')
+                    self.log(f'producer id={[f"{count:06d}"]} p0s={self.elap(ps, p0)} p0n={self.elap(pn, p0)}')
                 count += 1
             except Exception as e:
                 traceback.print_exc()
