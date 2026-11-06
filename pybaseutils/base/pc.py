@@ -77,7 +77,7 @@ class ProducerConsumer(object):
         self.con = None
         self.log("{:10s} stop   consumer   ={}".format(self.tag, self.con))
         self.state = 0
-        self.que.clear()
+        if self.que: self.que.clear()
 
     def consumer_tasks(self, data: List, **kwargs):
         """
