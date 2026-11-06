@@ -20,6 +20,9 @@ from pybaseutils.base import list_queue
 class ProducerConsumer(object):
     def __init__(self, **kwargs):
         """
+        数据流： 生产者生产数据(producer) -> 生产者数据处理(producer_task) -> 生产者队列缓存(pro_que) ->
+                消费者获得数据(consumer) -> 消费者数据处理(consumer_task) -> 消费者队列缓存(con_que) ->
+                发送任务循环处理(sent_task)
         :param kwargs:  配置参数
         {
             "size": (1920, 1080),        # 图像分辨率(w,h)， size=()表示原始分辨率
@@ -35,10 +38,12 @@ class ProducerConsumer(object):
         self.tag = self.__class__.__name__
         self.log = kwargs.get('log', print) if kwargs.get('log', print) else print
         self.cfg = kwargs
+        # 数据流： 生产者数据处理--> 生产者队列缓存 --> 消费者数据处理 --> 消费者队列缓存 --> 发送任务循环处理。
         self.pro_que: list_queue.Queue = None  # 生产者队列数据
         self.con_que: list_queue.Queue = None  # 消费者队列数据
         self.pro_thr: threading.Thread = None  # 生产者任务线程
         self.con_thr: threading.Thread = None  # 消费者任务线程
+        self.sen_thr: threading.Thread = None  # 发送任务循环处理
         self.state: int = 0  # TODO
         self.state_info = {-1: '正在终止producer&consumer', 0: 'producer&consumer已终止', 1: 'running'}
 
@@ -48,12 +53,18 @@ class ProducerConsumer(object):
         self.cfg = {**self.cfg, **kwargs}
         self.pro_que = list_queue.Queue(maxsize=self.cfg['wsize'] * 2)  # 生产者队列数据
         self.con_que = list_queue.Queue(maxsize=self.cfg['wsize'] * 2)  # 消费者队列数据
+        # 生产者任务线程
         self.pro_thr = threading.Thread(target=self.producer, kwargs=self.cfg)
-        self.pro_thr.daemon = True  # 跟随主进程一起退出
+        self.pro_thr.daemon = True
         self.pro_thr.start()
+        # 消费者任务线程
         self.con_thr = threading.Thread(target=self.consumer, kwargs=self.cfg)
-        self.con_thr.daemon = True  # 跟随主进程一起退出
+        self.con_thr.daemon = True
         self.con_thr.start()
+        # 发送任务循环处理
+        self.sen_thr = threading.Thread(target=self.sent_task, kwargs=self.cfg)
+        self.sen_thr.daemon = True
+        self.sen_thr.start()
         self.log("{:10s} start success  ={}".format(self.tag, self.cfg))
 
     def running(self):
@@ -81,6 +92,15 @@ class ProducerConsumer(object):
         self.state = 0
         if self.pro_que: self.pro_que.clear()
         if self.con_que: self.con_que.clear()
+
+    def sent_task(self, **kwargs):
+        """
+        发送任务循环处理
+        :return:
+        """
+        while True:
+            result = self.con_que.pop(block=True)  # 获得消费者返回的数据
+            print("output", result)
 
     def consumer_tasks(self, data: List, **kwargs):
         """
@@ -118,8 +138,9 @@ class ProducerConsumer(object):
                 data = self.pro_que.get_window(wsize=self.cfg['wsize'], overlap=self.cfg['overlap'])  # 返回一个元素
                 if not data: continue
                 cs = time.time()  # 消费者接收到数据的时间戳
-                info = self.consumer_tasks(data)
-                self.con_que.put(info, block=block)
+                outs = self.consumer_tasks(data)
+                for out in outs:  # 将处理后的数据发送到消费者队列缓存
+                    self.con_que.put(out, block=block)
                 cn = time.time()  # 消费者处理完数据的时间戳
                 count = [info['count'] for info in data]
                 for c in count:
@@ -135,15 +156,15 @@ class ProducerConsumer(object):
 
     def producer_task(self, info: Dict, **kwargs):
         """
-        生产者任务函数
-        :param info: 生成者发送的数据，List,数量由wsize确定,{'frame': frame, 'size': size, "count": count, 'duration': cap.duration, 'time': t1}
+        生产者数据处理函数
+        :param info: 生成者发送的数据，List,数量由wsize确定,{'frame', 'size', "count", 'duration', 'time'}
         :return: 处理结果
         """
         return info
 
     def producer(self, video: str | int, block=True, **kwargs):
         """
-        生产者
+        生产者(producer) -> 生产者数据处理(producer_task) -> 生产者队列缓存(pro_que)
         :param video:
         :param block:  是否阻塞，阻塞不会丢弃队列数据，非阻塞即实时处理，会丢弃队列数据
         :param kwargs:
@@ -171,7 +192,7 @@ class ProducerConsumer(object):
                 size = [frame.shape[1], frame.shape[0]]  # 视频帧的宽度和高度
                 info = {'frame': frame, 'size': size, "count": count, 'duration': cap.duration, 'time': ps}
                 info = self.producer_task(info)
-                # TODO 发送给消费者
+                # TODO 生产者队列缓存
                 self.pro_que.put(info, block=block)  # TODO 当block=True时，若消费者卡顿，会导致这里阻塞，且无法终止
                 pn = time.time()
                 if count % self.cfg['log_freq'] == 0:
@@ -194,15 +215,6 @@ class ProducerConsumer(object):
                  f'q={self.pro_que.qsize()} c={self.con_que.qsize()} '
                  f'{elapse}')
 
-    def consumer_output(self):
-        """
-        打印消费者的数据
-        :return:
-        """
-        while True:
-            result = self.con_que.pop(block=True)
-            print("output", result)
-
 
 if __name__ == '__main__':
     cfg = {
@@ -221,7 +233,6 @@ if __name__ == '__main__':
     }
     pc = ProducerConsumer(log=print, **cfg)
     pc.start(**cfg)
-    pc.consumer_output()
     time.sleep(50000)
     pc.stop()
     time.sleep(2)
