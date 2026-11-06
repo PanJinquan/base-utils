@@ -47,7 +47,7 @@ class ProducerConsumer(object):
         self.state = 1
         self.cfg = {**self.cfg, **kwargs}
         self.pro_que = list_queue.Queue(maxsize=self.cfg['wsize'] * 2)  # 生产者队列数据
-        self.con_que = list_queue.Queue(maxsize=1)  # 消费者队列数据
+        self.con_que = list_queue.Queue(maxsize=self.cfg['wsize'] * 2)  # 消费者队列数据
         self.pro_thr = threading.Thread(target=self.producer, kwargs=self.cfg)
         self.pro_thr.daemon = True  # 跟随主进程一起退出
         self.pro_thr.start()
@@ -80,6 +80,7 @@ class ProducerConsumer(object):
         self.log("{:10s} stop   consumer   ={}".format(self.tag, self.con_thr))
         self.state = 0
         if self.pro_que: self.pro_que.clear()
+        if self.con_que: self.con_que.clear()
 
     def consumer_tasks(self, data: List, **kwargs):
         """
@@ -128,7 +129,7 @@ class ProducerConsumer(object):
                         break
             except Exception as e:
                 traceback.print_exc()
-        self.pro_que.clear()
+        self.con_que.clear()
         self.state = 0
         self.log("{:10s} finish consumer   ={}".format(self.tag, self.con_thr))
 
