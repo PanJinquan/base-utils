@@ -117,8 +117,12 @@ class ProducerConsumer(object):
                 cs = time.time()  # 消费者接收到数据的时间戳
                 ct = self.consumer_tasks(data)
                 cn = time.time()  # 消费者处理完数据的时间戳
-                count = [f"{info['count']:06d}" for info in data]
-                self.log(f'consumer id={count} csn={self.elap(cn, cs)} q={self.que.qsize()}')
+                count = [info['count'] for info in data]
+                for c in count:
+                    if c % self.cfg['log_freq'] == 0:
+                        co = [f"{co:06d}" for co in count]
+                        self.log(f'consumer id={co} csn={self.elap(cn, cs)} q={self.que.qsize()}')
+                        break
             except Exception as e:
                 traceback.print_exc()
         self.que.clear()
@@ -141,6 +145,7 @@ class ProducerConsumer(object):
         :param kwargs:
         :return:
         """
+        self.log("{:10s} block          ={}".format(self.tag, block))
         self.log("{:10s} config         ={}".format(self.tag, self.cfg))
         self.log("{:10s} run producer   ={}".format(self.tag, self.pro))
         if file_utils.is_number(str(video)): video = video_utils.get_usb_camera(int(video))  # 获取当前系统中连接的USB摄像头索引

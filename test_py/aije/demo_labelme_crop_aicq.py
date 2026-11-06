@@ -124,11 +124,11 @@ if __name__ == '__main__':
                    '手与蓝色开襟衣服有接触',
                    ]
     datasets = [
-        # '/home/PKing/edudata/dataset/AICQ/dataset/aicq-det/data-2026-09-30/images',
-        # '/home/PKing/edudata/dataset/AICQ/dataset/aicq-det/data-2026-10-06/images',
-        # '/home/PKing/edudata/dataset/AICQ/dataset/aicq-det/data-2026-10-12/images',
-        # '/home/PKing/edudata/dataset/AICQ/dataset/aicq-det/data-2026-10-20/images',
-        # '/home/PKing/edudata/dataset/AICQ/dataset/aicq-det/data-2026-10-21/images',
+        '/home/PKing/edudata/dataset/AICQ/dataset/aicq-det/data-2026-09-30/images',
+        '/home/PKing/edudata/dataset/AICQ/dataset/aicq-det/data-2026-10-06/images',
+        '/home/PKing/edudata/dataset/AICQ/dataset/aicq-det/data-2026-10-12/images',
+        '/home/PKing/edudata/dataset/AICQ/dataset/aicq-det/data-2026-10-20/images',
+        '/home/PKing/edudata/dataset/AICQ/dataset/aicq-det/data-2026-10-21/images',
         '/home/PKing/edudata/dataset/AICQ/dataset/aicq-det/data-2026-10-30/images',
 
         # '/home/PKing/edudata/dataset/AICQ/dataset/aicq-action/data-2026-10-21/images',
