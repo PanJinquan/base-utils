@@ -35,9 +35,10 @@ class ProducerConsumer(object):
         self.tag = self.__class__.__name__
         self.log = kwargs.get('log', print) if kwargs.get('log', print) else print
         self.cfg = kwargs
-        self.que: list_queue.Queue = None
-        self.con: threading.Thread = None
-        self.pro: threading.Thread = None
+        self.pro_que: list_queue.Queue = None  # 生产者队列数据
+        self.con_que: list_queue.Queue = None  # 消费者队列数据
+        self.pro_thr: threading.Thread = None  # 生产者任务线程
+        self.con_thr: threading.Thread = None  # 消费者任务线程
         self.state: int = 0  # TODO
         self.state_info = {-1: '正在终止producer&consumer', 0: 'producer&consumer已终止', 1: 'running'}
 
@@ -45,13 +46,14 @@ class ProducerConsumer(object):
         if self.running(): return  # TODO 系统正在运行中，不能重复启动
         self.state = 1
         self.cfg = {**self.cfg, **kwargs}
-        self.que = list_queue.Queue(maxsize=self.cfg['wsize'] * 2)  # 生产者
-        self.pro = threading.Thread(target=self.producer, kwargs=self.cfg)
-        self.pro.daemon = True  # 跟随主进程一起退出
-        self.pro.start()
-        self.con = threading.Thread(target=self.consumer, kwargs=self.cfg)
-        self.con.daemon = True  # 跟随主进程一起退出
-        self.con.start()
+        self.pro_que = list_queue.Queue(maxsize=self.cfg['wsize'] * 2)  # 生产者队列数据
+        self.con_que = list_queue.Queue(maxsize=1)  # 消费者队列数据
+        self.pro_thr = threading.Thread(target=self.producer, kwargs=self.cfg)
+        self.pro_thr.daemon = True  # 跟随主进程一起退出
+        self.pro_thr.start()
+        self.con_thr = threading.Thread(target=self.consumer, kwargs=self.cfg)
+        self.con_thr.daemon = True  # 跟随主进程一起退出
+        self.con_thr.start()
         self.log("{:10s} start success  ={}".format(self.tag, self.cfg))
 
     def running(self):
@@ -63,21 +65,21 @@ class ProducerConsumer(object):
         self.log("{:10s} stop   operation".format(self.tag))
         try:
             self.state = -1
-            if self.pro: self.pro.join(timeout=5)
+            if self.pro_thr: self.pro_thr.join(timeout=5)
         except Exception as e:
             traceback.print_exc()
-        self.pro = None
-        self.log("{:10s} stop   producer   ={}".format(self.tag, self.pro))
+        self.pro_thr = None
+        self.log("{:10s} stop   producer   ={}".format(self.tag, self.pro_thr))
 
         try:
             self.state = -1
-            if self.con: self.con.join(timeout=5)
+            if self.con_thr: self.con_thr.join(timeout=5)
         except Exception as e:
             traceback.print_exc()
-        self.con = None
-        self.log("{:10s} stop   consumer   ={}".format(self.tag, self.con))
+        self.con_thr = None
+        self.log("{:10s} stop   consumer   ={}".format(self.tag, self.con_thr))
         self.state = 0
-        if self.que: self.que.clear()
+        if self.pro_que: self.pro_que.clear()
 
     def consumer_tasks(self, data: List, **kwargs):
         """
@@ -97,37 +99,38 @@ class ProducerConsumer(object):
         :return: 处理结果
         """
         time_utils.cpu_elapse(1.0)  # 模拟CPU计算耗时
-        result = "收到消息：" + file_utils.get_time(format="s")
-        self.log(f"{self.tag:10s} result={result},data nums={info.keys()},time={info['time']}")
+        result = "consumer_task" + file_utils.get_time(format="s")
+        self.log(f"{self.tag:10s} {result},data={info.keys()},q={self.pro_que.qsize()},c={self.con_que.qsize()}")
         return result
 
-    def consumer(self, **kwargs):
+    def consumer(self, block=True, **kwargs):
         """
         消费者
         :param kwargs:
         :return:
         """
-        self.log("{:10s} run consumer   ={}".format(self.tag, self.con))
+        self.log("{:10s} run consumer   ={}".format(self.tag, self.con_thr))
         while True:
             try:
                 if self.state <= 0: break
                 # info = self.queue.pop() # 返回一个元素
-                data = self.que.get_window(wsize=self.cfg['wsize'], overlap=self.cfg['overlap'])  # 返回一个元素
+                data = self.pro_que.get_window(wsize=self.cfg['wsize'], overlap=self.cfg['overlap'])  # 返回一个元素
                 if not data: continue
                 cs = time.time()  # 消费者接收到数据的时间戳
-                ct = self.consumer_tasks(data)
+                info = self.consumer_tasks(data)
+                self.con_que.put(info, block=block)
                 cn = time.time()  # 消费者处理完数据的时间戳
                 count = [info['count'] for info in data]
                 for c in count:
                     if c % self.cfg['log_freq'] == 0:
                         co = [f"{co:06d}" for co in count]
-                        self.log(f'{self.tag:10s} consumer id={co} csn={self.elap(cn, cs)} q={self.que.qsize()}')
+                        self.print("consumer", co, elapse=f'csn={self.elap(cn, cs)}')
                         break
             except Exception as e:
                 traceback.print_exc()
-        self.que.clear()
+        self.pro_que.clear()
         self.state = 0
-        self.log("{:10s} finish consumer   ={}".format(self.tag, self.con))
+        self.log("{:10s} finish consumer   ={}".format(self.tag, self.con_thr))
 
     def producer_task(self, info: Dict, **kwargs):
         """
@@ -147,7 +150,7 @@ class ProducerConsumer(object):
         """
         self.log("{:10s} block          ={}".format(self.tag, block))
         self.log("{:10s} config         ={}".format(self.tag, self.cfg))
-        self.log("{:10s} run producer   ={}".format(self.tag, self.pro))
+        self.log("{:10s} run producer   ={}".format(self.tag, self.pro_thr))
         if file_utils.is_number(str(video)): video = video_utils.get_usb_camera(int(video))  # 获取当前系统中连接的USB摄像头索引
         cap = camera.CameraCapture(video=video, size=self.cfg['size'], scale=self.cfg['scale'], fps=self.cfg['fps'],
                                    input_format=self.cfg['input_format'])
@@ -161,25 +164,23 @@ class ProducerConsumer(object):
                 ps = time.time()
                 if self.state <= 0 or not ret:
                     self.state = -1
-                    self.que.put({}, block=block)  # TODO 发送空数据，以确保consumer结束
+                    self.pro_que.put({}, block=block)  # TODO 发送空数据，以确保consumer结束
                     cap.stop()
                     break
                 size = [frame.shape[1], frame.shape[0]]  # 视频帧的宽度和高度
-                info = {'frame': frame, 'size': size, "count": count, 'duration': cap.duration,
-                        'time': dict(p0=p0, ps=ps)}
+                info = {'frame': frame, 'size': size, "count": count, 'duration': cap.duration, 'time': ps}
                 info = self.producer_task(info)
                 # TODO 发送给消费者
-                self.que.put(info, block=block)  # TODO 当block=True时，若消费者卡顿，会导致这里阻塞，且无法终止
+                self.pro_que.put(info, block=block)  # TODO 当block=True时，若消费者卡顿，会导致这里阻塞，且无法终止
                 pn = time.time()
                 if count % self.cfg['log_freq'] == 0:
-                    self.log(
-                        f'{self.tag:10s} producer id={[f"{count:06d}"]} p0s={self.elap(ps, p0)} p0n={self.elap(pn, p0)}')
+                    self.print("producer", [f"{count:06d}"], elapse=f'p0s={self.elap(ps, p0)} p0n={self.elap(pn, p0)}')
                 count += 1
             except Exception as e:
                 traceback.print_exc()
-        self.que.clear()
+        self.pro_que.clear()
         self.state = 0
-        self.log("{:10s} finish producer   ={}".format(self.tag, self.pro))
+        self.log("{:10s} finish producer   ={}".format(self.tag, self.pro_thr))
         return 0
 
     @staticmethod
@@ -187,13 +188,27 @@ class ProducerConsumer(object):
         """计算耗时"""
         return f"{(t1 - t0) * 1000:.0f}ms"
 
+    def print(self, name, count, elapse):
+        self.log(f'{self.tag:10s} {name} id={count} '
+                 f'q={self.pro_que.qsize()} c={self.con_que.qsize()} '
+                 f'{elapse}')
+
+    def consumer_output(self):
+        """
+        打印消费者的数据
+        :return:
+        """
+        while True:
+            result = self.con_que.pop(block=True)
+            print("output", result)
+
 
 if __name__ == '__main__':
     cfg = {
         # "video": "/media/PKing/dev2/SDK/base-utils/data/video/kunkun_cut.mp4",
         "video": "/home/PKing/Downloads/一号.mp4",
-        "fps": 2,
-        "wsize": 10,  #
+        "fps": 5,
+        "wsize": 5,  #
         "overlap": 0.5,
         # "size": (1920, 1080),
         # "size": (1280, 720),
@@ -205,7 +220,8 @@ if __name__ == '__main__':
     }
     pc = ProducerConsumer(log=print, **cfg)
     pc.start(**cfg)
-    time.sleep(50)
+    pc.consumer_output()
+    time.sleep(50000)
     pc.stop()
     time.sleep(2)
     print("done")
