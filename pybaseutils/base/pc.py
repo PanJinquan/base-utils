@@ -98,7 +98,7 @@ class ProducerConsumer(object):
         """
         time_utils.cpu_elapse(1.0)  # 模拟CPU计算耗时
         result = "收到消息：" + file_utils.get_time(format="s")
-        self.log(f"result={result},data nums={info.keys()},time={info['time']}")
+        self.log(f"{self.tag:10s} result={result},data nums={info.keys()},time={info['time']}")
         return result
 
     def consumer(self, **kwargs):
@@ -121,7 +121,7 @@ class ProducerConsumer(object):
                 for c in count:
                     if c % self.cfg['log_freq'] == 0:
                         co = [f"{co:06d}" for co in count]
-                        self.log(f'consumer id={co} csn={self.elap(cn, cs)} q={self.que.qsize()}')
+                        self.log(f'{self.tag:10s} consumer id={co} csn={self.elap(cn, cs)} q={self.que.qsize()}')
                         break
             except Exception as e:
                 traceback.print_exc()
@@ -172,7 +172,8 @@ class ProducerConsumer(object):
                 self.que.put(info, block=block)  # TODO 当block=True时，若消费者卡顿，会导致这里阻塞，且无法终止
                 pn = time.time()
                 if count % self.cfg['log_freq'] == 0:
-                    self.log(f'producer id={[f"{count:06d}"]} p0s={self.elap(ps, p0)} p0n={self.elap(pn, p0)}')
+                    self.log(
+                        f'{self.tag:10s} producer id={[f"{count:06d}"]} p0s={self.elap(ps, p0)} p0n={self.elap(pn, p0)}')
                 count += 1
             except Exception as e:
                 traceback.print_exc()
