@@ -22,7 +22,7 @@ class ProducerConsumer(object):
         """
         数据流： 生产者生产数据(producer) -> 生产者数据处理(producer_task) -> 生产者队列缓存(pro_que) ->
                 消费者获得数据(consumer) -> 消费者数据处理(consumer_task) -> 消费者队列缓存(con_que) ->
-                发送任务循环处理(sent_task)
+                输出任务处理(output_task)
         :param kwargs:  配置参数
         {
             "size": (1920, 1080),        # 图像分辨率(w,h)， size=()表示原始分辨率
@@ -43,11 +43,12 @@ class ProducerConsumer(object):
         self.con_que: list_queue.Queue = None  # 消费者队列数据
         self.pro_thr: threading.Thread = None  # 生产者任务线程
         self.con_thr: threading.Thread = None  # 消费者任务线程
-        self.sen_thr: threading.Thread = None  # 发送任务循环处理
+        self.out_thr: threading.Thread = None  # 发送任务循环处理
         self.state: int = 0  # TODO
         self.state_info = {-1: '正在终止producer&consumer', 0: 'producer&consumer已终止', 1: 'running'}
 
     def start(self, **kwargs):
+        """开始生产者和消费者任务"""
         if self.running(): return  # TODO 系统正在运行中，不能重复启动
         self.state = 1
         self.cfg = {**self.cfg, **kwargs}
@@ -61,10 +62,10 @@ class ProducerConsumer(object):
         self.con_thr = threading.Thread(target=self.consumer, kwargs=self.cfg)
         self.con_thr.daemon = True
         self.con_thr.start()
-        # 发送任务循环处理
-        self.sen_thr = threading.Thread(target=self.sent_task, kwargs=self.cfg)
-        self.sen_thr.daemon = True
-        self.sen_thr.start()
+        # 输出任务线程
+        self.out_thr = threading.Thread(target=self.outputer, kwargs=self.cfg)
+        self.out_thr.daemon = True
+        self.out_thr.start()
         self.log("{:10s} start success  ={}".format(self.tag, self.cfg))
 
     def running(self):
@@ -93,18 +94,21 @@ class ProducerConsumer(object):
         if self.pro_que: self.pro_que.clear()
         if self.con_que: self.con_que.clear()
 
-    def sent_task(self, **kwargs):
-        """
-        发送任务循环处理
-        :return:
-        """
+    def outputer(self, **kwargs):
+        """输出任务处理"""
         while True:
-            result = self.con_que.pop(block=True)  # 获得消费者返回的数据
-            print("output", result)
+            if self.state <= 0: break
+            data = self.con_que.pop(block=True)  # 获得消费者返回的数据
+            self.output_task(data, **kwargs)
+        self.log("{:10s} finish output_task={}".format(self.tag, self.out_thr))
+
+    def output_task(self, data, **kwargs):
+        """输出任务处理"""
+        self.log("output", data)
 
     def consumer_tasks(self, data: List, **kwargs):
         """
-        消费者任务函数
+        消费者数据处理函数(多个)
         :param data: 生成者发送的数据，List,数量由wsize确定,data=[info,info,...]
         :return: 处理结果
         """
@@ -113,7 +117,7 @@ class ProducerConsumer(object):
 
     def consumer_task(self, info: Dict, **kwargs):
         """
-        消费者任务函数
+        消费者数据处理函数(单个)
         p0生产者读取视频前的时间戳，ps生产者读取视频后的时间戳,pn生产者发送给消费者后的时间
         cs消费者接收到数据的时间戳，cn消费者处理完数据的时间戳
         :param info: 生成者发送的数据，
@@ -126,7 +130,7 @@ class ProducerConsumer(object):
 
     def consumer(self, block=True, **kwargs):
         """
-        消费者
+        消费者获得数据
         :param kwargs:
         :return:
         """
@@ -150,7 +154,7 @@ class ProducerConsumer(object):
                         break
             except Exception as e:
                 traceback.print_exc()
-        self.con_que.clear()
+        if self.con_que: self.con_que.clear()
         self.state = 0
         self.log("{:10s} finish consumer   ={}".format(self.tag, self.con_thr))
 
@@ -164,7 +168,7 @@ class ProducerConsumer(object):
 
     def producer(self, video: str | int, block=True, **kwargs):
         """
-        生产者(producer) -> 生产者数据处理(producer_task) -> 生产者队列缓存(pro_que)
+        生产者生产数据
         :param video:
         :param block:  是否阻塞，阻塞不会丢弃队列数据，非阻塞即实时处理，会丢弃队列数据
         :param kwargs:
@@ -200,7 +204,7 @@ class ProducerConsumer(object):
                 count += 1
             except Exception as e:
                 traceback.print_exc()
-        self.pro_que.clear()
+        if self.pro_que: self.pro_que.clear()
         self.state = 0
         self.log("{:10s} finish producer   ={}".format(self.tag, self.pro_thr))
         return 0
