@@ -143,6 +143,7 @@ class ProducerConsumer(object):
                 if not data: continue
                 cs = time.time()  # 消费者接收到数据的时间戳
                 outs = self.consumer_tasks(data)
+                if isinstance(outs, dict): outs = [outs]
                 for out in outs:  # 将处理后的数据发送到消费者队列缓存
                     self.con_que.put(out, block=block)
                 cn = time.time()  # 消费者处理完数据的时间戳
