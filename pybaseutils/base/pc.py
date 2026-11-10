@@ -23,6 +23,7 @@ class ProducerConsumer(object):
         数据流： 生产者生产数据(producer) -> 生产者数据处理(producer_task) -> 生产者队列缓存(pro_que) ->
                 消费者获得数据(consumer) -> 消费者数据处理(consumer_task) -> 消费者队列缓存(con_que) ->
                 输出任务处理(output_task)
+        队列设置：添加数据设置为阻塞，timeout=None以保证数据不丢失；获得队列数据设置超时timeout秒，以避免空队列长期阻塞。
         :param timeout: 超时时间
         :param kwargs:  配置参数
         {
