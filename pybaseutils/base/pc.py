@@ -81,9 +81,9 @@ class ProducerConsumer(object):
     def stop(self, **kwargs):
         """终止生产者和消费者"""
         self.count = 0
+        self.state = -1
         self.log("{:10s} stop   operation".format(self.tag))
         try:
-            self.state = -1
             if self.pro_thr: self.pro_thr.join(timeout=self.timeout + 1)
         except Exception as e:
             traceback.print_exc()
@@ -91,18 +91,25 @@ class ProducerConsumer(object):
         self.log("{:10s} stop   producer   ={}".format(self.tag, self.pro_thr))
 
         try:
-            self.state = -1
             if self.con_thr: self.con_thr.join(timeout=self.timeout + 1)
         except Exception as e:
             traceback.print_exc()
         self.con_thr = None
         self.log("{:10s} stop   consumer   ={}".format(self.tag, self.con_thr))
+
+        try:
+            if self.out_thr: self.out_thr.join(timeout=self.timeout + 1)
+        except Exception as e:
+            traceback.print_exc()
+        self.out_thr = None
+        self.log("{:10s} stop   outputer   ={}".format(self.tag, self.out_thr))
         self.state = 0
         if self.pro_que: self.pro_que.clear()
         if self.con_que: self.con_que.clear()
 
     def outputer(self, **kwargs):
         """输出任务处理"""
+        self.log("{:10s} run outputer   ={}".format(self.tag, self.out_thr))
         while True:
             if self.state <= 0: break
             data = self.con_que.pop(block=True, timeout=self.timeout)  # 获得消费者返回的数据
