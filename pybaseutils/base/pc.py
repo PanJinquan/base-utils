@@ -160,7 +160,7 @@ class ProducerConsumer(object):
                 outs = self.consumer_tasks(data)
                 if isinstance(outs, dict): outs = [outs]
                 for out in outs:  # 将处理后的数据发送到消费者队列缓存
-                    if not self._put(self.con_que, out):  # 有限超时发送，队列满且系统停止时退出
+                    if not self.add_item(self.con_que, out):  # 有限超时发送，队列满且系统停止时退出
                         break
                 cn = time.time()  # 消费者处理完数据的时间戳
                 count = [info['count'] for info in data]
@@ -183,7 +183,7 @@ class ProducerConsumer(object):
         """
         return info
 
-    def _put(self, que, item, block=True):
+    def add_item(self, que, item, block=True):
         """向队列写入数据。队列满时使用有限超时重试，系统停止时返回 False"""
         while True:
             try:
@@ -221,7 +221,7 @@ class ProducerConsumer(object):
                 info = {'frame': frame, 'size': size, "count": self.count, 'duration': cap.duration, 'time': ps}
                 info = self.producer_task(info)
                 # TODO 生产者队列缓存（有限超时，队列满时不会无限阻塞，便于 stop() 终止）
-                if not self._put(self.pro_que, info, block=block):
+                if not self.add_item(self.pro_que, info, block=block):
                     cap.stop()
                     break
                 pn = time.time()
