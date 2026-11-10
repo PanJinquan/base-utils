@@ -46,6 +46,7 @@ class ProducerConsumer(object):
         self.out_thr: threading.Thread = None  # 发送任务循环处理
         self.state: int = 0  # TODO
         self.state_info = {-1: '正在终止producer&consumer', 0: 'producer&consumer已终止', 1: 'running'}
+        self.count = 0  # 计数
 
     def start(self, **kwargs):
         """开始生产者和消费者任务"""
@@ -66,6 +67,7 @@ class ProducerConsumer(object):
         self.out_thr = threading.Thread(target=self.outputer, kwargs=self.cfg)
         self.out_thr.daemon = True
         self.out_thr.start()
+        self.count = 0
         self.log("{:10s} start success  ={}".format(self.tag, self.cfg))
 
     def running(self):
@@ -74,6 +76,7 @@ class ProducerConsumer(object):
 
     def stop(self, **kwargs):
         """终止生产者和消费者"""
+        self.count = 0
         self.log("{:10s} stop   operation".format(self.tag))
         try:
             self.state = -1
@@ -182,7 +185,6 @@ class ProducerConsumer(object):
         cap = camera.CameraCapture(video=video, size=self.cfg['size'], scale=self.cfg['scale'], fps=self.cfg['fps'],
                                    input_format=self.cfg['input_format'])
         # TODO 主线程处理视频帧
-        count = 0
         while True:
             try:
                 # TODO p0生产者读取视频前的时间戳，ps生产者读取视频后的时间戳,pn生产者发送给消费者后的时间
@@ -195,16 +197,17 @@ class ProducerConsumer(object):
                     cap.stop()
                     break
                 size = [frame.shape[1], frame.shape[0]]  # 视频帧的宽度和高度
-                info = {'frame': frame, 'size': size, "count": count, 'duration': cap.duration, 'time': ps}
+                info = {'frame': frame, 'size': size, "count": self.count, 'duration': cap.duration, 'time': ps}
                 info = self.producer_task(info)
                 # TODO 生产者队列缓存
                 self.pro_que.put(info, block=block)  # TODO 当block=True时，若消费者卡顿，会导致这里阻塞，且无法终止
                 pn = time.time()
-                if count % self.cfg['log_freq'] == 0:
-                    self.print("producer", [f"{count:06d}"], elapse=f'p0s={self.elap(ps, p0)} p0n={self.elap(pn, p0)}')
-                count += 1
+                if self.count % self.cfg['log_freq'] == 0:
+                    self.print("producer", [f"{self.count:06d}"], f'p0s={self.elap(ps, p0)} p0n={self.elap(pn, p0)}')
             except Exception as e:
                 traceback.print_exc()
+            finally:
+                self.count += 1
         if self.pro_que: self.pro_que.clear()
         self.state = 0
         self.log("{:10s} finish producer   ={}".format(self.tag, self.pro_thr))
@@ -223,8 +226,7 @@ class ProducerConsumer(object):
 
 if __name__ == '__main__':
     cfg = {
-        # "video": "/media/PKing/dev2/SDK/base-utils/data/video/kunkun_cut.mp4",
-        "video": "/home/PKing/Downloads/一号.mp4",
+        "video": "data/video/test-video.mp4",
         "fps": 5,
         "wsize": 5,  #
         "overlap": 0.5,
