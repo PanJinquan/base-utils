@@ -11,6 +11,7 @@ import numpy as np
 import time
 import threading
 import traceback
+import queue
 from typing import List, Dict, Callable
 from pybaseutils import file_utils, time_utils
 from pybaseutils.cvutils import video_utils, camera
@@ -152,7 +153,8 @@ class ProducerConsumer(object):
                 outs = self.consumer_tasks(data)
                 if isinstance(outs, dict): outs = [outs]
                 for out in outs:  # 将处理后的数据发送到消费者队列缓存
-                    self.con_que.put(out, block=True, timeout=None)  # 阻塞发送数据，以保证数据发送
+                    if not self._put(self.con_que, out):  # 有限超时发送，队列满且系统停止时退出
+                        break
                 cn = time.time()  # 消费者处理完数据的时间戳
                 count = [info['count'] for info in data]
                 for c in count:
@@ -173,6 +175,16 @@ class ProducerConsumer(object):
         :return: 处理结果
         """
         return info
+
+    def _put(self, que, item, block=True):
+        """向队列写入数据。队列满时使用有限超时重试，系统停止时返回 False"""
+        while True:
+            try:
+                que.put(item, block=block, timeout=self.timeout)
+                return True  # 写入成功
+            except queue.Full:
+                if self.state <= 0:
+                    return False  # 系统停止时返回 False
 
     def producer(self, video: str | int, block=True, **kwargs):
         """
@@ -201,8 +213,10 @@ class ProducerConsumer(object):
                 size = [frame.shape[1], frame.shape[0]]  # 视频帧的宽度和高度
                 info = {'frame': frame, 'size': size, "count": self.count, 'duration': cap.duration, 'time': ps}
                 info = self.producer_task(info)
-                # TODO 生产者队列缓存
-                self.pro_que.put(info, block=block, timeout=None)  # TODO 当block=True时，若消费者卡顿，会导致这里阻塞
+                # TODO 生产者队列缓存（有限超时，队列满时不会无限阻塞，便于 stop() 终止）
+                if not self._put(self.pro_que, info, block=block):
+                    cap.stop()
+                    break
                 pn = time.time()
                 if self.count % self.cfg['log_freq'] == 0:
                     self.print("producer", [f"{self.count:06d}"], f'p0s={self.elap(ps, p0)} p0n={self.elap(pn, p0)}')
