@@ -18,11 +18,12 @@ from pybaseutils.base import list_queue
 
 
 class ProducerConsumer(object):
-    def __init__(self, **kwargs):
+    def __init__(self, timeout=3, **kwargs):
         """
         数据流： 生产者生产数据(producer) -> 生产者数据处理(producer_task) -> 生产者队列缓存(pro_que) ->
                 消费者获得数据(consumer) -> 消费者数据处理(consumer_task) -> 消费者队列缓存(con_que) ->
                 输出任务处理(output_task)
+        :param timeout: 超时时间
         :param kwargs:  配置参数
         {
             "size": (1920, 1080),        # 图像分辨率(w,h)， size=()表示原始分辨率
@@ -35,6 +36,7 @@ class ProducerConsumer(object):
             "input_format": "yuyv422",   # 摄像头输入格式 "mjpeg"、"yuyv422"
         }
         """
+        self.timeout = timeout
         self.tag = self.__class__.__name__
         self.log = kwargs.get('log', print) if kwargs.get('log', print) else print
         self.cfg = kwargs
@@ -80,7 +82,7 @@ class ProducerConsumer(object):
         self.log("{:10s} stop   operation".format(self.tag))
         try:
             self.state = -1
-            if self.pro_thr: self.pro_thr.join(timeout=5)
+            if self.pro_thr: self.pro_thr.join(timeout=self.timeout + 1)
         except Exception as e:
             traceback.print_exc()
         self.pro_thr = None
@@ -88,7 +90,7 @@ class ProducerConsumer(object):
 
         try:
             self.state = -1
-            if self.con_thr: self.con_thr.join(timeout=5)
+            if self.con_thr: self.con_thr.join(timeout=self.timeout + 1)
         except Exception as e:
             traceback.print_exc()
         self.con_thr = None
@@ -101,8 +103,8 @@ class ProducerConsumer(object):
         """输出任务处理"""
         while True:
             if self.state <= 0: break
-            data = self.con_que.pop(block=True)  # 获得消费者返回的数据
-            self.output_task(data, **kwargs)
+            data = self.con_que.pop(block=True, timeout=self.timeout)  # 获得消费者返回的数据
+            if data: self.output_task(data, **kwargs)
         self.log("{:10s} finish output_task={}".format(self.tag, self.out_thr))
 
     def output_task(self, data, **kwargs):
@@ -131,7 +133,7 @@ class ProducerConsumer(object):
         self.log(f"{self.tag:10s} {result},data={info.keys()},q={self.pro_que.qsize()},c={self.con_que.qsize()}")
         return result
 
-    def consumer(self, block=True, **kwargs):
+    def consumer(self, **kwargs):
         """
         消费者获得数据
         :param kwargs:
@@ -142,13 +144,14 @@ class ProducerConsumer(object):
             try:
                 if self.state <= 0: break
                 # info = self.queue.pop() # 返回一个元素
-                data = self.pro_que.get_window(wsize=self.cfg['wsize'], overlap=self.cfg['overlap'])  # 返回一个元素
+                data = self.pro_que.get_window(wsize=self.cfg['wsize'], overlap=self.cfg['overlap'],
+                                               block=True, timeout=self.timeout)
                 if not data: continue
                 cs = time.time()  # 消费者接收到数据的时间戳
                 outs = self.consumer_tasks(data)
                 if isinstance(outs, dict): outs = [outs]
                 for out in outs:  # 将处理后的数据发送到消费者队列缓存
-                    self.con_que.put(out, block=block)
+                    self.con_que.put(out, block=True, timeout=None)  # 阻塞发送数据，以保证数据发送
                 cn = time.time()  # 消费者处理完数据的时间戳
                 count = [info['count'] for info in data]
                 for c in count:
@@ -192,15 +195,13 @@ class ProducerConsumer(object):
                 ret, frame = cap.read()
                 ps = time.time()
                 if self.state <= 0 or not ret:
-                    self.state = -1
-                    self.pro_que.put({}, block=block)  # TODO 发送空数据，以确保consumer结束
                     cap.stop()
                     break
                 size = [frame.shape[1], frame.shape[0]]  # 视频帧的宽度和高度
                 info = {'frame': frame, 'size': size, "count": self.count, 'duration': cap.duration, 'time': ps}
                 info = self.producer_task(info)
                 # TODO 生产者队列缓存
-                self.pro_que.put(info, block=block)  # TODO 当block=True时，若消费者卡顿，会导致这里阻塞，且无法终止
+                self.pro_que.put(info, block=block, timeout=None)  # TODO 当block=True时，若消费者卡顿，会导致这里阻塞
                 pn = time.time()
                 if self.count % self.cfg['log_freq'] == 0:
                     self.print("producer", [f"{self.count:06d}"], f'p0s={self.elap(ps, p0)} p0n={self.elap(pn, p0)}')
@@ -240,7 +241,7 @@ if __name__ == '__main__':
     }
     pc = ProducerConsumer(log=print, **cfg)
     pc.start(**cfg)
-    time.sleep(50000)
+    time.sleep(2000)
     pc.stop()
     time.sleep(2)
     print("done")

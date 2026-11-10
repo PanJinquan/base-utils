@@ -10,6 +10,7 @@
 import math
 import queue
 import time
+import numbers
 
 
 class Queue():
@@ -104,8 +105,10 @@ class Queue():
         :param timeout: 超时时间
         :return: 队列窗口数据
         """
+        t1 = time.time()
         while self.qsize() < wsize and block:  # 等待队列数据足够
             time.sleep(0.05)
+            if isinstance(timeout, numbers.Number) and (time.time() - t1) > timeout: break
         if self.qsize() >= wsize:
             size = int(wsize * overlap)
             data1 = self.pop_items(nums=wsize - size, block=block, timeout=timeout)
